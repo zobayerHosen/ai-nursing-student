@@ -11,3 +11,24 @@
 body {
   font-family: "Inter", sans-serif;
 }
+
+/* Scrollbar width */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* Scrollbar track (background) */
+::-webkit-scrollbar-track {
+  background: #f1f5f9; /* light gray */
+}
+
+/* Scrollbar thumb (draggable part) */
+::-webkit-scrollbar-thumb {
+  background-color:  #2c5f8d; /* blue */
+  border-radius: 6px;
+}
+
+/* Hover effect */
+::-webkit-scrollbar-thumb:hover {
+  background-color:  #2d70aa;
+}
