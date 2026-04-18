@@ -1,33 +1,8 @@
 "use client";
 
+import { cheatSheetData } from "@/dummydata";
 import Image from "next/image";
-
-const data = [
-    {
-        title: "Heart Anatomy & Physiology",
-        category: "Cardiovascular System",
-        img: "/assets/dashboard/cheat_pic01.png",
-        popular: true,
-    },
-    {
-        title: "Heart Anatomy & Physiology",
-        category: "Cardiovascular System",
-        img: "/assets/dashboard/cheat_pic02.png",
-        popular: true,
-    },
-    {
-        title: "Heart Anatomy & Physiology",
-        category: "Cardiovascular System",
-        img: "/assets/dashboard/cheat_pic03.png",
-        popular: true,
-    },
-    {
-        title: "Lung Anatomy & Gas Exchange",
-        category: "Cardiovascular System",
-        img: "/assets/dashboard/cheat_pic04.png",
-        popular: true,
-    },
-];
+import Link from "next/link";
 
 const PopularCheatSheet = () => {
     return (
@@ -38,14 +13,14 @@ const PopularCheatSheet = () => {
                     Most Popular Cheat Sheets
                 </h2>
 
-                <button className="text-blue-600 text-sm font-medium hover:underline">
+                <Link href="/dashboard" className="text-[#2C5F8D] text-base font-medium hover:underline cursor-pointer">
                     view all
-                </button>
+                </Link>
             </div>
 
             {/* Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                {data?.map((item, index) => (
+                {cheatSheetData?.map((item, index) => (
                     <div
                         key={index}
                         className="bg-white rounded-xl overflow-hidden hover:shadow-md transition"

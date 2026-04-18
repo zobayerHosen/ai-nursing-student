@@ -1,32 +1,6 @@
+import { bodySystem } from "@/dummydata";
 import Image from "next/image";
-import { BsHeartPulse, BsLungs, BsActivity, BsPerson } from "react-icons/bs";
-
-const data = [
-    {
-        title: "Cardiovascular",
-        desc: "I know you are busy- let me demo MyCase",
-        img: "/assets/dashboard/cardiovascular.png",
-        icon: BsHeartPulse,
-    },
-    {
-        title: "Respiratory",
-        desc: "Upper and lower airways, lung lobes, gas exchange...",
-        img: "/assets/dashboard/respiratory.png",
-        icon: BsLungs,
-    },
-    {
-        title: "Gastrointestinal",
-        desc: "GI tract anatomy, motility, absorption...",
-        img: "/assets/dashboard/gastrointetinal.png",
-        icon: BsActivity,
-    },
-    {
-        title: "Female Reproduction",
-        desc: "Reproductive anatomy, menstrual cycle...",
-        img: "/assets/dashboard/reproduction.png",
-        icon: BsPerson,
-    },
-];
+import Link from "next/link";
 
 const BodySystem = () => {
     return (
@@ -37,14 +11,14 @@ const BodySystem = () => {
                     Body Systems
                 </h2>
 
-                <button className="text-blue-600 text-sm font-medium hover:underline">
+                <Link href="/dashboard" className="text-[#2C5F8D] text-base font-medium hover:underline cursor-pointer">
                     view all
-                </button>
+                </Link>
             </div>
 
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                {data.map((item, index) => {
+                {bodySystem.map((item, index) => {
                     const Icon = item.icon;
 
                     return (

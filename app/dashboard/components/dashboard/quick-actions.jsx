@@ -1,57 +1,5 @@
 import CommonDashboardTitle from "@/components/common-dashboar-title";
-import {
-    BsPlayCircle,
-    BsFileEarmarkText,
-    BsClipboardCheck,
-    BsMic,
-    BsCardChecklist,
-    BsBook,
-} from "react-icons/bs";
-
-const actions = [
-    {
-        title: "Start Tutor Session",
-        desc: "Tutor session with CARA",
-        icon: BsPlayCircle,
-        bg: "bg-blue-100",
-        color: "text-blue-600",
-    },
-    {
-        title: "Notes to Quiz",
-        desc: "Convert notes into practice questions",
-        icon: BsClipboardCheck,
-        bg: "bg-purple-100",
-        color: "text-purple-600",
-    },
-    {
-        title: "Practice Exams",
-        desc: "Practice over 5000 NCLEX questions",
-        icon: BsFileEarmarkText,
-        bg: "bg-green-100",
-        color: "text-green-600",
-    },
-    {
-        title: "Record a Lecture",
-        desc: "Transform lectures to notes",
-        icon: BsMic,
-        bg: "bg-orange-100",
-        color: "text-orange-600",
-    },
-    {
-        title: "Notes to Flashcards",
-        desc: "Paste notes, get flashcards instantly",
-        icon: BsCardChecklist,
-        bg: "bg-blue-100",
-        color: "text-blue-600",
-    },
-    {
-        title: "Study Flashcards",
-        desc: "Study over 4000 flashcards",
-        icon: BsBook,
-        bg: "bg-red-100",
-        color: "text-red-500",
-    },
-];
+import { quickActions } from "@/dummydata";
 
 const QuickActions = () => {
     return (
@@ -61,7 +9,7 @@ const QuickActions = () => {
 
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {actions.map((item, index) => {
+                {quickActions.map((item, index) => {
                     const Icon = item.icon;
 
                     return (
