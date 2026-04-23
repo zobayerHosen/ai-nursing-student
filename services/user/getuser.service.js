@@ -1,5 +1,3 @@
-import { AxiosInstance } from "axios";
-
 export async function getUser(axiosInstance) {
   if (!axiosInstance) return null;
   try {

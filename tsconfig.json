@@ -34,7 +34,7 @@
     "**/*.mts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "services/auth/signin.service.js", "hooks/auth/signin.hook.js", "services/auth/signup.service.js", "hooks/auth/signup.hook.js", "services/auth/social-login.service.js", "hooks/auth/social-login.hook.js", "services/auth/reset-password.service.js", "hooks/auth/reset-password.hook.js", "services/auth/forgot-password.service.js", "hooks/auth/forgot-password.hook.js", "hooks/auth/signout.hook.js", "actions/auth/logout.action.js", "services/user/delete-user.service.js", "hooks/user/index.js", "hooks/user/delete-user.hook.js", "hooks/user/getuser.hook.js", "utils/getClientToken.js", "services/user/update-avatar.service.js", "services/user/getuser.hook.js", "hooks/user/update-avatar.hook.js", "services/user/update-info.service.js", "hooks/user/update-info.hook.js", "services/user/update-password.service.js", "hooks/user/update-password.hook.js"  ],
   "exclude": [
     "node_modules"
   ]
