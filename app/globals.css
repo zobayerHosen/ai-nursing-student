@@ -32,3 +32,10 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background-color: #2d70aa;
 }
+
+/* Note: auth divider */
+.ant-divider-inner-text {
+  font-size: 18px !important;
+  font-weight: 500 !important;
+  color: #525252 !important;
+}

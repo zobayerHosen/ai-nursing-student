@@ -2,6 +2,7 @@
 import { Providers } from "@/providers";
 import "./globals.css";
 import { Inter } from "next/font/google";
+import { AntdRegistry } from "@ant-design/nextjs-registry";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,7 +24,9 @@ export default async function RootLayout({ children }) {
         className={`${inter.variable} antialiased`}
         suppressHydrationWarning
       >
-        <Providers>{children}</Providers>
+        <AntdRegistry>
+          <Providers>{children}</Providers>
+        </AntdRegistry>
       </body>
     </html>
   );

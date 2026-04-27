@@ -64,14 +64,14 @@ const HomeHeader = () => {
           {/* Desktop Buttons */}
           <div className="hidden lg:flex items-center gap-6">
             <Link
-              href="/login"
+              href="/auth"
               className="text-sm font-semibold hover:text-pink-300 transition-colors"
             >
               Log In
             </Link>
 
             <Link
-              href="/signup"
+              href="/auth/register"
               className="bg-[#FE5E7E] px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:bg-[#ff7b94] hover:scale-105 active:scale-95 transition-all"
             >
               Get Started Free
@@ -151,7 +151,7 @@ const HomeHeader = () => {
                     className="flex flex-col gap-4"
                   >
                     <Link
-                      href="/login"
+                      href="/auth"
                       onClick={toggleMenu}
                       className="text-lg font-medium border border-white/20 w-full py-3 rounded-xl text-center hover:bg-white/10 transition-colors"
                     >
@@ -159,7 +159,7 @@ const HomeHeader = () => {
                     </Link>
 
                     <Link
-                      href="/signup"
+                      href="/auth/register"
                       onClick={toggleMenu}
                       className="bg-[#FE5E7E] text-lg font-bold w-full py-4 rounded-xl text-center shadow-lg hover:bg-pink-400 active:scale-95 transition-all"
                     >
