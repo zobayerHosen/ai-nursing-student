@@ -39,3 +39,24 @@ body {
   font-weight: 500 !important;
   color: #525252 !important;
 }
+
+/* Note: custom steps progressbar */
+.custom-steps .ant-steps-item-finish .ant-steps-item-icon {
+  background-color: #3e6288;
+  border-color: #3e6288;
+}
+
+.custom-steps .ant-steps-item-process .ant-steps-item-icon {
+  background-color: #3e6288;
+  border-color: #3e6288;
+}
+
+.custom-steps .ant-steps-item-title {
+  font-weight: 500;
+}
+
+/* Note: custom select */
+.ant-select.ant-select-outlined:not(.ant-select-disabled).ant-select-focused{
+ box-shadow: none !important;
+ border: none
+}

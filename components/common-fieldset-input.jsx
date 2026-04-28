@@ -77,7 +77,7 @@ const CommonFieldsetInput = ({
 
       <div
         className={cn(
-          "w-full flex items-center group gap-2 px-4 py-3.5 sm:py-4.5 bg-[#FAFAFA] border ease-in-out duration-300 text-foreground rounded-xl transition-colors",
+          "w-full flex items-center group gap-2 px-4 py-3 bg-[#FAFAFA] border ease-in-out duration-300 text-foreground rounded-xl transition-colors",
           errorMessage
             ? "border-red-500"
             : "border-slate-200 focus-within:border-primary",
@@ -125,7 +125,7 @@ const CommonFieldsetInput = ({
                   disabled={disabled}
                   showSearch
                   allowClear
-                  className="w-full bg-transparent border-none! capitalize outline-none!"
+                  className="w-full bg-transparent! border-none! capitalize outline-none!"
                   style={{ width: "100%" }}
                   value={
                     field.value === undefined ||
