@@ -7,6 +7,7 @@ import CommonFieldsetInput from "@/components/common-fieldset-input";
 import GoogleLogin from "./google-login";
 import { FaCheck } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
+import { Divider } from "antd";
 
 
 const RegisterForm = () => {
@@ -147,7 +148,7 @@ const RegisterForm = () => {
           Continue
         </button>
 
-        <div className="text-center text-gray-400 my-2">or sign up with</div>
+        <Divider className="text-sm! sm:text-base! my-0!">or sign up with</Divider>
         <GoogleLogin />
       </form>
     </div>

@@ -21,7 +21,7 @@ const SignInForm = () => {
 
   // Note: UI
   return (
-    <div className="w-full max-w-[470px] flex flex-col gap-8">
+    <div className="w-full max-w-[470px] sm:mx-auto md:max-w-[470px] flex flex-col gap-6 sm:gap-8">
       <AuthCommonTitle
         title="Welcome to Stemrn"
         description="Please enter your details to create your account"
@@ -30,7 +30,7 @@ const SignInForm = () => {
       {/* form */}
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full flex flex-col gap-4"
+        className="w-full flex flex-col gap-3 sm:gap-4"
       >
 
         {/* email */}
@@ -70,16 +70,16 @@ const SignInForm = () => {
         <div className="w-full flex items-center justify-end">
           <Link
             href="/auth"
-            className="text-base font-medium text-primary hover:text-primary/80 transition-colors hover:underline"
+            className="text-sm sm:text-base font-medium text-primary hover:text-primary/80 transition-colors hover:underline"
           >
             Forgot Password?
           </Link>
         </div>
 
         {/* remember me checkbox */}
-        <div className="w-full flex items-center justify-between mb-4">
-          <label className="flex items-center gap-2 cursor-pointer font-normal text-[#4c4b4b]">
-            <input type="checkbox" className="accent-primary w-4 h-4" />
+        <div className="w-full flex items-center justify-between">
+          <label className="flex items-center gap-2 cursor-pointer font-normal text-sm sm:text-base text-[#4c4b4b]">
+            <input type="checkbox" className="accent-primary w-3.5 h-3.5 sm:w-4 sm:h-4" />
             Keep me signed in for 30 days
           </label>
         </div>
@@ -87,14 +87,14 @@ const SignInForm = () => {
         {/* submit button */}
         <button
           type="submit"
-          className="cursor-pointer w-full bg-primary text-white py-4 rounded-xl text-base font-medium hover:bg-primary/80 transition-colors"
+          className="cursor-pointer w-full bg-primary text-white py-3 sm:py-4 rounded-xl text-sm sm:text-base font-medium hover:bg-primary/80 transition-colors"
         >
           Log in
         </button>
       </form>
 
       {/* or sign up with google */}
-      <Divider className="text-base">or sign up with</Divider>
+      <Divider className="text-sm! sm:text-base! my-0!">or sign up with</Divider>
 
       <GoogleLogin />
 
