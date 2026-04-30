@@ -3,9 +3,11 @@ import HomeHeader from './components/home-header';
 import Hero from './components/hero';
 import StatsSection from './components/stats-section';
 import RootsSection from './components/roots-section';
-import CTA from './components/cta';
 import VisualNotes from './components/visual-notes';
 import StemrnFeatureSection from './components/stemrn-feature-section/stemrn-feature-section';
+import Pricing from './components/pricing/pricing';
+import FAQ from './components/faq';
+import AIToolsSection from './components/ai-tool-section';
 
 const HomePage = () => {
     return (
@@ -16,9 +18,10 @@ const HomePage = () => {
             <RootsSection />
             <StemrnFeatureSection />
             <VisualNotes />
-            <CTA />
+            <AIToolsSection />
+            <Pricing />
+            <FAQ />
         </div>
     );
 };
-
 export default HomePage;

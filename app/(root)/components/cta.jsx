@@ -1,30 +1,26 @@
-import Link from "next/link";
-
 const CTA = () => {
     return (
-        <section className="w-full bg-white py-20 px-4">
-            <div className="w-full max-w-[832px] mx-auto bg-[#14213D] rounded-2xl px-6 md:px-12 py-14 text-center shadow-lg">
+        <div className="relative w-full max-w-[1100px] mx-auto mb-20 mt-10 overflow-hidden rounded-[24px] bg-[#0b2447] px-6 py-14 text-center text-white md:px-12">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(255,107,107,0.14),transparent_50%)]" />
 
-                <h2 className="text-3xl md:text-4xl font-bold text-white">
-                    Still have{" "}
-                    <span className="text-[#FE5E7E]">questions?</span>
+            <div className="relative z-10">
+                <h2 className="mb-4 text-[32px] font-extrabold leading-[1.15] tracking-[-0.025em] md:text-[38px]">
+                    Still have <span className="text-[#ffa3a3]">questions?</span>
                 </h2>
 
-                <p className="mt-5 text-sm text-[#94A3B8] leading-5 max-w-md mx-auto">
-                    If you couldn't find what you're looking for here, reach out directly.
-                    The team (yes, actual humans) responds to every message.
+                <p className="mx-auto mb-7 max-w-[480px] text-[15.5px] leading-[1.55] text-white/80">
+                    If you couldn’t find what you’re looking for here,
+                    reach out directly.
                 </p>
 
-                <Link
-                    href="/"
-                    className="inline-flex items-center gap-2 mt-8 bg-[#FE5E7E] hover:bg-pink-400 transition-all duration-300 text-white font-semibold text-sm px-7 py-3 rounded-lg"
+                <a
+                    href="mailto:hello@stemrn.com"
+                    className="inline-flex items-center rounded-xl bg-[#ff6b6b] px-8 py-[14px] text-[15px] font-semibold text-white shadow-[0_6px_20px_rgba(255,107,107,0.3)] transition-all duration-200 hover:-translate-y-px hover:bg-[#ff5252] hover:shadow-[0_10px_28px_rgba(255,107,107,0.4)]"
                 >
-                    Email Us
-                    <span className="text-lg">→</span>
-                </Link>
+                    Email Us →
+                </a>
             </div>
-        </section>
+        </div>
     );
 };
-
 export default CTA;
