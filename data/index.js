@@ -1,5 +1,34 @@
-import { ImageIcon, BookOpen, Table2, Play, DollarSign, MessageSquare, Book, Mic, Award, Globe, Shield, PanelTop, User } from "lucide-react";
 import { FaFacebookF, FaLinkedinIn, FaTwitter, FaYoutube, FaInstagram } from "react-icons/fa";
+
+import { ImageIcon, BookOpen, Table2, Play, DollarSign, MessageSquare, Book, Mic, Award, Globe, Shield, PanelTop, User, Calendar, Clock3, Star, Sparkles, Venus, PieChart, Box } from "lucide-react";
+
+
+// Note: roots section data start
+export const rootsData = [
+    {
+        icon: <Sparkles size={18} />,
+        title: "Practice",
+        desc: "Thousands of NGN-style questions that mirror the real exam's clinical scenarios.",
+    },
+    {
+        icon: <Venus size={18} />,
+        title: "Knowledge",
+        desc: "Deep content coverage across all NCLEX client needs categories and specialties.",
+    },
+    {
+        icon: <PieChart size={18} />,
+        title: "Strategy",
+        desc: "NCLEX-specific test-taking frameworks: SATA anchors, priority questions, Maslow, ABC.",
+    },
+    {
+        icon: <Box size={18} />,
+        title: "Organization",
+        desc: "Structured study plans, performance tracking, and tools that work together seamlessly.",
+    },
+];
+// Note: roots section data end
+
+
 
 // Note: home page stemrn tab buttons data start
 export const tabsButtons = [
@@ -175,8 +204,76 @@ export const tools = [
 
 
 
+// Noet: home nclex data start
+import img1 from '@/public/assets/home_nclex_img1.png';
+export const homeNclexQuestions = [
+    {
+        id: 1,
+        type: "Case Study · NGN",
+        difficulty: "Medium",
+        category: "Maternal-Newborn",
+        time: "Mar 2026",
+        question:
+            "A nurse is caring for a client at 32 weeks gestation who presents to the labor and delivery unit reporting painless, bright-red vaginal bleeding. Fetal heart tones are 140 bpm and reassuring. Blood pressure is 118/72. Which nursing action should the nurse implement first?",
+        options: [
+            "Perform a sterile vaginal examination to assess cervical dilation",
+            "Place the client on continuous external fetal monitoring in a side-lying position",
+            "Administer a dose of terbutaline to stop uterine contractions",
+            "Prepare the client for an immediate cesarean delivery",
+        ],
+        correct: 1,
+        correctRate: "68%",
+        avgTime: "47s",
+        explanation:
+            "Placenta previa presents with painless bright-red bleeding. Vaginal examinations are contraindicated because they can worsen bleeding. The nurse should first stabilize and monitor the mother and fetus.",
+    },
+    {
+        id: 2,
+        type: "Priority",
+        difficulty: "Hard",
+        category: "Cardiac",
+        time: "Mar 2026",
+        question:
+            "Which client should the nurse assess first after receiving report?",
+        options: [
+            "Client with stable angina reporting 2/10 chest pain",
+            "Client with heart failure and crackles in lower lobes",
+            "Client post-cardiac catheterization with absent pedal pulse",
+            "Client with atrial fibrillation receiving anticoagulants",
+        ],
+        correct: 2,
+        correctRate: "59%",
+        avgTime: "52s",
+        explanation:
+            "Absent pedal pulses after cardiac catheterization may indicate arterial occlusion and impaired circulation. This is the priority assessment.",
+    },
+    {
+        id: 3,
+        type: "Pharmacology",
+        difficulty: "Medium",
+        category: "Med-Surg",
+        time: "Mar 2026",
+        img: img1,
+        question:
+            "Which finding requires immediate intervention in a client receiving IV potassium chloride?",
+        options: [
+            "Potassium level of 3.4 mEq/L",
+            "Urine output of 25 mL/hr",
+            "Heart rate of 84 bpm",
+            "Mild burning at IV site",
+        ],
+        correct: 1,
+        correctRate: "72%",
+        avgTime: "39s",
+        explanation:
+            "Potassium should never be administered to clients with inadequate urine output because it can lead to dangerous hyperkalemia.",
+    },
+];
+// Noet: home nclex data end
+
+
+
 // Note: pricing data start here
-import { Calendar, Clock3, Star } from "lucide-react";
 export const plans = [
     {
         id: 1,

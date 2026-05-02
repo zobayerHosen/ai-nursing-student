@@ -8,6 +8,8 @@ import StemrnFeatureSection from './components/stemrn-feature-section/stemrn-fea
 import Pricing from './components/pricing/pricing';
 import FAQ from './components/faq';
 import AIToolsSection from './components/ai-tool-section';
+import HomeCheatSheets from './components/home-cheat-sheet';
+import HomeNCLEXQuestions from './components/home-nclex-exam/home-nclex-exam';
 
 const HomePage = () => {
     return (
@@ -19,6 +21,8 @@ const HomePage = () => {
             <StemrnFeatureSection />
             <VisualNotes />
             <AIToolsSection />
+            <HomeNCLEXQuestions />
+            <HomeCheatSheets />
             <Pricing />
             <FAQ />
         </div>

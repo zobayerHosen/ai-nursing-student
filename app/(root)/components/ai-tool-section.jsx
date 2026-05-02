@@ -45,7 +45,7 @@ export default function AIToolsSection() {
             <div className="mx-auto max-w-[1240px]">
                 {/* Header */}
                 <div className="mx-auto mb-10 max-w-[680px] text-center">
-                    <h2 className="mb-[10px] text-[22px] font-extrabold leading-[1.15] tracking-[-0.02em] text-[#234C7B] md:text-[32px]">
+                    <h2 className="mb-[10px] text-[22px] font-extrabold leading-[1.15] tracking-[-0.02em] text-[#234C7B] md:text-[48px]">
                         AI tools that actually <span className="text-[#ff6b6b]">think like a nurse.</span>
                     </h2>
 
@@ -54,9 +54,9 @@ export default function AIToolsSection() {
                     </p>
                 </div>
 
-                <div className="mx-auto grid max-w-[1080px] grid-cols-1 gap-6 pb-16 lg:grid-cols-[1fr_1.1fr] lg:gap-9">
+                <div className="mx-auto grid container grid-cols-1 gap-6 pb-16 lg:grid-cols-[1fr_1.1fr] lg:gap-9">
                     {/* LEFT SIDE */}
-                    <div className="flex flex-col gap-[5px]">
+                    <div className="flex flex-col gap-4">
                         {tools.map((tool) => {
                             const isActive = activeTool === tool.key;
                             const Icon = toolIcons[tool.key];
@@ -70,7 +70,7 @@ export default function AIToolsSection() {
                                         : "border-[rgba(11,36,71,0.12)] bg-white hover:border-[rgba(11,36,71,0.22)] hover:bg-[#fafbfc]"
                                         }`}
                                 >
-                                    <div className="flex items-center gap-[10px] px-[14px] py-[11px]">
+                                    <div className="flex items-center gap-[10px] p-4">
                                         <div
                                             className={`shrink-0 transition-all duration-300 ${isActive ? "text-[#3b82f6]" : "text-[#707070]"
                                                 }`}
@@ -78,18 +78,19 @@ export default function AIToolsSection() {
                                             <Icon className="h-5 w-5 stroke-2" />
                                         </div>
 
-                                        {tool.featured && (
-                                            <span className="mr-[2px] rounded bg-[#3b82f6] px-[6px] py-[2px] text-[8.5px] font-bold uppercase tracking-[0.08em] text-white">
-                                                Featured
-                                            </span>
-                                        )}
-
                                         <div
                                             className={`flex-1 text-[13.5px] font-semibold tracking-[-0.005em] transition-all duration-300 ${isActive ? "text-[#3b82f6]" : "text-[#0b2447]"
                                                 }`}
                                         >
                                             {tool.name}
+                                            {tool.featured && (
+                                                <span className="ml-2 rounded-full bg-primary px-[6px] py-[2px] text-xs font-bold uppercase tracking-[0.08em] text-white">
+                                                    Featured
+                                                </span>
+                                            )}
                                         </div>
+
+
                                     </div>
 
                                     <div
@@ -110,19 +111,21 @@ export default function AIToolsSection() {
                     </div>
 
                     {/* RIGHT SIDE */}
-                    <div className="relative flex min-h-[340px] flex-col items-center justify-center overflow-hidden rounded-[14px] border border-[rgba(11,36,71,0.12)] bg-[#fafbfc] p-7 shadow-[0_1px_3px_rgba(11,36,71,0.04),0_1px_2px_rgba(11,36,71,0.03)]">
-                        <div className="absolute -right-20 -top-20 h-[240px] w-[240px] rounded-full bg-[radial-gradient(circle,rgba(59,130,246,0.06)_0%,transparent_70%)]" />
+                    <div className="relative flex min-h-[340px] flex-col items-center justify-center overflow-hidden rounded-[14px] bg-linear-to-br from-[#f8fafce8] to-[#eef2f7f2] shadow-[0_1px_3px_rgba(11,36,71,0.04),0_1px_2px_rgba(11,36,71,0.03)]">
 
                         <div className="relative z-10 w-full text-center">
-                            <div className="mx-auto mb-[18px] flex aspect-[4/3.4] w-full max-w-[420px] items-center justify-center overflow-hidden rounded-[10px] border border-[rgba(11,36,71,0.08)] bg-linear-to-br from-[#f8fafc] to-[#eef2f7] shadow-[0_1px_3px_rgba(11,36,71,0.04),0_1px_2px_rgba(11,36,71,0.03)]">
+                            <div className="mx-auto mb-[18px] flex aspect-[4/3.4] w-full items-center justify-center overflow-hidden">
                                 <div className="flex h-[88%] w-[92%] flex-col overflow-hidden rounded-[7px] bg-white text-left shadow-[0_8px_20px_rgba(11,36,71,0.08)]">
-                                    <div className="flex items-center gap-1 border-b border-[rgba(11,36,71,0.08)] bg-[#f5f7fa] px-[10px] py-[6px]">
+
+                                    {/* Browser header */}
+                                    <div className="flex items-center gap-1 bg-[#E6E8EA] px-[10px] py-3">
                                         <div className="h-[6px] w-[6px] rounded-full bg-[#ff6058]" />
                                         <div className="h-[6px] w-[6px] rounded-full bg-[#febc2f]" />
                                         <div className="h-[6px] w-[6px] rounded-full bg-[#28c93f]" />
                                     </div>
 
-                                    <div className="flex flex-1 flex-col gap-[7px] overflow-hidden p-[13px]">
+                                    {/* tab content */}
+                                    <div className="flex flex-1 flex-col gap-[7px] overflow-hidden p-3">
                                         {activeTool === "my-tutor" && (
                                             <>
                                                 <div className="mb-1 text-[10.5px] font-bold text-[#0b2447]">
@@ -224,11 +227,11 @@ export default function AIToolsSection() {
                                 </div>
                             </div>
 
-                            <div className="mb-1 text-[14px] font-bold tracking-[-0.01em] text-[#0b2447]">
+                            <div className="mb-1 text-lg font-medium tracking-[-0.01em] text-[#285680]">
                                 {tools.find((tool) => tool.key === activeTool)?.name}
                             </div>
 
-                            <div className="mx-auto max-w-[320px] text-[11.5px] leading-[1.45] text-[#4a5568]">
+                            <div className="mx-auto max-w-[480px] text-sm font-medium leading-[1.45] text-[#787878] pb-6">
                                 {tools.find((tool) => tool.key === activeTool)?.description}
                             </div>
                         </div>

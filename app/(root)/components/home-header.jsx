@@ -3,6 +3,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import logo from "@/public/assets/logo.png"
+import Image from "next/image";
 
 const navItems = [
   { label: "Features", href: "/" },
@@ -44,8 +46,13 @@ const HomeHeader = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 z-50">
-            <div className="w-8 h-8 bg-white rounded-full shadow-sm" />
-            <span className="text-2xl font-bold tracking-tight">STEMRN</span>
+            <Image
+              src={logo}
+              width={350}
+              height={150}
+              alt="logo"
+              className="object-contain w-[200px]"
+            />
           </Link>
 
           {/* Desktop Nav */}
