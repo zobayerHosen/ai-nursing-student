@@ -1,8 +1,11 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { BsLayoutSidebarReverse } from "react-icons/bs";
-
+const userImage = "https://i.pravatar.cc/300";
 export default function DashboardHeader({ collapsed, setCollapsed }) {
+
     return (
         <div className="sticky top-0 z-50 flex items-center justify-between px-4.5 py-5 bg-white border-b-2 border-[#e6e8ec]">
             {/* Left */}
@@ -33,7 +36,15 @@ export default function DashboardHeader({ collapsed, setCollapsed }) {
                 </div>
 
                 {/* It should be a profile picture */}
-                <div className="cursor-pointer w-10 h-10 bg-gray-300 rounded-full ring-2 ring-[#8B8F96] shrink-0" />
+                <Link href={"/dashboard/settings"}>
+                    <Image
+                        src={userImage}
+                        alt="user"
+                        width={100}
+                        height={100}
+                        className="cursor-pointer w-10 h-10 rounded-full"
+                    />
+                </Link>
             </div>
         </div>
     );

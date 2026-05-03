@@ -32,3 +32,31 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background-color: #2d70aa;
 }
+
+/* Note: auth divider */
+.ant-divider-inner-text {
+  font-size: 18px !important;
+  font-weight: 500 !important;
+  color: #525252 !important;
+}
+
+/* Note: custom steps progressbar */
+.custom-steps .ant-steps-item-finish .ant-steps-item-icon {
+  background-color: #3e6288;
+  border-color: #3e6288;
+}
+
+.custom-steps .ant-steps-item-process .ant-steps-item-icon {
+  background-color: #3e6288;
+  border-color: #3e6288;
+}
+
+.custom-steps .ant-steps-item-title {
+  font-weight: 500;
+}
+
+/* Note: custom select */
+.ant-select.ant-select-outlined:not(.ant-select-disabled).ant-select-focused{
+ box-shadow: none !important;
+ border: none
+}

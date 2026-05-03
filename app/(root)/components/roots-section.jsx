@@ -1,28 +1,5 @@
+import { rootsData } from "@/data";
 import Image from "next/image";
-import { FaBrain, FaBullseye, FaLayerGroup, FaBookOpen } from "react-icons/fa";
-
-const rootsData = [
-    {
-        icon: <FaBullseye size={18} />,
-        title: "Practice",
-        desc: "Thousands of NGN-style questions that mirror the real exam's clinical scenarios.",
-    },
-    {
-        icon: <FaBrain size={18} />,
-        title: "Knowledge",
-        desc: "Deep content coverage across all NCLEX client needs categories and specialties.",
-    },
-    {
-        icon: <FaLayerGroup size={18} />,
-        title: "Strategy",
-        desc: "NCLEX-specific test-taking frameworks: SATA anchors, priority questions, Maslow, ABC.",
-    },
-    {
-        icon: <FaBookOpen size={18} />,
-        title: "Organization",
-        desc: "Structured study plans, performance tracking, and tools that work together seamlessly.",
-    },
-];
 
 const RootsSection = () => {
     return (
@@ -69,21 +46,21 @@ const RootsSection = () => {
 
                 {/* Cards */}
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {rootsData.map((item, index) => (
+                    {rootsData?.map((item, index) => (
                         <div
                             key={index}
                             className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300"
                         >
-                            <div className="w-10 h-10 flex items-center justify-center bg-blue-100 text-blue-900 rounded-full mb-4">
-                                {item.icon}
+                            <div className="w-10 h-10 flex items-center justify-center bg-primary text-white rounded-full mb-4">
+                                {item?.icon ?? "N/A"}
                             </div>
 
                             <h3 className="font-semibold text-lg text-blue-900">
-                                {item.title}
+                                {item?.title ?? "N/A"}
                             </h3>
 
                             <p className="text-sm text-gray-600 mt-2">
-                                {item.desc}
+                                {item?.desc ?? "N/A"}
                             </p>
                         </div>
                     ))}

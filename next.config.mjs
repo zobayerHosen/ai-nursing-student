@@ -2,11 +2,11 @@
 const baseRemotePatterns = [
   {
     protocol: "https",
-    hostname: "milesbanks.thewarriors.team",
+    hostname: "i.pravatar.cc",
   },
   {
     protocol: "https",
-    hostname: "adc-tenbox-prod.imgix.net",
+    hostname: "images.unsplash.com",
     port: "",
     pathname: "/**",
   },
