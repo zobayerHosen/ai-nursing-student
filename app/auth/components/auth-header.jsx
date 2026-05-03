@@ -6,6 +6,24 @@ import logo from "@/public/assets/auth/auth-header-logo.svg"
 
 export default function AuthHeader({ type }) {
   const isRegisterPage = type === "/auth/register";
+  const isForgetPasswordPage = type === "";
+  const isNewPasswordPage = type === "/auth/new-password";
+
+  if(isForgetPasswordPage || isNewPasswordPage){
+    return (
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0 sticky top-0 bg-white z-50 py-4 sm:py-8 w-full px-4 sm:px-0">
+        <Link href={"/"}>
+          <Image
+            src={logo}
+            alt="logo"
+            width={180}
+            height={180}
+            className="object-contain w-[140px] xl:w-[180px]"
+          />
+        </Link>
+      </div>
+    )
+  }
 
   return (
     <>
