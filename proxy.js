@@ -29,21 +29,21 @@ export async function proxy(request) {
      * 🔒 If NOT logged in and accessing protected route
      * → redirect to signin
      */
-    if (!token && isProtectedPath) {
-        const loginUrl = new URL("/auth", request.url);
-        loginUrl.searchParams.set("redirect", pathname);
-        return NextResponse.redirect(loginUrl);
-    }
+    // if (!token && isProtectedPath) {
+    //     const loginUrl = new URL("/auth", request.url);
+    //     loginUrl.searchParams.set("redirect", pathname);
+    //     return NextResponse.redirect(loginUrl);
+    // }
 
     /**
      * 🚫 If logged in and accessing public/auth pages
      * → redirect to NEWS
      */
-    if (token && isPublicPath) {
-        return NextResponse.redirect(
-            new URL(ROUTE_PATH.DASHBOARD, request.url)
-        );
-    }
+    // if (token && isPublicPath) {
+    //     return NextResponse.redirect(
+    //         new URL(ROUTE_PATH.DASHBOARD, request.url)
+    //     );
+    // }
 
     return NextResponse.next();
 }

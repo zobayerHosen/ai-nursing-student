@@ -40,10 +40,10 @@ export default function DashboardShell({ children }) {
             >
                 <DashboardHeader collapsed={collapsed} setCollapsed={setCollapsed} />
 
-                <div className="px-4 sm:px-6 md:px-8 py-6">
+                <div className="pr-4 sm:pr-6 md:pr-8 pb-6">
                     {children}
                 </div>
             </div>
         </div>
     );
-}
+};

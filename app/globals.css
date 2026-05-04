@@ -56,7 +56,7 @@ body {
 }
 
 /* Note: custom select */
-.ant-select.ant-select-outlined:not(.ant-select-disabled).ant-select-focused{
- box-shadow: none !important;
- border: none
+.ant-select.ant-select-outlined:not(.ant-select-disabled).ant-select-focused {
+  box-shadow: none !important;
+  border: none;
 }
