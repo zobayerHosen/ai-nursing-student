@@ -29,7 +29,7 @@ const colors = [
     "#9CA3AF", // gray
 ];
 
-const FolderCreateModal = ({ isModalOpen, setIsModalOpen }) => {
+const FolderCreateModal = ({ isModalOpen, setIsModalOpen, loading }) => {
     const [folderName, setFolderName] = useState("");
     const [selectedIcon, setSelectedIcon] = useState("default_folder");
     const [selectedColor, setSelectedColor] = useState(colors[0]);
@@ -80,7 +80,7 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen }) => {
         >
             <div className="">
                 {/* Title */}
-                <h2 className="text-xl font-semibold text-[#12283B] font-inter">
+                <h2 className="text-xl font-semibold text-[#12283B]">
                     Create Folder
                 </h2>
 

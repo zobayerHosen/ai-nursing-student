@@ -9,13 +9,13 @@ import DashboardHeader from "./dashboard-header";
 export default function DashboardShell({ children }) {
     const [collapsed, setCollapsed] = useState(null);
 
-    // Load state
+    // Note: Load state
     useEffect(() => {
         const saved = localStorage.getItem("sidebar-collapsed");
         setCollapsed(saved ? JSON.parse(saved) : false);
     }, []);
 
-    // Save state
+    // Note: Save state
     useEffect(() => {
         if (collapsed !== null) {
             localStorage.setItem(
@@ -25,11 +25,11 @@ export default function DashboardShell({ children }) {
         }
     }, [collapsed]);
 
-    // Prevent flicker
+    // Note: Prevent flicker
     if (collapsed === null) return null;
 
     return (
-        <div className="flex min-h-screen bg-[#eff2fad3]">
+        <div className="flex min-h-screen bg-[#F7F7F7]">
             {/* Sidebar */}
             <Sidebar collapsed={collapsed} />
 
@@ -40,7 +40,7 @@ export default function DashboardShell({ children }) {
             >
                 <DashboardHeader collapsed={collapsed} setCollapsed={setCollapsed} />
 
-                <div className="pr-4 sm:pr-6 md:pr-8 pb-6">
+                <div className="pb-6">
                     {children}
                 </div>
             </div>

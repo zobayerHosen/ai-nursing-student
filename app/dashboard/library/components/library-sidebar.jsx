@@ -1,17 +1,15 @@
 "use client";
-import { Plus, Folder, ClipboardList, Search, ChevronDown, MoreHorizontal } from "lucide-react";
+import { Plus, Folder, ClipboardList, Search } from "lucide-react";
 import { useState } from "react";
 import FolderCreateModal from "./folder-create-modal";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import FolderList from "./folder-list";
 
 const initialFolders = [
     {
         id: 1,
         name: "Pharmacology",
         icon: "💊",
-        slug: "insulin-types",
-        isOpen: false,
+        isOpen: true,
         notes: [
             { id: 1, slug: "insulin-types", title: "Insulin Types", desc: "Rapid-Acting (Lispro/Aspart): 15min onset..." },
             { id: 2, slug: "anticoagulants", title: "Anticoagulants — Heparin vs Warfarin", desc: "Mechanism and uses..." },
@@ -25,15 +23,33 @@ const initialFolders = [
         notes: [
             { id: 3, slug: "heart-structure", title: "Heart Structure", desc: "Basic anatomy..." }
         ]
+    },
+    {
+        id: 3,
+        name: "Clinical Skills",
+        icon: "🏥",
+        isOpen: false,
+        notes: [
+            { id: 4, slug: "vitals", title: "Vital Signs", desc: "Normal ranges..." }
+        ]
+    },
+    {
+        id: 4,
+        name: "Pathophysiology",
+        icon: "🔬",
+        isOpen: false,
+        notes: [
+            // { id: 5, slug: "cell-injury", title: "Cell Injury", desc: "Causes and mechanisms..." }
+        ]
     }
 ];
 
 const LibrarySidebar = () => {
-    const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [folders, setFolders] = useState(initialFolders);
 
+    // Note: create folder open modal function
     const openModal = () => {
         setIsModalOpen(true);
         setLoading(true);
@@ -46,7 +62,7 @@ const LibrarySidebar = () => {
         console.log("Clicked")
     };
 
-
+    // Note: toggle folder
     const toggleFolder = (id) => {
         setFolders((prev) =>
             prev.map((folder) =>
@@ -57,11 +73,10 @@ const LibrarySidebar = () => {
         );
     };
 
-
     // Note: UI
     return (
         <>
-            <aside className="w-82.5 border-r border-black/10  bg-white min-h-screen overflow-hidden">
+            <aside className="w-82.5 border-r border-black/10  bg-white min-h-screen overflow-hidden sticky top-0 left-0">
                 {/* header content */}
                 <div className="border-b border-black/10 py-4 ">
                     <div className="px-8 flex flex-col gap-4">
@@ -84,80 +99,26 @@ const LibrarySidebar = () => {
 
                         {/* folder and notes counts */}
                         <div className="w-full flex items-center gap-5">
-                            <p className="text-[#555555] text-sm font-medium flex items-center gap-1"><Folder size={19} />0 Folders</p>
-                            <p className="text-[#555555] text-sm font-medium flex items-center gap-1"><ClipboardList size={19} />0 Notes</p>
+                            <p className="text-[#555555] text-sm font-medium flex items-center gap-1">
+                                <Folder size={19} />
+                                {folders?.length || 0} folders
+                            </p>
+                            <p className="text-[#555555] text-sm font-medium flex items-center gap-1">
+                                <ClipboardList size={19} />
+                                {folders?.reduce((acc, folder) => acc + folder?.notes?.length, 0)} notes
+                            </p>
                         </div>
                     </div>
                 </div>
 
                 {/* folder content */}
                 <div className="py-4 px-6 space-y-2">
-                    {folders.map((folder) => (
-                        <div key={folder.id}>
-
-                            {/* Folder Header */}
-                            <div
-                                onClick={() => toggleFolder(folder.id)}
-                                className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-100 cursor-pointer transition"
-                            >
-                                {/* LEFT SIDE */}
-                                <div className="flex items-center gap-3">
-
-                                    {/* Arrow (Lucide) */}
-                                    <ChevronDown
-                                        className={`w-4 h-4 text-gray-500 transition-transform ${folder.isOpen ? "rotate-180" : ""
-                                            }`}
-                                    />
-
-                                    {/* Icon */}
-                                    <span className="text-lg">{folder.icon}</span>
-
-                                    {/* Text */}
-                                    <div>
-                                        <p className="text-sm font-semibold text-[#424242]">
-                                            {folder.name}
-                                        </p>
-                                        <p className="text-xs text-gray-500">
-                                            {folder.notes.length} notes
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* RIGHT SIDE */}
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        console.log("Open menu");
-                                    }}
-                                    className="p-1 rounded-md hover:bg-gray-200"
-                                >
-                                    <MoreHorizontal className="w-5 h-5 text-gray-500" />
-                                </button>
-                            </div>
-
-                            {/* Notes List */}
-                            {folder.isOpen && (
-                                <div className="ml-10 mt-2 space-y-2">
-                                    {folder.notes.map((note) => (
-                                        <Link
-                                            href={`/dashboard/library/${note.slug}`}
-                                            key={note.id}
-                                            className="flex gap-1 items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer"
-                                        >
-                                            <ClipboardList className="w-4 h-4 text-gray-500 shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="flex items-center gap-1 text-sm font-medium text-[#333]">
-                                                    {note.title ?? ""}
-                                                </p>
-                                                <p className="text-xs text-gray-500 truncate" title="See All Notes">
-                                                    {note.desc ?? ""}
-                                                </p>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                    {folders?.map((folder) => (
+                        <FolderList
+                            key={folder?.id}
+                            folder={folder}
+                            toggleFolder={toggleFolder}
+                        />
                     ))}
                 </div>
             </aside>
