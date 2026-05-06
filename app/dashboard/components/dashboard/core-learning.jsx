@@ -1,3 +1,4 @@
+"use client";
 import CommonDashboardTitle from "@/components/common-dashboar-title";
 import { coreLearning } from "@/dummydata";
 import Link from "next/link";
@@ -17,7 +18,7 @@ const CoreLearning = () => {
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {coreLearning.map((item, index) => {
-                    const Icon = item.icon;
+                    // const Icon = item.icon;
 
                     return (
                         <div
@@ -29,7 +30,9 @@ const CoreLearning = () => {
                                 <div
                                     className={`w-10 h-10 flex items-center justify-center rounded-lg ${item.bg}`}
                                 >
-                                    <Icon className={`text-lg ${item.color}`} />
+                                    <div className={`w-5 h-5 ${item.color}`}>
+                                        {item?.icon}
+                                    </div>
                                 </div>
 
                                 <h3 className="font-semibold text-lg text-[#424242]">
@@ -38,7 +41,7 @@ const CoreLearning = () => {
                             </div>
 
                             {/* Bottom pill */}
-                            <Link 
+                            <Link
                                 href="/dashboard"
                                 className={`inline-block w-full text-center text-[#12283B] py-2 rounded-full text-sm font-medium border border-gray-300 hover:bg-primary transition-all duration-300 hover:text-white`}
                             >

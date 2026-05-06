@@ -1,5 +1,7 @@
+"use client";
 import CommonDashboardTitle from "@/components/common-dashboar-title";
 import { quickActions } from "@/dummydata";
+import Image from "next/image";
 
 const QuickActions = () => {
     return (
@@ -21,7 +23,14 @@ const QuickActions = () => {
                             <div
                                 className={`w-12 h-12 flex items-center justify-center rounded-lg ${item.bg}`}
                             >
-                                <Icon className={`text-xl ${item.color}`} />
+                                <Image
+                                    src={Icon || ""}
+                                    alt={item.title || ""}
+                                    width={250}
+                                    height={150}
+                                    className="size-7 object-contain shrink-0"
+                                />
+                                {/* <Icon className={`text-xl ${item.color}`} /> */}
                             </div>
 
                             {/* Text */}
