@@ -1,6 +1,7 @@
 import Image from "next/image";
 import heroImage from "@/public/assets/heroImg.png";
 import Link from "next/link";
+import { Play } from "lucide-react";
 
 const Hero = () => {
     return (
@@ -52,6 +53,11 @@ const Hero = () => {
                             priority
                             className="object-cover object-top-left"
                         />
+                    </div>
+
+
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        <div className="bg-primary flex items-center justify-center size-16 rounded-full pointer-events-none text-white"> <Play className="w-7 h-7"/></div>
                     </div>
                 </div>
             </div>

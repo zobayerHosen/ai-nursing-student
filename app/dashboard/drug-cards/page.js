@@ -1,5 +1,5 @@
-import React from "react";
+import UnderConstraction from "../components/underconstraction";
 
-export default function DrugCarsPage() {
-  return <div>DrugCarsPage</div>;
+export default function DrugCardsPage() {
+  return <UnderConstraction />;
 }

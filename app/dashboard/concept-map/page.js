@@ -1,3 +1,5 @@
+import UnderConstraction from "../components/underconstraction";
+
 export default function ConceptMapPage() {
-  return <div>ConceptMapPage</div>;
+  return <UnderConstraction />;
 }

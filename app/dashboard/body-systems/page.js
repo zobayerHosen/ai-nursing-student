@@ -1,5 +1,6 @@
-const BodySystemsPage = () => {
-  return <div>body systems page</div>;
-};
+import UnderConstraction from "../components/underconstraction";
 
+const BodySystemsPage = () => {
+  return <UnderConstraction />;
+};
 export default BodySystemsPage;

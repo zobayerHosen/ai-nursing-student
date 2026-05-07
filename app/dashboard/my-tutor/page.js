@@ -1,4 +1,7 @@
-const MyTutorPage = () => {
-  return <div>My tutor</div>;
+import UnderConstraction from "../components/underconstraction";
+
+export default function MyTutorPage() {
+    return (
+        <UnderConstraction />
+    );
 };
-export default MyTutorPage;

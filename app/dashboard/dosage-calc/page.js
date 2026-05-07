@@ -1,3 +1,5 @@
+import UnderConstraction from "../components/underconstraction";
+
 export default function DosageCalcPage() {
-  return <div>DosageCalcPage</div>;
+  return <UnderConstraction />;
 }

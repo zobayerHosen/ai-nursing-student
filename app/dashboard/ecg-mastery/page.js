@@ -1,9 +1,7 @@
-const EcgMasteryPage = () => {
+import UnderConstraction from "../components/underconstraction";
+
+export default function EcgMasteryPage() {
     return (
-        <div>
-            ECG Mastery Page
-        </div>
+        <UnderConstraction />
     );
 };
-
-export default EcgMasteryPage;

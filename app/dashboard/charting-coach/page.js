@@ -1,3 +1,5 @@
+import UnderConstraction from "../components/underconstraction";
+
 export default function ChartingCoachPage() {
-  return <div>ChartingCoachPage</div>;
+  return <UnderConstraction />;
 }

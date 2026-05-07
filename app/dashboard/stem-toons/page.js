@@ -1,7 +1,7 @@
 import UnderConstraction from "../components/underconstraction";
 
-export default function NursingAssessmentsPage() {
+export default function StemToonsPage() {
   return (
     <UnderConstraction />
   );
-};
+}
