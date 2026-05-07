@@ -1,5 +1,6 @@
-const FlashCardsPage = () => {
-  return <div>Flash cards page</div>;
-};
+import UnderConstraction from "../components/underconstraction";
 
+const FlashCardsPage = () => {
+  return <UnderConstraction />;
+};
 export default FlashCardsPage;

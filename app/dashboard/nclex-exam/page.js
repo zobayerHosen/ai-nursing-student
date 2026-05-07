@@ -1,6 +1,6 @@
+import UnderConstraction from "../components/underconstraction";
 
 const NclexExamPage = () => {
-  return <div>Nclex exam page</div>;
+  return <UnderConstraction />
 };
-
 export default NclexExamPage;

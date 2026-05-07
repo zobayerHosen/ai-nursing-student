@@ -19,7 +19,6 @@ const BodySystem = () => {
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {bodySystem.map((item, index) => {
-                    const Icon = item.icon;
 
                     return (
                         <div
@@ -53,8 +52,8 @@ const BodySystem = () => {
                             <div className="flex items-center justify-between">
                                 {/* Tag */}
                                 <div className="flex items-center gap-2 text-xs text-gray-600">
-                                    <span className="w-6 h-6 flex items-center justify-center rounded-full border">
-                                        <Icon size={14} />
+                                    <span className="w-6 h-6 flex items-center justify-center rounded-full border shrink-0">
+                                        {item?.icon}
                                     </span>
                                     Anatomy & Physiology
                                 </div>

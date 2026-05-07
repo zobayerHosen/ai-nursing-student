@@ -69,7 +69,6 @@ export default function Sidebar({ collapsed }) {
                                 }
                             >
                                 {section.items.map((item, index) => {
-                                    // const Icon = item.icon;
                                     const isActive =
                                         pathname === item.href ||
                                         (item.href !== "/dashboard" &&
@@ -81,9 +80,9 @@ export default function Sidebar({ collapsed }) {
                                             href={item.href}
                                             className={
                                                 section.title === "INTERACTIVE TOOLS"
-                                                    ? "flex flex-col items-center justify-center text-center h-23 rounded-2xl border border-[#E5E7EB] bg-white hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 px-2"
-                                                    : `flex items-center gap-3 p-3 rounded-lg transition-all duration-200 ${isActive
-                                                        ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-4 border-primary"
+                                                    ? `flex flex-col items-center justify-center text-center h-23 rounded-2xl border border-[#E5E7EB] hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 px-2 ${isActive ? "border-gray-500 text-primary bg-[#f8f4f9]" : ""}`
+                                                    : `flex items-center gap-3 p-3 transition-all duration-200 ${isActive
+                                                        ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary"
                                                         : "hover:bg-gray-100 text-[#424242]"
                                                     }`
                                             }
@@ -92,10 +91,10 @@ export default function Sidebar({ collapsed }) {
                                             <div
                                                 className={
                                                     section.title === "INTERACTIVE TOOLS"
-                                                        ? "text-[#7B7B7B] mb-2"
+                                                        ? " [&_svg]:text-[#7B7B7B] mb-2 font-semibold"
                                                         : isActive
-                                                            ? "text-[#7B7B7B]"
-                                                            : "text-[#2C5F8D]"
+                                                            ? "text-primary [&_svg]:text-primary"
+                                                            : "text-[#2C5F8D] [&_svg]:text-[#2C5F8D]"
                                                 }
                                             >
                                                 {item.icon}
@@ -105,7 +104,7 @@ export default function Sidebar({ collapsed }) {
                                             {!collapsed && (
                                                 <span
                                                     className={
-                                                        section.title === "INTERACTIVE AI TOOLS"
+                                                        section.title === "INTERACTIVE TOOLS"
                                                             ? "text-[11px] leading-4 font-medium text-[#555555]"
                                                             : "text-sm font-medium"
                                                     }

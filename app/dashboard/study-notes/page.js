@@ -1,5 +1,6 @@
+import UnderConstraction from "../components/underconstraction";
 const StudyNotesPage = () => {
-  return <div>study notes page</div>;
+  return <UnderConstraction />
 };
 
 export default StudyNotesPage;

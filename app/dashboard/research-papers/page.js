@@ -1,3 +1,5 @@
+import UnderConstraction from "../components/underconstraction";
+
 export default function ResearchPapersPage() {
-  return <div>ResearchPapersPage</div>;
+  return <UnderConstraction />;
 }

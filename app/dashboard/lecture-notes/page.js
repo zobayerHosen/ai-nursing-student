@@ -1,4 +1,7 @@
-const LectureNotesPage = () => {
-  return <div>Lecture notes page</div>;
+import UnderConstraction from "../components/underconstraction";
+
+export default function LectureNotesPage() {
+    return (
+        <UnderConstraction />
+    );
 };
-export default LectureNotesPage;

@@ -1,11 +1,7 @@
-import React from 'react';
+import UnderConstraction from "../components/underconstraction";
 
-const DiagnosticTestPage = () => {
+export default function DiagnosticTestPage() {
     return (
-        <div>
-            Diagnostic test page
-        </div>
+        <UnderConstraction />
     );
 };
-
-export default DiagnosticTestPage;

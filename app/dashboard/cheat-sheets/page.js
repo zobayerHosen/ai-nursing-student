@@ -1,5 +1,7 @@
-const CheatSheetsPage = () => {
-  return <div>chat sheets page</div>;
-};
+import UnderConstraction from "../components/underconstraction";
 
-export default CheatSheetsPage;
+export default function CheatSheetsPage() {
+  return (
+    <UnderConstraction />
+  );
+};

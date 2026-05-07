@@ -1,7 +1,5 @@
-"use client";
 import CommonDashboardTitle from "@/components/common-dashboar-title";
 import { quickActions } from "@/dummydata";
-import Image from "next/image";
 
 const QuickActions = () => {
     return (
@@ -12,7 +10,6 @@ const QuickActions = () => {
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {quickActions.map((item, index) => {
-                    const Icon = item.icon;
 
                     return (
                         <div
@@ -23,14 +20,7 @@ const QuickActions = () => {
                             <div
                                 className={`w-12 h-12 flex items-center justify-center rounded-lg ${item.bg}`}
                             >
-                                <Image
-                                    src={Icon || ""}
-                                    alt={item.title || ""}
-                                    width={250}
-                                    height={150}
-                                    className="size-7 object-contain shrink-0"
-                                />
-                                {/* <Icon className={`text-xl ${item.color}`} /> */}
+                                {item?.icon}
                             </div>
 
                             {/* Text */}

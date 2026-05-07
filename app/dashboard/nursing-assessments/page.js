@@ -1,5 +1,7 @@
-const NursingAssessmentsPage = () => {
-  return <div>Nursing assessments page</div>;
-};
+import UnderConstraction from "../components/underconstraction";
 
-export default NursingAssessmentsPage;
+export default function NursingAssessmentsPage() {
+  return (
+    <UnderConstraction />
+  );
+};

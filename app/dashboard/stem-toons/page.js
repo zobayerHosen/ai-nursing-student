@@ -1,5 +1,7 @@
+import UnderConstraction from "../components/underconstraction";
+
 export default function StemToonsPage() {
   return (
-    <div>StemToonsPage</div>
-  )
+    <UnderConstraction />
+  );
 }

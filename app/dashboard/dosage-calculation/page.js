@@ -1,5 +1,7 @@
+import UnderConstraction from "../components/underconstraction";
+
 const DosageCalculationPage = () => {
-  return <div>Dosage calculation page</div>;
+  return <UnderConstraction />;
 };
 
 export default DosageCalculationPage;
