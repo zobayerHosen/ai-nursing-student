@@ -28,13 +28,13 @@ const DashboardShell = ({ children }) => {
     if (collapsed === null) return null;
 
     return (
-        <div className="flex min-h-screen bg-[#F7F7F7]">
+        <div className="flex min-h-screen ">
             {/* Sidebar */}
             <Sidebar collapsed={collapsed} />
 
             {/* Content */}
             <div
-                className={`flex-1 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"
+                className={`flex-1 transition-all duration-300 ${collapsed ? "ml-[64px]" : "ml-64"
                     }`}
             >
                 <DashboardHeader collapsed={collapsed} setCollapsed={setCollapsed} />

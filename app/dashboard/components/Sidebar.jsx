@@ -24,7 +24,7 @@ export default function Sidebar({ collapsed }) {
         >
             {/* Logo */}
             <div className={`py-6.5 px-4.5 ${collapsed ? "p-0" : ""}`}>
-                <Link href="/">
+                <Link href="/dashboard">
                     {collapsed ? (
                         <div>
                             <Image
@@ -46,7 +46,7 @@ export default function Sidebar({ collapsed }) {
             </div>
 
             {/* Scrollable Menu */}
-            <div className={`flex-1 overflow-y-auto custom-scrollbar ${collapsed ? "p-1" : "p-3"}`}>
+            <div className={`flex-1 overflow-y-auto custom-scrollbar ${collapsed ? "p-1" : "p-3 pb-0"}`}>
 
                 {sidebarData.map((section, i) => {
 
@@ -64,7 +64,7 @@ export default function Sidebar({ collapsed }) {
                             <div
                                 className={
                                     section.title === "INTERACTIVE TOOLS"
-                                        ? `grid gap-3 ${collapsed ? "grid-cols-1" : "grid-cols-2"}`
+                                        ? `grid ${collapsed ? "grid-cols-1 gap-1" : "grid-cols-2 gap-3"}`
                                         : "space-y-1"
                                 }
                             >
@@ -81,7 +81,7 @@ export default function Sidebar({ collapsed }) {
                                             className={
                                                 section.title === "INTERACTIVE TOOLS"
                                                     ? `flex flex-col items-center justify-center text-center border border-[#E5E7EB] hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 ${collapsed ? "gap-0 h-10 border-0" : "h-22 px-2 rounded-2xl"} ${isActive ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary" : ""}`
-                                                    : `flex items-center p-3 transition-all duration-200 ${collapsed ? "gap-0 h-10 justify-center" : "gap-3 rounded-lg"} ${isActive
+                                                    : `flex items-center p-3 transition-all duration-200 ${collapsed ? "gap-0 h-10 justify-center" : "gap-3"} ${isActive
                                                         ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary"
                                                         : "hover:bg-gray-100 text-[#424242]"
                                                     }`
@@ -120,50 +120,20 @@ export default function Sidebar({ collapsed }) {
                 })}
             </div>
 
-            {/* Bottom Section */}
-            <div className="p-3 border-t border-[#DFE1E7] space-y-3">
-                {/* Settings */}
-                <Link
-                    href="#"
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition"
-                >
-                    <BsGear size={20} />
+            {/* download app */}
+            <div className="bg-white border-t border-[#E5E7EB] rounded-t-2xl p-4 text-center shadow-sm">
+                <p className="text-xs text-gray-500 mb-4 leading-5">
+                    Download our mobile app and stay updated anytime
+                </p>
 
-                    {!collapsed && (
-                        <span className="text-sm font-medium">
-                            Settings
-                        </span>
-                    )}
+                <Link href="#" className="cursor-pointer flex items-center justify-center gap-2 w-full bg-[#2C5F8D] text-white py-3 px-5 rounded-full text-sm font-medium hover:opacity-90 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path fillRule="evenodd" clipRule="evenodd" d="M8 0C3.58473 0 0 3.58473 0 8C0 12.4153 3.58473 16 8 16C12.4153 16 16 12.4153 16 8C16 3.58473 12.4153 0 8 0ZM11.7593 10.5047C11.0095 11.6255 9.60145 12.3636 8 12.3636C6.39855 12.3636 4.99054 11.6255 4.24072 10.5047C4.01818 10.1709 3.56582 10.0815 3.232 10.3047C2.89818 10.5273 2.80873 10.9796 3.032 11.3135C4.02619 12.8 5.87491 13.8182 8 13.8182C10.1251 13.8182 11.9738 12.8 12.968 11.3135C13.1913 10.9796 13.1018 10.5273 12.768 10.3047C12.4342 10.0815 11.9818 10.1709 11.7593 10.5047ZM7.27273 9.45455L5.52728 8.14545C5.20582 7.90473 4.74982 7.96946 4.50909 8.29091C4.26836 8.61236 4.33309 9.06837 4.65454 9.30909L7.56363 11.4909C7.82254 11.6851 8.17746 11.6851 8.43637 11.4909L11.3455 9.30909C11.6669 9.06837 11.7316 8.61236 11.4909 8.29091C11.2502 7.96946 10.7942 7.90473 10.4727 8.14545L8.72727 9.45455V2.90909C8.72727 2.50764 8.40145 2.18182 8 2.18182C7.59855 2.18182 7.27273 2.50764 7.27273 2.90909V9.45455Z" fill="white" />
+                    </svg>
+                    Download App
                 </Link>
-
-                {/* Help */}
-                <Link
-                    href="#"
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition"
-                >
-                    <BsHeadset size={20} />
-
-                    {!collapsed && (
-                        <span className="text-sm font-medium">
-                            Help & Center
-                        </span>
-                    )}
-                </Link>
-
-                {/* Download Card */}
-                {!collapsed && (
-                    <div className="bg-white border border-[#E5E7EB] rounded-2xl p-4 text-center mt-4 shadow-sm">
-                        <p className="text-xs text-gray-500 mb-4 leading-5">
-                            Download our mobile app and stay updated anytime
-                        </p>
-
-                        <button className="cursor-pointer flex items-center justify-center gap-2 w-full bg-[#2C5F8D] text-white py-3 px-5 rounded-full text-sm font-medium hover:opacity-90 transition">
-                            <BsDownload />
-                            Download App
-                        </button>
-                    </div>
-                )}
             </div>
+
         </div>
     );
 }
