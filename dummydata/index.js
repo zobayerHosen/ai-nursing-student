@@ -79,7 +79,7 @@ export const sidebarData = [
     title: "MASTER NCLEX",
     items: [
       {
-        name: "NCLEX Exam",
+        name: "NCLEX RN - QBank",
         icon: (
           <svg
             xmlns="http://www.w3.org/2000/svg"

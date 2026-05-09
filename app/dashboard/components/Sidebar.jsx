@@ -20,7 +20,7 @@ export default function Sidebar({ collapsed }) {
     return (
         <div
             className={`fixed top-0 left-0 h-full bg-[#F6F8FA] border-r border-[#DFE1E7] transition-all duration-300 flex flex-col
-            ${collapsed ? "w-20" : "w-64"}`}
+            ${collapsed ? "w-16 gap-0" : "w-64"}`}
         >
             {/* Logo */}
             <div className={`py-6.5 px-4.5 ${collapsed ? "p-0" : ""}`}>
@@ -46,12 +46,12 @@ export default function Sidebar({ collapsed }) {
             </div>
 
             {/* Scrollable Menu */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-6">
+            <div className={`flex-1 overflow-y-auto custom-scrollbar ${collapsed ? "p-1" : "p-3"}`}>
 
                 {sidebarData.map((section, i) => {
 
                     return (
-                        <div key={i}>
+                        <div key={i} className={`pb-4 mb-4 ${i !== sidebarData.length - 1 ? "border-b border-[#DFE1E7]" : ""}`}>
 
                             {/* Section Title */}
                             {!collapsed && (
@@ -64,7 +64,7 @@ export default function Sidebar({ collapsed }) {
                             <div
                                 className={
                                     section.title === "INTERACTIVE TOOLS"
-                                        ? "grid grid-cols-2 gap-3"
+                                        ? `grid gap-3 ${collapsed ? "grid-cols-1" : "grid-cols-2"}`
                                         : "space-y-1"
                                 }
                             >
@@ -80,8 +80,8 @@ export default function Sidebar({ collapsed }) {
                                             href={item.href}
                                             className={
                                                 section.title === "INTERACTIVE TOOLS"
-                                                    ? `flex flex-col items-center justify-center text-center h-23 rounded-2xl border border-[#E5E7EB] hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 px-2 ${isActive ? "border-gray-500 text-primary bg-[#f8f4f9]" : ""}`
-                                                    : `flex items-center gap-3 p-3 transition-all duration-200 ${isActive
+                                                    ? `flex flex-col items-center justify-center text-center border border-[#E5E7EB] hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 ${collapsed ? "gap-0 h-10 border-0" : "h-22 px-2 rounded-2xl"} ${isActive ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary" : ""}`
+                                                    : `flex items-center p-3 transition-all duration-200 ${collapsed ? "gap-0 h-10 justify-center" : "gap-3 rounded-lg"} ${isActive
                                                         ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary"
                                                         : "hover:bg-gray-100 text-[#424242]"
                                                     }`
@@ -89,13 +89,12 @@ export default function Sidebar({ collapsed }) {
                                         >
                                             {/* Icon */}
                                             <div
-                                                className={
-                                                    section.title === "INTERACTIVE TOOLS"
-                                                        ? " [&_svg]:text-[#7B7B7B] mb-2 font-semibold"
-                                                        : isActive
-                                                            ? "text-primary [&_svg]:text-primary"
-                                                            : "text-[#2C5F8D] [&_svg]:text-[#2C5F8D]"
-                                                }
+                                                className={`flex items-center justify-center shrink-0 ${section.title === "INTERACTIVE TOOLS"
+                                                    ? `${isActive ? "text-primary" : "text-[#7B7B7B]"} [&_svg_path]:fill-current ${collapsed ? "mb-0" : "mb-1"} font-semibold`
+                                                    : isActive
+                                                        ? "text-primary [&_svg_path]:fill-current"
+                                                        : "text-[#7B7B7B] [&_svg_path]:fill-current"
+                                                    } [&_svg]:w-5 [&_svg]:h-5`}
                                             >
                                                 {item.icon}
                                             </div>

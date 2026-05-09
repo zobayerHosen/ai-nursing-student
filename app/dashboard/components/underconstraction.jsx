@@ -143,7 +143,7 @@ const UnderConstraction = () => {
                 {/* Button */}
                 <div className="mt-12">
                     <Link
-                        href="/"
+                        href="/dashboard"
                         className="inline-flex items-center gap-2 bg-[#2c5f8d] hover:bg-[#244d72] text-white px-7 py-3.5 rounded-2xl font-semibold shadow-xl hover:scale-105 transition-all duration-300"
                     >
                         <ArrowLeft size={18} />
