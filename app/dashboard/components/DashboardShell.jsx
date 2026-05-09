@@ -1,17 +1,16 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import DashboardHeader from "./dashboard-header";
 
-
-export default function DashboardShell({ children }) {
+const DashboardShell = ({ children }) => {
     const [collapsed, setCollapsed] = useState(null);
 
     // Note: Load state
     useEffect(() => {
         const saved = localStorage.getItem("sidebar-collapsed");
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCollapsed(saved ? JSON.parse(saved) : false);
     }, []);
 
@@ -47,3 +46,5 @@ export default function DashboardShell({ children }) {
         </div>
     );
 };
+
+export default DashboardShell;
