@@ -7,11 +7,11 @@ import logo from "@/public/assets/logo.png"
 import Image from "next/image";
 
 const navItems = [
-  { label: "Features", href: "/" },
-  { label: "NCLEX Prep", href: "/nclex" },
-  { label: "Pricing", href: "/pricing" },
-  { label: "Terms", href: "/terms" },
-  { label: "Contact", href: "/contact" },
+  { label: "Features", href: "#features" },
+  { label: "NCLEX Prep", href: "#HomeNCLEXExam" },
+  { label: "Pricing", href: "#pricing" },
+  { label: "Terms", href: "#faq" },
+  { label: "Contact", href: "#contact" },
 ];
 
 const HomeHeader = () => {
@@ -58,13 +58,13 @@ const HomeHeader = () => {
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-10">
             {navItems.map((item) => (
-              <Link
+              <a
                 key={item.label}
                 href={item.href}
                 className="text-sm font-medium hover:text-pink-300 transition-colors"
               >
                 {item.label}
-              </Link>
+              </a>
             ))}
           </nav>
 

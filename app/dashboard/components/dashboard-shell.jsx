@@ -28,7 +28,7 @@ const DashboardShell = ({ children }) => {
     if (collapsed === null) return null;
 
     return (
-        <div className="flex min-h-screen ">
+        <div className="flex min-h-screen">
             {/* Sidebar */}
             <Sidebar collapsed={collapsed} />
 

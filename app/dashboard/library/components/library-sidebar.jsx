@@ -64,15 +64,19 @@ const LibrarySidebar = () => {
 
     // Note: toggle folder
     const toggleFolder = (id) => {
-        setFolders((prev) =>
-            prev.map((folder) =>
-                folder.id === id
-                    ? { ...folder, isOpen: !folder.isOpen }
-                    : folder
-            )
-        );
-    };
+        setFolders((prevFolders) => {
+            return prevFolders.map((folder) => {
+                if (folder.id === id) {
+                    return {
+                        ...folder,
+                        isOpen: !folder.isOpen,
+                    };
+                }
 
+                return folder;
+            });
+        });
+    };
     // Note: UI
     return (
         <>
