@@ -6,7 +6,7 @@ import PopularCheatSheet from './components/dashboard/popular-cheat-sheet';
 
 const DashboardPage = () => {
     return (
-        <div className='w-full flex flex-col gap-8 p-6'>
+        <div className='w-full flex flex-col gap-8 p-4 xl:p-6 bg-[#F7F7F7]'>
             <QuickActions />
             <CoreLearning />
             <BodySystem />

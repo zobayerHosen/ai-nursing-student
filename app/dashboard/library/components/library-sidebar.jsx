@@ -116,7 +116,7 @@ const LibrarySidebar = () => {
                 </div>
 
                 {/* folder content */}
-                <div className="py-4 px-6 space-y-2">
+                <div className="py-4 px-4 space-y-2">
                     {folders?.map((folder) => (
                         <FolderList
                             key={folder?.id}

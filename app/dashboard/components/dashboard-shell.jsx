@@ -6,6 +6,7 @@ import DashboardHeader from "./dashboard-header";
 
 const DashboardShell = ({ children }) => {
     const [collapsed, setCollapsed] = useState(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Note: Load state
     useEffect(() => {
@@ -30,16 +31,25 @@ const DashboardShell = ({ children }) => {
     return (
         <div className="flex min-h-screen">
             {/* Sidebar */}
-            <Sidebar collapsed={collapsed} />
+            <Sidebar
+                collapsed={collapsed}
+                isSidebarOpen={isSidebarOpen}
+                setIsSidebarOpen={setIsSidebarOpen}
+            />
 
             {/* Content */}
             <div
-                className={`flex-1 transition-all duration-300 ${collapsed ? "ml-[64px]" : "ml-64"
+                className={`flex-1 transition-all duration-300 ml-0 ${collapsed ? "sm:ml-16" : "sm:ml-64"
                     }`}
             >
-                <DashboardHeader collapsed={collapsed} setCollapsed={setCollapsed} />
+                <DashboardHeader
+                    collapsed={collapsed}
+                    setCollapsed={setCollapsed}
+                    isSidebarOpen={isSidebarOpen}
+                    setIsSidebarOpen={setIsSidebarOpen}
+                />
 
-                <div className="pb-6">
+                <div className="flex-1 w-full">
                     {children}
                 </div>
             </div>

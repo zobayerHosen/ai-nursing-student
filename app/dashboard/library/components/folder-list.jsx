@@ -7,7 +7,7 @@ const FolderList = ({ folder, toggleFolder }) => {
     return (
         <>
             <div
-                className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-100 cursor-pointer transition"
+                className="flex items-center justify-between py-3 px-2 rounded-xl hover:bg-gray-100 cursor-pointer transition"
             >
                 {/* LEFT SIDE */}
                 <div onClick={() => toggleFolder(folder?.id)} className="flex items-center gap-3">
