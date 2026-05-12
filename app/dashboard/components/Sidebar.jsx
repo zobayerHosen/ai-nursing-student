@@ -24,9 +24,8 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
             )}
 
             <div
-                className={`fixed top-0 left-0 h-full bg-[#F6F8FA] border-r border-[#DFE1E7] transition-all duration-300 flex flex-col z-70
-            ${isSidebarOpen
-                        ? "w-[280px] translate-x-0"
+                className={`fixed top-0 left-0 h-full bg-[#F6F8FA] border-r border-[#DFE1E7] transition-all duration-300 flex flex-col z-70 ${isSidebarOpen
+                        ? "w-70 translate-x-0"
                         : "-translate-x-full sm:translate-x-0 " + (collapsed ? "sm:w-16" : "sm:w-64")
                     }`}
             >
