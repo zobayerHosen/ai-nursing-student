@@ -1,7 +1,8 @@
 "use client";
 
+
 import { Modal } from "antd";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import img01 from "@/public/assets/library/default_folder.svg";
 import img02 from "@/public/assets/library/clinic.svg";
@@ -29,15 +30,28 @@ const colors = [
     "#9CA3AF", // gray
 ];
 
-const FolderCreateModal = ({ isModalOpen, setIsModalOpen, loading }) => {
+const FolderCreateModal = ({ isModalOpen, setIsModalOpen, loading, folderData }) => {
     const [folderName, setFolderName] = useState("");
     const [selectedIcon, setSelectedIcon] = useState("default_folder");
     const [selectedColor, setSelectedColor] = useState(colors[0]);
 
+    // Note: get folder data when it's came to rename folder
+    useEffect(() => {
+        if (folderData) {
+            setFolderName(folderData.name || "");
+            setSelectedIcon(folderData.icon_id || "default_folder");
+            setSelectedColor(folderData.color || colors[0]);
+        } else {
+            setFolderName("");
+            setSelectedIcon("default_folder");
+            setSelectedColor(colors[0]);
+        }
+    }, [folderData, isModalOpen]);
+
     // Note: save data to local storage
     const handleSave = () => {
         const data = {
-            id: Date.now(),
+            id: folderData ? folderData.id : Date.now(),
             name: folderName,
             icon: selectedIcon,
             color: selectedColor,
@@ -52,7 +66,16 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, loading }) => {
             folders = JSON.parse(existingData);
         }
 
-        folders.push(data);
+        if (folderData) {
+            // Edit mode
+            const index = folders.findIndex(f => f.id === folderData.id);
+            if (index !== -1) {
+                folders[index] = data;
+            }
+        } else {
+            // Create mode
+            folders.push(data);
+        }
 
         localStorage.setItem("folderData", JSON.stringify(folders));
 
@@ -73,7 +96,7 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, loading }) => {
             styles={{
                 content: {
                     borderRadius: "16px",
-                    padding: "0px",
+                    padding: "24px",
                 },
             }}
             className="w-full! max-w-107.5! px-0!"
@@ -81,7 +104,7 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, loading }) => {
             <div className="">
                 {/* Title */}
                 <h2 className="text-xl font-semibold text-[#12283B]">
-                    Create Folder
+                    {folderData ? "Rename Folder" : "Create Folder"}
                 </h2>
 
                 <hr className="my-4 text-gray-200" />
@@ -96,8 +119,7 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, loading }) => {
                         value={folderName}
                         onChange={(e) => setFolderName(e.target.value)}
                         className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-primary text-base font-medium"
-                        placeholder="e.g. Fundamentals, OB Notes…
-"
+                        placeholder="e.g. Fundamentals, OB Notes…"
                     />
                 </div>
 
@@ -161,7 +183,7 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, loading }) => {
                         onClick={handleSave}
                         className="cursor-pointer font-semibold rounded-md bg-primary px-4 py-1.5 text-base  text-white/95 hover:bg-primary/90 transition-colors"
                     >
-                        Create folder
+                        {folderData ? "Update Folder" : "Create Folder"}
                     </button>
                 </div>
             </div>

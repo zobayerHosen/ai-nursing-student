@@ -20,7 +20,12 @@ const Hero = () => {
             <div className="flex min-h-screen flex-col overflow-hidden lg:flex-row">
 
                 {/* Left Content */}
-                <div className="container mx-auto flex w-full flex-col justify-center px-6 py-8 md:py-12 lg:py-16 xl:px-10 2xl:px-25 lg:w-1/2">
+                <motion.div
+                    initial={{ opacity: 0, x: 0 }}
+                    animate={{ opacity: 1, left: 1 }}
+                    transition={{ delay: 0.5, duration: 1 }}
+                    className="container mx-auto flex w-full flex-col justify-center px-6 py-8 md:py-12 lg:py-16 xl:px-10 2xl:px-25 lg:w-1/2"
+                >
                     {/* Badge */}
                     <div className="mb-8 inline-flex w-fit items-center rounded-full border border-white/25 bg-white/10 px-4.5 py-2.5 backdrop-blur-sm">
                         <span className="text-xs sm:text-sm lg:text-[15px] font-semibold uppercase tracking-[0.5px] text-white/95">
@@ -56,7 +61,7 @@ const Hero = () => {
                             See How It Works
                         </button>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* Right Image */}
                 <div className="relative flex w-full items-end justify-end lg:w-1/2 lg:pt-14">
