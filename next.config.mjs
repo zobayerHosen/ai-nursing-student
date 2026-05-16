@@ -85,6 +85,10 @@ const nextConfig = {
     remotePatterns: [...baseRemotePatterns, ...dynamicBackendPattern],
   },
 
+  devIndicators: {
+    position: "bottom-right",
+  },
+
   transpilePackages: ["antd", "@ant-design/icons"],
 };
 

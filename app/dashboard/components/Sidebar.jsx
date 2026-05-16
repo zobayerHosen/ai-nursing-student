@@ -9,6 +9,7 @@ import min_logo from "@/public/assets/mini_logo.png";
 import { usePathname } from "next/navigation";
 import { sidebarData } from "@/dummydata";
 import { IoClose } from "react-icons/io5";
+import { ArrowBigDownDash } from "lucide-react";
 
 export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, }) {
     const pathname = usePathname();
@@ -19,24 +20,24 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
             {isSidebarOpen && (
                 <div
                     onClick={() => setIsSidebarOpen(false)}
-                    className="fixed inset-0 bg-black/40 z-60 sm:hidden"
+                    className="fixed inset-0 bg-black/40 z-60 lg:hidden"
                 />
             )}
 
             <div
                 className={`fixed top-0 left-0 h-full bg-[#F6F8FA] border-r border-[#DFE1E7] transition-all duration-300 flex flex-col z-70 ${isSidebarOpen
-                        ? "w-70 translate-x-0"
-                        : "-translate-x-full sm:translate-x-0 " + (collapsed ? "sm:w-16" : "sm:w-64")
+                    ? "w-70 translate-x-0"
+                    : "-translate-x-full lg:translate-x-0 " + (collapsed ? "lg:w-16" : "lg:w-64")
                     }`}
             >
                 {/* Logo & Close Button */}
-                <div className={`py-6.5 px-4.5 flex items-center justify-between ${collapsed && !isSidebarOpen ? "sm:p-0 sm:justify-center" : ""}`}>
+                <div className={`py-6.5 px-4.5 flex items-center justify-between ${collapsed && !isSidebarOpen ? "lg:p-0 lg:justify-center" : ""}`}>
                     <Link href="/dashboard">
                         {collapsed && !isSidebarOpen ? (
                             <Image
                                 src={min_logo}
                                 alt="logo"
-                                className="object-contain hidden sm:block sm:p-3"
+                                className="object-contain hidden lg:block lg:p-3"
                             />
                         ) : (
                             <div className="w-35 h-7.5">
@@ -63,7 +64,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                 {/* Scrollable Menu */}
                 <div className={`flex-1 overflow-y-auto custom-scrollbar ${collapsed ? "p-1" : "p-3 pb-0"}`}>
 
-                    {sidebarData.map((section, i) => {
+                    {sidebarData?.map((section, i) => {
 
                         return (
                             <div key={i} className={`pb-4 mb-4 ${i !== sidebarData.length - 1 ? "border-b border-[#DFE1E7]" : ""}`}>
@@ -137,18 +138,27 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                 </div>
 
                 {/* download app */}
-                <div className="bg-white border-t border-[#E5E7EB] rounded-t-2xl p-4 text-center shadow-sm">
-                    <p className="text-xs text-gray-500 mb-4 leading-5">
-                        Download our mobile app and stay updated anytime
-                    </p>
+                {
+                    collapsed ? (
+                        <Link href="#" className="cursor-pointer w-full text-sm font-medium py-2.5 flex items-center justify-center px-1">
+                            <ArrowBigDownDash />
+                        </Link>
+                    ) :
+                        (
+                            <div className="bg-white border-t border-[#E5E7EB] rounded-t-2xl p-4 text-center shadow-sm">
+                                <p className="text-xs text-gray-500 mb-4 leading-5">
+                                    Download our mobile app and stay updated anytime
+                                </p>
 
-                    <Link href="#" className="cursor-pointer flex items-center justify-center gap-2 w-full bg-[#2C5F8D] text-white py-3 px-5 rounded-full text-sm font-medium hover:opacity-90 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path fillRule="evenodd" clipRule="evenodd" d="M8 0C3.58473 0 0 3.58473 0 8C0 12.4153 3.58473 16 8 16C12.4153 16 16 12.4153 16 8C16 3.58473 12.4153 0 8 0ZM11.7593 10.5047C11.0095 11.6255 9.60145 12.3636 8 12.3636C6.39855 12.3636 4.99054 11.6255 4.24072 10.5047C4.01818 10.1709 3.56582 10.0815 3.232 10.3047C2.89818 10.5273 2.80873 10.9796 3.032 11.3135C4.02619 12.8 5.87491 13.8182 8 13.8182C10.1251 13.8182 11.9738 12.8 12.968 11.3135C13.1913 10.9796 13.1018 10.5273 12.768 10.3047C12.4342 10.0815 11.9818 10.1709 11.7593 10.5047ZM7.27273 9.45455L5.52728 8.14545C5.20582 7.90473 4.74982 7.96946 4.50909 8.29091C4.26836 8.61236 4.33309 9.06837 4.65454 9.30909L7.56363 11.4909C7.82254 11.6851 8.17746 11.6851 8.43637 11.4909L11.3455 9.30909C11.6669 9.06837 11.7316 8.61236 11.4909 8.29091C11.2502 7.96946 10.7942 7.90473 10.4727 8.14545L8.72727 9.45455V2.90909C8.72727 2.50764 8.40145 2.18182 8 2.18182C7.59855 2.18182 7.27273 2.50764 7.27273 2.90909V9.45455Z" fill="white" />
-                        </svg>
-                        Download App
-                    </Link>
-                </div>
+                                <Link href="#" className="cursor-pointer flex items-center justify-center gap-2 w-full bg-[#2C5F8D] text-white py-3 px-5 rounded-full text-sm font-medium hover:opacity-90 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path fillRule="evenodd" clipRule="evenodd" d="M8 0C3.58473 0 0 3.58473 0 8C0 12.4153 3.58473 16 8 16C12.4153 16 16 12.4153 16 8C16 3.58473 12.4153 0 8 0ZM11.7593 10.5047C11.0095 11.6255 9.60145 12.3636 8 12.3636C6.39855 12.3636 4.99054 11.6255 4.24072 10.5047C4.01818 10.1709 3.56582 10.0815 3.232 10.3047C2.89818 10.5273 2.80873 10.9796 3.032 11.3135C4.02619 12.8 5.87491 13.8182 8 13.8182C10.1251 13.8182 11.9738 12.8 12.968 11.3135C13.1913 10.9796 13.1018 10.5273 12.768 10.3047C12.4342 10.0815 11.9818 10.1709 11.7593 10.5047ZM7.27273 9.45455L5.52728 8.14545C5.20582 7.90473 4.74982 7.96946 4.50909 8.29091C4.26836 8.61236 4.33309 9.06837 4.65454 9.30909L7.56363 11.4909C7.82254 11.6851 8.17746 11.6851 8.43637 11.4909L11.3455 9.30909C11.6669 9.06837 11.7316 8.61236 11.4909 8.29091C11.2502 7.96946 10.7942 7.90473 10.4727 8.14545L8.72727 9.45455V2.90909C8.72727 2.50764 8.40145 2.18182 8 2.18182C7.59855 2.18182 7.27273 2.50764 7.27273 2.90909V9.45455Z" fill="white" />
+                                    </svg>
+                                    Download App
+                                </Link>
+                            </div>
+                        )
+                }
             </div>
         </>
     );

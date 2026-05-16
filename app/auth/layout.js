@@ -12,7 +12,7 @@ export default function AuthLayout({ children }) {
 
       {/* RIGHT SIDE */}
       <div className="hidden lg:flex w-1/2 items-center justify-center overflow-hidden h-screen sticky top-0">
-        
+
         {/* Background Image */}
         <Image
           src={authPageImage}
@@ -35,4 +35,4 @@ export default function AuthLayout({ children }) {
       </div>
     </div>
   );
-}
+};

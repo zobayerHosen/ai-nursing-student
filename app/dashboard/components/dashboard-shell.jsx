@@ -39,7 +39,7 @@ const DashboardShell = ({ children }) => {
 
             {/* Content */}
             <div
-                className={`flex-1 transition-all duration-300 ml-0 ${collapsed ? "sm:ml-16" : "sm:ml-64"
+                className={`flex-1 transition-all duration-300 ml-0 ${collapsed ? "lg:ml-16" : "lg:ml-64"
                     }`}
             >
                 <DashboardHeader

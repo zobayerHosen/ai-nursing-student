@@ -27,7 +27,7 @@ const DeleteModal = ({ isModalOpen, setIsModalOpen, onDelete, title, description
                 </div>
 
                 {/* Close Button */}
-                <button 
+                <button
                     onClick={() => setIsModalOpen(false)}
                     className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                 >
@@ -41,7 +41,6 @@ const DeleteModal = ({ isModalOpen, setIsModalOpen, onDelete, title, description
                 <p className="text-gray-500 mb-8 leading-relaxed">
                     {description || "Are you sure you want to delete this folder? This action cannot be undone and all notes inside will be removed."}
                 </p>
-
                 {/* Actions */}
                 <div className="flex w-full gap-3">
                     <button
@@ -62,5 +61,4 @@ const DeleteModal = ({ isModalOpen, setIsModalOpen, onDelete, title, description
         </Modal>
     );
 };
-
 export default DeleteModal;
