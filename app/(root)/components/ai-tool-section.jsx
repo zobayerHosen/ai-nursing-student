@@ -57,9 +57,9 @@ export default function AIToolsSection() {
                 <div className="mx-auto grid container grid-cols-1 gap-6 pb-0 xl:pb-16 lg:grid-cols-[1fr_1.1fr] lg:gap-9">
                     {/* LEFT SIDE */}
                     <div className="flex flex-col gap-4">
-                        {tools.map((tool) => {
+                        {tools?.map((tool) => {
                             const isActive = activeTool === tool.key;
-                            const Icon = toolIcons[tool.key];
+                            // const Icon = toolIcons[tool.key];
 
                             return (
                                 <div
@@ -75,15 +75,15 @@ export default function AIToolsSection() {
                                             className={`shrink-0 transition-all duration-300 ${isActive ? "text-[#3b82f6]" : "text-[#707070]"
                                                 }`}
                                         >
-                                            <Icon className="h-5 w-5 stroke-2" />
+                                            {tool?.icon}
                                         </div>
 
                                         <div
                                             className={`flex-1 text-[13.5px] font-semibold tracking-[-0.005em] transition-all duration-300 ${isActive ? "text-[#3b82f6]" : "text-[#0b2447]"
                                                 }`}
                                         >
-                                            {tool.name}
-                                            {tool.featured && (
+                                            {tool?.name ?? ""}
+                                            {tool?.featured && (
                                                 <span className="ml-2 rounded-full bg-primary px-1.5 py-0.5 text-xs font-bold uppercase tracking-[0.08em] text-white">
                                                     Featured
                                                 </span>
@@ -99,7 +99,7 @@ export default function AIToolsSection() {
                                     >
                                         <div className="overflow-hidden">
                                             <div className="px-3.5 pb-3 pl-10 text-[12px] leading-[1.55] text-[#4a5568]">
-                                                {tool.description}
+                                                {tool?.description ?? ""}
                                             </div>
                                         </div>
                                     </div>
@@ -226,11 +226,11 @@ export default function AIToolsSection() {
                             </div>
 
                             <div className="mb-1 text-lg font-medium tracking-[-0.01em] text-[#285680]">
-                                {tools.find((tool) => tool.key === activeTool)?.name}
+                                {tools?.find((tool) => tool.key === activeTool)?.name}
                             </div>
 
                             <div className="mx-auto max-w-120 text-sm font-medium leading-[1.45] text-[#787878] pb-6 px-4 md:px-0">
-                                {tools.find((tool) => tool.key === activeTool)?.description}
+                                {tools?.find((tool) => tool.key === activeTool)?.description}
                             </div>
                         </div>
                     </div>

@@ -21,7 +21,7 @@ const SignInForm = () => {
 
   // Note: UI
   return (
-    <div className="w-full max-w-[470px] sm:mx-auto md:max-w-[470px] flex flex-col gap-6 sm:gap-8">
+    <div className="w-full max-w-117.5 sm:mx-auto md:max-w-117.5 flex flex-col gap-6 sm:gap-8">
       <AuthCommonTitle
         title="Welcome to Stemrn"
         description="Please enter your details to create your account"
@@ -69,7 +69,7 @@ const SignInForm = () => {
         {/* forgot password */}
         <div className="w-full flex items-center justify-end">
           <Link
-            href="/auth"
+            href="/auth/forget-password"
             className="text-sm sm:text-base font-medium text-primary hover:text-primary/80 transition-colors hover:underline"
           >
             Forgot Password?

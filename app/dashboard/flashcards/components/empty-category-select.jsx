@@ -2,7 +2,8 @@
 import { motion } from "framer-motion";
 import { BookOpen, Sparkles } from "lucide-react";
 
-const EmpayCategorySelect = () => {
+
+const EmptyCategorySelect = () => {
     return (
         <div className="w-full text-center">
             {/* Animated Icon */}
@@ -46,7 +47,7 @@ const EmpayCategorySelect = () => {
 
             {/* Content */}
             <div className="space-y-4">
-                <h1 className="text-2xl md:text-4xl font-semibold text-[#424242">
+                <h1 className="text-2xl md:text-4xl font-semibold text-[#424242]">
                     No Study Category Selected
                 </h1>
 
@@ -66,4 +67,4 @@ const EmpayCategorySelect = () => {
     );
 };
 
-export default EmpayCategorySelect;
+export default EmptyCategorySelect;

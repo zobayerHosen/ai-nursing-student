@@ -116,14 +116,22 @@ const LibrarySidebar = () => {
                 </div>
 
                 {/* folder content */}
-                <div className="py-4 px-4 space-y-2">
-                    {folders?.map((folder) => (
+                <div className="p-4 space-y-2">
+                    {folders?.length > 0 ? folders?.map((folder) => (
                         <FolderList
                             key={folder?.id}
                             folder={folder}
                             toggleFolder={toggleFolder}
                         />
-                    ))}
+                    )) : (
+                        <div className="text-center text-gray-500 mt-2">
+                            {loading ? (
+                                <p className="mt-4">Loading folders...</p>
+                            ) : (
+                                <p className="mt-4">No folders found</p>
+                            )}
+                        </div>
+                    )}
                 </div>
             </aside>
 

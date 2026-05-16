@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { BsInstagram, BsLayoutSidebarReverse } from "react-icons/bs";
+import { useState, useRef, useEffect } from "react";
+import { BsInstagram, BsLayoutSidebarReverse, BsThreeDotsVertical } from "react-icons/bs";
 import { FaFacebookF } from "react-icons/fa";
 import { GoBellFill } from "react-icons/go";
 import { TbBrandTiktok } from "react-icons/tb";
@@ -41,10 +42,13 @@ export default function DashboardHeader({
     setIsSidebarOpen
 }) {
 
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
     // Sidebar Toggle
     const handleSidebarToggle = () => {
         // Mobile
-        if (window.innerWidth < 640) {
+        if (window.innerWidth < 1024) {
             setIsSidebarOpen(true);
         }
 
@@ -53,6 +57,17 @@ export default function DashboardHeader({
             setCollapsed(!collapsed);
         }
     };
+
+    // Close dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     // Note: UI
     return (
@@ -77,8 +92,8 @@ export default function DashboardHeader({
             {/* Right */}
             <div className="flex items-center gap-2.5 lg:gap-4">
 
-                {/* Social Icons */}
-                <div className="hidden sm:flex items-center gap-2 lg:gap-3">
+                {/* Social Icons (Desktop) */}
+                <div className="hidden md:flex items-center gap-2 lg:gap-3">
                     {socialIcons.map((item) => {
                         const Icon = item.icon;
                         return (
@@ -95,6 +110,38 @@ export default function DashboardHeader({
                             </div>
                         );
                     })}
+                </div>
+
+                {/* Social Icons (Mobile Dropdown) */}
+                <div className="md:hidden relative" ref={dropdownRef}>
+                    <button
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className="p-1.5 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                    >
+                        <BsThreeDotsVertical className="text-base text-gray-600" />
+                    </button>
+
+                    {isDropdownOpen && (
+                        <div className="absolute right-0 mt-2 p-2 bg-white rounded-xl shadow-xl border border-gray-100 flex flex-col gap-2 min-w-[120px] animate-in fade-in zoom-in duration-200">
+                            {socialIcons.map((item) => {
+                                const Icon = item.icon;
+                                return (
+                                    <div
+                                        key={item.id}
+                                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                    >
+                                        <div className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200">
+                                            <Icon className={`text-base ${item.color}`} />
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-700 capitalize">
+                                            {item.icon.name.replace(/^(Bs|Fa|Go|Tb)/, '').replace(/Fill|F$/, '')}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
 
                 {/* Profile */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronDown, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -11,7 +12,6 @@ const categories = [
         title: "Core Nursing",
         color: "#2C5F8D",
         textColor: "#2C5F8D",
-
         subcategories: [
             {
                 id: 1,
@@ -30,7 +30,6 @@ const categories = [
             },
         ],
     },
-
     {
         id: 2,
         slug: "specialty-nursing",
@@ -56,7 +55,6 @@ const categories = [
             },
         ],
     },
-
     {
         id: 3,
         slug: "clinical-sciences",
@@ -82,7 +80,6 @@ const categories = [
             },
         ],
     },
-
     {
         id: 4,
         slug: "nclex-mastery",
@@ -108,8 +105,6 @@ const categories = [
             },
         ],
     },
-
-
 ];
 
 const FlashCardSidebar = () => {
@@ -120,11 +115,13 @@ const FlashCardSidebar = () => {
     const [expandCategories, setExpandCategories] = useState(false);
     const [activeTab, setActiveTab] = useState(currentTab);
 
+
     // Note: tab handlers
     const handleTabClick = (tab) => {
         setActiveTab(tab);
-        router.push(`?tab=${tab}`);
+        router.push(`/dashboard/flashcards?tab=${tab}`);
     };
+
 
     // Note: categories handlers
     const handleCategoryClick = (categorySlug) => {
@@ -196,14 +193,15 @@ const FlashCardSidebar = () => {
                                         {
                                             category?.subcategories?.map((subCategory) => {
                                                 return (
-                                                    <button
+                                                    <Link
                                                         key={subCategory?.slug}
+                                                        href={`/dashboard/flashcards/${subCategory?.slug}`}
                                                         className={`flex items-center justify-between cursor-pointer rounded-lg text-start text-sm font-semibold hover:bg-gray-100 w-full hover:px-4 hover:py-2 transition-all duration-300`}
                                                         style={{ color: category.textColor }}
                                                     >
                                                         {subCategory?.title}
-                                                        <ChevronRight size={16}/>
-                                                    </button>
+                                                        <ChevronRight size={16} />
+                                                    </Link>
                                                 )
                                             })
                                         }
@@ -213,10 +211,7 @@ const FlashCardSidebar = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="mt-4">
-                        <h2 className="text-lg font-semibold text-[#424242]">Progress</h2>
-                        <p className="text-sm text-gray-500 mt-2">You have not reviewed any cards yet.</p>
-                    </div>
+                    <></>
                 )
             }
         </aside>

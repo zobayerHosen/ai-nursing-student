@@ -1,9 +1,61 @@
-"use client";
-import { ChevronDown, ClipboardList, Info, MoreHorizontal } from "lucide-react";
+
+import { ChevronDown, ClipboardList, Info, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { Dropdown } from "antd";
+import DeleteModal from "./delete-modal";
+import FolderCreateModal from "./folder-create-modal";
 
 const FolderList = ({ folder, toggleFolder }) => {
+    const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
+    // Note: rename folder handler
+    const handleRenameFolder = () => {
+        setIsRenameModalOpen(true);
+    }
+
+    // Note: delete folder handler
+    const handleDeleteFolder = () => {
+        setIsDeleteModalOpen(true);
+    }
+
+    // Note: confirm delete handler
+    const confirmDelete = () => {
+        setIsDeleting(true);
+        // Mock delete logic
+        setTimeout(() => {
+            setIsDeleting(false);
+            setIsDeleteModalOpen(false);
+            // In a real app, you'd trigger a refetch or update parent state here
+            console.log("Folder deleted:", folder.id);
+        }, 1000);
+    }
+
+    // Note: Dropdown menu items
+    const menuItems = [
+        {
+            key: 'rename',
+            label: (
+                <div onClick={handleRenameFolder} className="flex items-center gap-2 px-1 py-1 text-sm font-medium text-gray-700">
+                    <Pencil size={16} className="text-gray-400" />
+                    <span>Rename folder name</span>
+                </div>
+            ),
+        },
+        {
+            key: 'delete',
+            label: (
+                <div onClick={handleDeleteFolder} className="flex items-center gap-2 px-1 py-1 text-sm font-medium text-red-600">
+                    <Trash2 size={16} className="text-red-400" />
+                    <span>Delete</span>
+                </div>
+            ),
+        },
+    ];
+
+    // Note: Main folder UI
     return (
         <>
             <div
@@ -30,12 +82,19 @@ const FolderList = ({ folder, toggleFolder }) => {
                 </div>
 
                 {/* RIGHT SIDE */}
-                <button
-                    // onClick={""}
-                    className="cursror-pointer p-1 rounded-md hover:bg-gray-200"
+                <Dropdown 
+                    menu={{ items: menuItems }} 
+                    trigger={['click']} 
+                    placement="bottomRight"
+                    className="folder-actions-dropdown"
                 >
-                    <MoreHorizontal className="w-5 h-5 text-gray-500 shrink-0" />
-                </button>
+                    <button
+                        onClick={(e) => e.stopPropagation()}
+                        className="cursor-pointer p-1 rounded-md hover:bg-gray-200 transition-colors"
+                    >
+                        <MoreHorizontal className="w-5 h-5 text-gray-500 shrink-0" />
+                    </button>
+                </Dropdown>
             </div>
 
             {/* Notes List */}
@@ -73,6 +132,23 @@ const FolderList = ({ folder, toggleFolder }) => {
                     </div>
                 )
             }
+
+            {/* Rename Modal */}
+            <FolderCreateModal 
+                isModalOpen={isRenameModalOpen}
+                setIsModalOpen={setIsRenameModalOpen}
+                folderData={folder}
+            />
+
+            {/* Delete Modal */}
+            <DeleteModal 
+                isModalOpen={isDeleteModalOpen}
+                setIsModalOpen={setIsDeleteModalOpen}
+                onDelete={confirmDelete}
+                loading={isDeleting}
+                title="Delete Folder"
+                description={`Are you sure you want to delete the "${folder?.name}" folder? All notes within this folder will be permanently removed.`}
+            />
         </>
     );
 };
