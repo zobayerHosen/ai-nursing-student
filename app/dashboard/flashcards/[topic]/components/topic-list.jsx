@@ -1,7 +1,6 @@
 
 "use client";
 
-
 import { useState } from "react";
 import { BookOpen, GraduationCap, ChevronRight } from "lucide-react";
 import { subTopicsData } from "./dummy-data";
@@ -13,7 +12,6 @@ const TopicList = ({ topicList: slug }) => {
 
     // Note: Get subtopics for the current subcategory (slug)
     const subtopics = subTopicsData[slug] || [];
-    console.log(subtopics);
 
     // Note: Handle topic click
     const handleTopicClick = (topic) => {

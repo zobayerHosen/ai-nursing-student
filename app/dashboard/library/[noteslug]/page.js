@@ -84,6 +84,10 @@ const notesData = [
 
 export default async function NoteDetails({ params }) {
   const { noteslug } = await params;
+
+  // skeleton loading delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
   const note = notesData.find((n) => n.slug === noteslug);
 
   if (!note) return <NoteNotFound />;
