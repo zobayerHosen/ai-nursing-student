@@ -1,6 +1,10 @@
-import UnderConstraction from "../components/underconstraction";
+"use client";
+
+import BodySystemList from "./components/body-system-list";
+
+
 
 const BodySystemsPage = () => {
-  return <UnderConstraction />;
+  return <BodySystemList />;
 };
 export default BodySystemsPage;
