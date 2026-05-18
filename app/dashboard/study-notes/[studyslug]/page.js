@@ -7,7 +7,6 @@ import {
 import { studyNotes } from "./study-notes-dummy-data";
 
 export default async function StudyNoteDetails({ params }) {
-  // Await params to access the studyslug parameter safely in Next.js 16/15
   const { studyslug } = await params;
   console.log("study slug", studyslug);
 
@@ -35,7 +34,7 @@ export default async function StudyNoteDetails({ params }) {
   const renderFormattedContent = (content) => {
     if (!content) return null;
 
-    // Check if content contains HTML tags (e.g., table, div, p) to render rich HTML
+    // Check if content contains HTML tags
     const isHtml = /<\/?[a-z][\s\S]*>/i.test(content);
     const isFullDocument = /<html/i.test(content) || /<!DOCTYPE/i.test(content);
 
@@ -46,7 +45,7 @@ export default async function StudyNoteDetails({ params }) {
           <iframe
             srcDoc={content}
             title="Interactive Study Note"
-            className="w-full border-none min-h-[800px] rounded-xl"
+            className="w-full border-none min-h-200 rounded-xl"
             sandbox="allow-scripts allow-same-origin"
           />
         );
@@ -86,7 +85,7 @@ export default async function StudyNoteDetails({ params }) {
         return;
       }
 
-      // Check if heading (### Heading)
+      // Check if heading
       if (trimmed.startsWith('###')) {
         flushList(index);
         const headingText = trimmed.replace(/^###\s*(\*\*)?/, '').replace(/(\*\*)?\s*$/, '');
@@ -97,7 +96,7 @@ export default async function StudyNoteDetails({ params }) {
           </h3>
         );
       }
-      // Check if list item (* item or - item)
+      // Check if list item
       else if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
         const cleanLine = trimmed.replace(/^[\*\-]\s*/, '');
         currentList.push(cleanLine);
@@ -119,7 +118,7 @@ export default async function StudyNoteDetails({ params }) {
     return renderedElements;
   };
 
-  // Helper to format bold text (**text**)
+  // Helper to format bold text
   const formatBoldText = (text) => {
     if (!text.includes('**')) return text;
 
