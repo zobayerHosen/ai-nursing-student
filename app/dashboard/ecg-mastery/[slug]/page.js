@@ -1,29 +1,16 @@
-"use client";
-
-import React, { use, useState } from "react";
+import React from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, ShieldAlert, Award, FileText, ClipboardList, Bookmark, Share2, Check } from "lucide-react";
+import { ChevronRight, ShieldAlert, Award, FileText, ClipboardList } from "lucide-react";
 import { sidebarCategory } from "../components/ecg-sidebar-data";
 import { ecgDetailsData } from "./ecg-slug-details-data";
+import ActionButtons from "../../components/ActionButtons";
 
-export default function EcgMasteryDetails({ params }) {
-  const { slug } = use(params);
+export default async function EcgMasteryDetails({ params }) {
+  const { slug } = await params;
 
-  const [isSaved, setIsSaved] = useState(false);
-  const [isShared, setIsShared] = useState(false);
-
-  const handleSave = () => {
-    setIsSaved(!isSaved);
-  };
-
-  const handleShare = () => {
-    if (typeof window !== "undefined") {
-      navigator.clipboard.writeText(window.location.href);
-      setIsShared(true);
-      setTimeout(() => setIsShared(false), 2000);
-    }
-  };
+  // using delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
 
   const currentCategory = sidebarCategory.find(cat => cat.slug === slug);
   const detailedData = ecgDetailsData[slug];
@@ -62,29 +49,7 @@ export default function EcgMasteryDetails({ params }) {
         </nav>
 
         {/* Action Buttons: Save & Share */}
-        <div className="flex items-center gap-2.5 max-sm:w-full">
-          <button
-            onClick={handleSave}
-            className={`px-4 py-2 rounded-lg  flex items-center gap-2 text-sm text-[#4A4A4A] font-medium hover:bg-slate-50 transition cursor-pointer shadow-sm active:scale-95 ${isSaved
-                ? "bg-[#2C5F8D]/10 border text-primary border-primary/30 text-sm"
-                : "bg-white border border-[#E5E7EB] hover:text-primary hover:border-primary/30"
-              }`}
-          >
-            <Bookmark size={14} className={isSaved ? "fill-primary" : ""} />
-            {isSaved ? "Saved" : "Save Guide"}
-          </button>
-
-          <button
-            onClick={handleShare}
-            className={`px-4 py-2 rounded-lg  flex items-center gap-2 text-sm text-[#4A4A4A] font-medium hover:bg-slate-50 transition cursor-pointer shadow-sm active:scale-95 ${isShared
-                ? "bg-emerald-50 text-emerald-600 border-emerald-200"
-                : "bg-white border border-[#E5E7EB] hover:text-primary hover:border-primary/30"
-              }`}
-          >
-            {isShared ? <Check size={14} /> : <Share2 size={14} />}
-            {isShared ? "Copied!" : "Share Link"}
-          </button>
-        </div>
+        <ActionButtons />
       </div>
 
       {/* Main Header Presentation Block */}
@@ -192,4 +157,4 @@ export default function EcgMasteryDetails({ params }) {
       </footer>
     </div>
   );
-};
+}
