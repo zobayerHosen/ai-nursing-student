@@ -1,7 +1,5 @@
-import UnderConstraction from "../components/underconstraction";
+import { redirect } from "next/navigation";
 
-export default function DiagnosticTestPage() {
-    return (
-        <UnderConstraction />
-    );
-};
+export default function DiagnosticTestIndex() {
+  redirect("/dashboard/diagnostic-test-labs/foundations-of-laboratory");
+}

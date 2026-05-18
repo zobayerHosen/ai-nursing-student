@@ -1,7 +1,5 @@
-import UnderConstraction from "../components/underconstraction";
+import { redirect } from "next/navigation";
 
-export default function EcgMasteryPage() {
-    return (
-        <UnderConstraction />
-    );
-};
+export default function EcgMasteryIndex() {
+  redirect("/dashboard/ecg-mastery/ecg-introduction");
+}
