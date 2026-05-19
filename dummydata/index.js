@@ -914,7 +914,7 @@ export const sidebarData = [
             />
           </svg>
         ),
-        href: "#",
+        href: "/dashboard/subscription-plan",
       },
       {
         name: "FAQ.s",
@@ -943,7 +943,7 @@ export const sidebarData = [
             </defs>
           </svg>
         ),
-        href: "#",
+        href: "/dashboard/faq",
       },
       {
         name: "Terms & Conditions",

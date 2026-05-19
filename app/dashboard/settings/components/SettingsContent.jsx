@@ -60,11 +60,10 @@ export default function SettingsContent() {
     <div className="flex flex-col md:flex-row w-full min-h-[calc(100vh-120px)] bg-slate-50/20 rounded-3xl overflow-hidden border border-slate-100 shadow-sm relative">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-5 py-3.5 rounded-2xl shadow-xl border animate-slideIn ${
-          toastType === "success" 
-            ? "bg-emerald-50 text-emerald-800 border-emerald-200" 
-            : "bg-red-50 text-red-800 border-red-200"
-        }`}>
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3.5 rounded-2xl shadow-xl border animate-slideIn ${toastType === "success"
+          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+          : "bg-red-50 text-red-800 border-red-200"
+          }`}>
           <div className={`w-2 h-2 rounded-full ${toastType === "success" ? "bg-emerald-500" : "bg-red-500"}`} />
           <span className="text-sm font-semibold">{toastMessage}</span>
         </div>
@@ -81,20 +80,19 @@ export default function SettingsContent() {
 
         {/* Category list */}
         <div className="w-full p-4 flex flex-col gap-3">
-          {tabs.map((tab) => {
+          {tabs?.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`flex items-center gap-2.5 py-2.5 px-3 rounded-md text-[13px] font-semibold transition-all duration-200 text-left w-full cursor-pointer active:scale-98 ${
-                  isActive
-                    ? "bg-[#2C5F8D] text-white shadow-sm"
-                    : "bg-gray-100 hover:bg-gray-200 text-[#424242]"
-                }`}
+                className={`flex items-center gap-2.5 py-2.5 px-3 rounded-md text-[13px] font-semibold transition-all duration-200 text-left w-full cursor-pointer active:scale-98 ${isActive
+                  ? "bg-[#2C5F8D] text-white shadow-sm"
+                  : "bg-gray-100 hover:bg-gray-200 text-[#424242]"
+                  }`}
               >
-                <span className="shrink-0 text-current">{tab.icon}</span>
-                {tab.label}
+                <span className="shrink-0 text-current">{tab?.icon}</span>
+                {tab?.label}
               </button>
             );
           })}
@@ -107,4 +105,4 @@ export default function SettingsContent() {
       </main>
     </div>
   );
-}
+};

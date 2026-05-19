@@ -1,5 +1,8 @@
 "use client";
 
+import { Modal } from "antd";
+import { AlertTriangle } from "lucide-react";
+
 import React, { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { Upload, ShieldAlert, Trash2 } from "lucide-react";
@@ -9,7 +12,7 @@ export default function GeneralSettings({ showToast }) {
   const [profilePic, setProfilePic] = useState(
     "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120"
   );
-  
+
   const fileInputRef = useRef(null);
 
   // React Hook Form setup
@@ -19,9 +22,9 @@ export default function GeneralSettings({ showToast }) {
     handleSubmit,
   } = useForm({
     defaultValues: {
-      first_name: "MD",
-      last_name: "Shihab",
-      email: "johndoe@mail.com",
+      first_name: "Zobayer",
+      last_name: "Hosen",
+      email: "example@gmail.com",
     }
   });
 
@@ -49,10 +52,19 @@ export default function GeneralSettings({ showToast }) {
     showToast("Account details saved successfully!");
   };
 
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
   const handleDeleteAccount = () => {
-    if (confirm("Are you absolutely sure you want to delete your account? This action is irreversible.")) {
-      showToast("Account deletion request submitted.", "error");
-    }
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+  };
+
+  const confirmDelete = () => {
+    setIsDeleteModalOpen(false);
+    showToast("Account deletion request submitted.", "error");
   };
 
   return (
@@ -70,9 +82,9 @@ export default function GeneralSettings({ showToast }) {
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700 block">Profile Picture</label>
             <div className="flex items-center gap-4">
-              <img 
-                src={profilePic} 
-                alt="Avatar" 
+              <img
+                src={profilePic}
+                alt="Avatar"
                 className="w-14 h-14 rounded-full object-cover border border-slate-200 shadow-sm"
               />
               <div className="flex items-center gap-2">
@@ -136,9 +148,11 @@ export default function GeneralSettings({ showToast }) {
             control={control}
             placeholder="e.g. johndoe@mail.com"
             name="email"
+            disabled={true}
             register_as="email"
             required={false}
             errors={errors}
+            innerWrapper="bg-gray-200!"
           />
         </div>
       </div>
@@ -174,6 +188,37 @@ export default function GeneralSettings({ showToast }) {
           <Trash2 size={14} />
           Delete Account
         </button>
+        {/* Confirmation Modal */}
+        <Modal
+          open={isDeleteModalOpen}
+          onCancel={handleCancelDelete}
+          footer={null}
+          closeIcon={null}
+          centered
+        >
+          <div className="flex flex-col text-center items-center gap-3 mb-4">
+            <AlertTriangle className="shrink-0 text-red-500 bg-gray-100 p-2 rounded-full w-10 h-10" size={20} />
+            <h3 className="text-lg font-semibold text-gray-800">Confirm Delete</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to delete your account? This action cannot be undone.
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={handleCancelDelete}
+              className="px-4 py-2 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmDelete}
+              className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700"
+            >
+              Confirm
+            </button>
+          </div>
+        </Modal>
       </div>
     </form>
   );
