@@ -1,6 +1,6 @@
 const statsData = [
     {
-        value: "94%",
+        value: "98%",
         label: "First-Attempt Pass Rate",
     },
     {

@@ -70,7 +70,10 @@ export const rootsData = [
       </svg>
     ),
     title: "Practice",
-    desc: "Thousands of NGN-style questions that mirror the real exam's clinical scenarios.",
+    desc: `2,000+ NGN-style items across every case type the new NCLEX throws at you —
+bowtie, matrix, cloze, extended multiple
+response. CARA explains the why behind
+every answer.`,
   },
   {
     icon: (
@@ -125,7 +128,11 @@ export const rootsData = [
       </svg>
     ),
     title: "Knowledge",
-    desc: "Deep content coverage across all NCLEX client needs categories and specialties.",
+    desc: `Full coverage of all 8 NCLEX client need
+categories across 17 specialties, taught the
+way nurses actually think —
+pathophysiology assessment
+intervention rationale.`,
   },
   {
     icon: (
@@ -173,7 +180,9 @@ export const rootsData = [
       </svg>
     ),
     title: "Strategy",
-    desc: "NCLEX-specific test-taking frameworks: SATA anchors, priority questions, Maslow, ABC.",
+    desc: `The frameworks that turn a 50/50 into a
+confident answer. Maslow, ABCs, safety-
+first, SATA anchoring, priority-setting.`,
   },
   {
     icon: (
@@ -219,7 +228,9 @@ export const rootsData = [
       </svg>
     ),
     title: "Organization",
-    desc: "Structured study plans, performance tracking, and tools that work together seamlessly.",
+    desc: `CARA builds your study plan, tracks your
+weak spots, and adjusts daily. You show
+up; the system handles the rest.`,
   },
 ];
 // Note: roots section data end

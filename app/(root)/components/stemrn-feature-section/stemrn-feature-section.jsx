@@ -21,10 +21,10 @@ const StemrnFeatureSection = () => {
     }, []);
 
     return (
-        <section className="bg-[#F2F2F2] px-5 md:px-5 py-10 md:py-16 lg:py-20 xl:py-28">
-            <div className="container mx-auto grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-4.5 items-stretch">
+        <section className="bg-[#f7f7f7] px-5 md:px-5 py-10 md:py-16 lg:py-20 xl:py-28">
+            <div className="container mx-auto flex gap-4.5 items-stretch">
                 {/* LEFT SIDE */}
-                <div className="relative overflow-hidden rounded-[14px] border border-[#E5EAF0] bg-white shadow-[0_24px_60px_-28px_rgba(30,67,96,0.18)]">
+                <div className="relative  w-[60%] overflow-hidden rounded-[14px] border border-[#E5EAF0] bg-white shadow-[0_24px_60px_-28px_rgba(30,67,96,0.18)]">
                     {/* Browser Chrome */}
                     <div className="flex items-center gap-2 border-b border-[#EEF1F5] bg-linear-to-b from-[#FAFBFC] to-[#F4F6F9] px-3.5 py-2">
                         <div className="flex gap-1.25">
@@ -126,7 +126,7 @@ const StemrnFeatureSection = () => {
                 </div>
 
                 {/* RIGHT SIDE */}
-                <div className="relative flex flex-col justify-center overflow-hidden rounded-[14px] bg-linear-to-br from-[#2C5F8D] to-[#1e4360] px-5.5 py-6 text-white">
+                <div className="relative flex-1 flex flex-col justify-center overflow-hidden rounded-[14px] bg-primary px-5.5 py-6 text-white">
                     <div className="relative z-10">
                         <div className="mb-2.5 text-sm font-medium uppercase tracking-[0.16em] text-[#F43F5E] sm:text-xs md:text-sm">
                             WHY STEMRN NOTES HIT DIFFERENT
@@ -146,7 +146,7 @@ const StemrnFeatureSection = () => {
                             note and you&apos;ll feel it.
                         </p>
                     </div>
-                </div>
+                </div>  
             </div>
         </section>
     );

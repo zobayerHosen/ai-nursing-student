@@ -92,7 +92,7 @@ const PricingPage = () => {
                                 <div
                                     key={plan.id}
                                     className={`relative flex flex-col rounded-2xl p-4 md:p-5 xl:p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-[rgba(11,36,71,0.16)] ${isFeatured
-                                        ? 'bg-[#0b2447] text-white border border-[#0b2447] shadow-lg  hover:-translate-y-3.5'
+                                        ? 'bg-primary text-white border border-[#0b2447] shadow-lg  hover:-translate-y-3.5'
                                         : 'h-fit bg-white border border-[rgba(11,36,71,0.08)] hover:border-[rgba(11,36,71,0.16)]'
                                         } `}
                                 >
