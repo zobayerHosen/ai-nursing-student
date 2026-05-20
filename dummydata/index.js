@@ -981,7 +981,7 @@ export const sidebarData = [
             />
           </svg>
         ),
-        href: "#",
+        href: "/dashboard/terms-and-conditions",
       },
       {
         name: "Privacy policy",

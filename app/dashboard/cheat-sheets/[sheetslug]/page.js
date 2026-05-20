@@ -4,33 +4,38 @@ import React, { use, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Bookmark, Share2, CheckCircle, ArrowLeft, ZoomIn } from 'lucide-react';
-import { getToonBySlug } from '../components/stem-toons-dummy-data';
+import { getCheatSheetBySlug } from '../components/cheat-sheets-dummy-data';
 
-export default function ToonDetailsPage({ params }) {
+export default function CheatSheetDetailsPage({ params }) {
   const resolvedParams = use(params);
-  const toonslug = resolvedParams?.toonslug;
-  const baseSlug = toonslug?.replace(/-\d+$/, '');
-  const toon = getToonBySlug(baseSlug);
+  const sheetslug = resolvedParams?.sheetslug;
+  const baseSlug = sheetslug?.replace(/-\d+$/, '');
+  const sheet = getCheatSheetBySlug(baseSlug);
 
   const [isSaved, setIsSaved] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
 
   const handleSave = () => {
     setIsSaved(!isSaved);
   };
 
+  const handleComplete = () => {
+    setIsCompleted(!isCompleted);
+  };
+
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
   };
 
-  if (!toon) {
+  if (!sheet) {
     return (
       <div className="p-10 text-rose-500 min-h-screen flex items-center justify-center bg-[#FAFAFA]">
         <div className="bg-white p-8 rounded-2xl border border-rose-100 shadow-sm text-center">
-          <h2 className="text-2xl font-semibold mb-2">Toon Not Found</h2>
-          <p className="text-[#7A7A7A]">The Stem Toon details you are looking for do not exist.</p>
-          <Link href="/dashboard/stem-toons" className="mt-4 inline-flex items-center text-sm font-semibold text-[#2C5F8D] hover:underline">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Toons
+          <h2 className="text-2xl font-semibold mb-2">Cheat Sheet Not Found</h2>
+          <p className="text-[#7A7A7A]">The Cheat Sheet details you are looking for do not exist.</p>
+          <Link href="/dashboard/cheat-sheets" className="mt-4 inline-flex items-center text-sm font-semibold text-[#2C5F8D] hover:underline">
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Cheat Sheets
           </Link>
         </div>
       </div>
@@ -45,13 +50,13 @@ export default function ToonDetailsPage({ params }) {
         <nav>
           <ol className="flex items-center space-x-2 text-sm text-[#7A7A7A]">
             <li>
-              <Link href="/dashboard/stem-toons" className="text-[#2C5F8D] hover:text-[#111827] font-medium transition-colors">
-                Stem Toons
+              <Link href="/dashboard/cheat-sheets" className="text-[#2C5F8D] hover:text-[#111827] font-medium transition-colors">
+                Cheat Sheets
               </Link>
             </li>
             <li><span>/</span></li>
             <li className="text-[#424242] font-semibold truncate max-w-[200px] md:max-w-[400px]">
-              {toon?.title ?? ""}
+              {sheet?.title ?? ""}
             </li>
           </ol>
         </nav>
@@ -67,7 +72,7 @@ export default function ToonDetailsPage({ params }) {
             }`}
           >
             <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-amber-500 text-amber-500' : 'text-[#7A7A7A]'}`} />
-            {isSaved ? 'Saved to Library' : 'Save Toon'}
+            {isSaved ? 'Saved to Library' : 'Save Sheet'}
           </button>
 
           <button 
@@ -98,8 +103,8 @@ export default function ToonDetailsPage({ params }) {
 
             <div className="relative w-full h-[550px] bg-slate-50 rounded-xl overflow-hidden cursor-pointer" onClick={() => setIsZoomed(true)}>
               <Image
-                src={toon?.image ?? ""}
-                alt={toon?.title ?? ""}
+                src={sheet?.image ?? ""}
+                alt={sheet?.title ?? ""}
                 fill
                 className="object-contain p-2"
                 priority
@@ -113,11 +118,11 @@ export default function ToonDetailsPage({ params }) {
           
           {/* Header Title Block */}
           <div className="bg-white rounded-2xl p-6 border border-[#EEEEEE] shadow-sm">
-            <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full mb-3 uppercase tracking-wider ${toon.color}`}>
-              {toon?.category ?? ""}
+            <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full mb-3 uppercase tracking-wider ${sheet.color}`}>
+              {sheet?.category ?? ""}
             </span>
             <h2 className="text-2xl font-extrabold text-[#111827] leading-tight">
-              {toon?.title ?? ""}
+              {sheet?.title ?? ""}
             </h2>
             <p className="text-sm font-semibold text-[#FF6B8A] mt-3">
               Master this for your exams & clinical rotations!
@@ -131,7 +136,7 @@ export default function ToonDetailsPage({ params }) {
               Common Indications
             </h3>
             <ul className="space-y-3">
-              {toon?.details?.indications?.map((ind, i) => (
+              {sheet?.details?.indications?.map((ind, i) => (
                 <li key={i} className="flex items-start gap-2.5 text-sm text-[#4A4A4A] leading-relaxed">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B8A] mt-2 shrink-0"></span>
                   {ind}
@@ -144,10 +149,10 @@ export default function ToonDetailsPage({ params }) {
           <div className="bg-white rounded-2xl p-6 border border-[#EEEEEE] shadow-sm">
             <h3 className="text-sm font-bold text-[#2C5F8D] uppercase tracking-wider mb-4 border-b pb-2 border-slate-100 flex items-center gap-2">
               <span className="w-1.5 h-4 bg-[#FF6B8A] rounded-full"></span>
-              {toon?.details?.definition?.title ?? ""}
+              {sheet?.details?.definition?.title ?? ""}
             </h3>
             <p className="text-sm text-[#4A4A4A] leading-relaxed">
-              {toon?.details?.definition?.content ?? ""}
+              {sheet?.details?.definition?.content ?? ""}
             </p>
           </div>
 
@@ -155,10 +160,10 @@ export default function ToonDetailsPage({ params }) {
           <div className="bg-white rounded-2xl p-6 border border-[#EEEEEE] shadow-sm">
             <h3 className="text-sm font-bold text-[#2C5F8D] uppercase tracking-wider mb-4 border-b pb-2 border-slate-100 flex items-center gap-2">
               <span className="w-1.5 h-4 bg-[#FF6B8A] rounded-full"></span>
-              {toon?.details?.parts?.title ?? ""}
+              {sheet?.details?.parts?.title ?? ""}
             </h3>
             <ul className="space-y-3.5">
-              {toon?.details?.parts?.items?.map((item, i) => {
+              {sheet?.details?.parts?.items?.map((item, i) => {
                 const parts = item?.split(':');
                 return (
                   <li key={i} className="text-sm text-[#4A4A4A] leading-relaxed">
@@ -183,7 +188,7 @@ export default function ToonDetailsPage({ params }) {
               Nursing Assessment & Interventions
             </h3>
             <p className="text-sm text-rose-950 leading-relaxed font-medium">
-              {toon?.details?.assessment ?? ""}
+              {sheet?.details?.assessment ?? ""}
             </p>
           </div>
 
@@ -194,12 +199,12 @@ export default function ToonDetailsPage({ params }) {
       {isZoomed && (
         <div
           onClick={() => setIsZoomed(false)}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-9999 flex items-center justify-center p-4 cursor-zoom-out animate-fade-in"
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 cursor-zoom-out animate-fade-in"
         >
           <div className="relative w-full max-w-4xl h-[90vh] max-h-[800px]">
             <Image
-              src={toon?.image}
-              alt={toon?.title}
+              src={sheet?.image}
+              alt={sheet?.title}
               fill
               className="object-contain"
             />
