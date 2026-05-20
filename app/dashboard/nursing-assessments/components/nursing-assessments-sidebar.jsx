@@ -1,6 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { nursingSidebarCategory } from "./nursing-assessments-sidebar-data";
+import Link from "next/link";
 
 const NursingAssessmentsSidebar = () => {
     const pathname = usePathname()
@@ -17,20 +18,24 @@ const NursingAssessmentsSidebar = () => {
             <div className="p-4 space-y-3 flex flex-col text-start">
                 {
                     nursingSidebarCategory?.map(category => {
-                        const isActive = pathname === `/dashboard/`
+                        const isActive = pathname === `/dashboard/nursing-assessments/${category?.slug}`
                         return (
-                            <button
+                            <Link
                                 key={category?.id}
-                                className="bg-gray-100 flex items-center gap-2 py-2.5 px-3 rounded-md text-[13px] font-semibold transition-all duration-200"
+                                href={`/dashboard/nursing-assessments/${category?.slug}`}
+                                className={`flex items-center gap-2 py-2.5 px-3 rounded-md text-[13px] font-semibold transition-all duration-200 ${isActive
+                                    ? "bg-primary text-white [&_svg_path]:fill-current"
+                                    : "bg-gray-100 hover:bg-gray-200 text-[#424242]"
+                                    }`}
                             >
                                 <span>{category?.icon}</span>
                                 {category?.category}
-                            </button>
+                            </Link>
                         )
                     })
                 }
-            </div >
-        </aside >
+            </div>
+        </aside>
     );
 };
 export default NursingAssessmentsSidebar;

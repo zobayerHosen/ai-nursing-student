@@ -999,7 +999,7 @@ export const sidebarData = [
             />
           </svg>
         ),
-        href: "#",
+        href: "/dashboard/privacy-policy",
       },
       {
         name: "Settings",

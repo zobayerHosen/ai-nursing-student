@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 export default function NursingAssessmentsPage() {
-  return <h3>Nursing assessments page</h3>;
+  return redirect("/dashboard/nursing-assessments/introduction-to-assessment")
 }
