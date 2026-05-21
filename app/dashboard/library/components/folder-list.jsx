@@ -6,7 +6,7 @@ import { Dropdown } from "antd";
 import DeleteModal from "./delete-modal";
 import FolderCreateModal from "./folder-create-modal";
 
-const FolderList = ({ folder, toggleFolder }) => {
+const FolderList = ({ folder, toggleFolder, onClose }) => {
     const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -114,6 +114,7 @@ const FolderList = ({ folder, toggleFolder }) => {
                                     <Link
                                         href={`/dashboard/library/${note?.slug}`}
                                         key={note?.id}
+                                        onClick={() => onClose?.()}
                                         className="flex gap-1 items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer"
                                     >
                                         <ClipboardList className="w-4 h-4 text-gray-500 shrink-0" />

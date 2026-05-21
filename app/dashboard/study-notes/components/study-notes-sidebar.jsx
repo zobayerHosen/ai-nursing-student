@@ -31,27 +31,25 @@ const StudyNoteSidebar = () => {
                     </div>
 
                     {/* progressed */}
-                    <div className='px-4 mt-4'>
-                        {/* Top Text */}
+                    {/* <div className='px-4 mt-4'>
                         <div className="flex items-center justify-between mb-2">
                             <p className="text-sm text-[#424242]">
                                 <span className="text-[#FF6B8A] font-semibold">34%</span>{" "}
                                 watched .28/82 lessons
                             </p>
 
-                            {/* <button className="text-sm font-medium text-[#FF6B8A]">
+                            <button className="text-sm font-medium text-[#FF6B8A]">
                             Filter
-                        </button> */}
+                        </button>
                         </div>
 
-                        {/* Progress Bar */}
                         <div className="w-full h-2 bg-[#E5E5E5] rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-[#FF6B8A] rounded-full"
                                 style={{ width: "34%" }}
                             />
                         </div>
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Categories */}

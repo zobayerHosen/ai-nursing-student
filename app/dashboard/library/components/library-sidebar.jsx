@@ -44,7 +44,7 @@ const initialFolders = [
     }
 ];
 
-const LibrarySidebar = () => {
+const LibrarySidebar = ({ onClose }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [folders, setFolders] = useState(initialFolders);
@@ -80,9 +80,9 @@ const LibrarySidebar = () => {
     // Note: UI
     return (
         <>
-            <aside className="w-82.5 border-r border-black/10  bg-white min-h-screen overflow-hidden sticky top-0 left-0">
+            <aside className="w-full h-full border-r border-black/10 bg-white overflow-y-auto overflow-x-hidden flex flex-col">
                 {/* header content */}
-                <div className="border-b border-black/10 py-4 ">
+                <div className="border-b border-black/10 py-4 shrink-0">
                     <div className="px-8 flex flex-col gap-4">
                         {/* folder create button */}
                         <div className="w-full flex items-center justify-between">
@@ -122,6 +122,7 @@ const LibrarySidebar = () => {
                             key={folder?.id}
                             folder={folder}
                             toggleFolder={toggleFolder}
+                            onClose={onClose}
                         />
                     )) : (
                         <div className="text-center text-gray-500 mt-2">

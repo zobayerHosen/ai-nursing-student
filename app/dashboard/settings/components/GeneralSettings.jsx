@@ -85,7 +85,7 @@ export default function GeneralSettings({ showToast }) {
               <img
                 src={profilePic}
                 alt="Avatar"
-                className="w-14 h-14 rounded-full object-cover border border-slate-200 shadow-sm"
+                className="w-14 h-14 rounded-full object-cover border border-slate-200 shadow-sm shrink-0"
               />
               <div className="flex items-center gap-2">
                 <button
@@ -93,7 +93,7 @@ export default function GeneralSettings({ showToast }) {
                   onClick={() => fileInputRef.current?.click()}
                   className="bg-[#2C5F8D] hover:bg-[#224b70] text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-sm active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
                 >
-                  <Upload size={13} />
+                  <Upload size={13} className="shrink-0" />
                   Change Picture
                 </button>
                 <button
