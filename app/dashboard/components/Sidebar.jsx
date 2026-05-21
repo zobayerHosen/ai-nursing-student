@@ -9,10 +9,13 @@ import min_logo from "@/public/assets/mini_logo.png";
 import { usePathname } from "next/navigation";
 import { sidebarData } from "@/dummydata";
 import { IoClose } from "react-icons/io5";
-import { ArrowBigDownDash } from "lucide-react";
+import { ArrowBigDownDash, LogOut } from "lucide-react";
+import { useState } from "react";
+import { Modal } from "antd";
 
 export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, }) {
     const pathname = usePathname();
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
 
     return (
         <>
@@ -91,44 +94,77 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                                                 pathname.startsWith(item.href + "/"));
 
                                         return (
-                                            <Link
-                                                key={index}
-                                                href={item.href}
-                                                onClick={() => setIsSidebarOpen(false)}
-                                                className={
-                                                    section.title === "INTERACTIVE TOOLS"
-                                                        ? `flex flex-col items-center justify-center text-center border border-[#E5E7EB] hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 ${collapsed ? "gap-0 h-10 border-0" : "h-22 px-2 rounded-2xl"} ${isActive ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary" : ""}`
-                                                        : `flex items-center p-3 transition-all duration-200 ${collapsed ? "gap-0 h-10 justify-center" : "gap-3"} ${isActive
-                                                            ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary"
-                                                            : "hover:bg-gray-100 text-[#424242]"
-                                                        }`
-                                                }
-                                            >
-                                                {/* Icon */}
-                                                <div
-                                                    className={`flex items-center justify-center shrink-0 ${section.title === "INTERACTIVE TOOLS"
-                                                        ? `${isActive ? "text-primary" : "text-[#7B7B7B]"} [&_svg_path]:fill-current ${collapsed ? "mb-0" : "mb-1"} font-semibold`
-                                                        : isActive
-                                                            ? "text-primary [&_svg_path]:fill-current"
-                                                            : "text-[#7B7B7B] [&_svg_path]:fill-current"
-                                                        } [&_svg]:w-5 [&_svg]:h-5`}
-                                                >
-                                                    {item.icon}
-                                                </div>
-
-                                                {/* Text */}
-                                                {!collapsed && (
-                                                    <span
+                                            <div key={index}>
+                                                {item.button ? (
+                                                    <button
+                                                        onClick={() => setShowLogoutModal(true)}
                                                         className={
                                                             section.title === "INTERACTIVE TOOLS"
-                                                                ? "text-[11px] leading-4 font-medium text-[#555555]"
-                                                                : "text-sm font-medium"
+                                                                ? `w-full flex flex-col items-center justify-center text-center border border-[#E5E7EB] hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 ${collapsed ? "gap-0 h-10 border-0" : "h-22 px-2 rounded-2xl"}`
+                                                                : `cursor-pointer w-full flex items-center p-3 transition-all duration-200 ${collapsed ? "gap-0 h-10 justify-center" : "gap-3"} hover:bg-gray-100 text-[#424242]`
                                                         }
                                                     >
-                                                        {item.name}
-                                                    </span>
+                                                        {/* Icon */}
+                                                        <div
+                                                            className={`flex items-center justify-center shrink-0 text-[#F43636] [&_svg_path]:fill-current [&_svg]:w-5 [&_svg]:h-5`}
+                                                        >
+                                                            {item.icon}
+                                                        </div>
+
+                                                        {/* Text */}
+                                                        {!collapsed && (
+                                                            <span
+                                                                className={
+                                                                    section.title === "INTERACTIVE TOOLS"
+                                                                        ? "text-[11px] leading-4 font-medium text-[#555555]"
+                                                                        : "text-sm font-medium"
+                                                                }
+                                                            >
+                                                                {item.name}
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                ) : (
+                                                    <Link
+                                                        key={index}
+                                                        href={item.href}
+                                                        onClick={() => setIsSidebarOpen(false)}
+                                                        className={
+                                                            section.title === "INTERACTIVE TOOLS"
+                                                                ? `flex flex-col items-center justify-center text-center border border-[#E5E7EB] hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 ${collapsed ? "gap-0 h-10 border-0" : "h-22 px-2 rounded-2xl"} ${isActive ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary" : ""}`
+                                                                : `flex items-center p-3 transition-all duration-200 ${collapsed ? "gap-0 h-10 justify-center" : "gap-3"} ${isActive
+                                                                    ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary"
+                                                                    : "hover:bg-gray-100 text-[#424242]"
+                                                                }`
+                                                        }
+                                                    >
+                                                        {/* Icon */}
+                                                        <div
+                                                            className={`flex items-center justify-center shrink-0 ${section.title === "INTERACTIVE TOOLS"
+                                                                ? `${isActive ? "text-primary" : "text-[#7B7B7B]"} [&_svg_path]:fill-current ${collapsed ? "mb-0" : "mb-1"} font-semibold`
+                                                                : isActive
+                                                                    ? "text-primary [&_svg_path]:fill-current"
+                                                                    : "text-[#7B7B7B] [&_svg_path]:fill-current"
+                                                                } [&_svg]:w-5 [&_svg]:h-5`}
+                                                        >
+                                                            {item.icon}
+                                                        </div>
+
+                                                        {/* Text */}
+                                                        {!collapsed && (
+                                                            <span
+                                                                className={
+                                                                    section.title === "INTERACTIVE TOOLS"
+                                                                        ? "text-[11px] leading-4 font-medium text-[#555555]"
+                                                                        : "text-sm font-medium"
+                                                                }
+                                                            >
+                                                                {item.name}
+                                                            </span>
+                                                        )}
+                                                    </Link>
                                                 )}
-                                            </Link>
+                                            </div>
                                         );
                                     })}
                                 </div>
@@ -160,6 +196,56 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                         )
                 }
             </div>
+
+            {/* logout modal */}
+            <Modal
+                open={showLogoutModal}
+                onCancel={() => setShowLogoutModal(false)}
+                footer={null}
+                closeIcon={null}
+                centered
+                width={420}
+            >
+                <div className="py-3 flex flex-col items-center text-center">
+
+                    {/* Icon */}
+                    <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mb-2">
+                        <LogOut size={20} className="text-red-500" />
+                    </div>
+
+                    {/* Title */}
+                    <h2 className="text-xl font-semibold text-[#111827] mb-2">
+                        Logout
+                    </h2>
+
+                    {/* Description */}
+                    <p className="text-[13px] text-[#6B7280] leading-5 max-w-75 mb-7">
+                        Are you sure you want to logout from your account?
+                    </p>
+
+                    {/* Buttons */}
+                    <div className="flex items-center justify-center gap-3 w-full">
+                        <button
+                            onClick={() => setShowLogoutModal(false)}
+                            className="flex-1 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 transition text-sm font-medium"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                setShowLogoutModal(false);
+
+                                // logout logic
+                                console.log("Logout");
+                            }}
+                            className="flex-1 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition text-sm font-medium"
+                        >
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </>
     );
 };
