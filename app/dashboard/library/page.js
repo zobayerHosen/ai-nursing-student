@@ -16,7 +16,6 @@ const MyLibraryPage = () => {
       setLoading(false);
     }, 1000);
 
-    console.log("Clicked");
   };
 
   return (

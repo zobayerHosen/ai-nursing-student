@@ -4,7 +4,7 @@ import Link from "next/link";
 
 const BodySystem = () => {
     return (
-        <div>
+        <div className="">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-semibold text-gray-800">
@@ -17,7 +17,7 @@ const BodySystem = () => {
             </div>
 
             {/* Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {bodySystem.map((item, index) => {
 
                     return (
@@ -55,7 +55,7 @@ const BodySystem = () => {
                                     <span className="w-6 h-6 flex items-center justify-center rounded-full border shrink-0">
                                         {item?.icon}
                                     </span>
-                                    Anatomy & Physiology
+                                    Anatomy & Schoycholgy
                                 </div>
 
                                 {/* Button */}

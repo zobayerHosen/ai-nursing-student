@@ -1,6 +1,6 @@
 const TermsAndConditionsPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Header Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
@@ -17,7 +17,7 @@ const TermsAndConditionsPage = () => {
               Please read these terms carefully before using our services
             </p>
           </div>
-          
+
           {/* Content */}
           <div className="px-6 py-8 sm:px-12 sm:py-10 space-y-8">
             {/* Introduction */}
