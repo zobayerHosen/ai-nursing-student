@@ -18,8 +18,9 @@ export default function LibraryLayout({ children }) {
       )}
 
       {/* Sidebar Wrapper */}
-      <div className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 xl:relative xl:translate-x-0
-        ${isSidebarOpen ? "translate-x-0 z-999" : "-translate-x-full"} w-[80%] sm:w-80 xl:w-[330px] shrink-0 bg-white`}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 xl:relative xl:translate-x-0
+        ${isSidebarOpen ? "translate-x-0 z-999" : "-translate-x-full"} w-[80%] sm:w-80 xl:w-82.5 shrink-0 bg-white`}
       >
         <LibrarySidebar onClose={() => setIsSidebarOpen(false)} />
       </div>

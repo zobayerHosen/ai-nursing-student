@@ -15,7 +15,6 @@ const MyLibraryPage = () => {
     setTimeout(() => {
       setLoading(false);
     }, 1000);
-
   };
 
   return (
