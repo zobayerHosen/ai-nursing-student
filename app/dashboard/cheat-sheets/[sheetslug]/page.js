@@ -213,4 +213,4 @@ export default function CheatSheetDetailsPage({ params }) {
       )}
     </div>
   );
-}
+};

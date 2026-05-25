@@ -5,8 +5,6 @@ import { Inter } from "next/font/google";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 import { getServerToken } from "@/utils/getServerToken";
-import { axiosPrivateServer } from "@/lib/axios.private.server";
-import { getUser } from "@/services";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,6 +23,8 @@ export default async function RootLayout({ children }) {
 
   // Note: create query client
   const queryClient = new QueryClient();
+  const queryClient2 = new QueryClient();
+
 
   // Note: get token
   const token = await getServerToken();

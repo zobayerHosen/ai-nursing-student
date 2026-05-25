@@ -7,28 +7,31 @@ export function ToasterProvider() {
         <Toaster
             position="top-center"
             toastOptions={{
-                duration: 4000, // <-- increase time to 8 seconds
+                // No icons for any toast
+                icon: null,
                 style: {
-                    background: "#0f172a",
-                    color: "#f8fafc",
-                    fontSize: "18px",
+                    background: "#1a1a1a",
+                    color: "#f5f5f7",
+                    fontSize: "16px",
+                    fontWeight: "600",
+                    borderRadius: "8px",
+                    padding: "6px 16px",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.2)",
+                    border: "3px solid #1D1D1D",
                 },
                 success: {
-                    iconTheme: {
-                        primary: "#22c55e",
-                        secondary: "#0f172a",
+                    style: {
+                        border: "2px solid #007AFF",
                     },
                 },
                 error: {
-                    iconTheme: {
-                        primary: "#ef4444",
-                        secondary: "#0f172a",
+                    style: {
+                        border: "1px solid #ef4444",
                     },
                 },
                 loading: {
-                    iconTheme: {
-                        primary: "#3b82f6",
-                        secondary: "#0f172a",
+                    style: {
+                        border: "1px solid #007AFF",
                     },
                 },
             }}
