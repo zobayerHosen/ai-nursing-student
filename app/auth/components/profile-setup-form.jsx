@@ -4,35 +4,9 @@ import AuthCommonTitle from "./auth-common-title";
 import { useForm } from "react-hook-form";
 import CommonFieldsetInput from "@/components/common-fieldset-input";
 import { useRouter } from "next/navigation";
-
-
-const nursingProgramOptions = [
-    { id: 1, label: "BSN (Bachelor of Science in Nursing)" },
-    { id: 2, label: "ADN (Associate Degree in Nursing)" },
-    { id: 3, label: "LPN/LVN Program" },
-    { id: 4, label: "Accelerated BSN (ABSN)" },
-    { id: 5, label: "MSN / Graduate Entry" },
-    { id: 6, label: "RN-to-BSN Bridge" },
-    { id: 7, label: "already Licensed RN (Repeat NCLEX)" }
-]
-
-const stateAndCountryOptions = [
-    { id: 1, label: "Alabama" },
-    { id: 2, label: "California" },
-    { id: 3, label: "Florida" },
-    { id: 4, label: "Georgia" },
-    { id: 5, label: "Illinois" },
-    { id: 6, label: "New York" },
-    { id: 7, label: "North Carolina" },
-    { id: 8, label: "Ohio" },
-    { id: 9, label: "Texas" },
-    { id: 10, label: "Virginia" },
-    { id: 11, label: "Washington" },
-    { id: 12, label: "Other US State" },
-    { id: 13, label: "International Student" },
-    { id: 14, label: "Canada" },
-    { id: 15, label: "Philippines" }
-];
+import useNursingProgramOptions from "@/hooks/auth/options/nursing-program";
+import useStateCountryOptions from "@/hooks/auth/options/state-country";
+import useHearAboutOptions from "@/hooks/auth/options/hear-about-stemrn";
 
 const howDidHereStemrnOptions = [
     { id: 1, label: "Google Search" },
@@ -52,6 +26,30 @@ const howDidHereStemrnOptions = [
 ]
 
 const ProfileSetupForm = () => {
+    const { nursingProgramData } = useNursingProgramOptions();
+    const { stateCountryData } = useStateCountryOptions();
+    const { hearAboutData } = useHearAboutOptions();
+
+    console.log("State country data----->", hearAboutData);
+
+    // Note: Nursing convert id and name to options array
+    const convertNursingData = nursingProgramData?.data?.map((list) => ({
+        value: list?.id,
+        label: list?.name
+    }));
+
+    // Note: State and councty data convert id and name to options array
+    const convertStateCountryData = stateCountryData?.data?.map((list) => ({
+        value: list?.id,
+        label: list?.name
+    }));
+
+    // Note: Hear about data convert id and name to options array
+    const convertHearAboutData = hearAboutData?.data?.map((list) => ({
+        value: list?.id,
+        label: list?.name
+    }));
+
     const router = useRouter();
     const {
         formState: { errors },
@@ -59,8 +57,12 @@ const ProfileSetupForm = () => {
         handleSubmit,
     } = useForm();
 
+    // Note: Form submit data
     const onSubmit = (data) => {
-        console.log(data);
+        // Save form data to localstorage
+        localStorage.setItem("profile-setup-data", JSON.stringify(data))
+
+        router.push("/auth/review-and-finish");
     };
 
     // Note: UI
@@ -90,7 +92,7 @@ const ProfileSetupForm = () => {
                     validationRules={{
                         required: "Nursing Program is required"
                     }}
-                    options={nursingProgramOptions}
+                    options={convertNursingData}
                 />
 
                 {/* school and university */}
@@ -121,7 +123,7 @@ const ProfileSetupForm = () => {
                     validationRules={{
                         required: "State / Country name is required"
                     }}
-                    options={stateAndCountryOptions}
+                    options={convertStateCountryData}
                 />
 
                 {/* How Did You Hear About STEMRN? */}
@@ -137,12 +139,11 @@ const ProfileSetupForm = () => {
                     validationRules={{
                         required: "How Did You Hear About STEMRN? is required"
                     }}
-                    options={howDidHereStemrnOptions}
+                    options={convertHearAboutData}
                 />
 
                 {/* Continue Button */}
                 <button
-                    // onClick={() => router.push("/auth/review-and-finish")}
                     type="submit"
                     className="cursor-pointer w-full bg-primary hover:bg-primary/80 text-white py-4 rounded-xl text-base font-medium transition mt-2"
                 >

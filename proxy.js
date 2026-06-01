@@ -26,31 +26,31 @@ export async function proxy(request) {
     const isProtectedPath = pathname.startsWith("/dashboard");
 
     /**
-     * 🔒 If NOT logged in and accessing protected route
+     * If NOT logged in and accessing protected route
      * → redirect to signin
      */
-    // if (!token && isProtectedPath) {
-    //     const loginUrl = new URL("/auth", request.url);
-    //     loginUrl.searchParams.set("redirect", pathname);
-    //     return NextResponse.redirect(loginUrl);
-    // }
+    if (!token && isProtectedPath) {
+        const loginUrl = new URL("/auth", request.url);
+        loginUrl.searchParams.set("redirect", pathname);
+        return NextResponse.redirect(loginUrl);
+    }
 
     /**
-     * 🚫 If logged in and accessing public/auth pages
-     * → redirect to NEWS
+     * If logged in and accessing public/auth pages
+     * → redirect to dashboard
      */
-    // if (token && isPublicPath) {
-    //     return NextResponse.redirect(
-    //         new URL(ROUTE_PATH.DASHBOARD, request.url)
-    //     );
-    // }
+    if (token && isPublicPath) {
+        return NextResponse.redirect(
+            new URL(ROUTE_PATH.DASHBOARD, request.url)
+        );
+    }
 
     return NextResponse.next();
 }
 
 /**
  * Middleware matcher
- * ⚠️ MUST include public pages or redirect won’t work
+ * MUST include public pages or redirect won’t work
  */
 export const config = {
     matcher: [

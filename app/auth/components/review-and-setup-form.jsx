@@ -1,29 +1,74 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaCheck } from "react-icons/fa";
 import AuthCommonTitle from "./auth-common-title";
 import Link from "next/link";
+import { useStepProfileSetup } from "@/hooks/auth/step-profile-setup/step-profile-setup";
+import { useForm } from "react-hook-form";
+import setToken from "@/utils/setToken";
+import { useRouter } from "next/navigation";
 
 const ReviewAndSetupForm = () => {
-    const [agreedToTerms, setAgreedToTerms] = useState(false);
-    const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+    const router = useRouter();
+    const { stepProfileSetup, isPending } = useStepProfileSetup();
     const [receiveEmails, setReceiveEmails] = useState(true);
-    const [educational, setEducational] = useState(false);
     const [showWarning, setShowWarning] = useState(false);
+    const [existingData, setExistingData] = useState(null);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({
+        defaultValues: {
+            agreedToTerms: false,
+            agreedToPrivacy: false,
+            receiveEmails: true,
+        },
+    });
 
-        if (!agreedToTerms || !agreedToPrivacy) {
-            setShowWarning(true);
-            return;
+    useEffect(() => {
+        const data = localStorage.getItem("profile-setup-data");
+
+        if (data) {
+            setExistingData(JSON.parse(data));
         }
+    }, []);
+    console.log("Existing data", existingData)
 
+
+    const onSubmit = (data) => {
         setShowWarning(false);
-        // Proceed with form submission
-        console.log("Form submitted successfully", e);
+
+        const payload = {
+            ...existingData,
+            ...data,
+            receiveEmails,
+        };
+
+        stepProfileSetup(payload, {
+            onSuccess: (responseData) => {
+                localStorage.removeItem("profile-setup-data");
+                
+                const data = responseData?.data || responseData;
+                const token = data?.tokens?.access;
+                
+                if (token) {
+                    setToken(token, data?.expires_in);
+                }
+                router.push("/dashboard");
+            },
+            onError: (error) => {
+                console.error("Profile setup failed", error);
+            }
+        });
     };
 
+    const onFormError = () => {
+        setShowWarning(true);
+    };
+
+    // Note: UI
     return (
         <div className="w-full max-w-130 mx-auto flex flex-col pt-10 px-4">
             <StepProgress />
@@ -31,7 +76,7 @@ const ReviewAndSetupForm = () => {
 
             <p className="text-[#525252] mb-8 text-sm">Step 3 of 3 — Agreements</p>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit, onFormError)} className="space-y-6">
                 {/* Terms of Use Notice */}
                 <div className="bg-white text-sm text-gray-700 leading-relaxed flex flex-col gap-2">
                     <h4 className="text-[#424242] font-bold text-2xl">Terms of Use</h4>
@@ -53,9 +98,10 @@ const ReviewAndSetupForm = () => {
                         <input
                             type="checkbox"
                             id="terms"
-                            checked={agreedToTerms}
-                            onChange={(e) => setAgreedToTerms(e.target.checked)}
-                            className="mt-0.5 w-4.5 h-4.5 accent-primary border-gray-300 rounded-lg cursor-pointer"
+                            className="mt-0.5 w-4.5 h-4.5 accent-primary"
+                            {...register("agreedToTerms", {
+                                required: "Please agree to the Terms & Conditions",
+                            })}
                         />
                         <label htmlFor="terms" className="text-sm text-gray-700 cursor-pointer">
                             Yes, I agree to the{" "}
@@ -86,9 +132,10 @@ const ReviewAndSetupForm = () => {
                         <input
                             type="checkbox"
                             id="privacy"
-                            checked={agreedToPrivacy}
-                            onChange={(e) => setAgreedToPrivacy(e.target.checked)}
-                            className="mt-0.5 w-4.5 h-4.5 accent-primary border-gray-300 rounded cursor-pointer"
+                            className="mt-0.5 w-4.5 h-4.5 accent-primary"
+                            {...register("agreedToPrivacy", {
+                                required: "Please agree to the Privacy Policy",
+                            })}
                         />
                         <label htmlFor="privacy" className="text-sm text-gray-700 cursor-pointer">
                             Yes, I agree to the{" "}
@@ -101,10 +148,11 @@ const ReviewAndSetupForm = () => {
                 <div className="flex items-start gap-3 px-1">
                     <input
                         type="checkbox"
-                        id="understand"
-                        checked={educational}
-                        onChange={(e) => setEducational(e.target.checked)}
-                        className="w-4.5 h-4.5 accent-primary border-gray-300 rounded cursor-pointer shrink-0 mt-1.5"
+                        id="educational"
+                        className="w-4.5 h-4.5 accent-primary"
+                        {...register("educational", {
+                            required: "Please agree to the Educational Purpose Disclaimer",
+                        })}
                     />
                     <p className="text-sm text-gray-700 leading-relaxed">
                         I understand STEMRN is for{" "}
@@ -126,7 +174,7 @@ const ReviewAndSetupForm = () => {
                         Send me study tips and NCLEX prep resources by email (optional)
                     </p>
                 </div>
-                
+
                 {/* Warning Message */}
                 {showWarning && (
                     <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
@@ -138,9 +186,10 @@ const ReviewAndSetupForm = () => {
                 {/* Continue Button Section */}
                 <button
                     type="submit"
+                    disabled={isPending}
                     className="cursor-pointer w-full bg-primary hover:bg-primary/80 text-white font-semibold py-3.5 px-6 rounded-xl transition duration-200 shadow-md hover:shadow-lg focus:outline-none text-base"
                 >
-                    Continue
+                    {isPending ? "Continue...." : "Continue"}
                 </button>
             </form>
         </div>

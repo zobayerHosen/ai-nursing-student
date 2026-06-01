@@ -5,19 +5,48 @@ import { useForm } from "react-hook-form"
 import Link from "next/link";
 import { Divider } from "antd";
 import GoogleLogin from "./google-login";
-
+import { useSignin } from "@/hooks";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import setToken from "@/utils/setToken";
 
 const SignInForm = () => {
+  const router = useRouter();
+  const { signin, isPending } = useSignin();
+
+  // Note: React hook form
   const {
     control,
     formState: { errors },
     handleSubmit
   } = useForm();
 
-
+  // Note: sign in mutation
   const onSubmit = (data) => {
-    console.log(data);
-  }
+    signin(data, {
+      onSuccess: (res) => {
+        const responseData = res?.data || res;
+        if (responseData?.is_profile_complete === false) {
+          router.push("/auth/profile-setup");
+        } else {
+          router.push("/dashboard");
+          setToken(responseData?.tokens?.access, responseData?.expires_in);
+        }
+      },
+      onError: (error) => {
+        console.log(error)
+        toast.error(error?.response?.data?.message ?? "Something went wrong")
+
+        // map backend errors to RHF
+        error?.response?.data?.errors?.forEach((err) => {
+          setError(err.field, {
+            type: "server",
+            message: err.message,
+          })
+        })
+      }
+    });
+  };
 
   // Note: UI
   return (
@@ -87,9 +116,10 @@ const SignInForm = () => {
         {/* submit button */}
         <button
           type="submit"
+          disabled={isPending}
           className="cursor-pointer w-full bg-primary text-white py-3 sm:py-4 rounded-xl text-sm sm:text-base font-medium hover:bg-primary/80 transition-colors"
         >
-          Log in
+          {isPending ? "Logging in..." : "Log in"}
         </button>
       </form>
 

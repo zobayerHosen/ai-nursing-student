@@ -67,7 +67,7 @@ export default function SettingsContent() {
       <div className="xl:hidden flex items-center px-5 mb-4 mt-5">
         <button
           onClick={() => setOpenSidebar(true)}
-          className="w-fit xl:hidden py-3 px-5 bg-white border border-slate-200 rounded-xl shadow-sm text-left flex items-center gap-2.5 hover:bg-gray-50 transition"
+          className="cursor-pointer w-fit xl:hidden py-3 px-5 bg-white border border-slate-200 rounded-xl shadow-sm text-left flex items-center gap-2.5 hover:bg-gray-50 transition"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M3.33333 6.66667H16.6667M3.33333 10H16.6667M3.33333 13.3333H16.6667" stroke="#1F2937" strokeWidth="2" strokeLinecap="round" />

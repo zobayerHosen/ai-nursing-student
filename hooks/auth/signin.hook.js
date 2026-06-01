@@ -1,6 +1,6 @@
-import { useMutation } from "@tanstack/react-query";
 import axiosPublic from "@/lib/axios.public";
-import { SigninService } from "@/services/auth/signin.service";
+import { SigninService } from "@/services";
+import { useMutation } from "@tanstack/react-query";
 
 export const useSignin = () => {
   const axiosInstance = axiosPublic();

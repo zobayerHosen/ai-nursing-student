@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 import { getServerToken } from "@/utils/getServerToken";
+import { getUser } from "@/services";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,21 +31,21 @@ export default async function RootLayout({ children }) {
   const token = await getServerToken();
 
   // Note: prefetch user
-  // if (token) {
-  //   const axiosInstance = await axiosPrivateServer();
+  if (token) {
+    const axiosInstance = await axiosPrivateServer();
 
-  //   try {
-  //     await queryClient.prefetchQuery({
-  //       queryKey: ['user', token],
-  //       queryFn: async () => {
-  //         const userData = await getUser(axiosInstance);
-  //         return userData;
-  //       },
-  //     });
-  //   } catch (error) {
-  //     // swallow error to avoid crashing layout
-  //   };
-  // };
+    try {
+      await queryClient.prefetchQuery({
+        queryKey: ['user', token],
+        queryFn: async () => {
+          const userData = await getUser(axiosInstance);
+          return userData;
+        },
+      });
+    } catch (error) {
+      // swallow error to avoid crashing layout
+    };
+  };
 
   // Note: dehydrate
   const dehydratedState = dehydrate(queryClient);

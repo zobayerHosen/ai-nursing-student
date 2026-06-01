@@ -76,7 +76,7 @@ const RegisterForm = () => {
     setOpenModal(false)
   }
 
-  // UI
+  // Note: UI
   return (
     <>
       <div className="w-full max-w-130 mx-auto flex flex-col gap-8 pt-10">
@@ -171,6 +171,7 @@ const RegisterForm = () => {
             errors={errors}
             validationRules={{
               required: "Confirm password is required",
+              // eslint-disable-next-line react-hooks/incompatible-library
               validate: (value) => value === watch("password") || "Passwords do not match",
             }}
           />
@@ -190,7 +191,7 @@ const RegisterForm = () => {
       </div>
       {/* success modal */}
       <CommonModal
-        title="Verification Link Sent"
+        title={null}
         open={openModal}
         onOk={handleOk}
         onCancel={handleCancel}
