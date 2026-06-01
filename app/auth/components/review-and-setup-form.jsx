@@ -1,11 +1,10 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FaCheck } from "react-icons/fa";
 import AuthCommonTitle from "./auth-common-title";
-import Link from "next/link";
 import { useStepProfileSetup } from "@/hooks/auth/step-profile-setup/step-profile-setup";
 import { useForm } from "react-hook-form";
-import setToken from "@/utils/setToken";
 import { useRouter } from "next/navigation";
 
 const ReviewAndSetupForm = () => {
@@ -34,8 +33,6 @@ const ReviewAndSetupForm = () => {
             setExistingData(JSON.parse(data));
         }
     }, []);
-    console.log("Existing data", existingData)
-
 
     const onSubmit = (data) => {
         setShowWarning(false);
@@ -47,16 +44,8 @@ const ReviewAndSetupForm = () => {
         };
 
         stepProfileSetup(payload, {
-            onSuccess: (responseData) => {
-                localStorage.removeItem("profile-setup-data");
-                
-                const data = responseData?.data || responseData;
-                const token = data?.tokens?.access;
-                
-                if (token) {
-                    setToken(token, data?.expires_in);
-                }
-                router.push("/dashboard");
+            onSuccess: () => {
+
             },
             onError: (error) => {
                 console.error("Profile setup failed", error);

@@ -7,14 +7,14 @@ export const useGetUser = () => {
   const token = getClientToken();
   const axiosInstance = axiosPrivateClient();
   const { data, isLoading, error, refetch, isError, isFetching } = useQuery({
-    queryKey: ["user", token],
+    queryKey: ["user"],
     queryFn: () => getUser(axiosInstance),
     staleTime: 5 * 60 * 1000,
     retry: false,
     enabled: !!token,
   });
   return {
-    user: data?.data,
+    user: data?.data?.data,
     isLoading,
     error,
     refetch,

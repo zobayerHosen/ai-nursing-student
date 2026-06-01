@@ -28,9 +28,10 @@ const SignInForm = () => {
         const responseData = res?.data || res;
         if (responseData?.is_profile_complete === false) {
           router.push("/auth/profile-setup");
-        } else {
-          router.push("/dashboard");
           setToken(responseData?.tokens?.access, responseData?.expires_in);
+        } else {
+          setToken(responseData?.tokens?.access, responseData?.expires_in);
+          router.push("/dashboard");
         }
       },
       onError: (error) => {

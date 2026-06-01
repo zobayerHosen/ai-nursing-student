@@ -25,8 +25,6 @@ export default async function RootLayout({ children }) {
 
   // Note: create query client
   const queryClient = new QueryClient();
-  const queryClient2 = new QueryClient();
-
 
   // Note: get token
   const token = await getServerToken();
@@ -37,7 +35,7 @@ export default async function RootLayout({ children }) {
 
     try {
       await queryClient.prefetchQuery({
-        queryKey: ['user', token],
+        queryKey: ['user'],
         queryFn: async () => {
           const userData = await getUser(axiosInstance);
           return userData;

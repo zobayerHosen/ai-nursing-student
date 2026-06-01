@@ -5,6 +5,7 @@ import { FiMenu, FiX } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "@/public/assets/logo.png"
 import Image from "next/image";
+import { useGetUser } from "@/hooks";
 
 const navItems = [
   { label: "Features", href: "#features" },
@@ -15,6 +16,9 @@ const navItems = [
 ];
 
 const HomeHeader = () => {
+  const { user } = useGetUser();
+  console.log("user data", user);
+
   const [isOpen, setIsOpen] = useState(false);
 
   // Close menu on resize to desktop
@@ -69,21 +73,41 @@ const HomeHeader = () => {
           </nav>
 
           {/* Desktop Buttons */}
-          <div className="hidden lg:flex items-center gap-6">
-            <Link
-              href="/auth"
-              className="text-sm font-semibold hover:text-pink-300 transition-colors"
-            >
-              Log In
-            </Link>
+          {
+            user ? (
+              user?.is_profile_complete ? (
+                <Link
+                  href="/dashboard"
+                  className="bg-[#FE5E7E] px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:bg-[#ff7b94] hover:scale-105 active:scale-95 transition-all"
+                >
+                  Dashboard
+                </Link>
+              ) : (
+                <Link
+                  href="/auth/profile-setup"
+                  className="bg-[#FE5E7E] px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:bg-[#ff7b94] hover:scale-105 active:scale-95 transition-all"
+                >
+                  Profile Setup
+                </Link>
+              )
+            ) : (
+              <div className="hidden lg:flex items-center gap-6">
+                <Link
+                  href="/auth"
+                  className="text-sm font-semibold hover:text-pink-300 transition-colors"
+                >
+                  Log In
+                </Link>
 
-            <Link
-              href="/auth/register"
-              className="bg-[#FE5E7E] px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:bg-[#ff7b94] hover:scale-105 active:scale-95 transition-all"
-            >
-              Get Started Free
-            </Link>
-          </div>
+                <Link
+                  href="/auth/register"
+                  className="bg-[#FE5E7E] px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:bg-[#ff7b94] hover:scale-105 active:scale-95 transition-all"
+                >
+                  Get Started Free
+                </Link>
+              </div>
+            )
+          }
 
           {/* Mobile Toggle */}
           <button
@@ -162,29 +186,51 @@ const HomeHeader = () => {
                     transition={{ delay: 0.1 + navItems.length * 0.05 }}
                     className="flex flex-col gap-3"
                   >
-                    <Link
-                      href="/auth"
-                      onClick={toggleMenu}
-                      className="w-full rounded-lg border border-white/20 py-2.5 text-center text-sm sm:text-base font-medium transition-colors hover:bg-white/10"
-                    >
-                      Log In
-                    </Link>
+                    {user ? (
+                      user?.is_profile_complete ? (
+                        <Link
+                          href="/dashboard"
+                          onClick={toggleMenu}
+                          className="w-full rounded-lg bg-[#FE5E7E] py-3 text-center text-sm sm:text-base font-semibold shadow-lg transition-all hover:bg-pink-400 active:scale-95"
+                        >
+                          Dashboard
+                        </Link>
+                      ) : (
+                        <Link
+                          href="/auth/profile-setup"
+                          onClick={toggleMenu}
+                          className="w-full rounded-lg bg-[#FE5E7E] py-3 text-center text-sm sm:text-base font-semibold shadow-lg transition-all hover:bg-pink-400 active:scale-95"
+                        >
+                          Profile Setup
+                        </Link>
+                      )
+                    ) : (
+                      <>
+                        <Link
+                          href="/auth"
+                          onClick={toggleMenu}
+                          className="w-full rounded-lg border border-white/20 py-2.5 text-center text-sm sm:text-base font-medium transition-colors hover:bg-white/10"
+                        >
+                          Log In
+                        </Link>
 
-                    <Link
-                      href="/auth/register"
-                      onClick={toggleMenu}
-                      className="w-full rounded-lg bg-[#FE5E7E] py-3 text-center text-sm sm:text-base font-semibold shadow-lg transition-all hover:bg-pink-400 active:scale-95"
-                    >
-                      Get Started Free
-                    </Link>
+                        <Link
+                          href="/auth/register"
+                          onClick={toggleMenu}
+                          className="w-full rounded-lg bg-[#FE5E7E] py-3 text-center text-sm sm:text-base font-semibold shadow-lg transition-all hover:bg-pink-400 active:scale-95"
+                        >
+                          Get Started Free
+                        </Link>
+                      </>
+                    )}
                   </motion.div>
                 </nav>
               </motion.div>
             </>
           )}
         </AnimatePresence>
-      </div>
-    </header>
+      </div >
+    </header >
   );
 };
 export default HomeHeader;
