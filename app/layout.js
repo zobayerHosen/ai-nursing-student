@@ -6,6 +6,7 @@ import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 import { getServerToken } from "@/utils/getServerToken";
 import { getUser } from "@/services";
+import { axiosPrivateServer } from "@/lib/axios.private.server";
 
 const inter = Inter({
   subsets: ["latin"],

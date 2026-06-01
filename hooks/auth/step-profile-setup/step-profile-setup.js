@@ -1,10 +1,9 @@
-// import axiosPrivateClient from "@/lib/axios.private.client";
-import axiosPublic from "@/lib/axios.public";
+import axiosPrivateClient from "@/lib/axios.private.client";
 import { StepProfileSetupService } from "@/services";
 import { useMutation } from "@tanstack/react-query";
 
 export const useStepProfileSetup = () => {
-  const axiosInstance = axiosPublic();
+  const axiosInstance = axiosPrivateClient();
   const {
     mutateAsync: stepProfileSetup,
     isPending,
