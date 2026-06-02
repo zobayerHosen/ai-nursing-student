@@ -85,8 +85,8 @@ const ProfileSetupForm = () => {
                     type="select"
                     control={control}
                     placeholder="Select Program"
-                    name="nursing_program"
-                    register_as="nursing_program"
+                    name="program"
+                    register_as="program"
                     required
                     errors={errors}
                     validationRules={{
@@ -101,8 +101,8 @@ const ProfileSetupForm = () => {
                     type="text"
                     control={control}
                     placeholder="e.g. University of Texas at Austin"
-                    name="school_university"
-                    register_as="school_university"
+                    name="university"
+                    register_as="university"
                     required
                     errors={errors}
                     validationRules={{
@@ -116,8 +116,8 @@ const ProfileSetupForm = () => {
                     type="select"
                     control={control}
                     placeholder="Select State / Country"
-                    name="state_country"
-                    register_as="state_country"
+                    name="country"
+                    register_as="country"
                     required
                     errors={errors}
                     validationRules={{
@@ -132,8 +132,8 @@ const ProfileSetupForm = () => {
                     type="select"
                     control={control}
                     placeholder="Select one"
-                    name="how_did_you_hear_about_stemrn"
-                    register_as="how_did_you_hear_about_stemrn"
+                    name="about_us"
+                    register_as="about_us"
                     required
                     errors={errors}
                     validationRules={{

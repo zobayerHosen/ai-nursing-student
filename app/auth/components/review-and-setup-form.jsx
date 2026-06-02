@@ -6,6 +6,7 @@ import AuthCommonTitle from "./auth-common-title";
 import { useStepProfileSetup } from "@/hooks/auth/step-profile-setup/step-profile-setup";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 const ReviewAndSetupForm = () => {
     const router = useRouter();
@@ -14,6 +15,7 @@ const ReviewAndSetupForm = () => {
     const [showWarning, setShowWarning] = useState(false);
     const [existingData, setExistingData] = useState(null);
 
+    // Note: react hook form
     const {
         register,
         handleSubmit,
@@ -30,6 +32,7 @@ const ReviewAndSetupForm = () => {
         const data = localStorage.getItem("profile-setup-data");
 
         if (data) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setExistingData(JSON.parse(data));
         }
     }, []);
@@ -37,15 +40,27 @@ const ReviewAndSetupForm = () => {
     const onSubmit = (data) => {
         setShowWarning(false);
 
+        // Verify token from cookies
+        const tokenName = process.env.NEXT_PUBLIC_AUTH_TOKEN_NAME || "stemrn_auth";
+        const token = Cookies.get(tokenName);
+
+        if (!token) {
+            console.error("No auth token found");
+            router.push("/auth");
+            return;
+        }
+
         const payload = {
             ...existingData,
             ...data,
-            receiveEmails,
+            receiveEmails
         };
 
         stepProfileSetup(payload, {
             onSuccess: () => {
-
+                setExistingData(null);
+                localStorage.removeItem("profile-setup-data");
+                router.push("/dashboard");
             },
             onError: (error) => {
                 console.error("Profile setup failed", error);
@@ -88,7 +103,7 @@ const ReviewAndSetupForm = () => {
                             type="checkbox"
                             id="terms"
                             className="mt-0.5 w-4.5 h-4.5 accent-primary"
-                            {...register("agreedToTerms", {
+                            {...register("terms_accepted", {
                                 required: "Please agree to the Terms & Conditions",
                             })}
                         />
@@ -122,7 +137,7 @@ const ReviewAndSetupForm = () => {
                             type="checkbox"
                             id="privacy"
                             className="mt-0.5 w-4.5 h-4.5 accent-primary"
-                            {...register("agreedToPrivacy", {
+                            {...register("privacy_accepted", {
                                 required: "Please agree to the Privacy Policy",
                             })}
                         />

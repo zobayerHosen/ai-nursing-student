@@ -3,8 +3,11 @@
 import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import DashboardHeader from "./dashboard-header";
+import { useGetUser } from "@/hooks";
 
 const DashboardShell = ({ children }) => {
+    const { user } = useGetUser()
+    console.log("🚀 User Data ------->", user);
     const [collapsed, setCollapsed] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -28,6 +31,7 @@ const DashboardShell = ({ children }) => {
     // Note: Prevent flicker
     if (collapsed === null) return null;
 
+    // Note: Main part
     return (
         <div className="flex min-h-screen">
             {/* Sidebar */}

@@ -62,7 +62,6 @@ const SignInForm = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="w-full flex flex-col gap-3 sm:gap-4"
       >
-
         {/* email */}
         <CommonFieldsetInput
           label="Email"
@@ -122,7 +121,7 @@ const SignInForm = () => {
         >
           {isPending ? "Logging in..." : "Log in"}
         </button>
-      </form>
+      </form> 
 
       {/* or sign up with google */}
       <Divider className="text-sm! sm:text-base! my-0!">or sign up with</Divider>

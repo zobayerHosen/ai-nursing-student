@@ -15,8 +15,8 @@ export async function proxy(request) {
         "/auth",
         "/auth/register",
         "/auth/profile-setup",
-        "/auth/review-and-finish",
-        "/auth/forget-password",
+        // "/auth/review-and-finish",
+        // "/auth/forget-password",
         "/auth/new-password"
     ];
 
@@ -57,8 +57,8 @@ export const config = {
         "/",
         "/auth",
         "/auth/register",
-        "/auth/profile-setup",
-        "/auth/review-and-finish",
+        // "/auth/profile-setup",
+        // "/auth/review-and-finish",
         "/auth/forget-password",
         "/auth/new-password",
 

@@ -75,21 +75,12 @@ const HomeHeader = () => {
           {/* Desktop Buttons */}
           {
             user ? (
-              user?.is_profile_complete ? (
-                <Link
-                  href="/dashboard"
-                  className="bg-[#FE5E7E] px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:bg-[#ff7b94] hover:scale-105 active:scale-95 transition-all"
-                >
-                  Dashboard
-                </Link>
-              ) : (
-                <Link
-                  href="/auth/profile-setup"
-                  className="bg-[#FE5E7E] px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:bg-[#ff7b94] hover:scale-105 active:scale-95 transition-all"
-                >
-                  Profile Setup
-                </Link>
-              )
+              <Link
+                href={user?.is_profile_completed ? "/dashboard" : "/auth/profile-setup"}
+                className="bg-[#FE5E7E] px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:bg-[#ff7b94] hover:scale-105 active:scale-95 transition-all"
+              >
+                {user?.is_profile_completed ? "Dashboard" : "Profile Setup"}
+              </Link>
             ) : (
               <div className="hidden lg:flex items-center gap-6">
                 <Link

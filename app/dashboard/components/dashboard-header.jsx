@@ -41,7 +41,6 @@ export default function DashboardHeader({
     setCollapsed,
     setIsSidebarOpen
 }) {
-
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
 

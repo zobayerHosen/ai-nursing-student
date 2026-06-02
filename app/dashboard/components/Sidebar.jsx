@@ -12,8 +12,10 @@ import { IoClose } from "react-icons/io5";
 import { ArrowBigDownDash, LogOut } from "lucide-react";
 import { useState } from "react";
 import { Modal } from "antd";
+import { useLogout } from "@/hooks";
 
 export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, }) {
+    const { logout, isPending } = useLogout();
     const pathname = usePathname();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -227,21 +229,17 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                     <div className="flex items-center justify-center gap-3 w-full">
                         <button
                             onClick={() => setShowLogoutModal(false)}
-                            className="flex-1 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 transition text-sm font-medium"
+                            className="cursor-pointer flex-1 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 transition text-sm font-medium"
                         >
                             Cancel
                         </button>
 
                         <button
-                            onClick={() => {
-                                setShowLogoutModal(false);
-
-                                // logout logic
-                                console.log("Logout");
-                            }}
-                            className="flex-1 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition text-sm font-medium"
+                            onClick={() => logout()}
+                            disabled={isPending}
+                            className="cursor-pointer flex-1 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition text-sm font-medium"
                         >
-                            Logout
+                            {isPending ? "Please wait..." : "Logout"}
                         </button>
                     </div>
                 </div>
