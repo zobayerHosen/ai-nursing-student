@@ -7,8 +7,18 @@ import React, { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { Upload, ShieldAlert, Trash2 } from "lucide-react";
 import CommonFieldsetInput from "@/components/common-fieldset-input";
+import { useGetUser } from "@/hooks";
+import { useDeleteUser } from "@/hooks/user/delete-user.hook";
+import { useUpdateAvatar } from "@/hooks/user/update-avatar.hook";
+import { useUpdateInfo } from "@/hooks/user/update-info.hook";
+import ProfileName from "./profile-name";
 
 export default function GeneralSettings({ showToast }) {
+  const { user } = useGetUser();
+  const { deleteUser, isPending: deleteUserPending } = useDeleteUser();
+  const { updateAvatar, isPending: avatarPending } = useUpdateAvatar();
+
+
   const [profilePic, setProfilePic] = useState(
     "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120"
   );
@@ -22,9 +32,9 @@ export default function GeneralSettings({ showToast }) {
     handleSubmit,
   } = useForm({
     defaultValues: {
-      first_name: "Zobayer",
-      last_name: "Hosen",
-      email: "example@gmail.com",
+      first_name: user?.first_name ?? "Zobayer",
+      last_name: user?.last_name ?? "Hosen",
+      email: user?.email,
     }
   });
 
@@ -114,63 +124,12 @@ export default function GeneralSettings({ showToast }) {
             </div>
           </div>
 
-          {/* First Name Field - Required input field */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <CommonFieldsetInput
-              label="First Name"
-              type="text"
-              control={control}
-              placeholder="e.g. Zobayer"
-              name="first_name"
-              register_as="first_name"
-              required
-              errors={errors}
-              validationRules={{ required: "First Name is required" }}
-            />
-
-            {/* Last Name Field */}
-            <CommonFieldsetInput
-              label="Last Name"
-              type="text"
-              control={control}
-              placeholder="e.g. Hosen"
-              name="last_name"
-              register_as="last_name"
-              required={false}
-              errors={errors}
-            />
-          </div>
-
-          {/* Email Field */}
-          <CommonFieldsetInput
-            label="Email"
-            type="email"
-            control={control}
-            placeholder="e.g. johndoe@mail.com"
-            name="email"
-            disabled={true}
-            register_as="email"
-            required={false}
-            errors={errors}
-            innerWrapper="bg-gray-200!"
-          />
+          <ProfileName />
         </div>
       </div>
 
       <hr className="border-slate-200/80" />
-
-      {/* Save Changes button on bottom right */}
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          className="bg-[#2C5F8D] hover:bg-[#224b70] text-white px-6 py-2.5 rounded-lg text-sm font-semibold shadow-sm active:scale-95 transition-all cursor-pointer flex items-center gap-2"
-        >
-          Save Changes
-        </button>
-      </div>
-
-      <hr className="border-slate-200/80" />
-
+      
       {/* Delete Account */}
       <div className="bg-[#FFF0F2] border border-[#FFE2E6] rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="space-y-1">

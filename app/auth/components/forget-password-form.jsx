@@ -3,22 +3,40 @@
 import { useForm } from "react-hook-form";
 import AuthCommonTitle from "./auth-common-title";
 import CommonFieldsetInput from "@/components/common-fieldset-input";
+import { useForgotPassword } from "@/hooks";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const ForgetPasswordForm = () => {
+    const { forgotPassword, isPending } = useForgotPassword();
+    const router = useRouter();
+
     // Note: react hook form
     const {
         control,
         formState: { errors },
         handleSubmit,
-        watch
+        reset
     } = useForm({
         mode: "onChange",
     });
 
-
+    // Note: Form submite handler
     const onSubmit = (data) => {
+        forgotPassword(data, {
+            onSuccess: (response) => {
+                toast.success(response?.message);
+                reset();
+            },
+            onError(error) {
+                toast.error(error?.response?.data?.message || "Something went wrong!")
+                console.log("🚀 Forget password error -----> ", error);
+            }
+        })
         console.log(data);
     };
+
+    // Note: UI
     return (
         <div className="w-full max-w-130 mx-auto flex flex-col gap-8 pt-10">
             <AuthCommonTitle
@@ -26,6 +44,7 @@ const ForgetPasswordForm = () => {
                 description="Enter your email and we'll send a reset link."
             />
 
+            {/* Input filed form */}
             <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col gap-5">
                 <CommonFieldsetInput
                     label="Email"
@@ -44,15 +63,14 @@ const ForgetPasswordForm = () => {
                     }}
                 />
                 <button
-                    // onClick={() => router.push("/auth/profile-setup")}
                     type="submit"
-                    className="cursor-pointer w-full bg-primary hover:bg-primary/80 text-white py-4 rounded-xl text-base font-medium transition mt-2"
+                    disabled={isPending}
+                    className={`cursor-pointer w-full bg-primary hover:bg-primary/80 text-white py-4 rounded-xl text-base font-medium transition mt-2 ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                    Continue
+                    {isPending ? "Please wait...." : "Continue"}
                 </button>
             </form>
         </div>
     );
 };
-
 export default ForgetPasswordForm;

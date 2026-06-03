@@ -237,7 +237,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                         <button
                             onClick={() => logout()}
                             disabled={isPending}
-                            className="cursor-pointer flex-1 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition text-sm font-medium"
+                            className={`cursor-pointer flex-1 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition text-sm font-medium ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
                             {isPending ? "Please wait..." : "Logout"}
                         </button>

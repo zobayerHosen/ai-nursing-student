@@ -30,6 +30,7 @@ const SignInForm = () => {
           router.push("/auth/profile-setup");
           setToken(responseData?.tokens?.access, responseData?.expires_in);
         } else {
+          toast.success("Login successfull")
           setToken(responseData?.tokens?.access, responseData?.expires_in);
           router.push("/dashboard");
         }
@@ -117,11 +118,11 @@ const SignInForm = () => {
         <button
           type="submit"
           disabled={isPending}
-          className="cursor-pointer w-full bg-primary text-white py-3 sm:py-4 rounded-xl text-sm sm:text-base font-medium hover:bg-primary/80 transition-colors"
+          className={`cursor-pointer w-full bg-primary text-white py-3 sm:py-4 rounded-xl text-sm sm:text-base font-medium hover:bg-primary/80 transition-colors ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
         >
-          {isPending ? "Logging in..." : "Log in"}
+          {isPending ? "Please wait..." : "Log in"}
         </button>
-      </form> 
+      </form>
 
       {/* or sign up with google */}
       <Divider className="text-sm! sm:text-base! my-0!">or sign up with</Divider>

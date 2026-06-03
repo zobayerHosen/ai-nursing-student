@@ -4,8 +4,17 @@ import CommonFieldsetInput from "@/components/common-fieldset-input";
 import { useForm } from "react-hook-form";
 import AuthCommonTitle from "./auth-common-title";
 import { useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useResetPassword } from "@/hooks";
+import toast from "react-hot-toast";
 
 const SetNewPasswordForm = () => {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const uid = searchParams.get("uidb64");
+    const token = searchParams.get("token");
+    console.log({ uid, token });
+    const { resetPassword, isPending } = useResetPassword();
 
     // Note: react hook form
     const {
@@ -36,9 +45,33 @@ const SetNewPasswordForm = () => {
 
 
     const onSubmit = (data) => {
-        console.log(data);
+
+        if (!token || !uid) {
+            toast.error("Invalid request");
+            return;
+        };
+
+        const payload = {
+            ...data,
+            uidb64: uid,
+            token
+        }
+
+        // Mutate
+        resetPassword(payload, {
+            onSuccess: (response) => {
+                toast.success(response.message ?? "Pasword reset successfully");
+                router.push("/auth");
+            },
+            onError: (error) => {
+                console.log("🚀 Set new password error ------>", error)
+            }
+        })
+
+        console.log(payload);
     };
 
+    // Note: Input field
     return (
         <div className="w-full max-w-130 mx-auto flex flex-col gap-8 pt-10">
             <AuthCommonTitle
@@ -95,11 +128,11 @@ const SetNewPasswordForm = () => {
 
                 {/* Continue Button */}
                 <button
-                    // onClick={() => router.push("/auth/profile-setup")}
                     type="submit"
-                    className="cursor-pointer w-full bg-primary hover:bg-primary/80 text-white py-4 rounded-xl text-base font-medium transition mt-2"
+                    disabled={isPending}
+                    className={`cursor-pointer w-full bg-primary hover:bg-primary/80 text-white py-4 rounded-xl text-base font-medium transition mt-2 ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                    Continue
+                    {isPending ? "Please wait..." : "Continue"}
                 </button>
             </form>
         </div>

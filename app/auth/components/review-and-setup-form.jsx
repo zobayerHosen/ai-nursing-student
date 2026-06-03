@@ -191,7 +191,7 @@ const ReviewAndSetupForm = () => {
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="cursor-pointer w-full bg-primary hover:bg-primary/80 text-white font-semibold py-3.5 px-6 rounded-xl transition duration-200 shadow-md hover:shadow-lg focus:outline-none text-base"
+                    className={`cursor-pointer w-full bg-primary hover:bg-primary/80 text-white font-semibold py-3.5 px-6 rounded-xl transition duration-200 shadow-md hover:shadow-lg focus:outline-none text-base ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                     {isPending ? "Continue...." : "Continue"}
                 </button>
