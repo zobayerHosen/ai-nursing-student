@@ -1,5 +1,5 @@
 export const UpdateAvatarService = async (payload, axiosInstance) => {
-  const response = await axiosInstance.post("/account/", payload, {
+  const response = await axiosInstance.patch("/account/", payload, {
     headers: {
       "Content-Type": "multipart/form-data",
     },

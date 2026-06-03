@@ -23,7 +23,6 @@ const ProfileName = () => {
 
     const onSubmit = (data) => {
         console.log("General Save: ", data);
-        showToast("Account details saved successfully!");
     };
 
     // Note: UI

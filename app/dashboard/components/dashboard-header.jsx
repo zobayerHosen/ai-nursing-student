@@ -1,5 +1,6 @@
 "use client";
 
+import { useGetUser } from "@/hooks";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -34,15 +35,18 @@ const socialIcons = [
     },
 ];
 
-const userImage = "https://i.pravatar.cc/300";
+
 
 export default function DashboardHeader({
     collapsed,
     setCollapsed,
     setIsSidebarOpen
 }) {
+    const { user } = useGetUser();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
+
+    const userImage = user?.profile_photo ?? "/dummyProfile.jpg";
 
     // Sidebar Toggle
     const handleSidebarToggle = () => {
