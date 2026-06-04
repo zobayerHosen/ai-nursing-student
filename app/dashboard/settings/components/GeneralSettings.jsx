@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Upload, ZoomIn } from "lucide-react";
 import { useGetUser } from "@/hooks";
 import { useUpdateAvatar } from "@/hooks/user/update-avatar.hook";
@@ -9,6 +9,7 @@ import DeleteAccount from "./user-profile/delete-account";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import DeleteProfile from "./user-profile/delete-profile";
 
 export default function GeneralSettings({ showToast }) {
   const { user } = useGetUser();
@@ -19,6 +20,10 @@ export default function GeneralSettings({ showToast }) {
   const [profilePic, setProfilePic] = useState(
     user?.profile_photo ?? "/dummyProfile.jpg"
   );
+
+  useEffect(() => {
+    setProfilePic(user?.profile_photo || "/dummyProfile.jpg");
+  }, [user?.profile_photo]);
 
   const fileInputRef = useRef(null);
 
@@ -52,13 +57,6 @@ export default function GeneralSettings({ showToast }) {
         toast.error(error?.response?.data?.message ?? "Something went wrong!")
       },
     });
-  };
-
-  const handleDeletePicture = () => {
-    setProfilePic(
-      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120"
-    );
-    showToast("Profile picture deleted. Reverted to default.");
   };
 
   // Note: UI
@@ -114,19 +112,10 @@ export default function GeneralSettings({ showToast }) {
                   <Upload size={13} className="shrink-0" />
                   {avatarPending ? "Uploading..." : "Change Picture"}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleDeletePicture}
-                  className="bg-[#FFF0F2] hover:bg-[#FFE2E6] text-[#FF4D4D] px-4 py-2 rounded-lg text-xs font-semibold active:scale-95 transition-all cursor-pointer"
-                >
-                  Delete Picture
-                </button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handlePictureChange}
-                  className="hidden"
-                  accept="image/*"
+                <DeleteProfile
+                  fileInputRef={fileInputRef}
+                  avatarPending={avatarPending}
+                  handlePictureChange={handlePictureChange}
                 />
               </div>
             </div>
