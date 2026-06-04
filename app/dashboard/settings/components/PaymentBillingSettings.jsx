@@ -94,7 +94,7 @@ export default function PaymentBillingSettings({ showToast }) {
               </div>
 
               <div className="space-y-3">
-                <h5 className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">WHAT'S INCLUDED</h5>
+                <h5 className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">WHAT&apos;S INCLUDED</h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   {[
                     "10,000+ NCLEX questions",

@@ -1,7 +1,5 @@
-import UnderConstraction from "../components/underconstraction";
+import { redirect } from "next/navigation";
 
-const DosageCalculationPage = () => {
-  return <UnderConstraction />;
-};
-
-export default DosageCalculationPage;
+export default function DosageCalculationIndex() {
+  redirect("/dashboard/dosage-calculation/basic-dosage-calculations");
+}

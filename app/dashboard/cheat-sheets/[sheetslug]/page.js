@@ -55,7 +55,7 @@ export default function CheatSheetDetailsPage({ params }) {
               </Link>
             </li>
             <li><span>/</span></li>
-            <li className="text-[#424242] font-semibold truncate max-w-[200px] md:max-w-[400px]">
+            <li className="text-[#424242] font-semibold truncate max-w-50 md:max-w-100">
               {sheet?.title ?? ""}
             </li>
           </ol>
@@ -101,7 +101,7 @@ export default function CheatSheetDetailsPage({ params }) {
               <ZoomIn className="w-5 h-5 text-[#4A4A4A]" />
             </button>
 
-            <div className="relative w-full h-[550px] bg-slate-50 rounded-xl overflow-hidden cursor-pointer" onClick={() => setIsZoomed(true)}>
+            <div className="relative w-full h-137.5 bg-slate-50 rounded-xl overflow-hidden cursor-pointer" onClick={() => setIsZoomed(true)}>
               <Image
                 src={sheet?.image ?? ""}
                 alt={sheet?.title ?? ""}
@@ -199,9 +199,9 @@ export default function CheatSheetDetailsPage({ params }) {
       {isZoomed && (
         <div
           onClick={() => setIsZoomed(false)}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 cursor-zoom-out animate-fade-in"
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-9999 flex items-center justify-center p-4 cursor-zoom-out animate-fade-in"
         >
-          <div className="relative w-full max-w-4xl h-[90vh] max-h-[800px]">
+          <div className="relative w-full max-w-4xl h-[90vh] max-h-200">
             <Image
               src={sheet?.image}
               alt={sheet?.title}

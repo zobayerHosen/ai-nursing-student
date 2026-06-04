@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Menu } from "lucide-react";
-import FlashCardSidebar from "./components/flashcard-sidebar";
+import DosageSidebar from "./components/dosage-sidebar";
 
-export default function FlashcardsLayout({ children }) {
+export default function DosageCalculationLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
@@ -22,7 +22,7 @@ export default function FlashcardsLayout({ children }) {
         className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 xl:relative xl:translate-x-0
         ${isSidebarOpen ? "translate-x-0 z-999" : "-translate-x-full"} w-[80%] sm:w-80 xl:w-82.5 shrink-0 bg-white`}
       >
-        <FlashCardSidebar onClose={() => setIsSidebarOpen(false)} />
+        <DosageSidebar onClose={() => setIsSidebarOpen(false)} />
       </div>
 
       {/* Content */}
@@ -35,7 +35,7 @@ export default function FlashcardsLayout({ children }) {
           >
             <Menu size={20} className="text-[#1B4B66]" />
           </button>
-          <h2 className="font-semibold text-lg text-[#1B4B66]">Flashcards</h2>
+          <h2 className="font-semibold text-lg text-[#1B4B66]">Dosage Calculation</h2>
         </div>
 
         <div className="p-4 xl:p-6">{children}</div>

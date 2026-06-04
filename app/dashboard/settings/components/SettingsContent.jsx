@@ -7,7 +7,7 @@ import { User, CreditCard, Lock, Bell } from "lucide-react";
 // Sub-components
 import GeneralSettings from "./GeneralSettings";
 import PaymentBillingSettings from "./PaymentBillingSettings";
-import PasswordSettings from "./PasswordSettings";
+import PasswordSettings from "./user-profile/PasswordSettings";
 import NotificationSettings from "./NotificationSettings";
 
 export default function SettingsContent() {

@@ -2,11 +2,14 @@
 import CommonFieldsetInput from "@/components/common-fieldset-input";
 import { useGetUser } from "@/hooks";
 import { useUpdateInfo } from "@/hooks/user/update-info.hook";
+import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 const ProfileName = () => {
     const { user } = useGetUser();
     const { updateInfo, isPending: updateInfoPending } = useUpdateInfo();
+    const queryClient = useQueryClient();
 
     // Note: React Hook Form setup
     const {
@@ -22,6 +25,15 @@ const ProfileName = () => {
     });
 
     const onSubmit = (data) => {
+        updateInfo(data, {
+            onSuccess: (response) => {
+                toast.success(response?.message ?? "Profile Information Updated");
+                queryClient.invalidateQueries({ queryKey: ["user"] });
+            },
+            onError: (error) => {
+                toast.error(error?.response?.data?.message ?? "Something went wrong!");
+            }
+        });
         console.log("General Save: ", data);
     };
 
@@ -71,13 +83,13 @@ const ProfileName = () => {
             <div className="flex justify-end">
                 <button
                     type="submit"
-                    className="bg-[#2C5F8D] hover:bg-[#224b70] text-white px-6 py-2.5 rounded-lg text-sm font-semibold shadow-sm active:scale-95 transition-all cursor-pointer flex items-center gap-2"
+                    disabled={updateInfoPending}
+                    className={`bg-[#2C5F8D] hover:bg-[#224b70] text-white px-6 py-2.5 rounded-lg text-sm font-semibold shadow-sm active:scale-95 transition-all cursor-pointer flex items-center gap-2 ${updateInfoPending ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                    Save Changes
+                    {updateInfoPending ? "Please Wait..." : "Save Changes"}
                 </button>
             </div>
         </form>
     );
 };
-
 export default ProfileName;

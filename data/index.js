@@ -975,12 +975,12 @@ export const getFeaturesForPlan = (isFeatured, simTests) => {
     },
   ];
 
-  if (isFeatured) {
+ if (isFeatured) {
     baseFeatures.push({
       id: "prioritySupport",
       label: "Priority support",
     });
-  }
+  } 
 
   return baseFeatures;
 };

@@ -107,7 +107,7 @@ const categories = [
     },
 ];
 
-const FlashCardSidebar = () => {
+const FlashCardSidebar = ({ onClose }) => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const currentTab = searchParams.get('tab') || "study";
@@ -134,7 +134,7 @@ const FlashCardSidebar = () => {
 
     // Note: UI
     return (
-        <aside className="w-full max-w-82.5 border-r border-black/10  bg-white min-h-screen overflow-hidden sticky top-0 left-0 px-6 py-4">
+        <aside className="w-full h-full border-r border-black/10 bg-white overflow-y-auto overflow-x-hidden flex flex-col px-6 py-4">
             {/* header */}
             <div className="pb-4 border-b border-black/10">
                 <h2 className="text-xl leading-none font-semibold text-[#424242]">
@@ -196,6 +196,7 @@ const FlashCardSidebar = () => {
                                                     <Link
                                                         key={subCategory?.slug}
                                                         href={`/dashboard/flashcards/${subCategory?.slug}`}
+                                                        onClick={onClose}
                                                         className={`flex items-center justify-between cursor-pointer rounded-lg text-start text-sm font-semibold hover:bg-gray-100 w-full hover:px-4 hover:py-2 transition-all duration-300`}
                                                         style={{ color: category.textColor }}
                                                     >

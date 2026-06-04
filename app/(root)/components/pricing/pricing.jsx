@@ -54,13 +54,6 @@ const PricingPage = () => {
             }
         ];
 
-        if (isFeatured) {
-            baseFeatures.push({
-                id: 'prioritySupport',
-                label: 'Priority support'
-            });
-        }
-
         return baseFeatures;
     };
 
