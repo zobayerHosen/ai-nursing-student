@@ -12,6 +12,7 @@ export const useUpdateAvatar = () => {
     isPending,
     data,
   } = useMutation({
+    mutationKey: ["user-profile-avatar"],
     mutationFn: (payload) => UpdateAvatarService(payload, axiosInstance),
   });
 

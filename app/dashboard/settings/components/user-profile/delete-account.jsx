@@ -1,9 +1,11 @@
 "use client";
+import { useDeleteUser } from '@/hooks/user/delete-user.hook';
 import { Modal } from 'antd';
 import { AlertTriangle, ShieldAlert, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 
 const DeleteAccount = () => {
+    const { deleteUser, isPending } = useDeleteUser();
 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -16,7 +18,15 @@ const DeleteAccount = () => {
     };
 
     const confirmDelete = () => {
-        setIsDeleteModalOpen(false);
+        // setIsDeleteModalOpen(false);
+        deleteUser(undefined, {
+            onSuccess: (data) => {
+                toast.success(data?.message);
+            },
+            onError: (error) => {
+                toast.error(error?.response?.data?.message);
+            }
+        });
     };
     return (
         <div className="bg-[#FFF0F2] border border-[#FFE2E6] rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -60,9 +70,10 @@ const DeleteAccount = () => {
                     </button>
                     <button
                         onClick={confirmDelete}
-                        className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700"
+                        disabled={isPending}
+                        className={`px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 ${isPending ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                     >
-                        Confirm
+                        {isPending ? "Deleting..." : "Confirm"}
                     </button>
                 </div>
             </Modal>
