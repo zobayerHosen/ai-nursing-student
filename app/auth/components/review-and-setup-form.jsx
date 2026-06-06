@@ -60,7 +60,7 @@ const ReviewAndSetupForm = () => {
             onSuccess: () => {
                 setExistingData(null);
                 localStorage.removeItem("profile-setup-data");
-                router.push("/dashboard");
+                router.push("/subscription-plan-choose");
             },
             onError: (error) => {
                 console.error("Profile setup failed", error);
