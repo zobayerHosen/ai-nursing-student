@@ -30,10 +30,8 @@ const ForgetPasswordForm = () => {
             },
             onError(error) {
                 toast.error(error?.response?.data?.message || "Something went wrong!")
-                console.log("🚀 Forget password error -----> ", error);
             }
         })
-        console.log(data);
     };
 
     // Note: UI

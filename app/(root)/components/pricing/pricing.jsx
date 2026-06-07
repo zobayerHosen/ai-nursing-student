@@ -89,8 +89,6 @@ const PricingPage = () => {
                 toast.error(error?.response?.data?.message ?? "Something went wrong");
             }
         });
-
-        console.log("🚀 Plan name detect ------->", name);
     };
 
     // Note: UI
@@ -120,6 +118,23 @@ const PricingPage = () => {
                                 (item) => item.duration === plan.display_title
                             );
 
+                            const currentPlan = user?.subscription?.plan_name;
+                            const hasSubscription = !!currentPlan;
+
+                            const isActivePlan = currentPlan === plan?.name;
+
+                            const buttonText = !hasSubscription
+                                ? plan?.badge_text
+                                : isActivePlan
+                                    ? "Active Plan"
+                                    : "Upgrade Plan";
+
+                            const buttonClass = isActivePlan
+                                ? "bg-green-500 text-white border border-green-500"
+                                : isFeatured
+                                    ? "bg-[#ff6b6b] text-white border border-[#ff6b6b]"
+                                    : "bg-transparent text-[#0b2447] border border-[rgba(11,36,71,0.16)]";
+                            // Note: Plan get UI
                             return (
                                 <div
                                     key={idx}
@@ -187,16 +202,13 @@ const PricingPage = () => {
                                     {/* Subscription Get Button */}
                                     <button
                                         onClick={() => handleSubscription(plan?.name)}
-                                        disabled={isPending}
-                                        className={`cursor-pointer block text-center py-3 px-5 rounded-xl font-semibold text-sm mt-5 mb-6 transition-all duration-200 ${isFeatured
-                                            ? 'bg-[#ff6b6b] text-white border border-[#ff6b6b] shadow-[0_4px_14px_rgba(255,107,107,0.18)] hover:bg-[#ff5252] hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(255,107,107,0.28)]'
-                                            : 'bg-transparent text-[#0b2447] border border-[rgba(11,36,71,0.16)] hover:bg-[rgba(11,36,71,0.04)] hover:border-[#0b2447]'
-                                            } ${isPending ? "opacity-50 cursor-not-allowed" : ""} `}
+                                        disabled={isPending || isActivePlan}
+                                        className={`cursor-pointer block text-center py-3 px-5 rounded-xl font-semibold text-sm mt-5 mb-6 transition-all duration-200
+                                                    ${buttonClass}
+                                                    ${isPending ? "opacity-50 cursor-not-allowed" : ""}
+                                                `}
                                     >
-                                        {isPending ? "Please Wait..." :
-                                            user?.subscription?.package === "package-1" ? "Active Plan" :
-                                                plan?.badge_text ?? ""
-                                        }
+                                        {isPending ? "Please Wait..." : buttonText}
                                     </button>
 
                                     {/* Features Label */}

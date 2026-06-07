@@ -58,8 +58,6 @@ const LibrarySidebar = ({ onClose }) => {
         setTimeout(() => {
             setLoading(false);
         }, 1000);
-
-        console.log("Clicked")
     };
 
     // Note: toggle folder

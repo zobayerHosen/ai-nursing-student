@@ -24,7 +24,6 @@ export default function PasswordSettings({ showToast }) {
       showToast("Passwords do not match!", "error");
       return;
     }
-    console.log("Password Save: ", data);
     showToast("Password updated successfully!");
     reset();
   };
