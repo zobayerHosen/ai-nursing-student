@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./public/assets/logo.png" alt="STEMRN Logo" width="400" />
+  <img src="/assets/logo.png" alt="STEMRN Logo" width="400" />
   <br /><br />
   <h1>STEMRN — AI-Powered NCLEX-RN Prep Platform</h1>
   <p><strong>Pass the NCLEX on your first attempt. Guaranteed.</strong></p>

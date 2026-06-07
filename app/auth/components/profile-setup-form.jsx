@@ -30,8 +30,6 @@ const ProfileSetupForm = () => {
     const { stateCountryData } = useStateCountryOptions();
     const { hearAboutData } = useHearAboutOptions();
 
-    console.log("State country data----->", hearAboutData);
-
     // Note: Nursing convert id and name to options array
     const convertNursingData = nursingProgramData?.data?.map((list) => ({
         value: list?.id,

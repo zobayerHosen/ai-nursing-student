@@ -7,7 +7,7 @@ import { getToonsGrid } from './components/stem-toons-dummy-data';
 
 export default function StemToonsPage() {
   const toons = getToonsGrid();
-  console.log(toons)
+
 
   return (
     <div className="w-full">

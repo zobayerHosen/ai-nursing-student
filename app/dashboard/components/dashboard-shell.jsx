@@ -4,12 +4,20 @@ import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import DashboardHeader from "./dashboard-header";
 import { useGetUser } from "@/hooks";
+import { useRouter } from "next/navigation";
 
 const DashboardShell = ({ children }) => {
     const { user } = useGetUser()
+    const router = useRouter();
     console.log("🚀 User Data ------->", user);
     const [collapsed, setCollapsed] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    useEffect(() => {
+        if (user?.subscription === null) {
+            router.push("/subscription-plan-choose");
+        }
+    }, [user, router])
 
     // Note: Load state
     useEffect(() => {
@@ -43,8 +51,7 @@ const DashboardShell = ({ children }) => {
 
             {/* Content */}
             <div
-                className={`flex-1 transition-all duration-300 ml-0 ${collapsed ? "lg:ml-16" : "lg:ml-64"
-                    }`}
+                className={`flex-1 transition-all duration-300 ml-0 ${collapsed ? "lg:ml-16" : "lg:ml-64"}`}
             >
                 <DashboardHeader
                     collapsed={collapsed}

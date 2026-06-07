@@ -28,8 +28,6 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
         setTimeout(() => {
             setIsDeleting(false);
             setIsDeleteModalOpen(false);
-            // In a real app, you'd trigger a refetch or update parent state here
-            console.log("Folder deleted:", folder.id);
         }, 1000);
     }
 

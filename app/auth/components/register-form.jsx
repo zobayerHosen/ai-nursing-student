@@ -46,7 +46,6 @@ const RegisterForm = () => {
   const strengthColor = ["#ff4d4f", "#ff4d4f", "#faad14", "#52c41a", "#16a34a"][strength];
 
   const handleSignUp = (data) => {
-    console.log(data);
 
     // Mutation call
     signup(data, {
@@ -54,7 +53,6 @@ const RegisterForm = () => {
         setOpenModal(true)
       },
       onError: (error) => {
-        console.log(error)
         toast.error(error?.response?.data?.message ?? "Something went wrong")
 
         // 🔥 map backend errors to RHF

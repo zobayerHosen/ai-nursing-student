@@ -17,7 +17,6 @@ const navItems = [
 
 const HomeHeader = () => {
   const { user } = useGetUser();
-  console.log("user data", user);
 
   const [isOpen, setIsOpen] = useState(false);
 

@@ -8,7 +8,7 @@ import { studyNotes } from "./study-notes-dummy-data";
 
 export default async function StudyNoteDetails({ params }) {
   const { studyslug } = await params;
-  console.log("study slug", studyslug);
+
 
   // using delay
   await new Promise(resolve => setTimeout(resolve, 1000));

@@ -34,7 +34,6 @@ const ProfileName = () => {
                 toast.error(error?.response?.data?.message ?? "Something went wrong!");
             }
         });
-        console.log("General Save: ", data);
     };
 
     // Note: UI

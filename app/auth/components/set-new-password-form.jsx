@@ -13,7 +13,6 @@ const SetNewPasswordForm = () => {
     const searchParams = useSearchParams();
     const uid = searchParams.get("uidb64");
     const token = searchParams.get("token");
-    console.log({ uid, token });
     const { resetPassword, isPending } = useResetPassword();
 
     // Note: react hook form
@@ -64,11 +63,10 @@ const SetNewPasswordForm = () => {
                 router.push("/auth");
             },
             onError: (error) => {
-                console.log("🚀 Set new password error ------>", error)
             }
         })
 
-        console.log(payload);
+
     };
 
     // Note: Input field

@@ -17,7 +17,6 @@ export default function NotificationSettings({ showToast }) {
   });
 
   const onSubmit = (data) => {
-    console.log("Notification Save: ", data);
     showToast("Notification preferences updated!");
   };
 
