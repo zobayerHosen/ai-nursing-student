@@ -4,7 +4,7 @@ import { axiosPrivateServer } from '@/lib/axios.private.server';
 import { getServerToken } from '@/utils/getServerToken';
 import { cookies } from 'next/headers';
 
-const ACCESS_TOKEN_KEY = process.env.NEXT_PUBLIC_AUTH_TOKEN_NAME || "crytax_auth";
+const ACCESS_TOKEN_KEY = process.env.NEXT_PUBLIC_AUTH_TOKEN_NAME || "stemrn_auth";
 
 export async function LogoutAction() {
     const cookieStore = await cookies();
