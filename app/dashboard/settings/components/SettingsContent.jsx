@@ -17,21 +17,9 @@ export default function SettingsContent() {
 
   // Active tab state driven directly by the Next.js query parameter
   const activeTab = searchParams.get("tab") || "general";
-
-  const [toastMessage, setToastMessage] = useState(null);
-  const [toastType, setToastType] = useState("success");
   const [openSidebar, setOpenSidebar] = useState(false);
 
-  const showToast = (message, type = "success") => {
-    setToastMessage(message);
-    setToastType(type);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3000);
-  };
-
   const handleTabChange = (tabId) => {
-    // Navigate dynamically to the selected tab. This updates the URL query string.
     router.push(`${pathname}?tab=${tabId}`);
   };
 
@@ -45,15 +33,15 @@ export default function SettingsContent() {
   const renderTabContent = () => {
     switch (activeTab) {
       case "general":
-        return <GeneralSettings showToast={showToast} />;
+        return <GeneralSettings />;
       case "payment-billing":
-        return <PaymentBillingSettings showToast={showToast} />;
+        return <PaymentBillingSettings />;
       case "password":
-        return <PasswordSettings showToast={showToast} />;
+        return <PasswordSettings />;
       case "notifications":
-        return <NotificationSettings showToast={showToast} />;
+        return <NotificationSettings />;
       default:
-        return <GeneralSettings showToast={showToast} />;
+        return <GeneralSettings />;
     }
   };
 
@@ -79,17 +67,6 @@ export default function SettingsContent() {
       </div>
 
       <div className="flex flex-col xl:flex-row w-full h-screen overflow-hidden relative">
-        {/* Toast Notification */}
-        {toastMessage && (
-          <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3.5 rounded-2xl shadow-xl border animate-slideIn ${toastType === "success"
-            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-            : "bg-red-50 text-red-800 border-red-200"
-            }`}>
-            <div className={`w-2 h-2 rounded-full ${toastType === "success" ? "bg-emerald-500" : "bg-red-500"}`} />
-            <span className="text-sm font-semibold">{toastMessage}</span>
-          </div>
-        )}
-
         {/* Settings Side Panel */}
         <aside
           className={`fixed top-0 left-0 z-100 w-72 h-screen bg-white border-r border-black/10 transform transition-transform duration-300 ease-in-out xl:relative xl:translate-x-0 xl:block ${openSidebar ? "translate-x-0" : "-translate-x-full"}`}
