@@ -2,8 +2,8 @@ import { BookOpen } from "lucide-react";
 
 const StudyNotesIndexPage = () => {
   return (
-    <div className="min-h-[80vh] flex flex-col items-center justify-center p-8">
-      <div className="max-w-md w-full bg-white rounded-2xl p-8 border border-[#EEEEEE] shadow-sm text-center">
+    <div className="min-h-[80vh] flex flex-col items-center justify-center p-4 sm:p-8">
+      <div className="max-w-md w-full bg-white rounded-2xl p-6 sm:p-8 border border-[#EEEEEE] shadow-sm text-center">
         <div className="w-16 h-16 bg-[#FF6B8A]/10 text-[#FF6B8A] rounded-full flex items-center justify-center mx-auto mb-6">
           <BookOpen className="w-8 h-8" />
         </div>

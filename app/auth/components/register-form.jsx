@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { MdOutlineMarkEmailRead } from "react-icons/md";
 import { IoAirplaneOutline, IoVolumeHighOutline } from "react-icons/io5";
+import LoadingIcon from "@/components/loading-icon";
 
 const RegisterForm = () => {
   const router = useRouter();
@@ -180,7 +181,7 @@ const RegisterForm = () => {
             disabled={isPending}
             className={`cursor-pointer w-full bg-primary hover:bg-primary/80 text-white py-4 rounded-xl text-base font-medium transition mt-2 ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
           >
-            {isPending ? "Please wait..." : "Continue"}
+            {isPending ? <LoadingIcon/> : "Continue"}
           </button>
 
           <Divider className="text-sm! sm:text-base! my-0!">or sign up with</Divider>

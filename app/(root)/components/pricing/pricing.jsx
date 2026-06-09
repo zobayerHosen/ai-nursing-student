@@ -1,7 +1,9 @@
 "use client";
 import { useGetUser } from "@/hooks";
-import { useGetSubscriptionPlanData, useSubscriptionPlan } from "@/hooks/subscription-plan";
+import { useGetSubscriptionPlanData, useSubscriptionPlan, useSubscriptionPlanCancel } from "@/hooks/subscription-plan";
 import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import LoadingIcon from "@/components/loading-icon";
 const planIcons = [
     {
         duration: "1 Month",
@@ -59,8 +61,9 @@ const CheckIcon = () => (
 const PricingPage = () => {
     const { user } = useGetUser();
     const { planDataGet, isLoading, isFetching, isError } = useGetSubscriptionPlanData();
-    console.log("🚀 Subscription plan data get----->", planDataGet);
     const { subscriptionPlan, isPending } = useSubscriptionPlan();
+    const { subscripitonPlanCancel, isPending: cancelPending } = useSubscriptionPlanCancel();
+    const queryClient = useQueryClient();
 
     const aiTools = [
         'My Tutor', 'Lecture Notes', 'Notes → Flashcard', 'Notes → Quiz',
@@ -84,6 +87,18 @@ const PricingPage = () => {
                     return;
                 }
                 toast.error("Checkout URL not found");
+            },
+            onError: (error) => {
+                toast.error(error?.response?.data?.message ?? "Something went wrong");
+            }
+        });
+    };
+
+    const handlePlanCancel = () => {
+        subscripitonPlanCancel(undefined, {
+            onSuccess: (data) => {
+                toast.success(data?.message ?? "Plan cancelled successfully!");
+                queryClient.invalidateQueries({ queryKey: ["user"] });
             },
             onError: (error) => {
                 toast.error(error?.response?.data?.message ?? "Something went wrong");
@@ -126,25 +141,34 @@ const PricingPage = () => {
                             const buttonText = !hasSubscription
                                 ? plan?.badge_text
                                 : isActivePlan
-                                    ? "Active Plan"
-                                    : "Upgrade Plan";
+                                    ? "Current Plan"
+                                    : "Switch to this Plan";
 
                             const buttonClass = isActivePlan
-                                ? "bg-green-500 text-white border border-green-500"
+                                ? "bg-green-500 text-white border border-green-500 cursor-default"
                                 : isFeatured
                                     ? "bg-[#ff6b6b] text-white border border-[#ff6b6b]"
                                     : "bg-transparent text-[#0b2447] border border-[rgba(11,36,71,0.16)]";
+
+                            const sub = user?.subscription;
                             // Note: Plan get UI
                             return (
                                 <div
                                     key={idx}
                                     className={`relative flex flex-col rounded-2xl p-4 md:p-5 xl:p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-[rgba(11,36,71,0.16)] ${isFeatured
                                         ? 'bg-primary text-white border border-[#0b2447] shadow-lg  hover:-translate-y-3.5'
-                                        : 'h-fit bg-white border border-[rgba(11,36,71,0.08)] hover:border-[rgba(11,36,71,0.16)]'
+                                        : isActivePlan
+                                            ? 'h-fit bg-white border-2 border-green-400 shadow-md'
+                                            : 'h-fit bg-white border border-[rgba(11,36,71,0.08)] hover:border-[rgba(11,36,71,0.16)]'
                                         } `}
                                 >
-                                    {/* Badge */}
-                                    {plan?.cta_text && (
+                                    {/* Badges */}
+                                    {isActivePlan && (
+                                        <p className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white text-[10.5px] font-bold tracking-[0.12em] uppercase py-1.75 px-3.5 rounded-full shadow-[0_6px_16px_rgba(34,197,94,0.35)] whitespace-nowrap">
+                                            Current Plan
+                                        </p>
+                                    )}
+                                    {plan?.cta_text && !isActivePlan && (
                                         <p className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#ff6b6b] text-white text-[10.5px] font-bold tracking-[0.12em] uppercase py-1.75 px-3.5 rounded-full shadow-[0_6px_16px_rgba(255,107,107,0.35)] whitespace-nowrap">
                                             {plan?.cta_text ?? ""}
                                         </p>
@@ -200,16 +224,63 @@ const PricingPage = () => {
                                     </div>
 
                                     {/* Subscription Get Button */}
-                                    <button
-                                        onClick={() => handleSubscription(plan?.name)}
-                                        disabled={isPending || isActivePlan}
-                                        className={`cursor-pointer block text-center py-3 px-5 rounded-xl font-semibold text-sm mt-5 mb-6 transition-all duration-200
-                                                    ${buttonClass}
-                                                    ${isPending ? "opacity-50 cursor-not-allowed" : ""}
-                                                `}
-                                    >
-                                        {isPending ? "Please Wait..." : buttonText}
-                                    </button>
+                                    {isActivePlan ? (
+                                        <div className="mt-5 mb-4 space-y-3">
+                                            <div
+                                                className={`block text-center py-3 px-5 rounded-xl font-semibold text-sm transition-all duration-200 ${buttonClass}`}
+                                            >
+                                                {buttonText}
+                                            </div>
+
+                                            {/* Current Plan Info */}
+                                            <div className="space-y-2 bg-green-50/80 rounded-xl px-4 py-3 border border-green-100">
+                                                {sub?.is_trialing && (
+                                                    <div className="flex items-center gap-2 text-xs font-medium text-green-700">
+                                                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                                        Trial active — ends {new Date(sub?.trial_end).toLocaleDateString()}
+                                                    </div>
+                                                )}
+                                                {sub?.auto_renew && (
+                                                    <div className="flex items-center gap-2 text-xs text-slate-600">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                                                        Auto-renew on · Next billing: {new Date(sub?.current_period_end).toLocaleDateString()}
+                                                    </div>
+                                                )}
+                                                {sub?.cancel_at_period_end && (
+                                                    <div className="flex items-center gap-2 text-xs font-medium text-amber-700">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                                                        Cancelled — expires {new Date(sub?.current_period_end).toLocaleDateString()}
+                                                    </div>
+                                                )}
+                                                <div className="flex items-center gap-2 text-xs text-slate-500">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                                                    ${sub?.package_price ?? ""}/{sub?.billing_interval ?? ""}
+                                                </div>
+                                            </div>
+
+                                            {/* Cancel Button */}
+                                            {sub?.auto_renew && !sub?.cancel_at_period_end && (
+                                                <button
+                                                    onClick={handlePlanCancel}
+                                                    disabled={cancelPending}
+                                                    className="w-full text-center py-2.5 px-5 rounded-xl font-semibold text-xs text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 transition-all duration-200 cursor-pointer disabled:opacity-50"
+                                                >
+                                                    {cancelPending ? <LoadingIcon /> : "Cancel Subscription"}
+                                                </button>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleSubscription(plan?.name)}
+                                            disabled={isPending}
+                                            className={`cursor-pointer block text-center py-3 px-5 rounded-xl font-semibold text-sm mt-5 mb-6 transition-all duration-200
+                                                        ${buttonClass}
+                                                        ${isPending ? "opacity-50 cursor-not-allowed" : ""}
+                                                    `}
+                                        >
+                                            {isPending ? "Please Wait..." : buttonText}
+                                        </button>
+                                    )}
 
                                     {/* Features Label */}
                                     <p className="text-[11px] font-bold tracking-[0.11em] uppercase mb-3 opacity-55">

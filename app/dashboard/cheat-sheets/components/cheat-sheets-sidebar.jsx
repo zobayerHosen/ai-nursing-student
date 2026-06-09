@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { categoriesData } from './cheat-sheets-dummy-data';
 
-const CheatSheetsSidebar = () => {
+const CheatSheetsSidebar = ({ onClose }) => {
   const [openCategory, setOpenCategory] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const pathname = usePathname();
@@ -33,9 +33,9 @@ const CheatSheetsSidebar = () => {
   }).filter(c => c?.isMatching);
 
   return (
-    <aside className="w-82.5 border-r border-black/10 bg-white overflow-hidden sticky top-0 left-0 hidden md:block">
+    <aside className="w-full h-full border-r border-black/10 bg-white overflow-y-auto overflow-x-hidden flex flex-col">
       {/* Search Header */}
-      <div className="border-b border-black/10 py-4 ">
+      <div className="border-b border-black/10 py-4 shrink-0">
         <div className="px-4 w-full flex flex-col items-start gap-4">
           <h4 className="text-[#424242] font-semibold text-lg">Cheat Sheets</h4>
           <div className="relative w-full">
@@ -103,6 +103,7 @@ const CheatSheetsSidebar = () => {
                         <Link
                           href={`/dashboard/cheat-sheets/${subcategory?.slug}`}
                           key={subcategory?.slug}
+                          onClick={() => { if(onClose) onClose(); }}
                           className={`w-full border rounded-md px-3 py-2 flex items-center justify-between transition ${isActive
                             ? "bg-[#FF6B8A]/10 border-[#FF6B8A]/30 text-[#FF6B8A]"
                             : "bg-white border-[#EEEEEE] text-[#4A4A4A] hover:bg-[#FAFAFA]"

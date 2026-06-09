@@ -137,10 +137,10 @@ export default async function StudyNoteDetails({ params }) {
       <div className="">
 
         {/* Top Buttons */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
           {/* breadcrumb */}
-          <nav>
-            <ol className="flex">
+          <nav className="overflow-x-auto whitespace-nowrap pb-2 xl:pb-0 hide-scrollbar">
+            <ol className="flex items-center text-sm xl:text-base">
               <li>
                 <a href="#" className="text-[#2C5F8D] hover:text-[#111827]">
                   Study Notes
@@ -156,27 +156,30 @@ export default async function StudyNoteDetails({ params }) {
             </ol>
           </nav>
           {/* action buttons */}
-          <div className="flex items-center gap-3 mb-6">
-            <button className="px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] flex items-center gap-2 text-sm text-[#4A4A4A] font-medium hover:bg-slate-50 transition cursor-pointer shadow-sm">
+          <div className="flex flex-wrap items-center gap-2 xl:gap-3">
+            <button className="px-3 xl:px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] flex items-center gap-2 text-sm text-[#4A4A4A] font-medium hover:bg-slate-50 transition cursor-pointer shadow-sm">
               <Bookmark className="w-4 h-4 text-[#7A7A7A]" />
-              Save Notes
+              <span className="hidden sm:inline">Save Notes</span>
+              <span className="sm:hidden">Save</span>
             </button>
 
-            <button className="px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] flex items-center gap-2 text-sm text-[#4A4A4A] font-medium hover:bg-slate-50 transition cursor-pointer shadow-sm">
+            <button className="px-3 xl:px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] flex items-center gap-2 text-sm text-[#4A4A4A] font-medium hover:bg-slate-50 transition cursor-pointer shadow-sm">
               <Share2 className="w-4 h-4 text-[#7A7A7A]" />
-              Share Notes
+              <span className="hidden sm:inline">Share Notes</span>
+              <span className="sm:hidden">Share</span>
             </button>
 
-            <button className="px-4 py-2 rounded-lg bg-[#FF6B8A] hover:bg-[#E05270] text-white flex items-center gap-2 text-sm font-semibold transition cursor-pointer shadow-sm">
+            <button className="px-3 xl:px-4 py-2 rounded-lg bg-[#FF6B8A] hover:bg-[#E05270] text-white flex items-center gap-2 text-sm font-semibold transition cursor-pointer shadow-sm">
               <CheckCircle className="w-4 h-4" />
-              Mark Completed
+              <span className="hidden sm:inline">Mark Completed</span>
+              <span className="sm:hidden">Complete</span>
             </button>
           </div>
         </div>
 
         {/* Content Card */}
-        <div className="bg-white rounded-2xl p-8 border border-[#EEEEEE] shadow-sm">
-          <h1 className="text-3xl font-extrabold text-[#111827] mb-6">
+        <div className="bg-white rounded-2xl p-5 sm:p-8 border border-[#EEEEEE] shadow-sm">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#111827] mb-6">
             {note?.title ?? "Not Found"}
           </h1>
 

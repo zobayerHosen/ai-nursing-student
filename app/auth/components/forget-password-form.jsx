@@ -6,6 +6,7 @@ import CommonFieldsetInput from "@/components/common-fieldset-input";
 import { useForgotPassword } from "@/hooks";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import LoadingIcon from "@/components/loading-icon";
 
 const ForgetPasswordForm = () => {
     const { forgotPassword, isPending } = useForgotPassword();
@@ -65,7 +66,7 @@ const ForgetPasswordForm = () => {
                     disabled={isPending}
                     className={`cursor-pointer w-full bg-primary hover:bg-primary/80 text-white py-4 rounded-xl text-base font-medium transition mt-2 ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                    {isPending ? "Please wait...." : "Continue"}
+                    {isPending ? <LoadingIcon /> : "Continue"}
                 </button>
             </form>
         </div>

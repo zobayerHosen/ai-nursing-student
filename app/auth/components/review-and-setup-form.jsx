@@ -7,6 +7,7 @@ import { useStepProfileSetup } from "@/hooks/auth/step-profile-setup/step-profil
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import LoadingIcon from "@/components/loading-icon";
 
 const ReviewAndSetupForm = () => {
     const router = useRouter();
@@ -193,7 +194,7 @@ const ReviewAndSetupForm = () => {
                     disabled={isPending}
                     className={`cursor-pointer w-full bg-primary hover:bg-primary/80 text-white font-semibold py-3.5 px-6 rounded-xl transition duration-200 shadow-md hover:shadow-lg focus:outline-none text-base ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                    {isPending ? "Continue...." : "Continue"}
+                    {isPending ? <LoadingIcon /> : "Continue"}
                 </button>
             </form>
         </div>

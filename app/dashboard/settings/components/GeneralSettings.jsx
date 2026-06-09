@@ -10,6 +10,8 @@ import Image from "next/image";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import DeleteProfile from "./user-profile/delete-profile";
+import LoadingIcon from "@/components/loading-icon";
+import Button from "@/components/common-button";
 
 export default function GeneralSettings({ showToast }) {
   const { user } = useGetUser();
@@ -102,16 +104,15 @@ export default function GeneralSettings({ showToast }) {
               </div>
               {/* buttons */}
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
+                <Button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={avatarPending}
-                  className={`bg-[#2C5F8D] hover:bg-[#224b70] text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-sm active:scale-95 transition-all cursor-pointer flex items-center gap-1.5 ${avatarPending ? "opacity-50 cursor-not-allowed" : ""}
-                  `}
+                  loading={avatarPending}
+                  icon={<Upload size={13} className="shrink-0" />}
+                  className="px-4 py-2 text-xs"
                 >
-                  <Upload size={13} className="shrink-0" />
-                  {avatarPending ? "Uploading..." : "Change Picture"}
-                </button>
+                  Change Picture
+                </Button>
                 <DeleteProfile
                   fileInputRef={fileInputRef}
                   avatarPending={avatarPending}

@@ -9,6 +9,7 @@ import { useSignin } from "@/hooks";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import setToken from "@/utils/setToken";
+import LoadingIcon from "@/components/loading-icon";
 
 const SignInForm = () => {
   const router = useRouter();
@@ -119,7 +120,7 @@ const SignInForm = () => {
           disabled={isPending}
           className={`cursor-pointer w-full bg-primary text-white py-3 sm:py-4 rounded-xl text-sm sm:text-base font-medium hover:bg-primary/80 transition-colors ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
         >
-          {isPending ? "Please wait..." : "Log in"}
+          {isPending ? <LoadingIcon /> : "Log in"}
         </button>
       </form>
 

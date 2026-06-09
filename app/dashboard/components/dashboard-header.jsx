@@ -9,6 +9,7 @@ import { BsInstagram, BsLayoutSidebarReverse, BsThreeDotsVertical } from "react-
 import { FaFacebookF } from "react-icons/fa";
 import { GoBellFill } from "react-icons/go";
 import { TbBrandTiktok } from "react-icons/tb";
+import NotificationPanel from "./NotificationPanel";
 
 // Social Icons Data
 const socialIcons = [
@@ -35,8 +36,6 @@ const socialIcons = [
     },
 ];
 
-
-
 export default function DashboardHeader({
     collapsed,
     setCollapsed,
@@ -44,6 +43,7 @@ export default function DashboardHeader({
 }) {
     const { user } = useGetUser();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const dropdownRef = useRef(null);
 
     const userImage = user?.profile_photo ?? "/dummyProfile.jpg";
@@ -99,17 +99,31 @@ export default function DashboardHeader({
                 <div className="hidden md:flex items-center gap-2 lg:gap-3">
                     {socialIcons.map((item) => {
                         const Icon = item.icon;
+
+                        if (item.notification) {
+                            return (
+                                <div key={item.id} className="relative">
+                                    <button
+                                        onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                                        className="relative w-7 h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 shrink-0 cursor-pointer transition-colors"
+                                        aria-label="Notifications"
+                                    >
+                                        <Icon className={`text-base md:text-lg shrink-0 ${item.color}`} />
+
+                                        {/* Notification Dot */}
+                                        <span className="hidden lg:block absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+                                    </button>
+
+                                </div>
+                            );
+                        }
+
                         return (
                             <div
                                 key={item.id}
                                 className="relative w-7 h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 flex items-center justify-center rounded-full border border-gray-300 cursor-pointer hover:bg-gray-100 shrink-0"
                             >
                                 <Icon className={`text-base md:text-lg shrink-0 ${item.color}`} />
-
-                                {/* Notification Dot */}
-                                {item.notification && (
-                                    <span className="hidden lg:block absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
-                                )}
                             </div>
                         );
                     })}
@@ -125,9 +139,30 @@ export default function DashboardHeader({
                     </button>
 
                     {isDropdownOpen && (
-                        <div className="absolute right-0 mt-2 p-2 bg-white rounded-xl shadow-xl border border-gray-100 flex flex-col gap-2 min-w-[120px] animate-in fade-in zoom-in duration-200">
+                        <div className="absolute right-0 mt-2 p-2 bg-white rounded-xl shadow-xl border border-gray-100 flex flex-col gap-2 min-w-30 animate-in fade-in zoom-in duration-200">
                             {socialIcons.map((item) => {
                                 const Icon = item.icon;
+
+                                if (item.notification) {
+                                    return (
+                                        <div
+                                            key={item.id}
+                                            className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
+                                            onClick={() => {
+                                                setIsDropdownOpen(false);
+                                                setIsNotificationOpen(true);
+                                            }}
+                                        >
+                                            <div className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200">
+                                                <Icon className={`text-base ${item.color}`} />
+                                            </div>
+                                            <span className="text-sm font-medium text-gray-700 capitalize">
+                                                Notifications
+                                            </span>
+                                        </div>
+                                    );
+                                }
+
                                 return (
                                     <div
                                         key={item.id}
@@ -148,7 +183,7 @@ export default function DashboardHeader({
                 </div>
 
                 {/* Profile */}
-                <Link href={"/dashboard/settings"} className="shrink-0">
+                <Link href={"/dashboard/settings"} className="shrink-0 ring-1 rounded-full ring-gray-300">
                     <Image
                         src={userImage}
                         alt="user"
@@ -157,6 +192,14 @@ export default function DashboardHeader({
                         className="cursor-pointer w-8 h-8 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full"
                     />
                 </Link>
+
+                {/* Notification Panel - rendered at header level for all screen sizes */}
+                <div className="relative">
+                    <NotificationPanel
+                        isOpen={isNotificationOpen}
+                        onClose={() => setIsNotificationOpen(false)}
+                    />
+                </div>
             </div>
         </div>
     );

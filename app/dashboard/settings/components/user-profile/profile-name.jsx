@@ -1,5 +1,7 @@
 "use client";
+import Button from "@/components/common-button";
 import CommonFieldsetInput from "@/components/common-fieldset-input";
+import LoadingIcon from "@/components/loading-icon";
 import { useGetUser } from "@/hooks";
 import { useUpdateInfo } from "@/hooks/user/update-info.hook";
 import { useQueryClient } from "@tanstack/react-query";
@@ -80,13 +82,14 @@ const ProfileName = () => {
 
             {/* Save Changes button on bottom right */}
             <div className="flex justify-end">
-                <button
+                <Button
                     type="submit"
                     disabled={updateInfoPending}
-                    className={`bg-[#2C5F8D] hover:bg-[#224b70] text-white px-6 py-2.5 rounded-lg text-sm font-semibold shadow-sm active:scale-95 transition-all cursor-pointer flex items-center gap-2 ${updateInfoPending ? "opacity-50 cursor-not-allowed" : ""}`}
+                    loading={updateInfoPending}
+                    className="px-6 py-2.5 text-sm"
                 >
-                    {updateInfoPending ? "Please Wait..." : "Save Changes"}
-                </button>
+                    Save Changes
+                </Button>
             </div>
         </form>
     );
