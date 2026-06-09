@@ -3,13 +3,13 @@ import Link from "next/link";
 import { sidebarCategory } from "./diagnostic-sidebar-data";
 import { usePathname } from "next/navigation";
 
-const DiagnosticSidebar = () => {
+const DiagnosticSidebar = ({ onClose }) => {
     const pathname = usePathname();
 
     return (
-        <aside className="w-82.5 border-r border-black/10 bg-white min-h-screen overflow-hidden sticky top-0 left-0">
+        <aside className="w-full h-full border-r border-black/10 bg-white overflow-y-auto overflow-x-hidden flex flex-col">
             {/* header content */}
-            <div className="border-b border-black/10 py-4 ">
+            <div className="border-b border-black/10 py-4 shrink-0">
                 <div className="px-4 flex flex-col gap-4">
                     <h4 className="text-[#424242] font-semibold text-lg">Diagnostic Tests & Labs</h4>
                 </div>
@@ -24,6 +24,7 @@ const DiagnosticSidebar = () => {
                             <Link
                                 key={data.slug}
                                 href={`/dashboard/diagnostic-test-labs/${data?.slug}`}
+                                onClick={() => { if(onClose) onClose(); }}
                                 className={`flex items-center gap-2 py-2.5 px-3 rounded-md text-[13px] font-semibold transition-all duration-200 ${
                                     isActive 
                                     ? "bg-primary text-white [&_svg_path]:fill-current" 

@@ -1,4 +1,5 @@
 "use client";
+import LoadingIcon from '@/components/loading-icon';
 import { useDeleteUser } from '@/hooks/user/delete-user.hook';
 import { Modal } from 'antd';
 import { AlertTriangle, ShieldAlert, Trash2 } from 'lucide-react';
@@ -73,7 +74,7 @@ const DeleteAccount = () => {
                         disabled={isPending}
                         className={`px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 ${isPending ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                     >
-                        {isPending ? "Deleting..." : "Confirm"}
+                        {isPending ? <LoadingIcon /> : "Confirm"}
                     </button>
                 </div>
             </Modal>

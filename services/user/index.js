@@ -5,3 +5,7 @@ export * from "./getuser.service";
 // export * from "./update-password.service";
 // export * from "./update-social.service";
 // export * from "./delete-user.service";
+export * from "./change-password.service";
+export * from "./notification-settings.service";
+export * from "./update-notification-settings.service";
+export * from "./get-user-notifications.service";

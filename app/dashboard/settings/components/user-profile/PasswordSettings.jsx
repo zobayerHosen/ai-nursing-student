@@ -2,30 +2,37 @@
 
 import React from "react";
 import { useForm } from "react-hook-form";
-import { KeyRound } from "lucide-react";
+import { KeyRound, Loader2 } from "lucide-react";
 import CommonFieldsetInput from "@/components/common-fieldset-input";
+import { useChangePassword } from "@/hooks";
+import toast from "react-hot-toast";
 
 export default function PasswordSettings({ showToast }) {
+  const { changePassword, isPending } = useChangePassword();
+
   const {
     formState: { errors },
     control,
     handleSubmit,
     reset,
-  } = useForm({
-    defaultValues: {
-      current_password: "",
-      new_password: "",
-      confirm_password: "",
-    }
-  });
+  } = useForm();
 
   const onSubmit = (data) => {
-    if (data.new_password !== data.confirm_password) {
-      showToast("Passwords do not match!", "error");
+    if (data.new_password !== data.confirm_new_password) {
+      toast.error("Passwords do not match!");
       return;
     }
-    showToast("Password updated successfully!");
-    reset();
+
+    changePassword(data, {
+      onSuccess: (response) => {
+        toast.success(response?.message ?? "Password updated successfully!");
+        reset();
+      },
+      onError: (error) => {
+        toast.error(error?.response?.data?.message ?? "Something went wrong");
+      },
+    }
+    );
   };
 
   return (
@@ -60,7 +67,7 @@ export default function PasswordSettings({ showToast }) {
             register_as="new_password"
             required
             errors={errors}
-            validationRules={{ 
+            validationRules={{
               required: "New Password is required",
               minLength: { value: 6, message: "Password must be at least 6 characters" }
             }}
@@ -72,8 +79,8 @@ export default function PasswordSettings({ showToast }) {
             type="password"
             control={control}
             placeholder="••••••••"
-            name="confirm_password"
-            register_as="confirm_password"
+            name="confirm_new_password"
+            register_as="confirm_new_password"
             required
             errors={errors}
             validationRules={{ required: "Please confirm your new password" }}
@@ -83,14 +90,13 @@ export default function PasswordSettings({ showToast }) {
 
       <hr className="border-slate-200/80" />
 
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          className="bg-[#2C5F8D] hover:bg-[#224b70] text-white px-6 py-2.5 rounded-lg text-sm font-semibold shadow-sm active:scale-95 transition-all cursor-pointer flex items-center gap-2"
-        >
-          <KeyRound size={15} />
-          Update Password
-        </button>
+      <div className="flex justify-end">          <button
+        type="submit"
+        disabled={isPending}
+        className={`bg-[#2C5F8D] hover:bg-[#224b70] text-white px-6 py-2.5 rounded-lg text-sm font-semibold shadow-sm active:scale-95 transition-all cursor-pointer flex items-center gap-2 ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
+      >
+        {isPending ? <><Loader2 size={15} className="animate-spin" /> Change Password </> : <><KeyRound size={15} /> Change Password</>}
+      </button>
       </div>
     </form>
   );

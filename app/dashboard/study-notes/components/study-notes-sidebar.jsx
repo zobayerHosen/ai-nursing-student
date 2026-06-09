@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { categoriesData } from './study-notes-sidebar-data';
 
-const StudyNoteSidebar = () => {
+const StudyNoteSidebar = ({ onClose }) => {
     const [openCategory, setOpenCategory] = useState(1);
 
     const handleToggle = (id) => {
@@ -14,9 +14,9 @@ const StudyNoteSidebar = () => {
 
     return (
         <>
-            <aside className="w-82.5 border-r border-black/10 bg-white min-h-screen overflow-hidden sticky top-0 left-0">
+            <aside className="w-full h-full border-r border-black/10 bg-white overflow-y-auto overflow-x-hidden flex flex-col">
                 {/* header content */}
-                <div className="border-b border-black/10 py-4 ">
+                <div className="border-b border-black/10 py-4 shrink-0">
                     <div className="px-4 w-full flex flex-col items-start gap-4">
                         <h4 className="text-[#424242] font-semibold text-lg">Study Notes</h4>
                         {/* search study notes */}
@@ -119,11 +119,14 @@ const StudyNoteSidebar = () => {
                                         <div className="space-y-2">
                                             {category?.subcategories?.map(
                                                 (subcategory, index) => (
-                                                    <Link
-                                                        href={`/dashboard/study-notes/${subcategory?.slug}`}
-                                                        key={index}
-                                                        className="w-full bg-white border border-[#EEEEEE] rounded-md px-3 py-2 flex items-center justify-between hover:bg-[#FAFAFA] transition"
-                                                    >
+                                                        <Link
+                                                            href={`/dashboard/study-notes/${subcategory?.slug}`}
+                                                            key={index}
+                                                            onClick={() => {
+                                                                if(onClose) onClose();
+                                                            }}
+                                                            className="w-full bg-white border border-[#EEEEEE] rounded-md px-3 py-2 flex items-center justify-between hover:bg-[#FAFAFA] transition"
+                                                        >
                                                         <span className="text-sm text-[#4A4A4A] font-medium">
                                                             {subcategory?.title ?? ""}
                                                         </span>

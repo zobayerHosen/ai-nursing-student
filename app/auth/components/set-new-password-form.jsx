@@ -7,6 +7,7 @@ import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useResetPassword } from "@/hooks";
 import toast from "react-hot-toast";
+import LoadingIcon from "@/components/loading-icon";
 
 const SetNewPasswordForm = () => {
     const router = useRouter();
@@ -130,7 +131,7 @@ const SetNewPasswordForm = () => {
                     disabled={isPending}
                     className={`cursor-pointer w-full bg-primary hover:bg-primary/80 text-white py-4 rounded-xl text-base font-medium transition mt-2 ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                    {isPending ? "Please wait..." : "Continue"}
+                    {isPending ? <LoadingIcon /> : "Continue"}
                 </button>
             </form>
         </div>
