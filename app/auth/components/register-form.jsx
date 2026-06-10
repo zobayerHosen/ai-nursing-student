@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { MdOutlineMarkEmailRead } from "react-icons/md";
 import { IoAirplaneOutline, IoVolumeHighOutline } from "react-icons/io5";
 import LoadingIcon from "@/components/loading-icon";
+import { ROUTE_PATH } from "@/constants/route-naming";
 
 const RegisterForm = () => {
   const router = useRouter();
@@ -56,7 +57,7 @@ const RegisterForm = () => {
       onError: (error) => {
         toast.error(error?.response?.data?.message ?? "Something went wrong")
 
-        // 🔥 map backend errors to RHF
+        // map backend errors to RHF
         error?.response?.data?.errors?.forEach((err) => {
           setError(err.field, {
             type: "server",
@@ -69,7 +70,7 @@ const RegisterForm = () => {
 
   // functions
   const handleOk = () => {
-    router.push("/auth")
+    router.push(ROUTE_PATH.AUTH)
   }
   const handleCancel = () => {
     setOpenModal(false)

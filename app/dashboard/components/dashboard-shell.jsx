@@ -5,6 +5,7 @@ import Sidebar from "./Sidebar";
 import DashboardHeader from "./dashboard-header";
 import { useGetUser } from "@/hooks";
 import { useRouter } from "next/navigation";
+import { ROUTE_PATH } from "@/constants/route-naming";
 
 const DashboardShell = ({ children }) => {
     const { user } = useGetUser()
@@ -15,7 +16,7 @@ const DashboardShell = ({ children }) => {
 
     useEffect(() => {
         if (user?.subscription === null) {
-            router.push("/subscription-plan-choose");
+            router.push(ROUTE_PATH.CHOOSE_SUBSCRIPTION);
         }
     }, [user, router])
 

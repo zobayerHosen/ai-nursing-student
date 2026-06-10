@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import setToken from "@/utils/setToken";
 import LoadingIcon from "@/components/loading-icon";
+import { ROUTE_PATH } from "@/constants/route-naming";
 
 const SignInForm = () => {
   const router = useRouter();
@@ -28,12 +29,12 @@ const SignInForm = () => {
       onSuccess: (res) => {
         const responseData = res?.data || res;
         if (responseData?.is_profile_complete === false) {
-          router.push("/auth/profile-setup");
+          router.push(ROUTE_PATH.PROFILE_SETUP);
           setToken(responseData?.tokens?.access, responseData?.expires_in);
         } else {
           toast.success("Login successfull")
           setToken(responseData?.tokens?.access, responseData?.expires_in);
-          router.push("/dashboard");
+          router.push(ROUTE_PATH.DASHBOARD);
         }
       },
       onError: (error) => {

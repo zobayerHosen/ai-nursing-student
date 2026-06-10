@@ -5,7 +5,9 @@ import { FiMenu, FiX } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "@/public/assets/logo.png"
 import Image from "next/image";
-import { useGetUser } from "@/hooks";
+import { useGetUser, useLogout } from "@/hooks";
+import { Modal } from "antd";
+import { LogOut } from "lucide-react";
 
 const navItems = [
   { label: "Features", href: "#features" },
@@ -17,8 +19,19 @@ const navItems = [
 
 const HomeHeader = () => {
   const { user } = useGetUser();
+  const { logout, isPending } = useLogout();
 
   const [isOpen, setIsOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout(undefined, {
+      onSuccess: () => {
+        setIsLogoutModalOpen(false);
+        setIsOpen(false);
+      },
+    });
+  };
 
   // Close menu on resize to desktop
   useEffect(() => {
@@ -74,12 +87,18 @@ const HomeHeader = () => {
           {/* Desktop Buttons */}
           {
             user ? (
-              <Link
-                href={user?.is_profile_completed ? "/dashboard" : "/auth/profile-setup"}
-                className="bg-[#FE5E7E] px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:bg-[#ff7b94] hover:scale-105 active:scale-95 transition-all"
-              >
-                {user?.is_profile_completed ? "Dashboard" : "Profile Setup"}
-              </Link>
+              <div className="lg:flex hidden items-center gap-3">
+                <button onClick={() => setIsLogoutModalOpen(true)} className="cursor-pointer hover:text-red-300 transition-all duration-300 flex items-center gap-2">
+                  <LogOut className="w-5 h-5 md:hidden" />
+                  <span className="hidden md:inline">Logout</span>
+                </button>
+                <Link
+                  href={user?.is_profile_completed ? "/dashboard" : "/auth/profile-setup"}
+                  className="bg-[#FE5E7E] px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:bg-[#ff7b94] hover:scale-105 active:scale-95 transition-all"
+                >
+                  {user?.is_profile_completed ? "Dashboard" : "Profile Setup"}
+                </Link>
+              </div>
             ) : (
               <div className="hidden lg:flex items-center gap-6">
                 <Link
@@ -177,23 +196,22 @@ const HomeHeader = () => {
                     className="flex flex-col gap-3"
                   >
                     {user ? (
-                      user?.is_profile_complete ? (
+                      <>
                         <Link
-                          href="/dashboard"
+                          href={user?.is_profile_completed ? "/dashboard" : "/auth/profile-setup"}
                           onClick={toggleMenu}
                           className="w-full rounded-lg bg-[#FE5E7E] py-3 text-center text-sm sm:text-base font-semibold shadow-lg transition-all hover:bg-pink-400 active:scale-95"
                         >
-                          Dashboard
+                          {user?.is_profile_completed ? "Dashboard" : "Profile Setup"}
                         </Link>
-                      ) : (
-                        <Link
-                          href="/auth/profile-setup"
-                          onClick={toggleMenu}
-                          className="w-full rounded-lg bg-[#FE5E7E] py-3 text-center text-sm sm:text-base font-semibold shadow-lg transition-all hover:bg-pink-400 active:scale-95"
+                        <button 
+                          onClick={() => setIsLogoutModalOpen(true)} 
+                          className="w-full rounded-lg border border-white/20 py-2.5 flex items-center justify-center gap-2 text-sm sm:text-base font-medium transition-colors hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/50"
                         >
-                          Profile Setup
-                        </Link>
-                      )
+                          <LogOut className="w-5 h-5" />
+                          Logout
+                        </button>
+                      </>
                     ) : (
                       <>
                         <Link
@@ -219,6 +237,53 @@ const HomeHeader = () => {
             </>
           )}
         </AnimatePresence>
+
+        {/* Logout Confirmation Modal */}
+        <Modal
+          open={isLogoutModalOpen}
+          onCancel={() => setIsLogoutModalOpen(false)}
+          footer={null}
+          closeIcon={null}
+          centered
+          width={420}
+        >
+          <div className="py-3 flex flex-col items-center text-center">
+
+            {/* Icon */}
+            <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mb-2">
+              <LogOut size={20} className="text-red-500" />
+            </div>
+
+            {/* Title */}
+            <h2 className="text-xl font-semibold text-[#111827] mb-2">
+              Logout
+            </h2>
+
+            {/* Description */}
+            <p className="text-[13px] text-[#6B7280] leading-5 max-w-75 mb-7">
+              Are you sure you want to logout from your account?
+            </p>
+
+            {/* Buttons */}
+            <div className="flex items-center justify-center gap-3 w-full">
+              <button
+                onClick={() => setIsLogoutModalOpen(false)}
+                className="cursor-pointer flex-1 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 transition text-sm font-medium"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleLogout}
+                disabled={isPending}
+                className={`cursor-pointer flex-1 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition text-sm font-medium ${isPending ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+              >
+                {isPending ? "Please wait..." : "Logout"}
+              </button>
+            </div>
+          </div>
+        </Modal>
       </div >
     </header >
   );
