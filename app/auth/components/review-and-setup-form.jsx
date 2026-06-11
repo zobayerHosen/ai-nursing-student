@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FaCheck } from "react-icons/fa";
+import { Crown, Sparkles, ArrowRight, Home } from "lucide-react";
+import { Modal } from "antd";
 import AuthCommonTitle from "./auth-common-title";
 import { useStepProfileSetup } from "@/hooks/auth/step-profile-setup/step-profile-setup";
 import { useForm } from "react-hook-form";
@@ -14,6 +16,7 @@ const ReviewAndSetupForm = () => {
     const { stepProfileSetup, isPending } = useStepProfileSetup();
     const [receiveEmails, setReceiveEmails] = useState(true);
     const [showWarning, setShowWarning] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [existingData, setExistingData] = useState(null);
 
     // Note: react hook form
@@ -61,7 +64,7 @@ const ReviewAndSetupForm = () => {
             onSuccess: () => {
                 setExistingData(null);
                 localStorage.removeItem("profile-setup-data");
-                router.push("/subscription-plan-choose");
+                setShowSuccessModal(true);
             },
             onError: (error) => {
                 console.error("Profile setup failed", error);
@@ -197,6 +200,75 @@ const ReviewAndSetupForm = () => {
                     {isPending ? <LoadingIcon /> : "Continue"}
                 </button>
             </form>
+
+            {/* Success Modal - Subscription Required */}
+            <Modal
+                open={showSuccessModal}
+                footer={null}
+                closeIcon={null}
+                centered
+                width={440}
+                maskClosable={false}
+                closable={false}
+                styles={{
+                    content: {
+                        borderRadius: "20px",
+                        padding: "32px 28px 28px",
+                    },
+                }}
+            >
+                <div className="flex flex-col items-center text-center">
+
+                    {/* Icon */}
+                    <div className="w-16 h-16 rounded-full bg-linear-to-br from-amber-100 to-orange-100 flex items-center justify-center mb-5 shadow-inner">
+                        <Crown className="w-8 h-8 text-amber-600" />
+                    </div>
+
+                    {/* Title */}
+                    <h2 className="text-2xl font-extrabold text-[#0b2447] mb-2">
+                        Account Created! 🎉
+                    </h2>
+
+                    {/* Info Text */}
+                    <p className="text-sm text-gray-500 leading-relaxed max-w-80 mb-2">
+                        Your account is all set! To unlock the full dashboard and access all
+                        nursing study tools, flashcards, and NCLEX prep content, you&apos;ll need
+                        to choose a subscription plan first.
+                    </p>
+
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 w-full mb-7 flex items-start gap-3">
+                        <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                        <p className="text-xs text-amber-800 leading-relaxed text-left">
+                            Don&apos;t worry - all plans include a <strong>7-day free trial</strong> so you can explore everything before committing.
+                        </p>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col gap-3 w-full">
+                        <button
+                            onClick={() => {
+                                setShowSuccessModal(false);
+                                router.push("/subscription-plan-choose");
+                            }}
+                            className="w-full flex items-center justify-center gap-2 bg-[#0b2447] hover:bg-[#0b2447]/90 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg cursor-pointer"
+                        >
+                            Choose a Subscription Plan
+                            <ArrowRight className="w-4 h-4" />
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                setShowSuccessModal(false);
+                                router.push("/");
+                            }}
+                            className="w-full flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-all duration-200 cursor-pointer"
+                        >
+                            <Home className="w-4 h-4" />
+                            Go to Home
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };

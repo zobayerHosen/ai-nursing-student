@@ -5,8 +5,10 @@ import Link from "next/link";
 import { Play, X } from "lucide-react";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useGetUser } from "@/hooks";
 
 const Hero = () => {
+    const { user } = useGetUser();
     const [clicked, setClicked] = useState(false);
 
     const handleClick = () => {
@@ -15,7 +17,7 @@ const Hero = () => {
 
     return (
         <section className="relative w-full overflow-hidden bg-primary min-h-screen lg:min-h-0">
-            <div className="container mx-auto flex flex-col items-center px-4 py-8 sm:px-6 sm:py-12 md:py-16 lg:flex-row lg:px-8 lg:py-0 lg:min-h-[600px] xl:min-h-[700px] 2xl:min-h-[800px]">
+            <div className="container mx-auto flex flex-col items-center px-4 py-8 sm:px-6 sm:py-12 md:py-16 lg:flex-row lg:px-8 lg:py-0 lg:min-h-150 xl:min-h-175 2xl:min-h-200">
 
                 {/* Left Content */}
                 <motion.div
@@ -32,7 +34,7 @@ const Hero = () => {
                     </div>
 
                     {/* Heading */}
-                    <h1 className="max-w-[650px] mx-auto lg:mx-0 text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl">
+                    <h1 className="max-w-162.5 mx-auto lg:mx-0 text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl">
                         Pass NCLEX on Your First Attempt.
                         <span className="block text-[#FF5B7F]">
                             Guaranteed.
@@ -40,7 +42,7 @@ const Hero = () => {
                     </h1>
 
                     {/* Description */}
-                    <p className="mt-4 max-w-[620px] mx-auto lg:mx-0 text-sm leading-relaxed text-white/85 sm:text-base md:text-lg lg:mt-5 lg:text-base xl:text-lg">
+                    <p className="mt-4 max-w-155 mx-auto lg:mx-0 text-sm leading-relaxed text-white/85 sm:text-base md:text-lg lg:mt-5 lg:text-base xl:text-lg">
                         STEMRN combines 5,000+ NGN-style questions,
                         CARA your AI tutor, adaptive flashcards,
                         and real-time lab interpretation — everything
@@ -50,10 +52,10 @@ const Hero = () => {
                     {/* Buttons */}
                     <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:gap-4 lg:mt-8 xl:mt-10 justify-center lg:justify-start">
                         <Link
-                            href={"/auth"}
+                            href={user ? (user?.is_profile_completed ? "/dashboard" : "/auth/profile-setup") : "/auth"}
                             className="flex items-center justify-center rounded-xl bg-[#FF5B7F] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 sm:px-6 sm:py-3 sm:text-base lg:px-7 lg:py-3.5 lg:text-base xl:px-8 xl:py-4 xl:text-lg"
                         >
-                            Start Free Today
+                            {user ? (user?.is_profile_completed ? "Dashboard" : "Profile Setup") : "Start Free Today"}
                         </Link>
 
                         <button
@@ -67,7 +69,7 @@ const Hero = () => {
                 {/* Right Image */}
                 <div className="relative mt-8 flex w-full items-center justify-center lg:mt-0 lg:w-1/2">
 
-                    <div className="relative h-[280px] w-full sm:h-[380px] md:h-[480px] lg:h-[500px] xl:h-[600px] 2xl:h-[700px]">
+                    <div className="relative h-70 w-full sm:h-95 md:h-120 lg:h-125 xl:h-150 2xl:h-175">
                         <Image
                             src={heroImage}
                             alt="Hero Dashboard"
@@ -80,8 +82,8 @@ const Hero = () => {
 
                     {/* Play Button */}
                     <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-                        <div className="absolute inset-[-4px] animate-ping rounded-full bg-primary/20"></div>
-                        <div className="absolute inset-[-4px] animate-pulse rounded-full bg-primary/30"></div>
+                        <div className="absolute inset-1 animate-ping rounded-full bg-primary/20"></div>
+                        <div className="absolute inset-1 animate-pulse rounded-full bg-primary/30"></div>
                         <button
                             onClick={handleClick}
                             className="cursor-pointer relative flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white transition-all duration-300 sm:h-14 sm:w-14 md:h-16 md:w-16"

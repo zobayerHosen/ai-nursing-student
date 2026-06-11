@@ -111,17 +111,14 @@ const FlashCardSidebar = ({ onClose }) => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const currentTab = searchParams.get('tab') || "study";
-
     const [expandCategories, setExpandCategories] = useState(false);
     const [activeTab, setActiveTab] = useState(currentTab);
-
 
     // Note: tab handlers
     const handleTabClick = (tab) => {
         setActiveTab(tab);
         router.push(`/dashboard/flashcards?tab=${tab}`);
     };
-
 
     // Note: categories handlers
     const handleCategoryClick = (categorySlug) => {

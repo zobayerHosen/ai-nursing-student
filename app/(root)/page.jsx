@@ -10,10 +10,12 @@ import FAQ from './components/faq';
 import AIToolsSection from './components/ai-tool-section';
 import HomeCheatSheets from './components/home-cheat-sheet';
 import HomeNCLEXQuestions from './components/home-nclex-exam/home-nclex-exam';
+import GoogleOneTap from './components/google-one-tap';
 
 const HomePage = () => {
     return (
         <div className='w-full'>
+            <GoogleOneTap />
             <HomeHeader />
             <Hero />
             <StatsSection />
