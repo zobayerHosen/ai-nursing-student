@@ -14,15 +14,9 @@ const GoogleOneTap = () => {
     const router = useRouter();
     const [isAuthenticated, setIsAuthenticated] = useState(null);
 
-    // useEffect(() => {
-    //     const token = getClientToken();
-    //     if (!token) {
-    //         setIsAuthenticated(false);
-    //     }
-    // }, []);
-
     useEffect(() => {
         const token = getClientToken();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsAuthenticated(!!token);
     }, []);
 

@@ -4,6 +4,7 @@ import { useDeleteUser } from '@/hooks/user/delete-user.hook';
 import { Modal } from 'antd';
 import { AlertTriangle, ShieldAlert, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 
 const DeleteAccount = () => {
     const { deleteUser, isPending } = useDeleteUser();
@@ -29,6 +30,8 @@ const DeleteAccount = () => {
             }
         });
     };
+
+    
     return (
         <div className="bg-[#FFF0F2] border border-[#FFE2E6] rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="space-y-1">

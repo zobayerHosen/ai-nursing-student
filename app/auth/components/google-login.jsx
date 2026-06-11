@@ -1,72 +1,90 @@
 "use client"
 import { FcGoogle } from "react-icons/fc";
-import { useGoogleLogin } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
 import { useSocialLogin } from "@/hooks";
 import toast from "react-hot-toast";
 import LoadingIcon from "@/components/loading-icon";
 import { ROUTE_PATH } from "@/constants/route-naming";
 import setToken from "@/utils/setToken";
 import { useRouter } from "next/navigation";
+import { Icon } from "lucide-react";
 
-const GoogleLogin = () => {
+const GoogleLogins = () => {
     // hooks
     const { sociallogin, isPending } = useSocialLogin();
     const router = useRouter();
 
-    // google login
-    const login = useGoogleLogin({
-        onSuccess: (tokenResponse) => {
-            console.log("Token response", tokenResponse)
+    const handleGoogleSuccess = async (credentialResponse) => {
+        try {
+            const idToken = credentialResponse?.credential;
 
-            // send to backend
-            sociallogin({
-                id_token: tokenResponse.access_token,
-            }, {
-                onSuccess: (data) => {
-                    const responseData = data?.data || data;
-                    console.log("Success token", responseData)
+            const response = await sociallogin({
+                id_token: idToken,
+            });
 
-                    setToken(
-                        responseData?.tokens?.access || responseData?.token,
-                        responseData?.expires_in,
-                    );
-                    toast.success(responseData?.message || "Login successful");
+            const responseData = response?.data || response;
 
-                    if (responseData?.is_profile_complete === false) {
-                        router.push("/auth/profile-setup");
-                    } else {
-                        router.push(ROUTE_PATH.DASHBOARD);
-                    }
-                },
-                onError: (error) => {
-                    toast.error(error?.response?.data?.message);
-                },
-            },
+            console.log("Success token", responseData);
+
+            setToken(
+                responseData?.tokens?.access || responseData?.token,
+                responseData?.expires_in,
             );
-        },
-        onError: (error) => {
-            console.log("Google Login Failed", error);
-        },
-    });
+
+            toast.success(responseData?.message || "Login successful");
+
+            if (responseData?.is_profile_complete === false) {
+                router.push("/auth/profile-setup");
+            } else {
+                router.push(ROUTE_PATH.DASHBOARD);
+            }
+        } catch (error) {
+            console.error("Google login failed:", error);
+
+            toast.error(
+                error?.response?.data?.message ||
+                "Google login failed. Please try again."
+            );
+        }
+    };
 
     return (
         <div className="w-full flex items-center justify-center px-4 sm:px-0">
+            <div id="google-hidden-btn" className="hidden">
+                <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => {
+                        console.error("Login Failed");
+                        toast.error("Google login failed");
+                    }}
+                />
+            </div>
+
+
             <button
-                onClick={() => login()}
+                onClick={() => {
+                    const btn = document.querySelector(
+                        "#google-hidden-btn div[role=button]"
+                    );
+                    btn?.click();
+                }}
                 disabled={isPending}
-                className="cursor-pointer w-full bg-white border border-gray-300 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full h-14 rounded-2xl border border-gray-300 bg-white hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-3 font-medium text-gray-800 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
-                <div className="flex items-center justify-center gap-2">
-                    {isPending ? (
+                {isPending ? (
+                    <>
                         <LoadingIcon />
-                    ) : (
-                        <FcGoogle className="text-lg sm:text-xl shrink-0" />
-                    )}
-                    <span>{isPending ? "Signing in..." : "Sign up with Google"}</span>
-                </div>
+                        <span>Signing in...</span>
+                    </>
+                ) : (
+                    <>
+                        <FcGoogle size={24} />
+                        <span>Google</span>
+                    </>
+                )}
             </button>
         </div>
     );
 };
 
-export default GoogleLogin;
+export default GoogleLogins;

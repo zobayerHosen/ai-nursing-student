@@ -17,7 +17,7 @@ export default function Toolbar({ activeMode, setActiveMode }) {
         
         <div className="min-w-0">
           <h4 className="text-sm font-semibold text-gray-900 tracking-tight leading-snug truncate">
-            I'm Cara
+            I&apos;m Cara
           </h4>
           <p className="text-xs text-emerald-600 font-medium tracking-wide flex items-center gap-1 truncate">
             Online <span className="text-gray-300">•</span> Always ready

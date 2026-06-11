@@ -4,13 +4,14 @@ import AuthCommonTitle from "./auth-common-title"
 import { useForm } from "react-hook-form"
 import Link from "next/link";
 import { Divider } from "antd";
-import GoogleLogin from "./google-login";
+// import GoogleLogin from "./google-login";
 import { useSignin } from "@/hooks";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import setToken from "@/utils/setToken";
 import LoadingIcon from "@/components/loading-icon";
 import { ROUTE_PATH } from "@/constants/route-naming";
+import GoogleLogins from "./google-login";
 
 const SignInForm = () => {
   const router = useRouter();
@@ -128,7 +129,7 @@ const SignInForm = () => {
       {/* or sign up with google */}
       <Divider className="text-sm! sm:text-base! my-0!">or sign up with</Divider>
 
-      <GoogleLogin />
+      <GoogleLogins />
 
     </div>
   )
