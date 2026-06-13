@@ -9,3 +9,4 @@ export * from "./change-password.service";
 export * from "./notification-settings.service";
 export * from "./update-notification-settings.service";
 export * from "./get-user-notifications.service";
+export * from "./read-all-notification.service";

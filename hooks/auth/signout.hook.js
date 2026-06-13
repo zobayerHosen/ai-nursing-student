@@ -22,7 +22,7 @@ export const useLogout = () => {
       queryClient.clear();
       Cookies.remove(process.env.NEXT_PUBLIC_AUTH_TOKEN_NAME || "stemrn_auth");
       toast.success("Logged out successfully!");
-      router.push("/")
+      router.push("/");
     },
     onError: (error) => {
       // $&

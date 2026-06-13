@@ -96,7 +96,7 @@ const ReviewAndSetupForm = () => {
                     <p className="text-sm text-[#424242] font-semibold">Updated January 2025</p>
 
                     <Link
-                        href="#"
+                        href="/terms-conditions"
                         className="text-primary hover:underline text-sm font-bold inline-block"
                     >
                         Read Full Terms & Conditions
@@ -124,7 +124,7 @@ const ReviewAndSetupForm = () => {
                     <p className="text-sm text-[#424242] font-semibold">Updated January 2025</p>
 
                     <Link
-                        href="#"
+                        href="/privacy-policy"
                         className="text-primary hover:underline text-sm font-bold inline-block"
                     >
                         Privacy Policy
