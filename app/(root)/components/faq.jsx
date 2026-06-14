@@ -1,14 +1,30 @@
 
 "use client";
-import { faqSections } from "@/data";
+import { HelpCircle } from "lucide-react";
 import CTA from "./cta";
-
-const categoryLinks = faqSections.map((section) => ({
-    id: section.id,
-    title: section.title,
-}));
+import { faqSections } from "@/data";
+import { useGetFaq } from "@/hooks";
 
 const FAQ = () => {
+    const { faqData, isError } = useGetFaq();
+
+    // Normalize API data to match the static structure
+    const apiSections = (faqData ?? []).map((section) => ({
+        id: section.id,
+        title: section.name,
+        description: section.description,
+        icon: section.icon || <HelpCircle />,
+        faqs: section.items,
+    }));
+
+    // Use API data if available and no error, otherwise use static faqSections as fallback
+    const sections = !isError && apiSections.length > 0 ? apiSections : faqSections;
+
+    const categoryLinks = sections.map((section) => ({
+        id: section.id,
+        title: section.title,
+    }));
+
     return (
         <section id="faq" className="w-full overflow-hidden bg-[#f7f4ef] text-[#0b2447]">
             <div className="mx-auto max-w-275 px-6">
@@ -45,7 +61,7 @@ const FAQ = () => {
 
                 {/* FAQ Sections */}
                 <div className="space-y-8 lg:space-y-16">
-                    {faqSections?.map((section) => (
+                    {sections?.map((section) => (
                         <div key={section.id} id={section.id}>
                             <div className="mb-6 flex items-center gap-3 md:gap-4 border-b-2 border-[rgba(11,36,71,0.08)] pb-5">
                                 <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl bg-[#ffe3e3] text-[#ff6b6b] shrink-0">

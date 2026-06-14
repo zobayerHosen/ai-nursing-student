@@ -1,17 +1,29 @@
-
 "use client";
 
 import { useState } from "react";
 import { BookOpen, GraduationCap, ChevronRight } from "lucide-react";
-import { subTopicsData } from "./dummy-data";
+import { useGetFlashcardCategory } from "@/hooks/flashcards";
 import FlashcardPlayer from "./flashcard-player";
 import { motion } from "framer-motion";
 
-const TopicList = ({ topicList: slug }) => {
+const TopicList = ({ topicList: id }) => {
     const [selectedTopic, setSelectedTopic] = useState(null);
+    const { flashcardData, isLoading } = useGetFlashcardCategory();
 
-    // Note: Get subtopics for the current subcategory (slug)
-    const subtopics = subTopicsData[slug] || [];
+    // Find subcategory and its cards
+    let subtopics = [];
+    let categoryTitle = id.replace(/-/g, ' ');
+
+    if (flashcardData) {
+        for (const category of flashcardData) {
+            const sub = category.subcategories?.find(s => s.id.toString() === id.toString());
+            if (sub) {
+                subtopics = sub.cards || [];
+                categoryTitle = sub.name;
+                break;
+            }
+        }
+    }
 
     // Note: Handle topic click
     const handleTopicClick = (topic) => {
@@ -33,12 +45,14 @@ const TopicList = ({ topicList: slug }) => {
         <div className="w-full">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-[#424242] capitalize mb-2">
-                    {slug.replace(/-/g, ' ')}
+                    {categoryTitle ?? "N/A"}
                 </h1>
                 <p className="text-gray-500 font-normal">Select a topic to start practicing with flashcards</p>
             </div>
 
-            {subtopics?.length > 0 ? (
+            {isLoading ? (
+                <div className="text-center py-10 text-gray-500">Loading topics...</div>
+            ) : subtopics?.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {subtopics?.map((topic, index) => (
                         <motion.div
@@ -59,14 +73,14 @@ const TopicList = ({ topicList: slug }) => {
                                     </div>
 
                                     <h3 className="text-base font-bold text-[#424242] group-hover:text-primary transition-colors">
-                                        {topic?.title ?? ""}
+                                        {topic?.name ?? ""}
                                     </h3>
                                 </div>
 
                                 <div className="flex items-center justify-between mt-auto">
                                     <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
                                         <div className="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-md">
-                                            <span className="text-primary">{topic?.flashcards?.length ?? ""}</span> Cards
+                                            <span className="text-primary">{topic?.questions?.length ?? 0}</span> Cards
                                         </div>
                                     </div>
 

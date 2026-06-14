@@ -2,24 +2,13 @@
 
 import { useEffect, useRef } from "react";
 import { GoBellFill } from "react-icons/go";
-import { X } from "lucide-react";
-import { useUserGetNotifications } from "@/hooks";
-
-const typeStyles = {
-  info: "bg-blue-50 border-blue-200 border-l-blue-500",
-  success: "bg-green-50 border-green-200 border-l-green-500",
-  warning: "bg-amber-50 border-amber-200 border-l-amber-500",
-};
-
-const typeDotStyles = {
-  info: "bg-blue-500",
-  success: "bg-green-500",
-  warning: "bg-amber-500",
-};
+import { Check, X } from "lucide-react";
+import { useReadAllNotification, useUserGetNotifications } from "@/hooks";
+import toast from "react-hot-toast";
 
 export default function NotificationPanel({ isOpen, onClose }) {
-  const { notifications, unreadCount, isLoading, isError } = useUserGetNotifications();
-  console.log("Notifications", notifications)
+  const { notifications, unreadCount, isLoading, isError, refetch } = useUserGetNotifications();
+  const { readAllNotification, isPending } = useReadAllNotification();
   const panelRef = useRef(null);
 
   // Close on click outside
@@ -53,6 +42,19 @@ export default function NotificationPanel({ isOpen, onClose }) {
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
+
+
+  const notificationRead = () => {
+    readAllNotification(undefined, {
+      onSuccess: (data) => {
+        toast.success(data?.message)
+        refetch();
+      },
+      onError: (error) => {
+          toast.error(error?.response?.data?.message)
+      },
+    });
+  }
 
   // Note: UI
   return (
@@ -125,15 +127,22 @@ export default function NotificationPanel({ isOpen, onClose }) {
             notifications?.map((notification) => (
               <div
                 key={notification.id}
-                className={`px-5 py-4 border-l-2 transition-colors hover:bg-gray-50/80 cursor-pointer ${typeStyles[notification.type] || "bg-white border-l-transparent"
+                className={`px-5 py-4 border-l-2 transition-colors hover:bg-gray-50/80 cursor-pointer ${"bg-white border-l-transparent"
                   }`}
               >
                 <div className="flex items-start gap-3">
-                  {/* Type Dot */}
-                  <span
-                    className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${typeDotStyles[notification.type]
-                      }`}
-                  />
+                  {/* Read/Unread Indicator */}
+                  {notification.is_read ? (
+                    <span className="mt-1.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100">
+                      <Check size={12} className="text-gray-400" />
+                    </span>
+                  ) : (
+                    <span className="mt-1.5 flex h-2 w-2 shrink-0 items-center justify-center bg-blue-400 rounded-full">
+                      <span
+                        className={`h-2.5 w-2.5 rounded-full animate-pulse`}
+                      />
+                    </span>
+                )}
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
@@ -157,10 +166,11 @@ export default function NotificationPanel({ isOpen, onClose }) {
         {/* Footer */}
         <div className="shrink-0 border-t border-gray-100 px-5 py-3">
           <button
-            onClick={onClose}
-            className="w-full text-center text-[12px] font-semibold text-[#2C5F8D] hover:text-[#224b70] py-2 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
+            onClick={notificationRead}
+            disabled={isPending}
+            className="w-full text-center text-[12px] font-semibold text-[#2C5F8D] hover:text-[#224b70] py-2 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Mark all as read
+            {isPending ? "Marking..." : "Mark all as read"}
           </button>
         </div>
       </div>
