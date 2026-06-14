@@ -1,14 +1,11 @@
 import TopicList from "./components/topic-list";
 
 export default async function CategoryPage({ params }) {
-  const { topic: slug } = await params;
-
-  // loading delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  const { topic: id } = await params;
 
   return (
     <>
-      <TopicList topicList={slug} />
+      <TopicList topicList={id} />
     </>
   );
 }

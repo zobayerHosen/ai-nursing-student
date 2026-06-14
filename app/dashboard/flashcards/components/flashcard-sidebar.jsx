@@ -1,118 +1,41 @@
 "use client";
 
+import { useGetFlashcardCategory } from "@/hooks/flashcards";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-const categories = [
-    {
-        id: 1,
-        slug: "core-nursing",
-        title: "Core Nursing",
-        color: "#2C5F8D",
-        textColor: "#2C5F8D",
-        subcategories: [
-            {
-                id: 1,
-                slug: "fundamentals-of-nursing",
-                title: "Fundamentals of Nursing",
-            },
-            {
-                id: 2,
-                slug: "pharmacology",
-                title: "Pharmacology",
-            },
-            {
-                id: 3,
-                slug: "medical-surgical-nursing",
-                title: "Medical Surgical Nursing",
-            },
-        ],
-    },
-    {
-        id: 2,
-        slug: "specialty-nursing",
-        title: "Specialty Nursing",
-        color: "#8E33FF",
-        textColor: "#8E33FF",
-
-        subcategories: [
-            {
-                id: 1,
-                slug: "pediatric-nursing",
-                title: "Pediatric Nursing",
-            },
-            {
-                id: 2,
-                slug: "psychiatric-nursing",
-                title: "Psychiatric Nursing",
-            },
-            {
-                id: 3,
-                slug: "critical-care-nursing",
-                title: "Critical Care Nursing",
-            },
-        ],
-    },
-    {
-        id: 3,
-        slug: "clinical-sciences",
-        title: "Clinical Sciences",
-        color: "#287851",
-        textColor: "#287851",
-
-        subcategories: [
-            {
-                id: 1,
-                slug: "anatomy",
-                title: "Anatomy",
-            },
-            {
-                id: 2,
-                slug: "physiology",
-                title: "Physiology",
-            },
-            {
-                id: 3,
-                slug: "pathophysiology",
-                title: "Pathophysiology",
-            },
-        ],
-    },
-    {
-        id: 4,
-        slug: "nclex-mastery",
-        title: "NCLEX Mastery",
-        color: "#B44359",
-        textColor: "#B44359",
-
-        subcategories: [
-            {
-                id: 1,
-                slug: "anatomy",
-                title: "Anatomy",
-            },
-            {
-                id: 2,
-                slug: "physiology",
-                title: "Physiology",
-            },
-            {
-                id: 3,
-                slug: "pathophysiology",
-                title: "Pathophysiology",
-            },
-        ],
-    },
+const CATEGORY_COLORS = [
+    { color: "#2C5F8D", textColor: "#2C5F8D" },
+    { color: "#8E33FF", textColor: "#8E33FF" },
+    { color: "#287851", textColor: "#287851" },
+    { color: "#B44359", textColor: "#B44359" },
 ];
 
 const FlashCardSidebar = ({ onClose }) => {
+    const { flashcardData, isLoading, isError, isFetching } = useGetFlashcardCategory();
+
     const router = useRouter();
     const searchParams = useSearchParams();
     const currentTab = searchParams.get('tab') || "study";
-    const [expandCategories, setExpandCategories] = useState(false);
+    const [expandCategories, setExpandCategories] = useState(null);
     const [activeTab, setActiveTab] = useState(currentTab);
+
+    // Calculate total decks (cards) and total questions
+    let totalDecks = 0;
+    let totalQuestions = 0;
+
+    if (flashcardData) {
+        flashcardData.forEach(category => {
+            category.subcategories?.forEach(sub => {
+                totalDecks += sub.cards?.length || 0;
+                sub.cards?.forEach(card => {
+                    totalQuestions += card.questions?.length || 0;
+                });
+            });
+        });
+    }
 
     // Note: tab handlers
     const handleTabClick = (tab) => {
@@ -139,8 +62,8 @@ const FlashCardSidebar = ({ onClose }) => {
                 </h2>
 
                 <div className="mt-1.5 flex items-center gap-2 text-[#787878] font-medium">
-                    <span>•0 decks</span>
-                    <span>•0 cards</span>
+                    <span>• {totalDecks} decks</span>
+                    <span>• {totalQuestions} cards</span>
                 </div>
             </div>
 
@@ -164,49 +87,54 @@ const FlashCardSidebar = ({ onClose }) => {
             {
                 activeTab === 'study' ? (
                     <div className="mt-4 flex flex-col gap-3">
-                        {categories?.map((category) => (
-                            <div key={category.id}>
-                                <button
-                                    onClick={() => handleCategoryClick(category.slug)}
-                                    className="cursror-pointer w-full bg-white rounded-lg border border-black/5 shadow-sm px-3 py-2 flex items-center justify-between hover:shadow-md transition-all duration-300 group"
-                                >
-                                    {/* Left Content */}
-                                    <div className="flex items-center gap-3">
-                                        <span className={`h-2.5 w-2.5 rounded-full`} style={{ backgroundColor: category.color }} />
+                        {isLoading && <div className="text-center py-4 text-gray-500">Loading categories...</div>}
+                        {!isLoading && flashcardData?.map((category, index) => {
+                            const colors = CATEGORY_COLORS[index % CATEGORY_COLORS.length];
 
-                                        <h2 className={`text-sm font-semibold`} style={{ color: category.textColor }}>
-                                            {category.title}
-                                        </h2>
-                                    </div>
+                            return (
+                                <div key={category.id}>
+                                    <button
+                                        onClick={() => handleCategoryClick(category.id)}
+                                        className="cursror-pointer w-full bg-white rounded-lg border border-black/5 shadow-sm px-3 py-2 flex items-center justify-between hover:shadow-md transition-all duration-300 group"
+                                    >
+                                        {/* Left Content */}
+                                        <div className="flex items-center gap-3">
+                                            <span className={`h-2.5 w-2.5 rounded-full`} style={{ backgroundColor: colors.color }} />
 
-                                    {/* Right Arrow */}
-                                    <ChevronDown className={`h-6 w-6 text-gray-400 transition-transform duration-300 group-hover:translate-x-1 
-                                    ${expandCategories === category.slug ? "rotate-180" : ""}`} />
-                                </button>
+                                            <h2 className={`text-sm font-semibold`} style={{ color: colors.textColor }}>
+                                                {category.name ?? ""}
+                                            </h2>
+                                        </div>
 
-                                {/* sub categories */}
-                                <div className={`overflow-hidden transition-all duration-300 ${expandCategories === category.slug ? 'h-auto' : 'h-0'}`}>
-                                    <div className="flex flex-col items-start p-3 gap-2 border border-black/5 shadow-sm border-t-0 rounded-md">
-                                        {
-                                            category?.subcategories?.map((subCategory) => {
-                                                return (
-                                                    <Link
-                                                        key={subCategory?.slug}
-                                                        href={`/dashboard/flashcards/${subCategory?.slug}`}
-                                                        onClick={onClose}
-                                                        className={`flex items-center justify-between cursor-pointer rounded-lg text-start text-sm font-semibold hover:bg-gray-100 w-full hover:px-4 hover:py-2 transition-all duration-300`}
-                                                        style={{ color: category.textColor }}
-                                                    >
-                                                        {subCategory?.title}
-                                                        <ChevronRight size={16} />
-                                                    </Link>
-                                                )
-                                            })
-                                        }
+                                        {/* Right Arrow */}
+                                        <ChevronDown className={`h-6 w-6 text-gray-400 transition-transform duration-300 group-hover:translate-x-1 
+                                        ${expandCategories === category.id ? "rotate-180" : ""}`} />
+                                    </button>
+
+                                    {/* sub categories */}
+                                    <div className={`overflow-hidden transition-all duration-300 ${expandCategories === category.id ? 'h-auto' : 'h-0'}`}>
+                                        <div className="flex flex-col items-start p-3 gap-2 border border-black/5 shadow-sm border-t-0 rounded-md">
+                                            {
+                                                category?.subcategories?.map((subCategory) => {
+                                                    return (
+                                                        <Link
+                                                            key={subCategory?.id}
+                                                            href={`/dashboard/flashcards/${subCategory?.id}`}
+                                                            onClick={onClose}
+                                                            className={`flex items-center justify-between cursor-pointer rounded-lg text-start text-sm font-semibold hover:bg-gray-100 w-full hover:px-4 hover:py-2 transition-all duration-300`}
+                                                            style={{ color: colors.textColor }}
+                                                        >
+                                                            {subCategory?.name}
+                                                            <ChevronRight size={16} />
+                                                        </Link>
+                                                    )
+                                                })
+                                            }
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 ) : (
                     <></>

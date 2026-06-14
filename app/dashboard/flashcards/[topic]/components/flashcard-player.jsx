@@ -5,13 +5,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, RotateCcw, ArrowLeft, Check, X, RefreshCcw, ImageIcon } from "lucide-react";
 import Image from "next/image";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
 const FlashcardPlayer = ({ topic, onBack }) => {
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
     const [ratings, setRatings] = useState({}); // { cardId: 'easy' | 'hard' }
     const [isFinished, setIsFinished] = useState(false);
-    const [activeCards, setActiveCards] = useState(topic?.flashcards || []);
+    const [activeCards, setActiveCards] = useState(topic?.questions || topic?.flashcards || []);
 
     const cards = activeCards;
     const currentCard = cards[currentIndex];
@@ -57,7 +59,7 @@ const FlashcardPlayer = ({ topic, onBack }) => {
     };
 
     const handleRestart = () => {
-        setActiveCards(topic?.flashcards || []);
+        setActiveCards(topic?.questions || topic?.flashcards || []);
         setCurrentIndex(0);
         setIsFlipped(false);
         setIsFinished(false);
@@ -144,7 +146,7 @@ const FlashcardPlayer = ({ topic, onBack }) => {
                     className="cursor-pointer flex items-center gap-2 text-gray-600 hover:text-primary transition-all rounded font-medium"
                 >
                     <ArrowLeft size={20} />
-                    <span className="hidden sm:inline">Back to {topic?.title ?? ""} Topics</span>
+                    <span className="hidden sm:inline">Back to {topic?.name ?? topic?.title ?? ""} Topics</span>
                     <span className="sm:hidden">Back</span>
                 </button>
                 <div className="text-sm font-semibold bg-primary/10 text-primary px-4 py-1.5 rounded-full shadow-sm">
@@ -164,10 +166,24 @@ const FlashcardPlayer = ({ topic, onBack }) => {
                     <div className="absolute inset-0 w-full h-full backface-hidden bg-white border-2 border-primary/10 rounded-[10px] shadow-[0_20px_50px_-20px_rgba(44,95,141,0.15)] flex flex-col items-center justify-center p-12 text-center overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-3 bg-primary/30"></div>
                         <span className="absolute top-8 left-8 text-[10px] font-black text-primary uppercase tracking-[0.2em]">Study Question</span>
-                        <h3 className="text-2xl md:text-4xl font-bold text-[#1E293B] leading-tight max-w-[90%]">
-                            {currentCard?.front ?? ""}
-                        </h3>
-                        <div className="mt-12 flex flex-col items-center gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
+                        <div className="w-full max-w-[80%] h-full flex items-center justify-center overflow-y-auto custom-scrollbar pt-10 pb-10">
+                            {currentCard?.image && (
+                                <div className="relative w-full aspect-video max-h-[180px] mb-6 overflow-hidden">
+                                    <Image 
+                                        src={`${BASE_URL}${currentCard.image}`} 
+                                        alt="Study question image"
+                                        fill
+                                        className="object-contain"
+                                    />
+                                </div>
+                            )}
+                            
+                            <h3 className={`${currentCard?.image ? 'text-xl md:text-2xl' : 'text-2xl md:text-4xl'} font-bold text-[#1E293B] leading-tight text-center w-full`}>
+                                {currentCard?.question_text ?? currentCard?.front ?? ""}
+                            </h3>
+                        </div>
+
+                        <div className="absolute bottom-12 flex flex-col items-center gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
                             <p className="text-sm text-gray-400 font-medium italic">Click to reveal answer</p>
                             <RotateCcw size={16} className="text-primary animate-pulse" />
                         </div>
@@ -181,21 +197,21 @@ const FlashcardPlayer = ({ topic, onBack }) => {
                     >
                         <span className="absolute top-8 left-8 text-[10px] font-black text-primary uppercase tracking-[0.2em]">The Answer</span>
                         
-                        <div className="w-full max-w-[60%] h-full flex items-center justify-center overflow-y-auto custom-scrollbar pt-10 pb-10">
-                            {currentCard?.image && (
+                        <div className="w-full max-w-[80%] h-full flex items-center justify-center overflow-y-auto custom-scrollbar pt-10 pb-10">
+                            {currentCard?.ans_image && (
                                 <div className="relative w-full aspect-video max-h-[180px] mb-6 overflow-hidden">
                                     <Image 
-                                        src={currentCard.image} 
-                                        alt="Study aid"
+                                        src={`${BASE_URL}${currentCard.ans_image}`} 
+                                        alt="Study aid answer"
                                         fill
                                         className="object-contain"
                                     />
                                 </div>
                             )}
                             
-                            <div className="w-full max-w-[90%]">
-                                <h3 className={`${currentCard?.image ? 'text-xl md:text-2xl' : 'text-2xl md:text-4xl'} font-medium leading-relaxed`}>
-                                    {currentCard?.back ?? ""}
+                            <div className="w-full">
+                                <h3 className={`${currentCard?.ans_image ? 'text-xl md:text-2xl' : 'text-2xl md:text-4xl'} font-medium leading-relaxed`}>
+                                    {currentCard?.answer_text ?? currentCard?.back ?? ""}
                                 </h3>
                             </div>
                         </div>
