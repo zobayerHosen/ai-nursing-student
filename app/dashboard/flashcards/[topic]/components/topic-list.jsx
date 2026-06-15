@@ -13,6 +13,8 @@ const TopicList = ({ topicList: id }) => {
     // Find subcategory and its cards
     let subtopics = [];
     let categoryTitle = id.replace(/-/g, ' ');
+    let categoryId = null;
+    let subcategoryId = id;
 
     if (flashcardData) {
         for (const category of flashcardData) {
@@ -20,6 +22,7 @@ const TopicList = ({ topicList: id }) => {
             if (sub) {
                 subtopics = sub.cards || [];
                 categoryTitle = sub.name;
+                categoryId = category.id;
                 break;
             }
         }
@@ -37,7 +40,14 @@ const TopicList = ({ topicList: id }) => {
 
     // Note: If selected topic then show flashcard player
     if (selectedTopic) {
-        return <FlashcardPlayer topic={selectedTopic} onBack={handleBackToTopics} />;
+        return (
+            <FlashcardPlayer
+                topic={selectedTopic}
+                onBack={handleBackToTopics}
+                categoryId={categoryId}
+                subcategoryId={subcategoryId}
+            />
+        );
     }
 
     // Note: UI
