@@ -1,17 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, RotateCcw, ArrowLeft, Check, X, RefreshCcw, ImageIcon } from "lucide-react";
 import Image from "next/image";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSubmitFlashcardAnswer } from "@/hooks/flashcards";
+import toast from "react-hot-toast";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-const FlashcardPlayer = ({ topic, onBack }) => {
-
+const FlashcardPlayer = ({ topic, onBack, categoryId, subcategoryId }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
-    const [ratings, setRatings] = useState({}); // { cardId: 'easy' | 'hard' }
+    const queryClient = useQueryClient();
+    const { submitAnswer } = useSubmitFlashcardAnswer();
+    const [ratings, setRatings] = useState({});
     const [isFinished, setIsFinished] = useState(false);
     const [activeCards, setActiveCards] = useState(topic?.questions || topic?.flashcards || []);
 
@@ -42,10 +46,35 @@ const FlashcardPlayer = ({ topic, onBack }) => {
         setIsFlipped(!isFlipped);
     };
 
-    const handleRating = (rating) => {
+    const handleRating = useCallback((rating) => {
+        // Build the answer submit payload
+        const payload = {
+            category_id: categoryId,
+            subcategory_id: Number(subcategoryId),
+            card_id: topic.id,
+            answers: [
+                {
+                    question_id: currentCard.id,
+                    is_easy: rating === 'easy',
+                },
+            ],
+        };
+
+        // Submit answer to API (fire-and-forget for UX – don't block navigation)
+        submitAnswer(payload)
+            .then(() => {
+                queryClient.invalidateQueries({ queryKey: ["flashcard-progress"] });
+                toast.success("Answer is Submitted")
+            })
+            .catch(() => {
+                // Silently handle errors – ratings still saved locally
+                toast.error("Something went wrong!");
+            });
+
         setRatings(prev => ({ ...prev, [currentCard.id]: rating }));
         handleNext();
-    };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentCard, categoryId, subcategoryId, submitAnswer]);
 
     const handleRepeatDifficult = () => {
         const difficultCards = cards.filter(card => ratings[card.id] === 'hard');
@@ -83,7 +112,7 @@ const FlashcardPlayer = ({ topic, onBack }) => {
         const hardCount = Object.values(ratings).filter(r => r === 'hard').length;
 
         return (
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full"
@@ -155,7 +184,7 @@ const FlashcardPlayer = ({ topic, onBack }) => {
             </div>
 
             {/* Flashcard Container */}
-            <div className="relative h-[450px] w-full perspective-[1000px] cursor-pointer group" onClick={handleFlip}>
+            <div className="relative h-112.5 w-full perspective-[1000px] cursor-pointer group" onClick={handleFlip}>
                 <motion.div
                     className="w-full h-full relative transform-3d transition-all duration-500"
                     initial={false}
@@ -168,16 +197,16 @@ const FlashcardPlayer = ({ topic, onBack }) => {
                         <span className="absolute top-8 left-8 text-[10px] font-black text-primary uppercase tracking-[0.2em]">Study Question</span>
                         <div className="w-full max-w-[80%] h-full flex items-center justify-center overflow-y-auto custom-scrollbar pt-10 pb-10">
                             {currentCard?.image && (
-                                <div className="relative w-full aspect-video max-h-[180px] mb-6 overflow-hidden">
-                                    <Image 
-                                        src={`${BASE_URL}${currentCard.image}`} 
+                                <div className="relative w-full aspect-video max-h-45 mb-6 overflow-hidden">
+                                    <Image
+                                        src={`${BASE_URL}${currentCard.image}`}
                                         alt="Study question image"
                                         fill
                                         className="object-contain"
                                     />
                                 </div>
                             )}
-                            
+
                             <h3 className={`${currentCard?.image ? 'text-xl md:text-2xl' : 'text-2xl md:text-4xl'} font-bold text-[#1E293B] leading-tight text-center w-full`}>
                                 {currentCard?.question_text ?? currentCard?.front ?? ""}
                             </h3>
@@ -196,19 +225,19 @@ const FlashcardPlayer = ({ topic, onBack }) => {
                         style={{ transform: "rotateY(180deg)" }}
                     >
                         <span className="absolute top-8 left-8 text-[10px] font-black text-primary uppercase tracking-[0.2em]">The Answer</span>
-                        
+
                         <div className="w-full max-w-[80%] h-full flex items-center justify-center overflow-y-auto custom-scrollbar pt-10 pb-10">
                             {currentCard?.ans_image && (
-                                <div className="relative w-full aspect-video max-h-[180px] mb-6 overflow-hidden">
-                                    <Image 
-                                        src={`${BASE_URL}${currentCard.ans_image}`} 
+                                <div className="relative w-full aspect-video max-h-45 mb-6 overflow-hidden">
+                                    <Image
+                                        src={`${BASE_URL}${currentCard.ans_image}`}
                                         alt="Study aid answer"
                                         fill
                                         className="object-contain"
                                     />
                                 </div>
                             )}
-                            
+
                             <div className="w-full">
                                 <h3 className={`${currentCard?.ans_image ? 'text-xl md:text-2xl' : 'text-2xl md:text-4xl'} font-medium leading-relaxed`}>
                                     {currentCard?.answer_text ?? currentCard?.back ?? ""}
@@ -225,7 +254,7 @@ const FlashcardPlayer = ({ topic, onBack }) => {
             <div className="flex flex-col items-center mt-12 gap-8">
                 <AnimatePresence mode="wait">
                     {isFlipped ? (
-                        <motion.div 
+                        <motion.div
                             key="rating-controls"
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -234,19 +263,19 @@ const FlashcardPlayer = ({ topic, onBack }) => {
                         >
                             <button
                                 onClick={(e) => { e.stopPropagation(); handleRating('easy'); }}
-                                className="cursor-pointer flex-1 max-w-[150px] flex items-center justify-center bg-[#EBF7F1] text-[#5BBA8B] px-5 py-3 rounded-md font-bold hover:bg-[#b8f3d6] transition-all shadow-md shadow-emerald-500/20"
+                                className="cursor-pointer flex-1 max-w-37.5 flex items-center justify-center bg-[#EBF7F1] text-[#5BBA8B] px-5 py-3 rounded-md font-bold hover:bg-[#b8f3d6] transition-all shadow-md shadow-emerald-500/20"
                             >
                                 <span>Easy</span>
                             </button>
                             <button
                                 onClick={(e) => { e.stopPropagation(); handleRating('hard'); }}
-                                className="cursor-pointer flex-1 max-w-[150px] flex items-center justify-center bg-[#FEF6E6] text-[#F7B32B] px-5 py-3 rounded-md font-bold hover:bg-[#fce9c3] transition-all shadow-md shadow-amber-500/20"
+                                className="cursor-pointer flex-1 max-w-37.5 flex items-center justify-center bg-[#FEF6E6] text-[#F7B32B] px-5 py-3 rounded-md font-bold hover:bg-[#fce9c3] transition-all shadow-md shadow-amber-500/20"
                             >
                                 <span>Hard</span>
                             </button>
                         </motion.div>
                     ) : (
-                        <motion.div 
+                        <motion.div
                             key="navigation-controls"
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -281,7 +310,7 @@ const FlashcardPlayer = ({ topic, onBack }) => {
 
                 {/* Progress Bar */}
                 <div className="w-full px-2">
-                    <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden border border-gray-200 p-[2px]">
+                    <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden border border-gray-200 p-0.5">
                         <motion.div
                             className="h-full bg-primary rounded-full"
                             initial={{ width: 0 }}
