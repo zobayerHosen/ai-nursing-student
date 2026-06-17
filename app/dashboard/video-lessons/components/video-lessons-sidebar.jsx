@@ -1,17 +1,21 @@
 import { Search, ChevronRight } from "lucide-react";
-import videoLessonsSidebarData from "./video-lesssons-sidebar-data";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { useGetModules } from "@/hooks";
+import Image from "next/image";
+
+const BASEURL = process.env.NEXT_PUBLIC_BASE_URL
 
 const SidebarContent = ({ onClose }) => {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { modulesData, isLoading } = useGetModules();
 
-    const currentCategory = searchParams.get("category") || videoLessonsSidebarData[0]?.slug;
+    const modules = modulesData?.data || [];
+    const currentModuleId = searchParams.get("moduleId");
 
-    const handleCategoryClick = (slug) => {
-        router.push(`/dashboard/video-lessons?category=${slug}`);
+    const handleCategoryClick = (moduleId) => {
+        router.push(`/dashboard/video-lessons?moduleId=${moduleId}`);
         if (onClose) onClose();
     };
 
@@ -54,58 +58,63 @@ const SidebarContent = ({ onClose }) => {
                 </div>
             </div>
 
-
-            {/* video lessons content category*/}
-            {/* Categories */}
+            {/* Module Categories */}
             <div className="p-4 space-y-3">
-                {videoLessonsSidebarData?.map((category) => {
-                    const isActive = currentCategory === category?.slug;
+                {isLoading && (
+                    <div className="flex items-center justify-center py-8">
+                        <div className="w-6 h-6 border-2 border-[#FF6B8A] border-t-transparent rounded-full animate-spin" />
+                    </div>
+                )}
+
+                {!isLoading && modules?.length === 0 && (
+                    <p className="text-sm text-[#6D6D6D] text-center py-8">
+                        No modules available.
+                    </p>
+                )}
+
+                {modules?.map((module) => {
+                    const isActive = String(currentModuleId) === String(module?.id);
+                    const videoCount = module?.videos?.length || 0;
 
                     return (
                         <div
-                            key={category?.id}
+                            key={module?.id}
                             className={`rounded-xl overflow-hidden border transition-all ${isActive ? "bg-white border-[#E5E5E5] shadow-sm" : "bg-[#F8F8F8] border-transparent"}`}
                         >
-                            {/* Category Header */}
                             <button
-                                onClick={() => handleCategoryClick(category?.slug)}
-                                className={`w-full flex items-center justify-between px-3 py-2 text-left transition-all ${isActive ? "" : "hover:bg-[#F3F3F3]"}`}
+                                onClick={() => handleCategoryClick(module?.id)}
+                                className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-all ${isActive ? "" : "hover:bg-[#F3F3F3]"}`}
                             >
                                 <div className="flex items-center gap-3 w-full">
                                     <div className="flex items-center justify-center w-4 h-4 shrink-0 text-[#6D6D6D]">
                                         <ChevronRight className={`w-4 h-4 transition-transform ${isActive ? "rotate-90 text-[#FF6B8A]" : ""}`} />
                                     </div>
 
-                                    {/* Icon */}
-                                    <div className="shrink-0 w-6.5 h-6.5 overflow-hidden rounded-lg">
-                                        <Image
-                                            src={category?.iconImage}
-                                            alt={category?.title}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
+                                    <div className="flex-1 flex items-center gap-2">
+                                        {
+                                            module?.logo && (
+                                                <div className="shrink-0 w-10">
+                                                    <Image
+                                                        src={`${BASEURL}${module?.logo}`}
+                                                        alt="Logo"
+                                                        width={150}
+                                                        height={150}
+                                                        className="W-full h-full object-contain"
+                                                    />
+                                                </div>
+                                            )
+                                        }
 
-                                    {/* Text */}
-                                    <div className="flex-1">
-                                        <h5 className="text-sm font-semibold text-[#424242]">
-                                            {category?.title ?? ""}
-                                        </h5>
+                                        <div>
+                                            <h5 className="text-sm font-semibold text-[#424242]">
+                                                {module?.title ?? ""}
+                                            </h5>
 
-                                        {/* Progress Section */}
-                                        <div className="flex items-center gap-2 mt-1">
-
-                                            {/* Progress Bar */}
-                                            <div className="w-16 h-1.5 bg-[#D9D9D9] rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-[#FF6B8A] rounded-full"
-                                                    style={{ width: `${category?.progress}%` }}
-                                                />
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <p className="text-xs text-[#7A7A7A]">
+                                                    {module?.total_topic || `${videoCount} video${videoCount !== 1 ? "s" : ""}`}
+                                                </p>
                                             </div>
-
-                                            {/* Topics */}
-                                            <p className="text-xs text-[#7A7A7A]">
-                                                {category?.completedTopics}/{category?.topics} Topics
-                                            </p>
                                         </div>
                                     </div>
                                 </div>
