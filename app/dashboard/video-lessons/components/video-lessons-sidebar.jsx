@@ -37,7 +37,7 @@ const SidebarContent = ({ onClose }) => {
                 </div>
 
                 {/* progressed */}
-                <div className='px-4 mt-4'>
+                {/* <div className='px-4 mt-4'>
                     <div className="flex items-center justify-between mb-2">
                         <p className="text-sm text-[#424242]">
                             <span className="text-[#FF6B8A] font-semibold">34%</span>{" "}
@@ -55,7 +55,7 @@ const SidebarContent = ({ onClose }) => {
                             style={{ width: "34%" }}
                         />
                     </div>
-                </div>
+                </div> */}
             </div>
 
             {/* Module Categories */}

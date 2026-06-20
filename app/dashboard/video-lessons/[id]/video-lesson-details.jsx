@@ -3,14 +3,33 @@
 import { useState } from "react";
 import { Play, RotateCcw, RotateCw, Volume2, Maximize } from "lucide-react";
 import Link from "next/link";
-import { useGetVideoDetails } from "@/hooks";
+import { useGetVideoDetails, usePostVideoProgress } from "@/hooks";
+import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 const BASEURL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const VideoLessonDetails = ({ videoId }) => {
-    console.log("Video id", videoId)
+    const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState("Overview");
     const { videoData, isLoading, isError } = useGetVideoDetails(videoId);
+    const { videoProgress } = usePostVideoProgress();
+
+    const handleVideoEnded = async (e) => {
+        try {
+            const video = e.target;
+            await videoProgress({
+                id: videoId,
+                total_duration: Math.round(video.duration),
+                current_duration: Math.round(video.currentTime),
+                is_completed: true,
+            });
+            queryClient.invalidateQueries({ queryKey: "video-module", videoId })
+            toast.success("Lesson completed!");
+        } catch (error) {
+            toast.error("Failed to save progress");
+        }
+    };
 
     console.log("Video", videoData)
 
@@ -41,6 +60,7 @@ const VideoLessonDetails = ({ videoId }) => {
                         controls
                         className="w-full h-full object-contain bg-black"
                         src={videoSrc}
+                        onEnded={handleVideoEnded}
                     >
                         Your browser does not support the video tag.
                     </video>

@@ -60,7 +60,7 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
                 className="flex items-center justify-between py-3 px-2 rounded-xl hover:bg-gray-100 cursor-pointer transition"
             >
                 {/* LEFT SIDE */}
-                <div onClick={() => toggleFolder(folder?.id)} className="flex items-center gap-3">
+                <div onClick={() => toggleFolder(folder?.id)} className="flex items-start gap-3">
 
                     {/* Arrow Icon */}
                     <ChevronDown className={`w-4.5 h-4.5 text-gray-500 transition-transform ${folder?.isOpen ? "rotate-180" : ""}`} />
@@ -74,8 +74,15 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
                             {folder?.name}
                         </p>
                         <p className="text-xs text-gray-500">
-                            {folder?.notes?.length} notes
+                            {folder?.total_notes} notes
                         </p>
+                        {/* Note preview when collapsed */}
+                        {!folder?.isOpen && Array.isArray(folder?.notes) && folder?.notes?.length > 0 && (
+                            <p className="text-xs text-gray-400 mt-0.5 italic truncate max-w-45">
+                                {folder?.notes?.slice(0, 2)?.map(n => n?.content_name)?.join(", ")}
+                                {folder?.notes?.length > 2 && ` +${folder?.notes?.length - 2} more`}
+                            </p>
+                        )}
                     </div>
                 </div>
 
@@ -100,7 +107,7 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
                 folder?.isOpen && (
                     <div className="ml-7 mt-2 space-y-2">
                         {
-                            folder?.notes?.length === 0 ? (
+                            !Array.isArray(folder?.notes) || folder?.notes?.length === 0 ? (
                                 <p className="text-sm text-[#666565] py-2 flex items-center gap-1.5">
                                     <span>
                                         <Info className="w-4.5 h-4.5 text-red-400 shrink-0" />
@@ -110,7 +117,7 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
                             ) : (
                                 folder?.notes?.map((note) => (
                                     <Link
-                                        href={`/dashboard/library/${note?.slug}`}
+                                        href={`/dashboard/library/${note?.id}`}
                                         key={note?.id}
                                         onClick={() => onClose?.()}
                                         className="flex gap-1 items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer"
@@ -118,11 +125,11 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
                                         <ClipboardList className="w-4 h-4 text-gray-500 shrink-0" />
                                         <div className="min-w-0">
                                             <p className="flex items-center gap-1 text-sm font-medium text-[#333]">
-                                                {note?.title ?? ""}
+                                                {note?.content_name ?? note?.title ?? ""}
                                             </p>
-                                            <p className="text-xs text-gray-500 truncate" title="See All Notes">
-                                                {note?.desc ?? ""}
-                                            </p>
+                                            {/* <p className="text-xs text-gray-500 truncate" title="See All Notes">
+                                                {note?.added ?? note?.desc ?? ""}
+                                            </p> */}
                                         </div>
                                     </Link>
                                 ))

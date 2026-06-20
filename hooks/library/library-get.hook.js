@@ -1,21 +1,19 @@
 import axiosPrivateClient from "@/lib/axios.private.client";
-import { GetModuleByIdService } from "@/services/video-lesson";
+import { GetLibraryService } from "@/services/library";
 import { useQuery } from "@tanstack/react-query";
 
-export const useGetModuleById = (id) => {
+export const useGetLibrary = () => {
   const axiosInstance = axiosPrivateClient();
 
   const { data, isLoading, isError, isFetching } = useQuery({
-    queryKey: ["video-module", id],
-    queryFn: () => GetModuleByIdService(id, axiosInstance),
+    queryKey: ["library-get"],
+    queryFn: () => GetLibraryService(axiosInstance),
     staleTime: 2 * 60 * 1000,
     retry: false,
-    enabled: !!id,
   });
 
   return {
-    moduleData: data?.data,
-    videoProgress: data?.data?.video_progress,
+    libraryData: data?.data?.data,
     isLoading,
     isError,
     isFetching,
