@@ -50,7 +50,7 @@ export default function LectureNotes() {
   };
 
   return (
-    <div className="flex w-full h-screen bg-[#F8F9FA] text-[#333E49] overflow-hidden font-sans">
+    <div className="flex w-full h-[90vh] bg-[#F8F9FA] text-[#333E49] overflow-hidden font-sans">
       {/* 1. Left Sidebar Child */}
       <Sidebar 
         activeTab={activeTab} 
