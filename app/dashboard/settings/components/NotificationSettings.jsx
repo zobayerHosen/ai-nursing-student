@@ -142,7 +142,7 @@ export default function NotificationSettings() {
             disabled={isPending}
             className={`cursor-pointer px-6 py-2.5 bg-[#2C5F8D] hover:bg-[#234d74] text-white text-sm font-medium rounded-md transition-colors ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
           >
-            {isPending ? <div className="flex items-center gap-2"><LoadingIcon />  Saveing...</div> : "Save Changes"}
+            {isPending ? <LoadingIcon /> : "Save Changes"}
           </button>
         </div>
       </div>

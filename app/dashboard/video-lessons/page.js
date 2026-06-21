@@ -15,7 +15,11 @@ export default function VideoLessonsPage() {
   const moduleId = searchParams.get("moduleId");
 
   const { modulesData, isLoading: isModulesLoading } = useGetModules();
-  const { moduleData, isLoading: isModuleLoading } = useGetModuleById(moduleId);
+  const {
+    moduleData,
+    isLoading: isModuleLoading,
+    videoProgress,
+  } = useGetModuleById(moduleId);
 
   const modules = modulesData?.data || [];
   const currentModule = moduleData?.data || null;
@@ -55,10 +59,10 @@ export default function VideoLessonsPage() {
             All {videoCount ?? ""}
           </button>
           <button className="px-4 py-1.5 bg-[#F2F2F2] text-[#6D6D6D] rounded-full text-sm font-medium whitespace-nowrap">
-            In progress 2
+            In progress {videoProgress?.in_progress_count ?? "0"}
           </button>
           <button className="px-4 py-1.5 bg-[#F2F2F2] text-[#6D6D6D] rounded-full text-sm font-medium whitespace-nowrap">
-            Watched {videoCount}
+            Watched {videoProgress?.watched_count ?? "0"}
           </button>
           <button className="px-4 py-1.5 bg-[#F2F2F2] text-[#6D6D6D] rounded-full text-sm font-medium whitespace-nowrap">
             Not started {videoCount}
@@ -85,7 +89,7 @@ export default function VideoLessonsPage() {
             ))}
           </>
         ) : videos?.length > 0 ? (
-          videos.map((video) => (
+          videos?.map((video) => (
             <Link
               href={`/dashboard/video-lessons/${video.id}`}
               key={video.id}
@@ -93,7 +97,7 @@ export default function VideoLessonsPage() {
             >
               {/* Thumbnail */}
               <div className="relative w-full aspect-video overflow-hidden bg-[#F2F2F2]">
-                {video.thumbnail ? (
+                {video?.thumbnail ? (
                   <Image
                     src={`${BASEURL}${video.thumbnail}`}
                     alt={video.title ?? "Not found image"}

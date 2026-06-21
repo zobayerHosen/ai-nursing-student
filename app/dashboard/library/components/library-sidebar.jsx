@@ -3,78 +3,39 @@ import { Plus, Folder, ClipboardList, Search } from "lucide-react";
 import { useState } from "react";
 import FolderCreateModal from "./folder-create-modal";
 import FolderList from "./folder-list";
-
-const initialFolders = [
-    {
-        id: 1,
-        name: "Pharmacology",
-        icon: "💊",
-        isOpen: true,
-        notes: [
-            { id: 1, slug: "insulin-types", title: "Insulin Types", desc: "Rapid-Acting (Lispro/Aspart): 15min onset..." },
-            { id: 2, slug: "anticoagulants", title: "Anticoagulants — Heparin vs Warfarin", desc: "Mechanism and uses..." },
-        ]
-    },
-    {
-        id: 2,
-        name: "Anatomy",
-        icon: "🫀",
-        isOpen: false,
-        notes: [
-            { id: 3, slug: "heart-structure", title: "Heart Structure", desc: "Basic anatomy..." }
-        ]
-    },
-    {
-        id: 3,
-        name: "Clinical Skills",
-        icon: "🏥",
-        isOpen: false,
-        notes: [
-            { id: 4, slug: "vitals", title: "Vital Signs", desc: "Normal ranges..." }
-        ]
-    },
-    {
-        id: 4,
-        name: "Pathophysiology",
-        icon: "🔬",
-        isOpen: false,
-        notes: [
-            // { id: 5, slug: "cell-injury", title: "Cell Injury", desc: "Causes and mechanisms..." }
-        ]
-    }
-];
+import { useGetLibrary } from "@/hooks";
 
 const LibrarySidebar = ({ onClose }) => {
+    const { libraryData, isLoading, isFetching, isError } = useGetLibrary();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [folders, setFolders] = useState(initialFolders);
+    // Track which folder IDs are expanded (separate from API data)
+    const [openFolderIds, setOpenFolderIds] = useState(new Set());
 
     // Note: create folder open modal function
     const openModal = () => {
         setIsModalOpen(true);
-        setLoading(true);
-
-        // Simple loading mock.
-        setTimeout(() => {
-            setLoading(false);
-        }, 1000);
     };
 
     // Note: toggle folder
     const toggleFolder = (id) => {
-        setFolders((prevFolders) => {
-            return prevFolders.map((folder) => {
-                if (folder.id === id) {
-                    return {
-                        ...folder,
-                        isOpen: !folder.isOpen,
-                    };
-                }
-
-                return folder;
-            });
+        setOpenFolderIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
         });
     };
+
+    // Compute total notes count from libraryData
+    const totalNotes = libraryData?.reduce((acc, folder) => {
+        const notes = Array.isArray(folder?.notes) ? folder.notes : [];
+        return acc + notes.length;
+    }, 0) ?? 0;
+
     // Note: UI
     return (
         <>
@@ -103,11 +64,11 @@ const LibrarySidebar = ({ onClose }) => {
                         <div className="w-full flex items-center gap-5">
                             <p className="text-[#555555] text-sm font-medium flex items-center gap-1">
                                 <Folder size={19} />
-                                {folders?.length || 0} folders
+                                {libraryData?.length || 0} folders
                             </p>
                             <p className="text-[#555555] text-sm font-medium flex items-center gap-1">
                                 <ClipboardList size={19} />
-                                {folders?.reduce((acc, folder) => acc + folder?.notes?.length, 0)} notes
+                                {totalNotes} notes
                             </p>
                         </div>
                     </div>
@@ -115,16 +76,16 @@ const LibrarySidebar = ({ onClose }) => {
 
                 {/* folder content */}
                 <div className="p-4 space-y-2">
-                    {folders?.length > 0 ? folders?.map((folder) => (
+                    {libraryData?.length > 0 ? libraryData?.map((folder) => (
                         <FolderList
                             key={folder?.id}
-                            folder={folder}
+                            folder={{ ...folder, isOpen: openFolderIds.has(folder?.id) }}
                             toggleFolder={toggleFolder}
                             onClose={onClose}
                         />
                     )) : (
                         <div className="text-center text-gray-500 mt-2">
-                            {loading ? (
+                            {isLoading ? (
                                 <p className="mt-4">Loading folders...</p>
                             ) : (
                                 <p className="mt-4">No folders found</p>
@@ -138,7 +99,6 @@ const LibrarySidebar = ({ onClose }) => {
             <FolderCreateModal
                 isModalOpen={isModalOpen}
                 setIsModalOpen={setIsModalOpen}
-                loading={loading}
             />
         </>
     );

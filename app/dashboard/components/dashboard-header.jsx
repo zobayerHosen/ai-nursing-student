@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetUser } from "@/hooks";
+import { useGetUser, useUserGetNotifications } from "@/hooks";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -42,6 +42,7 @@ export default function DashboardHeader({
     setIsSidebarOpen
 }) {
     const { user } = useGetUser();
+    const { unreadCount } = useUserGetNotifications();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -110,8 +111,12 @@ export default function DashboardHeader({
                                     >
                                         <Icon className={`text-base md:text-lg shrink-0 ${item.color}`} />
 
-                                        {/* Notification Dot */}
-                                        <span className="hidden lg:block absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+                                        {/* Notification Badge */}
+                                        {unreadCount > 0 && (
+                                            <span className="hidden lg:flex absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold items-center justify-center rounded-full leading-none">
+                                                {unreadCount > 9 ? "9+" : unreadCount}
+                                            </span>
+                                        )}
                                     </button>
 
                                 </div>
@@ -153,8 +158,13 @@ export default function DashboardHeader({
                                                 setIsNotificationOpen(true);
                                             }}
                                         >
-                                            <div className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200">
+                                            <div className="relative w-8 h-8 flex items-center justify-center rounded-full border border-gray-200">
                                                 <Icon className={`text-base ${item.color}`} />
+                                                {unreadCount > 0 && (
+                                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full leading-none">
+                                                        {unreadCount > 9 ? "9+" : unreadCount}
+                                                    </span>
+                                                )}
                                             </div>
                                             <span className="text-sm font-medium text-gray-700 capitalize">
                                                 Notifications

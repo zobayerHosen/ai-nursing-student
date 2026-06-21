@@ -5,6 +5,7 @@ import { Calendar, Check, ArrowUpDown, Download } from "lucide-react";
 import { BillingPlanSkeleton } from "./BillingPlanSkeleton";
 import Link from "next/link";
 import { useGetUser } from "@/hooks";
+import LoadingIcon from "@/components/loading-icon";
 import PaymentBillingHistory from "./PaymentBillingHistory";
 import { useSubscriptionPlanCancel } from "@/hooks/subscription-plan";
 import toast from "react-hot-toast";
@@ -76,7 +77,7 @@ export default function PaymentBillingSettings() {
                         }`}
                     >
                       {isPending
-                        ? "Please wait..."
+                        ? <LoadingIcon />
                         : !user?.subscription?.auto_renew
                           ? "Plan canceled"
                           : "Cancel plan"}

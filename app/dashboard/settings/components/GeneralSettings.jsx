@@ -98,7 +98,7 @@ export default function GeneralSettings({ showToast }) {
 
                 {avatarPending && (
                   <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center">
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <LoadingIcon className="text-white" />
                   </div>
                 )}
               </div>

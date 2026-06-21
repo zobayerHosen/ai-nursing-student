@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import logo from "@/public/assets/logo.png"
 import Image from "next/image";
 import { useGetUser, useLogout } from "@/hooks";
+import LoadingIcon from "@/components/loading-icon";
 import { Modal } from "antd";
 import { LogOut } from "lucide-react";
 
@@ -279,7 +280,7 @@ const HomeHeader = () => {
                 className={`cursor-pointer flex-1 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition text-sm font-medium ${isPending ? "opacity-50 cursor-not-allowed" : ""
                   }`}
               >
-                {isPending ? "Please wait..." : "Logout"}
+                {isPending ? <LoadingIcon /> : "Logout"}
               </button>
             </div>
           </div>
