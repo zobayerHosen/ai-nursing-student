@@ -3,13 +3,17 @@ import { ChevronDown, ClipboardList, Info, MoreHorizontal, Pencil, Trash2 } from
 import Link from "next/link";
 import { useState } from "react";
 import { Dropdown } from "antd";
+import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { useDeleteLibrary } from "@/hooks";
 import DeleteModal from "./delete-modal";
 import FolderCreateModal from "./folder-create-modal";
 
 const FolderList = ({ folder, toggleFolder, onClose }) => {
+    const queryClient = useQueryClient();
+    const { deleteLibrary, isPending: isDeleting } = useDeleteLibrary();
     const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
 
     // Note: rename folder handler
     const handleRenameFolder = () => {
@@ -23,12 +27,16 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
 
     // Note: confirm delete handler
     const confirmDelete = () => {
-        setIsDeleting(true);
-        // Mock delete logic
-        setTimeout(() => {
-            setIsDeleting(false);
-            setIsDeleteModalOpen(false);
-        }, 1000);
+        deleteLibrary(folder?.id, {
+            onSuccess: (data) => {
+                toast.success(data?.message ?? "Folder deleted successfully!");
+                queryClient.invalidateQueries({ queryKey: ["library-get"] });
+                setIsDeleteModalOpen(false);
+            },
+            onError: (error) => {
+                toast.error(error?.response?.data?.message ?? "Something went wrong");
+            }
+        });
     }
 
     // Note: Dropdown menu items

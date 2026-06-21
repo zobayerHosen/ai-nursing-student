@@ -7,22 +7,14 @@ import { useGetLibrary } from "@/hooks";
 
 const LibrarySidebar = ({ onClose }) => {
     const { libraryData, isLoading, isFetching, isError } = useGetLibrary();
-    console.log("Library data:---->", libraryData);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
     // Track which folder IDs are expanded (separate from API data)
     const [openFolderIds, setOpenFolderIds] = useState(new Set());
 
     // Note: create folder open modal function
     const openModal = () => {
         setIsModalOpen(true);
-        setLoading(true);
-
-        // Simple loading mock.
-        setTimeout(() => {
-            setLoading(false);
-        }, 1000);
     };
 
     // Note: toggle folder
@@ -107,7 +99,6 @@ const LibrarySidebar = ({ onClose }) => {
             <FolderCreateModal
                 isModalOpen={isModalOpen}
                 setIsModalOpen={setIsModalOpen}
-                loading={loading}
             />
         </>
     );

@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { GoBellFill } from "react-icons/go";
 import { Check, X } from "lucide-react";
 import { useReadAllNotification, useUserGetNotifications } from "@/hooks";
+import LoadingIcon from "@/components/loading-icon";
 import toast from "react-hot-toast";
 
 export default function NotificationPanel({ isOpen, onClose }) {
@@ -170,7 +171,7 @@ export default function NotificationPanel({ isOpen, onClose }) {
             disabled={isPending}
             className="w-full text-center text-[12px] font-semibold text-[#2C5F8D] hover:text-[#224b70] py-2 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isPending ? "Marking..." : "Mark all as read"}
+            {isPending ? <LoadingIcon /> : "Mark all as read"}
           </button>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { ArrowLeft, LogOut } from "lucide-react";
 import { useState } from "react";
 import { Modal } from "antd";
 import { useLogout } from "@/hooks";
+import LoadingIcon from "@/components/loading-icon";
 import PricingPage from "../components/pricing/pricing";
 
 export default function SubscriptionPlanChoose() {
@@ -74,7 +75,7 @@ export default function SubscriptionPlanChoose() {
               disabled={isPending}
               className={`cursor-pointer flex-1 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition text-sm font-medium ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              {isPending ? "Please wait..." : "Logout"}
+              {isPending ? <LoadingIcon /> : "Logout"}
             </button>
           </div>
         </div>

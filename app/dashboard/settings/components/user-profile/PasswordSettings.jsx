@@ -2,7 +2,8 @@
 
 import React from "react";
 import { useForm } from "react-hook-form";
-import { KeyRound, Loader2 } from "lucide-react";
+import { KeyRound } from "lucide-react";
+import LoadingIcon from "@/components/loading-icon";
 import CommonFieldsetInput from "@/components/common-fieldset-input";
 import { useChangePassword } from "@/hooks";
 import toast from "react-hot-toast";
@@ -95,7 +96,7 @@ export default function PasswordSettings({ showToast }) {
         disabled={isPending}
         className={`bg-[#2C5F8D] hover:bg-[#224b70] text-white px-6 py-2.5 rounded-lg text-sm font-semibold shadow-sm active:scale-95 transition-all cursor-pointer flex items-center gap-2 ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
       >
-        {isPending ? <><Loader2 size={15} className="animate-spin" /> Change Password </> : <><KeyRound size={15} /> Change Password</>}
+        {isPending ? <LoadingIcon /> : <><KeyRound size={15} /> Change Password</>}
       </button>
       </div>
     </form>

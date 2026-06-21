@@ -10,6 +10,10 @@ import img03 from "@/public/assets/library/heart.svg";
 import img04 from "@/public/assets/library/home.svg";
 import img05 from "@/public/assets/library/capsoul.svg";
 import Image from "next/image";
+import { useCreateLibrary, useRenameLibrary } from "@/hooks";
+import toast from "react-hot-toast";
+import LoadingIcon from "@/components/loading-icon";
+import { useQueryClient } from "@tanstack/react-query";
 
 const icons = [
     { id: "default_folder", icon: img01 },
@@ -20,22 +24,26 @@ const icons = [
 ];
 
 const colors = [
-    "#3B82F6", // blue
-    "#F43F5E", // pink
-    "#16A34A", // green
-    "#B45309", // orange
-    "#7C3AED", // purple
-    "#0891B2", // cyan
-    "#DC2626", // red
-    "#9CA3AF", // gray
+    "#3B82F6",
+    "#F43F5E",
+    "#16A34A",
+    "#B45309",
+    "#7C3AED",
+    "#0891B2",
+    "#DC2626",
+    "#9CA3AF",
 ];
 
-const FolderCreateModal = ({ isModalOpen, setIsModalOpen, loading, folderData }) => {
+const FolderCreateModal = ({ isModalOpen, setIsModalOpen, folderData }) => {
+    const queryClient = useQueryClient();
+    const { createLibrary, isPending: isCreatePending } = useCreateLibrary();
+    const { renameLibrary, isPending: isRenamePending } = useRenameLibrary();
+    const isPending = isCreatePending || isRenamePending;
     const [folderName, setFolderName] = useState("");
     const [selectedIcon, setSelectedIcon] = useState("default_folder");
     const [selectedColor, setSelectedColor] = useState(colors[0]);
 
-    // Note: get folder data when it's came to rename folder
+    // Note: populate form fields when editing an existing folder
     useEffect(() => {
         if (folderData) {
             setFolderName(folderData.name || "");
@@ -48,43 +56,51 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, loading, folderData })
         }
     }, [folderData, isModalOpen]);
 
-    // Note: save data to local storage
+    // Note: create or rename folder via API
     const handleSave = () => {
-        const data = {
-            id: folderData ? folderData.id : Date.now(),
+
+        const payload = {
             name: folderName,
             icon: selectedIcon,
-            color: selectedColor,
+            color: selectedColor
         };
 
-        // Note: get existing data
-        const existingData = localStorage.getItem("folderData");
-
-        let folders = [];
-
-        if (existingData) {
-            folders = JSON.parse(existingData);
-        }
-
         if (folderData) {
-            // Edit mode
-            const index = folders.findIndex(f => f.id === folderData.id);
-            if (index !== -1) {
-                folders[index] = data;
-            }
+            // Note: rename existing folder
+            renameLibrary({ id: folderData.id, payload }, {
+
+                onSuccess: (data) => {
+                    toast.success(data?.message ?? "Folder renamed successfully!");
+                    queryClient.invalidateQueries({ queryKey: ["library-get"] })
+                    // Note: reset all data
+                    setFolderName("");
+                    setSelectedIcon("default_folder");
+                    setSelectedColor(colors[0]);
+                    setIsModalOpen(false);
+                },
+
+                onError: (error) => {
+                    toast.error(error?.response?.data?.message ?? "Something went wrong");
+                }
+            });
         } else {
-            // Create mode
-            folders.push(data);
+            // Note: create new folder
+            createLibrary(payload, {
+
+                onSuccess: (data) => {
+                    toast.success(data?.message ?? "Folder created successfully!");
+                    // Note: reset all data
+                    setFolderName("");
+                    setSelectedIcon("default_folder");
+                    setSelectedColor(colors[0]);
+                    setIsModalOpen(false);
+                },
+
+                onError: (error) => {
+                    toast.error(error?.response?.data?.message ?? "Something went wrong");
+                }
+            });
         }
-
-        localStorage.setItem("folderData", JSON.stringify(folders));
-
-        // Note: reset all data
-        setFolderName("");
-        setSelectedIcon("default_folder");
-        setSelectedColor(colors[0]);
-
-        setIsModalOpen(false);
     };
 
     return (
@@ -181,8 +197,10 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, loading, folderData })
                     </button>
                     <button
                         onClick={handleSave}
-                        className="cursor-pointer font-semibold rounded-md bg-primary px-4 py-1.5 text-base  text-white/95 hover:bg-primary/90 transition-colors"
+                        disabled={isPending}
+                        className="cursor-pointer font-semibold rounded-md bg-primary px-4 py-1.5 text-base text-white/95 hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
                     >
+                        {isPending && <LoadingIcon className="text-white" />}
                         {folderData ? "Update Folder" : "Create Folder"}
                     </button>
                 </div>
