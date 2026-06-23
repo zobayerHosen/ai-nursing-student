@@ -1,12 +1,15 @@
 "use client";
 
-import { ChevronDown, ChevronRight, ClipboardCheck, Plus, Search, Stethoscope } from 'lucide-react';
+import { useCoreLearning } from "@/hooks";
+import { ChevronDown, ChevronRight, Search } from 'lucide-react';
+import Image from "next/image";
 import Link from 'next/link';
-import { useState } from 'react';
-import { categoriesData } from './study-notes-sidebar-data';
+import { useState, Suspense } from 'react';
 
-const StudyNoteSidebar = ({ onClose }) => {
-    const [openCategory, setOpenCategory] = useState(1);
+const SidebarContent = ({ onClose }) => {
+    const [openCategory, setOpenCategory] = useState(null);
+    const { coreLearningData, isLoading } = useCoreLearning("study_notes");
+    const categories = coreLearningData || [];
 
     const handleToggle = (id) => {
         setOpenCategory((prev) => (prev === id ? null : id));
@@ -54,7 +57,19 @@ const StudyNoteSidebar = ({ onClose }) => {
 
                 {/* Categories */}
                 <div className="p-4 space-y-3">
-                    {categoriesData?.map((category) => {
+                    {isLoading && (
+                        <div className="flex items-center justify-center py-8">
+                            <div className="w-6 h-6 border-2 border-[#FF6B8A] border-t-transparent rounded-full animate-spin" />
+                        </div>
+                    )}
+
+                    {!isLoading && categories?.length === 0 && (
+                        <p className="text-sm text-[#6D6D6D] text-center py-8">
+                            No study notes available.
+                        </p>
+                    )}
+
+                    {categories?.map((category) => {
                         const isOpen = openCategory === category.id;
 
                         return (
@@ -78,8 +93,18 @@ const StudyNoteSidebar = ({ onClose }) => {
                                         </div>
 
                                         {/* Icon */}
-                                        <div>
-                                            {category?.icon}
+                                        <div className="w-10 h-10 shrink-0 rounded-md bg-[#E5E7EB] flex items-center justify-center overflow-hidden border border-[#EEEEEE]">
+                                            {category?.cover ? (
+                                                <Image
+                                                    src={category.cover.startsWith('http') ? category.cover : `${process.env.NEXT_PUBLIC_BASE_URL || ''}${category.cover}`}
+                                                    alt={category.title}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <span className="text-sm font-bold text-[#6D6D6D]">
+                                                    {category?.title?.charAt(0) || "C"}
+                                                </span>
+                                            )}
                                         </div>
 
                                         {/* Text */}
@@ -95,13 +120,13 @@ const StudyNoteSidebar = ({ onClose }) => {
                                                 <div className="w-16 h-1.5 bg-[#D9D9D9] rounded-full overflow-hidden">
                                                     <div
                                                         className="h-full bg-[#FF6B8A] rounded-full"
-                                                        style={{ width: `${category?.progress}%` }}
+                                                        style={{ width: `${category?.progress?.progress_percentage || '0%'}` }}
                                                     />
                                                 </div>
 
                                                 {/* Topics */}
                                                 <p className="text-xs text-[#7A7A7A]">
-                                                    {category?.completedTopics}/{category?.topics} Topics
+                                                    {category?.progress?.completed_notes || 0}/{category?.contents?.length || 0} Topics
                                                 </p>
                                             </div>
                                         </div>
@@ -117,18 +142,18 @@ const StudyNoteSidebar = ({ onClose }) => {
                                 >
                                     <div className="overflow-hidden">
                                         <div className="space-y-2">
-                                            {category?.subcategories?.map(
+                                            {category?.contents?.map(
                                                 (subcategory, index) => (
-                                                        <Link
-                                                            href={`/dashboard/study-notes/${subcategory?.slug}`}
-                                                            key={index}
-                                                            onClick={() => {
-                                                                if(onClose) onClose();
-                                                            }}
-                                                            className="w-full bg-white border border-[#EEEEEE] rounded-md px-3 py-2 flex items-center justify-between hover:bg-[#FAFAFA] transition"
-                                                        >
+                                                    <Link
+                                                        href={`/dashboard/study-notes/${subcategory?.id}`}
+                                                        key={index}
+                                                        onClick={() => {
+                                                            if (onClose) onClose();
+                                                        }}
+                                                        className="w-full bg-white border border-[#EEEEEE] rounded-md px-3 py-2 flex items-center justify-between hover:bg-[#FAFAFA] transition"
+                                                    >
                                                         <span className="text-sm text-[#4A4A4A] font-medium">
-                                                            {subcategory?.title ?? ""}
+                                                            {subcategory?.content_name ?? ""}
                                                         </span>
                                                         <ChevronRight className="w-4 h-4 text-[#6B7280]" />
                                                     </Link>
@@ -145,4 +170,13 @@ const StudyNoteSidebar = ({ onClose }) => {
         </>
     );
 };
+
+const StudyNoteSidebar = ({ onClose }) => {
+    return (
+        <Suspense fallback={<div className="w-full h-full bg-white border-r border-black/10"></div>}>
+            <SidebarContent onClose={onClose} />
+        </Suspense>
+    );
+};
+
 export default StudyNoteSidebar;

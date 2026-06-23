@@ -24,14 +24,13 @@ const VideoLessonDetails = ({ videoId }) => {
                 current_duration: Math.round(video.currentTime),
                 is_completed: true,
             });
-            queryClient.invalidateQueries({ queryKey: "video-module", videoId })
-            toast.success("Lesson completed!");
+            queryClient.invalidateQueries({ queryKey: ["video-module", videoId] })
+            queryClient.invalidateQueries({ queryKey: ["video-modules"] })
+            toast.success("Video completed!");
         } catch (error) {
             toast.error("Failed to save progress");
         }
     };
-
-    console.log("Video", videoData)
 
     if (isLoading) {
         return (
