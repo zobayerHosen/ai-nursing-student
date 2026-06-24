@@ -4,7 +4,6 @@ import { useCoreLearning } from "@/hooks";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import Breadcrumb from "./components/breadcrumb";
 
 export default function StudyNoteDetails() {

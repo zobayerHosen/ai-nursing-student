@@ -10,6 +10,8 @@ const SidebarContent = ({ onClose }) => {
     const [openCategory, setOpenCategory] = useState(null);
     const { coreLearningData, isLoading } = useCoreLearning("study_notes");
     const categories = coreLearningData || [];
+    console.log(categories, 'categories----------------');
+
 
     const handleToggle = (id) => {
         setOpenCategory((prev) => (prev === id ? null : id));
@@ -126,7 +128,7 @@ const SidebarContent = ({ onClose }) => {
 
                                                 {/* Topics */}
                                                 <p className="text-xs text-[#7A7A7A]">
-                                                    {category?.progress?.completed_notes || 0}/{category?.contents?.length || 0} Topics
+                                                    {category?.progress?.completed_contents || 0}/{category?.progress?.total_contents || 0} Topics
                                                 </p>
                                             </div>
                                         </div>

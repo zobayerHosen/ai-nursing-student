@@ -13,8 +13,8 @@ export const useSaveNote = () => {
     error,
   } = useMutation({
     mutationKey: ["save-note"],
-    mutationFn: async ({ id, ...payload }) =>
-      SaveNoteService(id, payload, axiosInstance),
+    mutationFn: async ({ ...payload }) =>
+      SaveNoteService(payload, axiosInstance),
   });
 
   return {
