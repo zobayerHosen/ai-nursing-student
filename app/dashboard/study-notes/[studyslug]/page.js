@@ -1,191 +1,99 @@
+"use client";
 
-import {
-  Bookmark,
-  Share2,
-  CheckCircle,
-} from "lucide-react";
-import { studyNotes } from "./study-notes-dummy-data";
+import { useCoreLearning } from "@/hooks";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import Breadcrumb from "./components/breadcrumb";
 
-export default async function StudyNoteDetails({ params }) {
-  const { studyslug } = await params;
+export default function StudyNoteDetails() {
+  const { studyslug } = useParams();
+  const contentId = Number(studyslug);
+  const [isIframeLoading, setIsIframeLoading] = useState(true);
+  
+  let currentCategory = null;
+  let currentNote = null;
 
+  const { coreLearningData, isLoading: isCategoriesLoading } =
+    useCoreLearning("study_notes");
+  const categories = coreLearningData || [];
 
-  // using delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  for (const category of categories) {
+    const found = category?.contents?.find((c) => Number(c.id) === contentId);
+    if (found) {
+      currentCategory = category;
+      currentNote = found;
+      break;
+    }
+  }
 
-  const slug = studyslug;
-
-  const note = studyNotes.find(
-    (item) => item.slug === slug
-  );
-
-  if (!note) {
+  // Loading state for categories
+  if (isCategoriesLoading) {
     return (
-      <div className="p-10 text-red-500 min-h-screen flex items-center justify-center bg-[#FAFAFA]">
-        <div className="bg-white p-8 rounded-2xl border border-red-100 shadow-sm text-center">
-          <h2 className="text-2xl font-semibold mb-2">Note Not Found</h2>
-          <p className="text-[#7A7A7A]">The study note you are looking for does not exist or has been moved.</p>
+      <div className="w-full min-h-125 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#FF6B8A] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Not found state
+  if (!currentNote) {
+    return (
+      <div className="w-full">
+        <div className="bg-white rounded-2xl p-10 border border-[#EEEEEE] shadow-sm text-center">
+          <div className="max-w-md mx-auto">
+            <h2 className="text-2xl font-bold text-[#111827] mb-3">
+              Note Not Found
+            </h2>
+            <p className="text-[#7A7A7A] mb-6">
+              The study note you are looking for does not exist or has been
+              moved.
+            </p>
+            <Link
+              href="/dashboard/study-notes"
+              className="inline-block px-6 py-2.5 rounded-lg bg-[#FF6B8A] hover:bg-[#E05270] text-white text-sm font-semibold transition cursor-pointer"
+            >
+              Back to Study Notes
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
-  // Helper to parse simple markdown to premium react layout line-by-line
-  const renderFormattedContent = (content) => {
-    if (!content) return null;
-
-    // Check if content contains HTML tags
-    const isHtml = /<\/?[a-z][\s\S]*>/i.test(content);
-    const isFullDocument = /<html/i.test(content) || /<!DOCTYPE/i.test(content);
-
-    // Note: this is the main logic to render the content
-    if (isHtml) {
-      if (isFullDocument) {
-        return (
-          <iframe
-            srcDoc={content}
-            title="Interactive Study Note"
-            className="w-full border-none min-h-200 rounded-xl"
-            sandbox="allow-scripts allow-same-origin"
-          />
-        );
-      } else {
-        return (
-          <div
-            dangerouslySetInnerHTML={{ __html: content }}
-            className="study-notes-html-content"
-          />
-        );
-      }
-    }
-
-    const lines = content.split('\n');
-    const renderedElements = [];
-    let currentList = [];
-
-    const flushList = (key) => {
-      if (currentList.length > 0) {
-        renderedElements.push(
-          <ul key={`list-${key}`} className="list-disc pl-6 mb-6 space-y-2.5 text-[#4A4A4A]">
-            {currentList.map((item, idx) => (
-              <li key={idx} className="leading-relaxed text-sm">
-                {formatBoldText(item)}
-              </li>
-            ))}
-          </ul>
-        );
-        currentList = [];
-      }
-    };
-
-    lines.forEach((line, index) => {
-      const trimmed = line.trim();
-      if (!trimmed) {
-        flushList(index);
-        return;
-      }
-
-      // Check if heading
-      if (trimmed.startsWith('###')) {
-        flushList(index);
-        const headingText = trimmed.replace(/^###\s*(\*\*)?/, '').replace(/(\*\*)?\s*$/, '');
-        renderedElements.push(
-          <h3 key={index} className="text-lg font-bold text-[#2C5F8D] mt-6 mb-3 border-b pb-1.5 border-slate-100 flex items-center gap-2">
-            <span className="w-1 h-5 bg-[#FF6B8A] rounded-full"></span>
-            {headingText}
-          </h3>
-        );
-      }
-      // Check if list item
-      else if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
-        const cleanLine = trimmed.replace(/^[\*\-]\s*/, '');
-        currentList.push(cleanLine);
-      }
-      // Normal paragraph
-      else {
-        flushList(index);
-        renderedElements.push(
-          <p key={index} className="text-[#4A4A4A] leading-relaxed text-sm mb-3">
-            {formatBoldText(trimmed)}
-          </p>
-        );
-      }
-    });
-
-    // Flush any remaining list items at the end
-    flushList('final');
-
-    return renderedElements;
-  };
-
-  // Helper to format bold text
-  const formatBoldText = (text) => {
-    if (!text.includes('**')) return text;
-
-    const parts = text.split('**');
-    return parts.map((part, idx) => {
-      // Odd indices represent the text inside asterisks
-      if (idx % 2 === 1) {
-        return <strong key={idx} className="font-bold text-[#111827]">{part}</strong>;
-      }
-      return part;
-    });
-  };
 
   return (
-    <div className="w-full">
-      <div className="">
+    <div className="w-full flex flex-col">
+      {/* Top Buttons */}
+      <Breadcrumb currentCategory={currentCategory} currentNote={currentNote} />
 
-        {/* Top Buttons */}
-        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
-          {/* breadcrumb */}
-          <nav className="overflow-x-auto whitespace-nowrap pb-2 xl:pb-0 hide-scrollbar">
-            <ol className="flex items-center text-sm xl:text-base">
-              <li>
-                <a href="#" className="text-[#2C5F8D] hover:text-[#111827]">
-                  Study Notes
-                </a>
-              </li>
-              <li className="text-[#696868] pl-2"> (16 topics)</li>
-              <li>
-                <span className="mx-2 text-[#7A7A7A]">/</span>
-              </li>
-              <li>
-                <span className="text-[#7A7A7A]">{note.title}</span>
-              </li>
-            </ol>
-          </nav>
-          {/* action buttons */}
-          <div className="flex flex-wrap items-center gap-2 xl:gap-3">
-            <button className="px-3 xl:px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] flex items-center gap-2 text-sm text-[#4A4A4A] font-medium hover:bg-slate-50 transition cursor-pointer shadow-sm">
-              <Bookmark className="w-4 h-4 text-[#7A7A7A]" />
-              <span className="hidden sm:inline">Save Notes</span>
-              <span className="sm:hidden">Save</span>
-            </button>
+      {/* Content Card */}
+      <div className="bg-white rounded-2xl p-5 sm:p-8 border border-[#EEEEEE] shadow-sm relative overflow-hidden flex flex-col">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#111827] mb-6 shrink-0">
+          {currentNote?.content_name ?? "Not Found"}
+        </h1>
 
-            <button className="px-3 xl:px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] flex items-center gap-2 text-sm text-[#4A4A4A] font-medium hover:bg-slate-50 transition cursor-pointer shadow-sm">
-              <Share2 className="w-4 h-4 text-[#7A7A7A]" />
-              <span className="hidden sm:inline">Share Notes</span>
-              <span className="sm:hidden">Share</span>
-            </button>
-
-            <button className="px-3 xl:px-4 py-2 rounded-lg bg-[#FF6B8A] hover:bg-[#E05270] text-white flex items-center gap-2 text-sm font-semibold transition cursor-pointer shadow-sm">
-              <CheckCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">Mark Completed</span>
-              <span className="sm:hidden">Complete</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Content Card */}
-        <div className="bg-white rounded-2xl p-5 sm:p-8 border border-[#EEEEEE] shadow-sm">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#111827] mb-6">
-            {note?.title ?? "Not Found"}
-          </h1>
-
-          <div className="prose max-w-none">
-            {renderFormattedContent(note?.content ?? "")}
-          </div>
+        <div className="w-full h-[calc(100vh-250px)] min-h-[500px] relative">
+          {currentNote?.content_file_url ? (
+            <>
+              {isIframeLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white z-10 rounded-lg">
+                  <div className="w-8 h-8 border-4 border-[#FF6B8A] border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+              <iframe 
+                src={currentNote.content_file_url.startsWith("http") ? currentNote.content_file_url : `https://${currentNote.content_file_url}`}
+                className={`w-full h-full border-0 rounded-lg transition-opacity duration-300 ${isIframeLoading ? 'opacity-0' : 'opacity-100'}`}
+                title={currentNote.content_name || "Note Content"}
+                sandbox="allow-same-origin allow-scripts"
+                onLoad={() => setIsIframeLoading(false)}
+              />
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              No content available for this note.
+            </div>
+          )}
         </div>
       </div>
     </div>

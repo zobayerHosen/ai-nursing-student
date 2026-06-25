@@ -21,13 +21,16 @@ export default function VideoLessonsPage() {
     videoProgress,
   } = useGetModuleById(moduleId);
 
-  const modules = modulesData?.data || [];
-  const currentModule = moduleData?.data || null;
+  const modules = modulesData?.modules || [];
+  const currentModule = moduleData?.module || null;
 
   // Fallback: if no module selected, use the first module from the list
   const activeModule =
     currentModule ||
-    (moduleId ? null : modules?.length > 0 ? modules[0] : null);
+    (moduleId ? null : modules?.length > 0 ? modules[0]?.module : null);
+
+  // Use either the single module video progress, or the first module's video progress if fallback
+  const activeVideoProgress = videoProgress || (moduleId ? null : modules?.length > 0 ? modules[0]?.video_progress : null);
 
   const videos = activeModule?.videos || [];
   const moduleTitle = activeModule?.title || "Video Lessons";
@@ -56,16 +59,16 @@ export default function VideoLessonsPage() {
         {/* Filters */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
           <button className="px-4 py-1.5 bg-[#2A2A2A] text-white rounded-full text-sm font-medium whitespace-nowrap">
-            All {videoCount ?? ""}
+            All {activeVideoProgress?.total_videos ?? videoCount}
           </button>
           <button className="px-4 py-1.5 bg-[#F2F2F2] text-[#6D6D6D] rounded-full text-sm font-medium whitespace-nowrap">
-            In progress {videoProgress?.in_progress_count ?? "0"}
+            In progress {activeVideoProgress?.in_progress_count ?? "0"}
           </button>
           <button className="px-4 py-1.5 bg-[#F2F2F2] text-[#6D6D6D] rounded-full text-sm font-medium whitespace-nowrap">
-            Watched {videoProgress?.watched_count ?? "0"}
+            Watched {activeVideoProgress?.watched_count ?? "0"}
           </button>
           <button className="px-4 py-1.5 bg-[#F2F2F2] text-[#6D6D6D] rounded-full text-sm font-medium whitespace-nowrap">
-            Not started {videoCount}
+            Not started {activeVideoProgress?.not_started_count ?? videoCount}
           </button>
         </div>
       </div>
@@ -99,10 +102,10 @@ export default function VideoLessonsPage() {
               <div className="relative w-full aspect-video overflow-hidden bg-[#F2F2F2]">
                 {video?.thumbnail ? (
                   <Image
-                    src={`${BASEURL}${video.thumbnail}`}
+                    src={`${video.thumbnail.startsWith('http') ? video.thumbnail : `${BASEURL}${video.thumbnail}`}`}
                     alt={video.title ?? "Not found image"}
-                    width={150}
-                    height={150}
+                    width={500}
+                    height={300}
                     className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
                   />
                 ) : (

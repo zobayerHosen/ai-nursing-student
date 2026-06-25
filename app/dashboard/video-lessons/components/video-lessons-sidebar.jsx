@@ -11,7 +11,8 @@ const SidebarContent = ({ onClose }) => {
     const searchParams = useSearchParams();
     const { modulesData, isLoading } = useGetModules();
 
-    const modules = modulesData?.data || [];
+    const modules = modulesData?.modules || [];
+    const globalProgress = modulesData?.video_progress;
     const currentModuleId = searchParams.get("moduleId");
 
     const handleCategoryClick = (moduleId) => {
@@ -37,25 +38,31 @@ const SidebarContent = ({ onClose }) => {
                 </div>
 
                 {/* progressed */}
-                {/* <div className='px-4 mt-4'>
-                    <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm text-[#424242]">
-                            <span className="text-[#FF6B8A] font-semibold">34%</span>{" "}
-                            watched .28/82 lessons
-                        </p>
+                {globalProgress && (
+                    <div className='px-4 mt-4'>
+                        <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm text-[#424242]">
+                                <span className="text-[#FF6B8A] font-semibold">
+                                    {globalProgress.total_videos > 0 
+                                        ? Math.round((globalProgress.watched_count / globalProgress.total_videos) * 100) 
+                                        : 0}%
+                                </span>{" "}
+                                watched .{globalProgress.watched_count}/{globalProgress.total_videos} lessons
+                            </p>
 
-                        <button className="text-sm font-medium text-[#FF6B8A]">
-                            Filter
-                        </button>
-                    </div>
+                            <button className="text-sm font-medium text-[#FF6B8A]">
+                                Filter
+                            </button>
+                        </div>
 
-                    <div className="w-full h-2 bg-[#E5E5E5] rounded-full overflow-hidden">
-                        <div
-                            className="h-full bg-[#FF6B8A] rounded-full"
-                            style={{ width: "34%" }}
-                        />
+                        <div className="w-full h-2 bg-[#E5E5E5] rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-[#FF6B8A] rounded-full"
+                                style={{ width: `${globalProgress.total_videos > 0 ? (globalProgress.watched_count / globalProgress.total_videos) * 100 : 0}%` }}
+                            />
+                        </div>
                     </div>
-                </div> */}
+                )}
             </div>
 
             {/* Module Categories */}
@@ -72,17 +79,20 @@ const SidebarContent = ({ onClose }) => {
                     </p>
                 )}
 
-                {modules?.map((module) => {
-                    const isActive = String(currentModuleId) === String(module?.id);
-                    const videoCount = module?.videos?.length || 0;
+                {modules?.map((moduleItem) => {
+                    const moduleData = moduleItem?.module;
+                    if (!moduleData) return null;
+
+                    const isActive = String(currentModuleId) === String(moduleData?.id);
+                    const videoCount = moduleData?.videos?.length || 0;
 
                     return (
                         <div
-                            key={module?.id}
+                            key={moduleData?.id}
                             className={`rounded-xl overflow-hidden border transition-all ${isActive ? "bg-white border-[#E5E5E5] shadow-sm" : "bg-[#F8F8F8] border-transparent"}`}
                         >
                             <button
-                                onClick={() => handleCategoryClick(module?.id)}
+                                onClick={() => handleCategoryClick(moduleData?.id)}
                                 className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-all ${isActive ? "" : "hover:bg-[#F3F3F3]"}`}
                             >
                                 <div className="flex items-center gap-3 w-full">
@@ -92,14 +102,14 @@ const SidebarContent = ({ onClose }) => {
 
                                     <div className="flex-1 flex items-center gap-2">
                                         {
-                                            module?.logo && (
+                                            moduleData?.logo && (
                                                 <div className="shrink-0 w-10">
                                                     <Image
-                                                        src={`${BASEURL}${module?.logo}`}
+                                                        src={`${moduleData.logo.startsWith('http') ? moduleData.logo : `${BASEURL}${moduleData.logo}`}`}
                                                         alt="Logo"
                                                         width={150}
                                                         height={150}
-                                                        className="W-full h-full object-contain"
+                                                        className="w-full h-full object-contain"
                                                     />
                                                 </div>
                                             )
@@ -107,12 +117,12 @@ const SidebarContent = ({ onClose }) => {
 
                                         <div>
                                             <h5 className="text-sm font-semibold text-[#424242]">
-                                                {module?.title ?? ""}
+                                                {moduleData?.title ?? ""}
                                             </h5>
 
                                             <div className="flex items-center gap-2 mt-1">
                                                 <p className="text-xs text-[#7A7A7A]">
-                                                    {module?.total_topic || `${videoCount} video${videoCount !== 1 ? "s" : ""}`}
+                                                    {moduleData?.total_topic || `${videoCount} video${videoCount !== 1 ? "s" : ""}`}
                                                 </p>
                                             </div>
                                         </div>
