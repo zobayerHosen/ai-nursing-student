@@ -3,16 +3,14 @@
 import { useCoreLearning } from "@/hooks";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import Breadcrumb from "./components/breadcrumb";
 
 export default function StudyNoteDetails() {
   const { studyslug } = useParams();
   const contentId = Number(studyslug);
-  const [htmlContent, setHtmlContent] = useState("");
-  const [isContentLoading, setIsContentLoading] = useState(false);
-  const [contentError, setContentError] = useState(null);
-
+  const [isIframeLoading, setIsIframeLoading] = useState(true);
+  
   let currentCategory = null;
   let currentNote = null;
 
@@ -28,65 +26,6 @@ export default function StudyNoteDetails() {
       break;
     }
   }
-
-  const fetchHtmlContent = useCallback(async (url) => {
-    if (!url) return;
-    setIsContentLoading(true);
-    setContentError(null);
-    try {
-      const response = await fetch(url);
-      if (!response.ok)
-        throw new Error(`Failed to load content (${response.status})`);
-      const html = await response.text();
-      setHtmlContent(html);
-    } catch (err) {
-      setContentError(err.message);
-      setHtmlContent("");
-    } finally {
-      setIsContentLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (currentNote?.content_file_url) {
-      fetchHtmlContent(currentNote.content_file_url);
-    } else {
-      setHtmlContent("");
-      setContentError(null);
-    }
-  }, [currentNote?.id, currentNote?.content_file_url, fetchHtmlContent]);
-
-  // Helper to parse simple markdown to premium react layout line-by-line
-  const renderFormattedContent = (content) => {
-    if (!content) return null;
-
-    // Check if content contains HTML tags
-    const isHtml = /<\/?[a-z][\s\S]*>/i.test(content);
-    const isFullDocument = /<html/i.test(content) || /<!DOCTYPE/i.test(content);
-
-    // Note: this is the main logic to render the content
-    if (isHtml) {
-      if (isFullDocument) {
-        return (
-          <iframe
-            srcDoc={content}
-            title="Interactive Study Note"
-            className="w-full border-none min-h-150 rounded-xl bg-white"
-            sandbox="allow-scripts allow-same-origin"
-          />
-        );
-      } else {
-        return (
-          <div
-            dangerouslySetInnerHTML={{ __html: content }}
-            className="study-notes-html-content prose max-w-none"
-          />
-        );
-      }
-    }
-
-    return renderedElements;
-  };
 
   // Loading state for categories
   if (isCategoriesLoading) {
@@ -124,37 +63,38 @@ export default function StudyNoteDetails() {
 
 
   return (
-    <div className="w-full">
+    <div className="w-full flex flex-col">
       {/* Top Buttons */}
       <Breadcrumb currentCategory={currentCategory} currentNote={currentNote} />
 
       {/* Content Card */}
-      <div className="bg-white rounded-2xl p-5 sm:p-8 border border-[#EEEEEE] shadow-sm relative overflow-hidden">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#111827] mb-6">
+      <div className="bg-white rounded-2xl p-5 sm:p-8 border border-[#EEEEEE] shadow-sm relative overflow-hidden flex flex-col">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#111827] mb-6 shrink-0">
           {currentNote?.content_name ?? "Not Found"}
         </h1>
 
-        {isContentLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-4 border-[#FF6B8A] border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : contentError ? (
-          <div className="py-10 text-center">
-            <p className="text-red-500">
-              Failed to load content: {contentError}
-            </p>
-          </div>
-        ) : (
-          <div className="w-full">
-            {htmlContent ? (
-              renderFormattedContent(htmlContent)
-            ) : (
-              <p className="text-gray-500 text-center py-10">
-                No content available for this note.
-              </p>
-            )}
-          </div>
-        )}
+        <div className="w-full h-[calc(100vh-250px)] min-h-[500px] relative">
+          {currentNote?.content_file_url ? (
+            <>
+              {isIframeLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white z-10 rounded-lg">
+                  <div className="w-8 h-8 border-4 border-[#FF6B8A] border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+              <iframe 
+                src={currentNote.content_file_url.startsWith("http") ? currentNote.content_file_url : `https://${currentNote.content_file_url}`}
+                className={`w-full h-full border-0 rounded-lg transition-opacity duration-300 ${isIframeLoading ? 'opacity-0' : 'opacity-100'}`}
+                title={currentNote.content_name || "Note Content"}
+                sandbox="allow-same-origin allow-scripts"
+                onLoad={() => setIsIframeLoading(false)}
+              />
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              No content available for this note.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import FolderList from "./folder-list";
 import { useGetLibrary } from "@/hooks";
 
 const LibrarySidebar = ({ onClose }) => {
-    const { libraryData, isLoading, isFetching, isError } = useGetLibrary();
+    const { libraryData, isLoading} = useGetLibrary();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     // Track which folder IDs are expanded (separate from API data)

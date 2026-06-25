@@ -1,116 +1,82 @@
-import LibraryItems from "./components/library-items";
-import NoteHeader from "./components/note-header";
+"use client";
+
+import { use, useState } from "react";
 import NoteTag from "./components/note-tag";
-import { ChevronRight, Share2, Pill } from "lucide-react";
 import TopBreadcrumb from "./components/top-breadcrumb";
 import NoteNotFound from "./components/note-not-found";
+import { useGetLibrary, useGetLibraryTopicDetails } from "@/hooks";
+import LoadingIcon from "@/components/loading-icon";
+import NoteHeader from "./components/note-header";
 
-const notesData = [
-  {
-    id: 1,
-    slug: "insulin-types",
-    folder: "Pharmacology",
-    title: "Insulin Types & Administration",
-    date: "Jan 6, 2026",
-    tags: [
-      { label: "Endocrine", color: "blue" },
-      { label: "Priority", color: "blue-gray" },
-      { label: "Pharmacology", color: "orange" },
-    ],
-    items: [
-      {
-        title: "Rapid-Acting (Lispro/Aspart)",
-        desc: "15min onset, give within 15min of meals.",
-      },
-      {
-        title: "Regular",
-        desc: "30–60min onset, give 30min before meals. Only insulin given IV.",
-      },
-      {
-        title: "NPH",
-        desc: "Cloudy. Draw clear before cloudy when mixing.",
-      },
-      {
-        title: "Glargine",
-        desc: "No peak, 24h duration. Cannot be mixed with anything.",
-      },
-    ],
-  },
-  {
-    id: 2,
-    slug: "anticoagulants",
-    folder: "Pharmacology",
-    title: "Anticoagulants — Heparin vs Warfarin",
-    date: "Jan 7, 2026",
-    tags: [
-      { label: "Cardiovascular", color: "blue" },
-      { label: "Critical", color: "blue-gray" },
-      { label: "Pharmacology", color: "orange" },
-    ],
-    items: [
-      {
-        title: "Heparin",
-        desc: "Rapid onset, short half-life. Monitor aPTT.",
-      },
-      {
-        title: "Warfarin",
-        desc: "Slow onset (days), long duration. Monitor PT/INR. Vitamin K is antidote.",
-      },
-    ],
-  },
-  {
-    id: 3,
-    slug: "heart-structure",
-    folder: "Anatomy",
-    title: "Heart Structure",
-    date: "Jan 8, 2026",
-    tags: [
-      { label: "Cardiovascular", color: "blue" },
-      { label: "Foundations", color: "blue-gray" },
-      { label: "Anatomy", color: "orange" },
-    ],
-    items: [
-      {
-        title: "Atria",
-        desc: "Upper chambers that receive blood.",
-      },
-      {
-        title: "Ventricles",
-        desc: "Lower chambers that pump blood out.",
-      },
-    ],
-  },
-];
+export default function NoteDetails({ params }) {
+  const { noteslug } = use(params);
+  const { topicDetailsData, isLoading, isError, isFetching } = useGetLibraryTopicDetails(noteslug);
+  const { libraryData } = useGetLibrary()
+  const [isIframeLoading, setIsIframeLoading] = useState(true);
 
-export default async function NoteDetails({ params }) {
-  const { noteslug } = await params;
+  if (isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <LoadingIcon className="w-8 h-8 text-primary" />
+      </div>
+    );
+  }
 
-  // skeleton loading delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  if (isError || !topicDetailsData) return <NoteNotFound />;
 
-  const note = notesData.find((n) => n.slug === noteslug);
+  const targetFolder = Array.isArray(libraryData) 
+    ? libraryData.find(folder => Array.isArray(folder?.notes) && folder.notes.some(n => Number(n.content_id) === Number(noteslug)))
+    : null;
 
-  if (!note) return <NoteNotFound />;
+  const noteData = {
+    title: topicDetailsData.content_name || "Note Details",
+    slug: noteslug,
+    id: topicDetailsData.id,
+    is_saved: topicDetailsData.is_saved,
+    folderName: targetFolder?.name || "Library Notes",
+    folderId: targetFolder?.id || null,
+  };
+  console.log("noteData", noteData)
 
   return (
     <div className="flex flex-col h-full">
       {/* Top Breadcrumb Header */}
-      <TopBreadcrumb note={note} />
+      <TopBreadcrumb note={noteData} />
 
       {/* Content Area */}
-      <div className="pt-6">
-        <NoteHeader folder={note.folder} date={note.date} title={note.title} />
+      <div className="pt-6 relative">
+        {isFetching && (
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-20 flex items-center justify-center rounded-lg">
+            <LoadingIcon className="w-8 h-8 text-primary" />
+          </div>
+        )}
+        <NoteHeader folder={noteData.folderName} date={new Date().toLocaleDateString()} title={noteData.title} isSaved={noteData.is_saved} />
 
         <div className="flex gap-2 mb-8">
-          {note.tags.map((tag, index) => (
+          {noteData.tags?.map((tag, index) => (
             <NoteTag key={index} label={tag.label} color={tag.color} />
           ))}
         </div>
 
         <div className="space-y-6">
-          {note.items.map((item, index) => (
-            <LibraryItems key={index} {...item} />
-          ))}
+          <div className="w-full h-[calc(100vh-250px)] min-h-[500px] relative">
+            {topicDetailsData.content_file_url && (
+              <>
+                {isIframeLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white z-10 rounded-lg">
+                    <LoadingIcon className="w-8 h-8 text-primary" />
+                  </div>
+                )}
+                <iframe
+                  src={topicDetailsData.content_file_url.startsWith("http") ? topicDetailsData.content_file_url : `https://${topicDetailsData.content_file_url}`}
+                  className={`w-full h-full border-0 rounded-lg shadow-sm transition-opacity duration-300 ${isIframeLoading ? 'opacity-0' : 'opacity-100'}`}
+                  title={topicDetailsData.content_name || "Note Content"}
+                  sandbox="allow-same-origin allow-scripts"
+                  onLoad={() => setIsIframeLoading(false)}
+                />
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

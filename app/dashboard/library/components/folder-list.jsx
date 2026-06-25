@@ -8,6 +8,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useDeleteLibrary } from "@/hooks";
 import DeleteModal from "./delete-modal";
 import FolderCreateModal from "./folder-create-modal";
+import Image from "next/image";
+
+const BASEURL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const FolderList = ({ folder, toggleFolder, onClose }) => {
     const queryClient = useQueryClient();
@@ -31,6 +34,7 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
             onSuccess: (data) => {
                 toast.success(data?.message ?? "Folder deleted successfully!");
                 queryClient.invalidateQueries({ queryKey: ["library-get"] });
+                queryClient.invalidateQueries({ queryKey: ["library-topic-details", folder?.id] });
                 setIsDeleteModalOpen(false);
             },
             onError: (error) => {
@@ -74,7 +78,13 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
                     <ChevronDown className={`w-4.5 h-4.5 text-gray-500 transition-transform ${folder?.isOpen ? "rotate-180" : ""}`} />
 
                     {/* Icon */}
-                    <span className="text-lg">{folder?.icon}</span>
+                    <Image
+                        src={`${BASEURL}/${folder?.icon?.icon}`}
+                        alt="icon"
+                        width={20}
+                        height={20}
+                        className="shrink-0"
+                    />
 
                     {/* Text */}
                     <div>
@@ -95,9 +105,9 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
                 </div>
 
                 {/* RIGHT SIDE */}
-                <Dropdown 
-                    menu={{ items: menuItems }} 
-                    trigger={['click']} 
+                <Dropdown
+                    menu={{ items: menuItems }}
+                    trigger={['click']}
                     placement="bottomRight"
                     className="folder-actions-dropdown"
                 >
@@ -125,8 +135,8 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
                             ) : (
                                 folder?.notes?.map((note) => (
                                     <Link
-                                        href={`/dashboard/library/${note?.id}`}
-                                        key={note?.id}
+                                        href={`/dashboard/library/${note?.content_id}`}
+                                        key={note?.content_id}
                                         onClick={() => onClose?.()}
                                         className="flex gap-1 items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer"
                                     >
@@ -135,9 +145,6 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
                                             <p className="flex items-center gap-1 text-sm font-medium text-[#333]">
                                                 {note?.content_name ?? note?.title ?? ""}
                                             </p>
-                                            {/* <p className="text-xs text-gray-500 truncate" title="See All Notes">
-                                                {note?.added ?? note?.desc ?? ""}
-                                            </p> */}
                                         </div>
                                     </Link>
                                 ))
@@ -148,14 +155,14 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
             }
 
             {/* Rename Modal */}
-            <FolderCreateModal 
+            <FolderCreateModal
                 isModalOpen={isRenameModalOpen}
                 setIsModalOpen={setIsRenameModalOpen}
                 folderData={folder}
             />
 
             {/* Delete Modal */}
-            <DeleteModal 
+            <DeleteModal
                 isModalOpen={isDeleteModalOpen}
                 setIsModalOpen={setIsDeleteModalOpen}
                 onDelete={confirmDelete}
@@ -166,5 +173,4 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
         </>
     );
 };
-
 export default FolderList;

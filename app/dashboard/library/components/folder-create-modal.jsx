@@ -10,10 +10,12 @@ import img03 from "@/public/assets/library/heart.svg";
 import img04 from "@/public/assets/library/home.svg";
 import img05 from "@/public/assets/library/capsoul.svg";
 import Image from "next/image";
-import { useCreateLibrary, useRenameLibrary } from "@/hooks";
+import { useCreateLibrary, useGetFolderIcon, useRenameLibrary, useGetFolderColor } from "@/hooks";
 import toast from "react-hot-toast";
 import LoadingIcon from "@/components/loading-icon";
 import { useQueryClient } from "@tanstack/react-query";
+
+const BASEURL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const icons = [
     { id: "default_folder", icon: img01 },
@@ -23,38 +25,35 @@ const icons = [
     { id: "capsoul", icon: img05 },
 ];
 
-const colors = [
-    "#3B82F6",
-    "#F43F5E",
-    "#16A34A",
-    "#B45309",
-    "#7C3AED",
-    "#0891B2",
-    "#DC2626",
-    "#9CA3AF",
-];
+
 
 const FolderCreateModal = ({ isModalOpen, setIsModalOpen, folderData }) => {
     const queryClient = useQueryClient();
     const { createLibrary, isPending: isCreatePending } = useCreateLibrary();
     const { renameLibrary, isPending: isRenamePending } = useRenameLibrary();
+    const { folderIconData} = useGetFolderIcon();
+    const { folderColorData, isLoading: isColorLoading } = useGetFolderColor();
     const isPending = isCreatePending || isRenamePending;
     const [folderName, setFolderName] = useState("");
     const [selectedIcon, setSelectedIcon] = useState("default_folder");
-    const [selectedColor, setSelectedColor] = useState(colors[0]);
+    const [selectedColor, setSelectedColor] = useState("");
 
     // Note: populate form fields when editing an existing folder
     useEffect(() => {
         if (folderData) {
             setFolderName(folderData.name || "");
             setSelectedIcon(folderData.icon_id || "default_folder");
-            setSelectedColor(folderData.color || colors[0]);
+            setSelectedColor(folderData.color || "");
         } else {
             setFolderName("");
             setSelectedIcon("default_folder");
-            setSelectedColor(colors[0]);
+            if (folderColorData?.length > 0) {
+                setSelectedColor(folderColorData[0]?.color);
+            } else {
+                setSelectedColor("");
+            }
         }
-    }, [folderData, isModalOpen]);
+    }, [folderData, isModalOpen, folderColorData]);
 
     // Note: create or rename folder via API
     const handleSave = () => {
@@ -75,7 +74,7 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, folderData }) => {
                     // Note: reset all data
                     setFolderName("");
                     setSelectedIcon("default_folder");
-                    setSelectedColor(colors[0]);
+                    setSelectedColor(folderColorData?.[0]?.color || "");
                     setIsModalOpen(false);
                 },
 
@@ -89,10 +88,11 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, folderData }) => {
 
                 onSuccess: (data) => {
                     toast.success(data?.message ?? "Folder created successfully!");
+                    queryClient.invalidateQueries({ queryKey: ["library-get"] })
                     // Note: reset all data
                     setFolderName("");
                     setSelectedIcon("default_folder");
-                    setSelectedColor(colors[0]);
+                    setSelectedColor(folderColorData?.[0]?.color || "");
                     setIsModalOpen(false);
                 },
 
@@ -143,8 +143,7 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, folderData }) => {
                 <div className="mb-4">
                     <p className="mb-2 text-sm text-[#424242] font-semibold!">Icon</p>
                     <div className="flex gap-2">
-                        {icons.map((item) => {
-                            const Icon = item.icon;
+                        {folderIconData?.map((item) => {
                             const isActive = selectedIcon === item.id;
 
                             return (
@@ -158,8 +157,8 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, folderData }) => {
                                         }`}
                                 >
                                     <Image
-                                        src={Icon}
-                                        alt={item.id}
+                                        src={item?.icon?.startsWith("http") ? item.icon : `${BASEURL}/${item?.icon?.replace(/^\//, '')}`}
+                                        alt={String(item.id)}
                                         width={24}
                                         height={24}
                                     />
@@ -172,16 +171,18 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, folderData }) => {
                 {/* Color */}
                 <div className="mb-6">
                     <p className="mb-2 text-sm text-[#424242] font-semibold!">Color</p>
-                    <div className="flex gap-2">
-                        {colors.map((color) => (
+                    <div className="flex gap-2 flex-wrap">
+                        {isColorLoading ? (
+                            <LoadingIcon className="text-primary w-5 h-5" />
+                        ) : Array.from(new Set(folderColorData?.map(item => item?.color))).filter(Boolean).map((colorStr) => (
                             <div
-                                key={color}
-                                onClick={() => setSelectedColor(color)}
-                                className={`h-6 w-6 cursor-pointer rounded-full border-2 ${selectedColor === color
-                                    ? "border-gray-300"
+                                key={colorStr}
+                                onClick={() => setSelectedColor(colorStr)}
+                                className={`h-6 w-6 cursor-pointer rounded-full border-2 ${selectedColor === colorStr
+                                    ? "border-gray-400"
                                     : "border-transparent"
                                     }`}
-                                style={{ backgroundColor: color }}
+                                style={{ backgroundColor: colorStr }}
                             />
                         ))}
                     </div>

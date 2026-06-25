@@ -7,6 +7,9 @@ import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import FolderCreateModal from "@/app/dashboard/library/components/folder-create-modal";
 import { Plus, Bookmark, Loader2 } from "lucide-react";
+import Image from "next/image";
+
+const BASEURL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const SaveNoteModal = ({ isModalOpen, setIsModalOpen, noteId, onSaveSuccess }) => {
     const { libraryData, isLoading } = useGetLibrary();
@@ -99,7 +102,17 @@ const SaveNoteModal = ({ isModalOpen, setIsModalOpen, noteId, onSaveSuccess }) =
                                     <div className={`w-9 h-9 rounded-md flex items-center justify-center transition-colors ${
                                         selectedFolderId === folder.id ? "bg-white/20" : "bg-gray-100 group-hover:bg-white"
                                     }`}>
-                                        <span className="text-lg">{folder?.icon || "📁"}</span>
+                                        {folder?.icon?.icon ? (
+                                            <Image
+                                                src={folder.icon.icon.startsWith("http") ? folder.icon.icon : `${BASEURL}/${folder.icon.icon.replace(/^\//, '')}`}
+                                                alt="folder icon"
+                                                width={20}
+                                                height={20}
+                                                className="shrink-0"
+                                            />
+                                        ) : (
+                                            <span className="text-lg">📁</span>
+                                        )}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className={`font-bold text-base truncate transition-colors ${
