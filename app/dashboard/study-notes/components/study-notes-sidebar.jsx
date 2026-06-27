@@ -10,8 +10,6 @@ const SidebarContent = ({ onClose }) => {
     const [openCategory, setOpenCategory] = useState(null);
     const { coreLearningData, isLoading } = useCoreLearning("study_notes");
     const categories = coreLearningData || [];
-    console.log(categories, 'categories----------------');
-
 
     const handleToggle = (id) => {
         setOpenCategory((prev) => (prev === id ? null : id));

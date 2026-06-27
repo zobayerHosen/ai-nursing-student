@@ -54,7 +54,13 @@ const baseRemotePatterns = [
   },
   {
     protocol: "https",
-    hostname: "i.ytimg.com",
+    hostname: "stemrn.softvencealpha.com",
+    port: "",
+    pathname: "/**",
+  },
+  {
+    protocol: "http",
+    hostname: "stemrn.softvencealpha.com",
     port: "",
     pathname: "/**",
   },
