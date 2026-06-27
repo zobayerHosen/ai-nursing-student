@@ -88,8 +88,8 @@ export default function DashboardHeader({
                     <BsLayoutSidebarReverse className="md:text-xl text-lg" />
                 </button>
 
-                <h1 className="md:text-xl lg:text-2xl font-semibold text-[#222427]">
-                    Welcome, Zubu!
+                <h1 className="md:text-xl lg:text-2xl font-semibold text-[#222427] capitalize">
+                    Welcome, {user?.full_name?.split(" ")[0]}
                 </h1>
             </div>
 

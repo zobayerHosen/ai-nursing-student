@@ -79,7 +79,7 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
 
                     {/* Icon */}
                     <Image
-                        src={`${BASEURL}/${folder?.icon?.icon}`}
+                        src={`${BASEURL}${folder?.icon?.icon}`}
                         alt="icon"
                         width={20}
                         height={20}
