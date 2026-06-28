@@ -1,6 +1,6 @@
 "use client";
 
-import { useCoreLearning } from "@/hooks";
+import { useGetCoreLearningContentDetails } from "@/hooks";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -11,24 +11,11 @@ export default function StudyNoteDetails() {
   const contentId = Number(studyslug);
   const [isIframeLoading, setIsIframeLoading] = useState(true);
   
-  let currentCategory = null;
-  let currentNote = null;
+  const { topicDetailsData: currentNote, isLoading } = useGetCoreLearningContentDetails(contentId);
+  const currentCategory = null;
 
-  const { coreLearningData, isLoading: isCategoriesLoading } =
-    useCoreLearning("study_notes");
-  const categories = coreLearningData || [];
-
-  for (const category of categories) {
-    const found = category?.contents?.find((c) => Number(c.id) === contentId);
-    if (found) {
-      currentCategory = category;
-      currentNote = found;
-      break;
-    }
-  }
-
-  // Loading state for categories
-  if (isCategoriesLoading) {
+  // Loading state for note details
+  if (isLoading) {
     return (
       <div className="w-full min-h-125 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-[#FF6B8A] border-t-transparent rounded-full animate-spin" />

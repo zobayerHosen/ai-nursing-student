@@ -2,14 +2,14 @@
 
 import React, { use } from "react";
 import BodySystemDetails from "./components/body-system-detail";
-import { useCoreLearning } from "@/hooks";
+import { useLearningCategoryDetails } from "@/hooks";
 import { notFound } from "next/navigation";
 
 const BodySystemsPage = ({ params }) => {
   const unwrappedParams = use(params);
   const id = Number(unwrappedParams.slug);
 
-  const { coreLearningData, isLoading } = useCoreLearning("body_system");
+  const { learningCategoryDetailsData, isLoading } = useLearningCategoryDetails(id);
 
   if (isLoading) {
     return (
@@ -19,8 +19,7 @@ const BodySystemsPage = ({ params }) => {
     );
   }
 
-  const contents = coreLearningData?.[0]?.contents || [];
-  const systemData = contents.find((item) => item.id === id);
+  const systemData = learningCategoryDetailsData;
 
   if (!systemData) {
     notFound();

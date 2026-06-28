@@ -31,7 +31,7 @@ const TopBreadcrumb = ({ note }) => {
                         toast.success("Note removed from saved list");
                         setIsSaved(false);
                         queryClient.invalidateQueries({ queryKey: ["library-get"] });
-                        queryClient.invalidateQueries({ queryKey: ["library-topic-details", note?.slug] });
+                        queryClient.invalidateQueries({ queryKey: ["core-learning-content-details", note?.slug] });
                     },
                     onError: (error) => {
                         toast.error(error?.response?.data?.message || "Failed to unsave note");
@@ -87,7 +87,7 @@ const TopBreadcrumb = ({ note }) => {
                 noteId={note?.id || note?.slug} 
                 onSaveSuccess={() => {
                     setIsSaved(true);
-                    queryClient.invalidateQueries({ queryKey: ["library-topic-details", note?.slug] });
+                    queryClient.invalidateQueries({ queryKey: ["core-learning-content-details", note?.slug] });
                 }}
             />
             <ShareNoteModal

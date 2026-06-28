@@ -45,7 +45,7 @@ const BodySystemDetail = ({ systemData }) => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back To Topic
           </button>
-          <h1 className="text-2xl font-bold text-slate-800 max-sm:text-xl">{systemData?.content_name}</h1>
+          <h1 className="text-2xl font-bold text-slate-800 max-sm:text-xl">{systemData?.subtitle || systemData?.content_name}</h1>
           <p className="text-slate-500 text-sm">Body System</p>
         </div>
 
@@ -56,10 +56,10 @@ const BodySystemDetail = ({ systemData }) => {
             className="absolute inset-12 transition-transform duration-200 ease-out max-sm:inset-6"
             style={{ transform: `scale(${zoomScale})` }}
           >
-            {systemData?.content_cover_url ? (
+            {systemData?.cover || systemData?.content_cover_url ? (
               <Image 
-                src={systemData?.content_cover_url} 
-                alt={`${systemData?.content_name} Active Diagram View`} 
+                src={systemData?.cover || systemData?.content_cover_url} 
+                alt={`${systemData?.subtitle || systemData?.content_name} Active Diagram View`} 
                 fill 
                 className="object-contain select-none"
                 priority
@@ -72,7 +72,7 @@ const BodySystemDetail = ({ systemData }) => {
           </div>
 
           {/* Canvas Floating Utility Actions */}
-          {systemData?.content_cover_url && (
+          {(systemData?.cover || systemData?.content_cover_url) && (
             <div className="absolute bottom-6 right-6 flex flex-col gap-2 z-10">
               <button 
                 onClick={handleResetZoom}
@@ -98,12 +98,12 @@ const BodySystemDetail = ({ systemData }) => {
             </div>
           )}
         </div>
-      </div>
+      </div>  
 
       {/* RIGHT COLUMN: iframe content area */}
       <div className="w-[450px] h-full bg-white border-l border-slate-200 flex flex-col max-lg:w-full max-lg:h-[600px] max-lg:border-t max-lg:border-l-0 shrink-0 relative overflow-hidden">
         <div className="w-full h-full relative">
-          {systemData?.content_file_url ? (
+          {systemData?.html_file || systemData?.content_file_url ? (
             <>
               {isIframeLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
@@ -111,9 +111,9 @@ const BodySystemDetail = ({ systemData }) => {
                 </div>
               )}
               <iframe 
-                src={systemData?.content_file_url?.startsWith("http") ? systemData?.content_file_url : `https://${systemData?.content_file_url}`}
+                src={(systemData?.html_file || systemData?.content_file_url)?.startsWith("http") ? (systemData?.html_file || systemData?.content_file_url) : `https://${(systemData?.html_file || systemData?.content_file_url)}`}
                 className={`w-full h-full border-0 transition-opacity duration-300 ${isIframeLoading ? 'opacity-0' : 'opacity-100'}`}
-                title={systemData?.content_name || "Note Content"}
+                title={systemData?.subtitle || systemData?.content_name || "Note Content"}
                 sandbox="allow-same-origin allow-scripts"
                 onLoad={() => setIsIframeLoading(false)}
               />
