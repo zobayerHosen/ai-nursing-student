@@ -4,13 +4,13 @@ import { use, useState } from "react";
 import NoteTag from "./components/note-tag";
 import TopBreadcrumb from "./components/top-breadcrumb";
 import NoteNotFound from "./components/note-not-found";
-import { useGetLibrary, useGetLibraryTopicDetails } from "@/hooks";
+import { useGetLibrary, useGetCoreLearningContentDetails } from "@/hooks";
 import LoadingIcon from "@/components/loading-icon";
 import NoteHeader from "./components/note-header";
 
 export default function NoteDetails({ params }) {
   const { noteslug } = use(params);
-  const { topicDetailsData, isLoading, isError, isFetching } = useGetLibraryTopicDetails(noteslug);
+  const { topicDetailsData, isLoading, isError, isFetching } = useGetCoreLearningContentDetails(noteslug);
   const { libraryData } = useGetLibrary()
   const [isIframeLoading, setIsIframeLoading] = useState(true);
 

@@ -34,7 +34,7 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
             onSuccess: (data) => {
                 toast.success(data?.message ?? "Folder deleted successfully!");
                 queryClient.invalidateQueries({ queryKey: ["library-get"] });
-                queryClient.invalidateQueries({ queryKey: ["library-topic-details", folder?.id] });
+                queryClient.invalidateQueries({ queryKey: ["core-learning-content-details"] });
                 setIsDeleteModalOpen(false);
             },
             onError: (error) => {
@@ -78,13 +78,22 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
                     <ChevronDown className={`w-4.5 h-4.5 text-gray-500 transition-transform ${folder?.isOpen ? "rotate-180" : ""}`} />
 
                     {/* Icon */}
-                    <Image
-                        src={`${BASEURL}${folder?.icon?.icon}`}
-                        alt="icon"
-                        width={20}
-                        height={20}
-                        className="shrink-0"
-                    />
+                    {folder?.icon?.icon ? (
+                        <Image
+                            src={`${BASEURL}${folder?.icon?.icon}`}
+                            alt="icon"
+                            width={20}
+                            height={20}
+                            className="shrink-0"
+                        />
+                    ) : (
+                        <div
+                            className="w-5 h-5 shrink-0 rounded flex items-center justify-center text-xs font-semibold text-white uppercase"
+                            style={{ backgroundColor: folder?.color || '#9ca3af' }}
+                        >
+                            {folder?.name?.charAt(0)}
+                        </div>
+                    )}
 
                     {/* Text */}
                     <div>

@@ -34,7 +34,9 @@ const Breadcrumb = ({ currentCategory, currentNote }) => {
         if (!currentNote?.id) return;
         try {
             const data = await markComplete({ id: currentNote?.id });
-            queryClient.invalidateQueries({ queryKey: ["core-learning", "study_notes"] });
+            queryClient.invalidateQueries({ queryKey: ["core-learning-content-details", currentNote?.id] });
+            queryClient.invalidateQueries({ queryKey: ["core-learning"] });
+            setIsCompleted(!isCompleted);
             toast.success(data?.message || `Marked as ${!isCompleted ? 'completed' : 'incomplete'}`);
         } catch (error) {
             toast.error(error?.response?.data?.message || "Failed to update status");

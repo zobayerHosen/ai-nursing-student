@@ -1,9 +1,9 @@
-import axiosPrivateClient from "@/lib/axios.private.client";
+import axiosPublic from "@/lib/axios.public";
 import { GetFolderIconService } from "@/services/library";
 import { useQuery } from "@tanstack/react-query";
 
 export const useGetFolderIcon = () => {
-  const axiosInstance = axiosPrivateClient();
+  const axiosInstance = axiosPublic();
 
   const { data, isLoading, isError, isFetching } = useQuery({
     queryKey: ["folder-icon-get"],

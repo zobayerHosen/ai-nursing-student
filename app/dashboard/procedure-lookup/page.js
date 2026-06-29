@@ -1,5 +1,5 @@
-import UnderConstraction from "../components/underconstraction";
+import { redirect } from "next/navigation";
 
 export default function ProcedureLookup() {
-  return <UnderConstraction />;
+  return redirect("/dashboard/procedure-lookup/introduction-to-procedures")
 }
