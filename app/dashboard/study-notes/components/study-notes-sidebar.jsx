@@ -8,7 +8,8 @@ import { useState, Suspense } from 'react';
 
 const SidebarContent = ({ onClose }) => {
     const [openCategory, setOpenCategory] = useState(null);
-    const { coreLearningData, isLoading } = useCoreLearning("study_notes");
+    const { coreLearningData, isLoading, coreLearningPagination } = useCoreLearning("study_notes");
+    console.log({ coreLearningData, coreLearningPagination });
     const categories = coreLearningData || [];
 
     const handleToggle = (id) => {

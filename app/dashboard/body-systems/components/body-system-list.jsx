@@ -6,6 +6,7 @@ import { useCoreLearning } from '@/hooks';
 
 const BodySystemList = () => {
   const { coreLearningData, isLoading } = useCoreLearning("body_system");
+  console.log("body system", coreLearningData)
 
   if (isLoading) {
     return (
@@ -36,7 +37,7 @@ const BodySystemList = () => {
               {system?.cover ? (
                 <Image
                   src={system?.cover}
-                  alt={system.content_name}
+                  alt={system?.title}
                   fill
                   style={{ objectFit: 'contain' }}
                   className="group-hover:scale-105 transition-transform duration-300"

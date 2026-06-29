@@ -15,6 +15,7 @@ export const useCoreLearning = (pathName) => {
 
   return {
     coreLearningData: data?.data?.data,
+    coreLearningPagination: data?.data?.pagination,
     isLoading,
     isError,
     isFetching,

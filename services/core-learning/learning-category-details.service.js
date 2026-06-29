@@ -1,4 +1,4 @@
-export const LearningCategoryDetailsService = async (id, axiosInstance) => {
+export const LearningCategoryDetailsService = async (axiosInstance, id) => {
     const response = await axiosInstance.get(`/learning/category/${id}/`);
-    return response?.data?.data;
+    return response?.data;
 };

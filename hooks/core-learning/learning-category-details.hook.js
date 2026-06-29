@@ -7,14 +7,16 @@ export const useLearningCategoryDetails = (id) => {
 
     const { data, isLoading, isError, isFetching, error } = useQuery({
         queryKey: ["learning-category-details", id],
-        queryFn: () => LearningCategoryDetailsService(id, axiosInstance),
+        queryFn: () => LearningCategoryDetailsService(axiosInstance, id),
         staleTime: 2 * 60 * 1000,
         retry: false,
         enabled: !!id,
     });
 
+    console.log("Raw query data:", data);
+
     return {
-        learningCategoryDetailsData: data?.data?.data,
+        learningCategoryDetailsData: data?.data?.data || data?.data || data,
         isLoading,
         isError,
         isFetching,
