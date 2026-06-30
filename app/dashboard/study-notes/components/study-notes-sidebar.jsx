@@ -8,9 +8,12 @@ import { useState, Suspense } from 'react';
 
 const SidebarContent = ({ onClose }) => {
     const [openCategory, setOpenCategory] = useState(null);
-    const { coreLearningData, isLoading, coreLearningPagination } = useCoreLearning("study_notes");
-    console.log({ coreLearningData, coreLearningPagination });
+    const [limit, setLimit] = useState(2);
+    const { coreLearningData, isLoading, coreLearningPagination, isFetching } = useCoreLearning("study_notes", { limit });
     const categories = coreLearningData || [];
+
+
+    const hasMore = coreLearningPagination?.count > (coreLearningData?.length || 0);
 
     const handleToggle = (id) => {
         setOpenCategory((prev) => (prev === id ? null : id));
@@ -33,27 +36,6 @@ const SidebarContent = ({ onClose }) => {
                             />
                         </div>
                     </div>
-
-                    {/* progressed */}
-                    {/* <div className='px-4 mt-4'>
-                        <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm text-[#424242]">
-                                <span className="text-[#FF6B8A] font-semibold">34%</span>{" "}
-                                watched .28/82 lessons
-                            </p>
-
-                            <button className="text-sm font-medium text-[#FF6B8A]">
-                            Filter
-                        </button>
-                        </div>
-
-                        <div className="w-full h-2 bg-[#E5E5E5] rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-[#FF6B8A] rounded-full"
-                                style={{ width: "34%" }}
-                            />
-                        </div>
-                    </div> */}
                 </div>
 
                 {/* Categories */}
@@ -166,6 +148,19 @@ const SidebarContent = ({ onClose }) => {
                             </div>
                         );
                     })}
+
+                    {/* Load More Button */}
+                    {!isLoading && hasMore && (
+                        <div className="flex justify-center pt-4 pb-2">
+                            <button
+                                onClick={() => setLimit(prev => prev + 2)}
+                                disabled={isFetching}
+                                className="px-4 py-2 bg-primary/80 text-white rounded text-sm font-medium hover:bg-primary/60 transition-colors disabled:opacity-50 cursor-pointer"
+                            >
+                                {isFetching ? "Loading..." : "See More"}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </aside>
         </>

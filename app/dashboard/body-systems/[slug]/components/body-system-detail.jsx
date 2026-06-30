@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 const BodySystemDetail = ({ systemData }) => {
   console.log("Body system: ", systemData)
   const [zoomScale, setZoomScale] = useState(1);
+  const [resetKey, setResetKey] = useState(0);
   const [isIframeLoading, setIsIframeLoading] = useState(true);
   const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0);
   
@@ -50,6 +51,16 @@ const BodySystemDetail = ({ systemData }) => {
 
   const handleResetZoom = () => {
     setZoomScale(1);
+    setResetKey(prev => prev + 1);
+  };
+
+  const handleWheel = (e) => {
+    const zoomSensitivity = 0.05;
+    if (e.deltaY < 0) {
+      setZoomScale(prev => Math.min(prev + zoomSensitivity, 2.5));
+    } else if (e.deltaY > 0) {
+      setZoomScale(prev => Math.max(prev - zoomSensitivity, 0.5));
+    }
   };
 
   if (!systemData) {
@@ -89,7 +100,7 @@ const BodySystemDetail = ({ systemData }) => {
               <button 
                 onClick={handlePrevThumbnails}
                 disabled={!hasMoreLeft}
-                className={`p-1 rounded-full shrink-0 transition-colors ${!hasMoreLeft ? 'text-slate-300 cursor-not-allowed' : 'text-slate-500 hover:bg-slate-100'}`}
+                className={`cursor-pointer p-1 rounded-full shrink-0 transition-colors ${!hasMoreLeft ? 'text-slate-300 cursor-not-allowed' : 'text-slate-500 hover:bg-slate-100'}`}
               >
                 <ChevronLeft size={20} />
               </button>
@@ -108,6 +119,8 @@ const BodySystemDetail = ({ systemData }) => {
                         if (activeContent?.id !== content?.id) {
                           setIsIframeLoading(true);
                           setActiveContent(content);
+                          setZoomScale(1);
+                          setResetKey(prev => prev + 1);
                         }
                       }}
                       className={`relative w-16 h-16 rounded-lg overflow-hidden shrink-0 border-2 transition-all bg-white ${
@@ -135,7 +148,7 @@ const BodySystemDetail = ({ systemData }) => {
               <button 
                 onClick={handleNextThumbnails}
                 disabled={!hasMoreRight}
-                className={`p-1 rounded-full shrink-0 transition-colors ${!hasMoreRight ? 'text-slate-300 cursor-not-allowed' : 'text-slate-500 hover:bg-slate-100'}`}
+                className={`cursor-pointer p-1 rounded-full shrink-0 transition-colors ${!hasMoreRight ? 'text-slate-300 cursor-not-allowed' : 'text-slate-500 hover:bg-slate-100'}`}
               >
                 <ChevronRight size={20} />
               </button>
@@ -144,26 +157,35 @@ const BodySystemDetail = ({ systemData }) => {
         </div>
 
         {/* Main Canvas Area */}
-        <div className="flex-1 bg-white rounded-3xl border border-slate-200 relative shadow-sm overflow-hidden flex items-center justify-center max-lg:min-h-[450px] max-lg:flex-initial">
+        <div 
+          className="flex-1 bg-white rounded-3xl border border-slate-200 relative shadow-sm overflow-hidden flex items-center justify-center max-lg:min-h-[450px] max-lg:flex-initial"
+          onWheel={handleWheel}
+        >
           {/* Main Image Wrapper with Dynamic Zoom Constraints */}
-          <div 
-            className="absolute inset-12 transition-transform duration-200 ease-out max-sm:inset-6"
-            style={{ transform: `scale(${zoomScale})` }}
+          <motion.div 
+            key={`canvas-${currentContent?.id || 'default'}-${resetKey}`}
+            className="absolute inset-12 max-sm:inset-6 cursor-grab active:cursor-grabbing"
+            animate={{ scale: zoomScale }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            drag
+            dragConstraints={{ left: -600, right: 600, top: -300, bottom: 300 }}
+            dragElastic={0.2}
           >
             {coverUrl ? (
               <Image 
                 src={coverUrl} 
                 alt={`${currentContent?.subtitle || currentContent?.content_name || currentContent?.title} Active Diagram View`} 
                 fill 
-                className="object-contain select-none"
+                className="object-contain select-none pointer-events-none"
                 priority
+                draggable={false}
               />
             ) : (
               <div className="flex items-center justify-center h-full text-slate-400">
                 No cover image available.
               </div>
             )}
-          </div>
+          </motion.div>
 
           {/* Canvas Floating Utility Actions */}
           {coverUrl && (
