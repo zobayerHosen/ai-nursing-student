@@ -1,11 +1,26 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCoreLearning } from '@/hooks';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const BodySystemList = () => {
-  const { coreLearningData, isLoading } = useCoreLearning("body_system");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+  const offset = (currentPage - 1) * itemsPerPage;
+
+  const { coreLearningData, coreLearningPagination, isLoading } = useCoreLearning("body_system", { limit: itemsPerPage, offset });
+  
+  const totalPages = coreLearningPagination?.count ? Math.ceil(coreLearningPagination.count / itemsPerPage) : 0;
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   console.log("body system", coreLearningData)
 
   if (isLoading) {
@@ -21,7 +36,7 @@ const BodySystemList = () => {
       {/* Header section */}
       <div className="mb-8 border-b border-gray-200 pb-4">
         <h1 className="text-2xl font-bold text-gray-800">Body Systems</h1>
-        <p className="text-sm text-gray-500">{coreLearningData?.length ?? 0} Systems</p>
+        <p className="text-sm text-gray-500">{coreLearningPagination?.count ?? 0} Systems</p>
       </div>
 
       {/* Responsive grid section */}
@@ -54,6 +69,50 @@ const BodySystemList = () => {
           </Link>
         ))}
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="mt-10 flex justify-center items-center gap-2">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="cursor-pointer flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-primary transition-colors disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-gray-500"
+            aria-label="Previous page"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          
+          <div className="flex items-center gap-2 bg-white px-2 py-1 rounded-full border border-gray-200 shadow-sm">
+            {[...Array(totalPages)].map((_, index) => {
+              const pageNumber = index + 1;
+              const isActive = currentPage === pageNumber;
+              
+              return (
+                <button
+                  key={pageNumber}
+                  onClick={() => handlePageChange(pageNumber)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-colors ${
+                    isActive 
+                      ? 'bg-primary text-white shadow-sm' 
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-primary'
+                  }`}
+                >
+                  {pageNumber}
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="cursor-pointer flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-primary transition-colors disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-gray-500"
+            aria-label="Next page"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
