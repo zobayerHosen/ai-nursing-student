@@ -1,5 +1,5 @@
-import UnderConstraction from "../components/underconstraction";
+import NotesToFlashcardsClient from "./components/notes-to-flashcards-client";
 
 export default function NotesToFlashcardsPage() {
-  return <UnderConstraction />;
+  return <NotesToFlashcardsClient />;
 }
