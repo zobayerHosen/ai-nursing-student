@@ -1,7 +1,6 @@
 "use client";
-import { Bookmark, ChevronRight, Pill, Share2, Loader2 } from "lucide-react";
+import { Bookmark, ChevronRight, Pill, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import ShareNoteModal from "@/components/share-note-modal";
 import SaveNoteModal from "@/components/save-note-modal";
 import { useSaveNote } from "@/hooks/core-learning/save-note.hook";
 import { useQueryClient } from "@tanstack/react-query";
@@ -11,8 +10,6 @@ const TopBreadcrumb = ({ note }) => {
     const queryClient = useQueryClient();
     const { saveNote, isPending } = useSaveNote();
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
-    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-    const [shareUrl, setShareUrl] = useState("");
     const [isSaved, setIsSaved] = useState(false);
 
     useEffect(() => {
@@ -41,13 +38,6 @@ const TopBreadcrumb = ({ note }) => {
         }
     };
 
-    const handleShareClick = () => {
-        if (typeof window !== "undefined") {
-            setShareUrl(window.location.href);
-        }
-        setIsShareModalOpen(true);
-    };
-
     return (
         <div className="flex items-center justify-between border-b border-gray-300 pb-4">
             <div className="flex items-center gap-2 text-sm text-[#667085]">
@@ -72,13 +62,6 @@ const TopBreadcrumb = ({ note }) => {
                     )}
                     {isSaved ? "Saved" : "Save Note"}
                 </button>
-                <button
-                    onClick={handleShareClick}
-                    className="flex items-center gap-2 px-3 py-2 border border-[#D0D5DD] text-primary rounded-lg text-sm font-medium hover:bg-primary hover:text-white transition-colors cursor-pointer"
-                >
-                    <Share2 className="w-4 h-4" />
-                    Share
-                </button>
             </div>
 
             <SaveNoteModal 
@@ -89,11 +72,6 @@ const TopBreadcrumb = ({ note }) => {
                     setIsSaved(true);
                     queryClient.invalidateQueries({ queryKey: ["core-learning-content-details", note?.slug] });
                 }}
-            />
-            <ShareNoteModal
-                isModalOpen={isShareModalOpen}
-                setIsModalOpen={setIsShareModalOpen}
-                shareUrl={shareUrl}
             />
         </div>
     );

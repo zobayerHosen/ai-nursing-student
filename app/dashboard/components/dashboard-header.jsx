@@ -75,7 +75,7 @@ export default function DashboardHeader({
 
     // Note: UI
     return (
-        <div className="sticky top-0 z-100 flex items-center justify-between px-3 lg:px-4.5 py-3 md:py-5 bg-white border-b-2 border-[#e6e8ec]">
+        <div className="sticky top-0 z-200 flex items-center justify-between px-3 lg:px-4.5 py-3 md:py-5 bg-white border-b-2 border-[#e6e8ec]">
 
             {/* Left */}
             <div className="flex items-center lg:gap-2">

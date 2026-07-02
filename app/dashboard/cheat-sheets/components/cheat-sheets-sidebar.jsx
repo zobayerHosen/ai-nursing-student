@@ -1,129 +1,193 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useCoreLearning } from "@/hooks";
 import { ChevronDown, ChevronRight, Search } from 'lucide-react';
+import Image from "next/image";
 import Link from 'next/link';
+import { useState, Suspense, useRef, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { categoriesData } from './cheat-sheets-dummy-data';
 
-const CheatSheetsSidebar = ({ onClose }) => {
-  const [openCategory, setOpenCategory] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
+const SidebarContent = ({ onClose }) => {
+  const [openCategory, setOpenCategory] = useState(null);
+  const [limit, setLimit] = useState(2);
   const pathname = usePathname();
+  // Note: You can adjust "cheat_sheets" to exactly match your backend pathName if needed
+  const { coreLearningData, isLoading, coreLearningPagination, isFetching } = useCoreLearning("cheat_sheet", { limit });
+  const categories = coreLearningData || [];
+
+  const hasMore = coreLearningPagination?.count > (coreLearningData?.length || 0);
+  const observerTarget = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !isFetching) {
+          setLimit(prev => prev + 2);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMore, isFetching]);
 
   const handleToggle = (id) => {
     setOpenCategory((prev) => (prev === id ? null : id));
   };
 
-  // Filter categories and subcategories based on search query
-  const filteredCategories = categoriesData?.map(category => {
-    const matchingSub = category?.subcategories?.filter(sub =>
-      sub?.title?.toLowerCase()?.includes(searchQuery?.toLowerCase())
-    );
-    const categoryMatches = category?.title?.toLowerCase()?.includes(searchQuery?.toLowerCase());
-
-    if (categoryMatches || matchingSub?.length > 0) {
-      return {
-        ...category,
-        subcategories: matchingSub?.length > 0 ? matchingSub : category?.subcategories,
-        isMatching: true
-      };
-    }
-    return { ...category, isMatching: false };
-  }).filter(c => c?.isMatching);
 
   return (
-    <aside className="w-full h-full border-r border-black/10 bg-white overflow-y-auto overflow-x-hidden flex flex-col">
-      {/* Search Header */}
-      <div className="border-b border-black/10 py-4 shrink-0">
-        <div className="px-4 w-full flex flex-col items-start gap-4">
-          <h4 className="text-[#424242] font-semibold text-lg">Cheat Sheets</h4>
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6D6D6D] w-5.5 h-5.5" />
-            <input
-              type="text"
-              placeholder="Search Topics"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-2.5 border border-[#DFE1E7] rounded-lg text-sm outline-0"
-            />
+    <>
+      <aside className="w-full h-full border-r border-black/10 bg-white overflow-y-auto overflow-x-hidden flex flex-col">
+        {/* header content */}
+        <div className="border-b border-black/10 py-4 shrink-0">
+          <div className="px-4 w-full flex flex-col items-start gap-4">
+            <h4 className="text-[#424242] font-semibold text-lg">Cheat Sheets</h4>
+            {/* search cheat sheets */}
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6D6D6D] w-5.5 h-5.5" />
+              <input
+                type="text"
+                placeholder="Search Sheets"
+                className="w-full pl-11 pr-4 py-2.5 border border-[#DFE1E7] rounded-lg text-sm outline-0"
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Categories */}
-      <div className="p-4 space-y-3">
-        {filteredCategories?.map((category) => {
-          const isOpen = openCategory === category.id;
+        {/* Categories */}
+        <div className="p-4 space-y-3">
+          {isLoading && (
+            <div className="flex items-center justify-center py-8">
+              <div className="w-6 h-6 border-2 border-[#FF6B8A] border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
 
-          return (
-            <div
-              key={category.id}
-              className="bg-[#F8F8F8] rounded-xl overflow-hidden"
-            >
-              {/* Category Header Button */}
-              <button
-                onClick={() => handleToggle(category.id)}
-                className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-[#F3F3F3] transition"
-              >
-                <div className="flex items-center gap-3">
-                  <div>
-                    {isOpen ? (
-                      <ChevronDown className="w-5 h-5 text-[#4B5563]" />
-                    ) : (
-                      <ChevronRight className="w-5 h-5 text-[#4B5563]" />
-                    )}
-                  </div>
-                  <div>
-                    {category?.icon ?? ""}
-                  </div>
-                  <div>
-                    <h5 className="text-sm font-semibold text-[#424242] leading-tight">
-                      {category?.title ?? ""}
-                    </h5>
-                    <p className="text-[11px] text-[#7A7A7A]">
-                      {category?.topics ?? ""} Topics
-                    </p>
-                  </div>
-                </div>
-              </button>
+          {!isLoading && categories?.length === 0 && (
+            <p className="text-sm text-[#6D6D6D] text-center py-8">
+              No cheat sheets available.
+            </p>
+          )}
 
-              {/* Subcategories (Topics) */}
+          {categories?.map((category) => {
+            const isOpen = openCategory === category.id;
+
+            return (
               <div
-                className={`grid transition-all duration-300 ease-in-out ml-8 pr-2 ${isOpen
-                  ? "grid-rows-[1fr] opacity-100 py-3"
-                  : "grid-rows-[0fr] opacity-0"
-                  }`}
+                key={category?.id}
+                className="bg-[#F8F8F8] rounded-xl overflow-hidden"
               >
-                <div className="overflow-hidden">
-                  <div className="space-y-2">
-                    {category?.subcategories?.map((subcategory) => {
-                      const isActive = pathname.includes(`/cheat-sheets/${subcategory?.slug}`);
-                      return (
-                        <Link
-                          href={`/dashboard/cheat-sheets/${subcategory?.slug}`}
-                          key={subcategory?.slug}
-                          onClick={() => { if(onClose) onClose(); }}
-                          className={`w-full border rounded-md px-3 py-2 flex items-center justify-between transition ${isActive
-                            ? "bg-[#FF6B8A]/10 border-[#FF6B8A]/30 text-[#FF6B8A]"
-                            : "bg-white border-[#EEEEEE] text-[#4A4A4A] hover:bg-[#FAFAFA]"
-                            }`}
-                        >
-                          <span className="text-sm font-medium">
-                            {subcategory?.title ?? ""}
-                          </span>
-                          <ChevronRight className={`w-4 h-4 ${isActive ? 'text-[#FF6B8A]' : 'text-[#6B7280]'}`} />
-                        </Link>
-                      );
-                    })}
+                {/* Category Header */}
+                <button
+                  onClick={() => handleToggle(category?.id)}
+                  className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-[#F3F3F3] transition"
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Arrow */}
+                    <div>
+                      {isOpen ? (
+                        <ChevronDown className="w-5 h-5 text-[#4B5563]" />
+                      ) : (
+                        <ChevronRight className="w-5 h-5 text-[#4B5563]" />
+                      )}
+                    </div>
+
+                    {/* Icon */}
+                    <div className="w-10 h-10 shrink-0 rounded-md bg-[#E5E7EB] flex items-center justify-center overflow-hidden border border-[#EEEEEE]">
+                      {category?.cover ? (
+                        <Image
+                          src={category.cover.startsWith('http') ? category.cover : `${process.env.NEXT_PUBLIC_BASE_URL || ''}${category.cover}`}
+                          alt={category.title}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-sm font-bold text-[#6D6D6D]">
+                          {category?.title?.charAt(0) || "C"}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Text */}
+                    <div>
+                      <h5 className="text-sm font-semibold text-[#424242]">
+                        {category?.title ?? ""}
+                      </h5>
+
+                      {/* Progress Section */}
+                      <div className="flex items-center gap-2 mt-1">
+                        {/* Topics */}
+                        <p className="text-xs text-[#7A7A7A]">
+                          {category?.progress?.completed_contents || 0}/{category?.contents?.length || 0} Topics
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Subcategories */}
+                <div
+                  className={`grid transition-all duration-300 ease-in-out ml-8 pr-2 ${isOpen
+                    ? "grid-rows-[1fr] opacity-100 py-3"
+                    : "grid-rows-[0fr] opacity-0"
+                    }`}
+                >
+                  <div className="overflow-hidden">
+                    <div className="space-y-2">
+                      {category?.contents?.map(
+                        (subcategory, index) => {
+                          const isActive = pathname.includes(`/cheat-sheets/${subcategory?.id}`);
+                          return (
+                            <Link
+                              href={`/dashboard/cheat-sheets/${subcategory?.id}`}
+                              key={index}
+                              onClick={() => {
+                                if (onClose) onClose();
+                              }}
+                              className={`w-full border rounded-md px-3 py-2 flex items-center justify-between transition ${isActive
+                                ? "bg-[#FF6B8A]/10 border-[#FF6B8A]/30 text-[#FF6B8A]"
+                                : "bg-white border-[#EEEEEE] text-[#4A4A4A] hover:bg-[#FAFAFA]"
+                                }`}
+                            >
+                              <span className="text-sm font-medium">
+                                {subcategory?.content_name ?? ""}
+                              </span>
+                              <ChevronRight className={`w-4 h-4 ${isActive ? 'text-[#FF6B8A]' : 'text-[#6B7280]'}`} />
+                            </Link>
+                          );
+                        }
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
+            );
+          })}
+
+          {/* Infinite Scroll Target */}
+          {hasMore && (
+            <div ref={observerTarget} className="flex justify-center pt-4 pb-2 h-10">
+              {isFetching && (
+                <div className="w-5 h-5 border-2 border-[#FF6B8A] border-t-transparent rounded-full animate-spin" />
+              )}
             </div>
-          );
-        })}
-      </div>
-    </aside>
+          )}
+        </div>
+      </aside>
+    </>
+  );
+};
+
+const CheatSheetsSidebar = ({ onClose }) => {
+  return (
+    <Suspense fallback={<div className="w-full h-full bg-white border-r border-black/10"></div>}>
+      <SidebarContent onClose={onClose} />
+    </Suspense>
   );
 };
 

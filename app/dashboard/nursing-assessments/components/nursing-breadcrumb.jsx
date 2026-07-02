@@ -1,19 +1,16 @@
 "use client";
-import { Bookmark, Share2 } from 'lucide-react';
+import { Bookmark } from 'lucide-react';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import SaveNoteModal from '@/components/save-note-modal';
-import ShareNoteModal from '@/components/share-note-modal';
 
-const DosageBreadcrumb = ({ currentCategory, currentNote }) => {
+const NursingBreadcrumb = ({ currentCategory, currentNote }) => {
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
-
 
     useEffect(() => {
         setIsSaved(currentNote?.is_saved || currentNote?.saved || false);
     }, [currentNote]);
-
 
     return (
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
@@ -22,10 +19,10 @@ const DosageBreadcrumb = ({ currentCategory, currentNote }) => {
                 <ol className="flex items-center text-sm xl:text-base">
                     <li>
                         <Link
-                            href="/dashboard/dosage-calculation"
+                            href="/dashboard/nursing-assessments"
                             className="text-[#2C5F8D] hover:text-[#111827] font-medium"
                         >
-                            Dosage Calculation
+                            Nursing Assessments
                         </Link>
                     </li>
                     <li>
@@ -51,7 +48,6 @@ const DosageBreadcrumb = ({ currentCategory, currentNote }) => {
                     <Bookmark
                         className={`w-4 h-4 ${isSaved ? "text-green-600 fill-green-600" : "text-[#7A7A7A]"}`}
                     />
-
                     <span className="hidden sm:inline">
                         {isSaved ? "Saved" : "Save Guide"}
                     </span>
@@ -68,4 +64,4 @@ const DosageBreadcrumb = ({ currentCategory, currentNote }) => {
         </div>
     );
 };
-export default DosageBreadcrumb;
+export default NursingBreadcrumb;

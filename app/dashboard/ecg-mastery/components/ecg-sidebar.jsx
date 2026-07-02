@@ -1,10 +1,16 @@
 "use client";
 import Link from "next/link";
-import { sidebarCategory } from "./ecg-sidebar-data";
 import { usePathname } from "next/navigation";
+import { useCoreLearning } from "@/hooks/core-learning/core-learning.hook";
+import { useState, Suspense } from 'react';
 
-const EcgSidebar = ({ onClose }) => {
+const EcgSidebarContent = ({ onClose }) => {
     const pathname = usePathname();
+    const [limit, setLimit] = useState(2);
+    const { coreLearningData, isLoading, coreLearningPagination, isFetching } = useCoreLearning("ecg", { limit });
+    const categories = coreLearningData || [];
+
+    const hasMore = coreLearningPagination?.count > (coreLearningData?.length || 0);
 
     return (
         <aside className="w-full h-full border-r border-black/10 bg-white overflow-y-auto overflow-x-hidden flex flex-col">
@@ -17,28 +23,63 @@ const EcgSidebar = ({ onClose }) => {
 
             {/* category */}
             <div className="w-full p-4 flex flex-col gap-3">
-                {
-                    sidebarCategory?.map(data => {
-                        const isActive = pathname === `/dashboard/ecg-mastery/${data?.slug}`;
-                        return (
-                            <Link
-                                key={data.slug}
-                                href={`/dashboard/ecg-mastery/${data?.slug}`}
-                                onClick={() => { if(onClose) onClose(); }}
-                                className={`flex items-center gap-2 py-2.5 px-3 rounded-md text-[13px] font-semibold transition-all duration-200 ${
-                                    isActive 
-                                    ? "bg-primary text-white [&_svg_path]:fill-current [&_svg_circle]:stroke-current" 
+                {isLoading && (
+                    <div className="flex items-center justify-center py-8">
+                        <div className="w-6 h-6 border-2 border-[#FF6B8A] border-t-transparent rounded-full animate-spin" />
+                    </div>
+                )}
+                {!isLoading && categories.length === 0 && (
+                    <p className="text-sm text-[#6D6D6D] text-center py-8">
+                        No ECG mastery guides available.
+                    </p>
+                )}
+                {categories?.map(data => {
+                    const isActive = pathname.includes(`/dashboard/ecg-mastery/${data?.id}`);
+                    return (
+                        <Link
+                            key={data.id}
+                            href={`/dashboard/ecg-mastery/${data?.id}`}
+                            onClick={onClose}
+                            className={`flex items-center gap-2 py-2.5 px-3 rounded-md text-[13px] font-semibold transition-all duration-200 ${isActive
+                                    ? "bg-primary text-white [&_svg_path]:fill-current [&_svg_circle]:stroke-current"
                                     : "bg-gray-100 hover:bg-gray-200 text-[#424242]"
                                 }`}
-                            >
-                                <span className="shrink-0">{data?.icon}</span>
-                                {data?.category ?? ""}
-                            </Link>
-                        )
-                    })
-                }
+                        >
+                            {data?.cover ? (
+                                <span className="shrink-0 flex items-center justify-center w-6 h-6">{data.cover}</span>
+                            ) : (
+                                <span className={`shrink-0 flex items-center justify-center w-6 h-6 rounded-md text-[11px] font-bold uppercase ${isActive ? "bg-white/20" : "bg-white text-primary border border-primary/10 shadow-sm"
+                                    }`}>
+                                    {data?.title?.charAt(0)}
+                                </span>
+                            )}
+                            {data?.title ?? ""}
+                        </Link>
+                    )
+                })}
+
+                {/* Load More Button */}
+                {!isLoading && hasMore && (
+                    <div className="flex justify-center pt-4 pb-2">
+                        <button
+                            onClick={() => setLimit(prev => prev + 2)}
+                            disabled={isFetching}
+                            className="px-4 py-2 bg-primary/80 text-white rounded text-sm font-medium hover:bg-primary/60 transition-colors disabled:opacity-50 cursor-pointer"
+                        >
+                            {isFetching ? "Loading..." : "See More"}
+                        </button>
+                    </div>
+                )}
             </div>
         </aside>
+    );
+};
+
+const EcgSidebar = ({ onClose }) => {
+    return (
+        <Suspense fallback={<div className="w-full h-full bg-white border-r border-black/10"></div>}>
+            <EcgSidebarContent onClose={onClose} />
+        </Suspense>
     );
 };
 

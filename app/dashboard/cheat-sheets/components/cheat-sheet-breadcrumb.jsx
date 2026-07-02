@@ -1,16 +1,16 @@
 "use client";
-import { Bookmark, CheckCircle } from 'lucide-react';
+import { Bookmark, CheckCircle, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import SaveNoteModal from '@/components/save-note-modal';
+import ShareNoteModal from '@/components/share-note-modal';
 import { useMarkComplete } from '@/hooks/core-learning/mark-complete.hook';
 import toast from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
 
-const StemBreadcrumb = ({ currentCategory, currentNote }) => {
+const CheatSheetBreadcrumb = ({ currentCategory, currentNote }) => {
     const queryClient = useQueryClient();
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
-
     const [isSaved, setIsSaved] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
     
@@ -41,10 +41,10 @@ const StemBreadcrumb = ({ currentCategory, currentNote }) => {
                 <ol className="flex items-center text-sm xl:text-base">
                     <li>
                         <Link
-                            href="/dashboard/stem-toons"
+                            href="/dashboard/cheat-sheets"
                             className="text-[#2C5F8D] hover:text-[#111827] font-medium"
                         >
-                            {currentCategory?.title || "Stem Toons"}
+                            {currentCategory?.title || "Cheat Sheets"}
                         </Link>
                     </li>
                     <li className="text-[#696868] pl-2">
@@ -77,7 +77,7 @@ const StemBreadcrumb = ({ currentCategory, currentNote }) => {
                     />
 
                     <span className="hidden sm:inline">
-                        {isSaved ? "Saved" : "Save Toon"}
+                        {isSaved ? "Saved" : "Save Sheet"}
                     </span>
                     <span className="sm:hidden">{isSaved ? "Saved" : "Save"}</span>
                 </button>
@@ -115,4 +115,4 @@ const StemBreadcrumb = ({ currentCategory, currentNote }) => {
     );
 };
 
-export default StemBreadcrumb;
+export default CheatSheetBreadcrumb;

@@ -1,11 +1,10 @@
 "use client";
-import { Bookmark, Share2 } from 'lucide-react';
+import { Bookmark } from 'lucide-react';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import SaveNoteModal from '@/components/save-note-modal';
-import ShareNoteModal from '@/components/share-note-modal';
 
-const DosageBreadcrumb = ({ currentCategory, currentNote }) => {
+const DiagnosticBreadcrumb = ({ currentCategory, currentNote }) => {
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
 
@@ -22,10 +21,10 @@ const DosageBreadcrumb = ({ currentCategory, currentNote }) => {
                 <ol className="flex items-center text-sm xl:text-base">
                     <li>
                         <Link
-                            href="/dashboard/dosage-calculation"
+                            href="/dashboard/diagnostic-test-labs"
                             className="text-[#2C5F8D] hover:text-[#111827] font-medium"
                         >
-                            Dosage Calculation
+                            Diagnostic Tests & Labs
                         </Link>
                     </li>
                     <li>
@@ -44,8 +43,8 @@ const DosageBreadcrumb = ({ currentCategory, currentNote }) => {
                     onClick={() => !isSaved && setIsSaveModalOpen(true)}
                     disabled={isSaved}
                     className={`px-3 xl:px-4 py-2 rounded-lg border flex items-center gap-2 text-sm font-medium transition shadow-sm ${isSaved
-                            ? "bg-green-50 border-green-200 text-green-600 cursor-default"
-                            : "cursor-pointer bg-white border-[#E5E7EB] text-[#4A4A4A] hover:bg-slate-50"
+                        ? "bg-green-50 border-green-200 text-green-600 cursor-default"
+                        : "cursor-pointer bg-white border-[#E5E7EB] text-[#4A4A4A] hover:bg-slate-50"
                         }`}
                 >
                     <Bookmark
@@ -53,7 +52,7 @@ const DosageBreadcrumb = ({ currentCategory, currentNote }) => {
                     />
 
                     <span className="hidden sm:inline">
-                        {isSaved ? "Saved" : "Save Guide"}
+                        {isSaved ? "Saved" : "Save Lab"}
                     </span>
                     <span className="sm:hidden">{isSaved ? "Saved" : "Save"}</span>
                 </button>
@@ -68,4 +67,4 @@ const DosageBreadcrumb = ({ currentCategory, currentNote }) => {
         </div>
     );
 };
-export default DosageBreadcrumb;
+export default DiagnosticBreadcrumb;
