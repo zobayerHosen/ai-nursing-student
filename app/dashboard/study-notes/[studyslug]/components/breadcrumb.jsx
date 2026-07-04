@@ -11,8 +11,6 @@ import { useQueryClient } from '@tanstack/react-query';
 const Breadcrumb = ({ currentCategory, currentNote }) => {
     const queryClient = useQueryClient();
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
-    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-    const [shareUrl, setShareUrl] = useState("");
     const [isSaved, setIsSaved] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
     
@@ -23,12 +21,12 @@ const Breadcrumb = ({ currentCategory, currentNote }) => {
         setIsCompleted(currentNote?.is_completed || currentNote?.completed || false);
     }, [currentNote]);
 
-    const handleShareClick = () => {
-        if (typeof window !== 'undefined') {
-            setShareUrl(window.location.href);
-        }
-        setIsShareModalOpen(true);
-    };
+    // const handleShareClick = () => {
+    //     if (typeof window !== 'undefined') {
+    //         setShareUrl(window.location.href);
+    //     }
+    //     setIsShareModalOpen(true);
+    // };
 
     const handleToggleComplete = async () => {
         if (!currentNote?.id) return;
@@ -91,15 +89,6 @@ const Breadcrumb = ({ currentCategory, currentNote }) => {
                     <span className="sm:hidden">{isSaved ? "Saved" : "Save"}</span>
                 </button>
 
-                <button 
-                    onClick={handleShareClick}
-                    className="px-3 xl:px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] flex items-center gap-2 text-sm text-[#4A4A4A] font-medium hover:bg-slate-50 transition cursor-pointer shadow-sm"
-                >
-                    <Share2 className="w-4 h-4 text-[#7A7A7A]" />
-                    <span className="hidden sm:inline">Share Notes</span>
-                    <span className="sm:hidden">Share</span>
-                </button>
-
                 <button
                     onClick={handleToggleComplete}
                     disabled={isPending}
@@ -128,11 +117,6 @@ const Breadcrumb = ({ currentCategory, currentNote }) => {
                 setIsModalOpen={setIsSaveModalOpen} 
                 noteId={currentNote?.id} 
                 onSaveSuccess={() => setIsSaved(true)}
-            />
-            <ShareNoteModal
-                isModalOpen={isShareModalOpen}
-                setIsModalOpen={setIsShareModalOpen}
-                shareUrl={shareUrl}
             />
         </div>
     );

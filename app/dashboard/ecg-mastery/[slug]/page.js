@@ -1,160 +1,84 @@
-import React from "react";
-import { notFound } from "next/navigation";
+"use client";
+import React, { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, ShieldAlert, Award, FileText, ClipboardList } from "lucide-react";
-import { sidebarCategory } from "../components/ecg-sidebar-data";
-import { ecgDetailsData } from "./ecg-slug-details-data";
-import ActionButtons from "../../components/ActionButtons";
+import { useParams } from "next/navigation";
+import { useLearningCategoryDetails } from "@/hooks/core-learning/learning-category-details.hook";
+import EcgBreadcrumb from "../components/ecg-breadcrumb";
 
-export default async function EcgMasteryDetails({ params }) {
-  const { slug } = await params;
+export default function EcgMasteryDetails() {
+  const { slug } = useParams();
+  const categoryId = Number(slug);
+  const [isIframeLoading, setIsIframeLoading] = useState(true);
 
-  // using delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  const { learningCategoryDetailsData, isLoading } = useLearningCategoryDetails(categoryId);
+  const currentCategory = learningCategoryDetailsData;
+  const currentNote = currentCategory?.contents?.[0];
 
-  const currentCategory = sidebarCategory.find(cat => cat.slug === slug);
-  const detailedData = ecgDetailsData[slug];
-
-  if (!currentCategory) {
-    notFound();
+  if (isLoading) {
+    return (
+      <div className="w-full min-h-[500px] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#FF6B8A] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
-  // Note: Fallback fallback details
-  const data = detailedData || {
-    title: currentCategory.category,
-    subtitle: "Medical reference documentation and nursing pathways.",
-    sections: [
-      {
-        heading: "General Reference Guide",
-        content: `This section details the clinical interpretation guidelines, patient preparations, and nursing considerations for ${currentCategory.category}.`,
-        bullets: [
-          "Always verify patient identity using two bedside identifiers.",
-          "Consult with specific policy for precise reference ranges.",
-          "Monitor patient baseline trends."
-        ]
-      }
-    ]
-  };
-
-  // Note: UI
-  return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* Breadcrumb & Actions Row */}
-      <div className="flex items-center justify-between gap-4 max-sm:flex-col max-sm:items-start max-sm:gap-2">
-        <nav className="flex items-center gap-2 text-sm text-slate-500 font-medium">
-          <ChevronRight size={12} />
-          <Link href="/dashboard/ecg-mastery" className="hover:text-primary transition-colors">ECG Mastery</Link>
-          <ChevronRight size={12} />
-          <span className="text-slate-800 font-semibold">{data.title}</span>
-        </nav>
-
-        {/* Action Buttons: Save & Share */}
-        <ActionButtons />
-      </div>
-
-      {/* Main Header Presentation Block */}
-      <header className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-[#2C5F8D]" />
-        <div className="p-8 max-sm:p-6 flex items-start justify-between gap-6">
-          <div className="space-y-3">
-            <span className="inline-flex items-center gap-1.5 bg-[#2C5F8D]/10 text-primary text-xs font-semibold px-3 py-1 rounded-full">
-              <Award size={14} className="shrink-0" />
-              Clinical ECG Guides
-            </span>
-            <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight max-sm:text-2xl">{data.title}</h1>
-            <p className="text-slate-500 text-sm max-w-3xl leading-relaxed">{data.subtitle}</p>
-          </div>
-          <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 text-primary max-md:hidden">
-            {currentCategory.icon}
-          </div>
-        </div>
-      </header>
-
-      {/* Structured Content Section */}
-      <div className="space-y-8">
-        {data.sections.map((section, idx) => (
-          <section key={idx} className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 max-sm:p-6 space-y-6">
-            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2.5 pb-3 border-b border-slate-100">
-              {idx === 0 ? <FileText className="text-primary" size={20} /> : <ClipboardList className="text-primary" size={20} />}
-              {section.heading}
+  if (!currentCategory) {
+    return (
+      <div className="w-full">
+        <div className="bg-white rounded-2xl p-10 border border-[#EEEEEE] shadow-sm text-center">
+          <div className="max-w-md mx-auto">
+            <h2 className="text-2xl font-bold text-[#111827] mb-3">
+              ECG Guide Not Found
             </h2>
-
-            {section.content && (
-              <p className="text-slate-600 text-sm leading-relaxed">{section.content}</p>
-            )}
-
-            {/* Render Reference Range Table if available */}
-            {section.table && (
-              <div className="overflow-hidden border border-slate-150 rounded-2xl bg-white shadow-sm">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50 text-slate-700 text-xs font-bold border-b border-slate-200">
-                      <th className="py-4.5 px-6">ECG Diagnostic Rhythm</th>
-                      <th className="py-4.5 px-6">Rate / Pattern</th>
-                      <th className="py-4.5 px-6">Clinical Significance & Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-sm">
-                    {section.table.map((row, rowIdx) => (
-                      <tr key={rowIdx} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="py-4.5 px-6 font-semibold text-slate-800">{row.test}</td>
-                        <td className="py-4.5 px-6 font-medium text-primary">
-                          <span className="inline-block bg-primary/5 px-3 py-1 rounded-lg border border-primary/10">
-                            {row.range}
-                          </span>
-                        </td>
-                        <td className="py-4.5 px-6 text-slate-500 max-w-md leading-relaxed">{row.significance}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* Render Checklist Bullet Points if available */}
-            {section.bullets && (
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {section.bullets.map((bullet, bIdx) => {
-                  const parts = bullet.split(" - ");
-                  const label = parts[0];
-                  const description = parts[1];
-
-                  return (
-                    <li key={bIdx} className="flex gap-3 items-start bg-slate-50 p-4.5 rounded-2xl border border-slate-100/80 hover:shadow-sm transition-all">
-                      <div className="mt-1 shrink-0 p-0.5 rounded-full bg-emerald-100 text-emerald-600">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <div className="space-y-1 text-sm">
-                        {description ? (
-                          <>
-                            <strong className="text-slate-800 font-bold block">{label}</strong>
-                            <span className="text-slate-500 leading-relaxed text-xs block">{description}</span>
-                          </>
-                        ) : (
-                          <span className="text-slate-700 leading-relaxed font-semibold">{bullet}</span>
-                        )}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
-        ))}
-      </div>
-
-      {/* Safety Banner */}
-      <footer className="bg-amber-50 rounded-2xl border border-amber-200/80 p-5 flex gap-4 items-start shadow-sm">
-        <ShieldAlert className="text-amber-600 shrink-0 mt-0.5" size={24} />
-        <div className="space-y-1">
-          <h4 className="text-sm font-bold text-amber-800">Bedside Verification & Safety Alert</h4>
-          <p className="text-xs text-amber-700 leading-relaxed">
-            Rhythm interpretation listed in this system serves as generalized clinical guidelines for NCLEX study purposes. Always consult your specific healthcare institution's cardiac protocols and seek immediate provider support for patients exhibiting symptomatic or unstable arrhythmias.
-          </p>
+            <p className="text-[#7A7A7A] mb-6">
+              The ECG mastery guide you are looking for does not exist or has been moved.
+            </p>
+            <Link
+              href="/dashboard/ecg-mastery"
+              className="inline-block px-6 py-2.5 rounded-lg bg-[#FF6B8A] hover:bg-[#E05270] text-white text-sm font-semibold transition cursor-pointer"
+            >
+              Back to ECG Mastery
+            </Link>
+          </div> 
         </div>
-      </footer>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full flex flex-col">
+      {/* Top Buttons */}
+      <EcgBreadcrumb currentCategory={currentCategory} currentNote={currentNote} />
+
+      {/* Content Card */}
+      <div className="bg-white rounded-2xl p-5 sm:p-8 border border-[#EEEEEE] shadow-sm relative overflow-hidden flex flex-col">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#111827] mb-6 shrink-0">
+          {currentCategory?.title ?? "Not Found"}
+        </h1>
+
+        <div className="w-full h-[calc(100vh-250px)] min-h-[500px] relative">
+          {currentNote?.content_file_url ? (
+            <>
+              {isIframeLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white z-10 rounded-lg">
+                  <div className="w-8 h-8 border-4 border-[#FF6B8A] border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+              <iframe 
+                src={currentNote.content_file_url.startsWith("http") ? currentNote.content_file_url : `https://${currentNote.content_file_url}`}
+                className={`w-full h-full border-0 rounded-lg transition-opacity duration-300 ${isIframeLoading ? 'opacity-0' : 'opacity-100'}`}
+                title={currentNote.content_name || "ECG Content"}
+                sandbox="allow-same-origin allow-scripts"
+                onLoad={() => setIsIframeLoading(false)}
+              />
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              No content available for this guide.
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

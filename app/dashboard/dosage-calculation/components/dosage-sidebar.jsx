@@ -41,13 +41,20 @@ const DosageSidebarContent = ({ onClose }) => {
                             key={data.id}
                             href={`/dashboard/dosage-calculation/${data?.id}`}
                             onClick={onClose}
-                            className={`flex items-center gap-2 py-2.5 px-3 rounded-md text-[13px] font-semibold transition-all duration-200 ${
-                                isActive 
-                                ? "bg-primary text-white [&_svg_path]:fill-current [&_svg_circle]:stroke-current" 
-                                : "bg-gray-100 hover:bg-gray-200 text-[#424242]"
-                            }`}
+                            className={`flex items-center gap-2 py-2.5 px-3 rounded-md text-[13px] font-semibold transition-all duration-200 ${isActive
+                                    ? "bg-primary text-white [&_svg_path]:fill-current [&_svg_circle]:stroke-current"
+                                    : "bg-gray-100 hover:bg-gray-200 text-[#424242]"
+                                }`}
                         >
-                            <span className="shrink-0"><Calculator size={16} /></span>
+                            {data?.cover ? (
+                                <span className="shrink-0 flex items-center justify-center w-6 h-6">{data.cover}</span>
+                            ) : (
+                                <span className={`shrink-0 flex items-center justify-center w-6 h-6 rounded-md text-[11px] font-bold uppercase ${isActive ? "bg-white/20" : "bg-white text-primary border border-primary/10 shadow-sm"
+                                    }`}>
+                                    {data?.title?.charAt(0)}
+                                </span>
+                            )}
+                            {data?.title ?? ""}
                             {data?.title ?? ""}
                         </Link>
                     )
