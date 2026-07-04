@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import SaveNoteModal from '@/components/save-note-modal';
 import ShareNoteModal from '@/components/share-note-modal';
 
-const DosageBreadcrumb = ({ currentCategory, currentNote }) => {
+const EcgBreadcrumb = ({ currentCategory, currentNote }) => {
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
 
@@ -22,10 +22,10 @@ const DosageBreadcrumb = ({ currentCategory, currentNote }) => {
                 <ol className="flex items-center text-sm xl:text-base">
                     <li>
                         <Link
-                            href="/dashboard/dosage-calculation"
+                            href="/dashboard/ecg-mastery"
                             className="text-[#2C5F8D] hover:text-[#111827] font-medium"
                         >
-                            Dosage Calculation
+                            ECG Mastery
                         </Link>
                     </li>
                     <li>
@@ -68,4 +68,4 @@ const DosageBreadcrumb = ({ currentCategory, currentNote }) => {
         </div>
     );
 };
-export default DosageBreadcrumb;
+export default EcgBreadcrumb;

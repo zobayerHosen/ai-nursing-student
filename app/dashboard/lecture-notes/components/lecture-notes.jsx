@@ -195,12 +195,8 @@ export default function LectureNotes() {
     }
   };
 
-  const handleShare = () => {
-    alert('Share link copied to clipboard!');
-  };
-
   return (
-    <div className="flex flex-col lg:flex-row w-full h-[100dvh] lg:h-screen bg-[#F8F9FA] text-[#333E49] overflow-hidden font-sans">
+    <div className="flex flex-col lg:flex-row w-full h-dvh lg:h-screen bg-[#F8F9FA] text-[#333E49] overflow-hidden font-sans">
       
       {/* Sidebar with mobile toggle - visible on lg screens */}
       <div className={`
@@ -231,7 +227,7 @@ export default function LectureNotes() {
       <div className="flex-1 flex flex-col h-full min-h-0 w-full overflow-hidden border-t lg:border-t-0 lg:border-l border-gray-200">
         
         {/* Header */}
-        <header className="flex flex-wrap items-center justify-between px-4 sm:px-8 py-3 bg-white border-b border-gray-100 gap-2 flex-shrink-0">
+        <header className="flex flex-wrap items-center justify-between px-4 sm:px-8 py-3 bg-white border-b border-gray-100 gap-2 shrink-0">
           {/* Left side - Hamburger menu (visible on mobile/tablet) + Title */}
           <div className="flex items-center gap-3 lg:hidden">
             <button
@@ -262,26 +258,19 @@ export default function LectureNotes() {
               <IoAddOutline className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">New Notes</span>
             </button>
-            <button 
-              onClick={handleShare}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#2B5C8F] bg-[#E3ECF5]/40 hover:bg-[#E3ECF5]/70 rounded-md transition"
-            >
-              <IoShareOutline className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Share</span>
-            </button>
           </div>
         </header>
 
         {/* Main Content */}
         <main className="flex-1 flex flex-col p-4 md:p-6 gap-4 md:gap-6 overflow-y-auto items-center w-full min-h-0">
-          <div className="w-full max-w-6xl flex-shrink-0">
+          <div className="w-full max-w-6xl shrink-0">
             <Toolbar editor={editor} />
           </div>
           <div className="w-full max-w-6xl flex-1 min-h-0">
-            <NoteCanvas 
-              noteTitle={noteTitle} 
-              setNoteTitle={setNoteTitle} 
-              editor={editor} 
+            <NoteCanvas
+              noteTitle={noteTitle}
+              setNoteTitle={setNoteTitle}
+              editor={editor}
             />
           </div>
         </main>

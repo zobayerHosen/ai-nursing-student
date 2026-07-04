@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
+"use client"
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import axiosPublic from "@/lib/axios.public";

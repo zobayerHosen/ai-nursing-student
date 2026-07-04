@@ -39,7 +39,7 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="w-[320px] bg-white h-full flex flex-col p-6 flex-shrink-0 border-r border-gray-200 shadow-lg lg:shadow-none overflow-y-auto mt-20">
+    <aside className="w-[320px] bg-white h-full flex flex-col p-6 shrink-0 border-r border-gray-200 shadow-lg lg:shadow-none overflow-y-auto">
       {/* Close button - Mobile/Tablet Only */}
       <div className="flex justify-between items-center mb-4 lg:hidden">
         <h2 className="text-xl font-bold text-[#333E49]">Lecture Notes</h2>
