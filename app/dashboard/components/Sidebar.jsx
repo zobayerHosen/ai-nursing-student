@@ -131,6 +131,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                                                     <Link
                                                         key={index}
                                                         href={item.href}
+                                                        title={item.name}
                                                         onClick={() => setIsSidebarOpen(false)}
                                                         className={
                                                             section.title === "INTERACTIVE TOOLS"

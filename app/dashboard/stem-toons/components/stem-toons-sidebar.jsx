@@ -122,16 +122,16 @@ const SidebarContent = ({ onClose }) => {
                       <div className="flex items-center gap-2 mt-1">
 
                         {/* Progress Bar */}
-                        {/* <div className="w-16 h-1.5 bg-[#D9D9D9] rounded-full overflow-hidden">
+                        <div className="w-16 h-1.5 bg-[#D9D9D9] rounded-full overflow-hidden">
                           <div
                             className="h-full bg-[#FF6B8A] rounded-full"
-                            style={{ width: `${category?.progress?.progress_percentage || 0}%` }}
+                            style={{ width: `${category?.progress?.progress_percentage || '0%'}` }}
                           />
-                        </div> */}
+                        </div>
 
                         {/* Topics */}
                         <p className="text-xs text-[#7A7A7A]">
-                          {category?.progress?.completed_contents || 0}/{category?.contents?.length || 0} Topics
+                          {category?.progress?.completed_contents || 0}/{category?.progress?.total_contents || 0} Topics
                         </p>
                       </div>
                     </div>
