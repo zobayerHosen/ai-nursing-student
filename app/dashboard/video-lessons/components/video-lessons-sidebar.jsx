@@ -12,7 +12,6 @@ const SidebarContent = ({ onClose }) => {
     const { modulesData, isLoading } = useGetModules();
 
     const modules = modulesData?.modules || [];
-    const globalProgress = modulesData?.video_progress;
     const currentModuleId = searchParams.get("moduleId");
 
     const handleCategoryClick = (moduleId) => {
@@ -37,32 +36,6 @@ const SidebarContent = ({ onClose }) => {
                     </div>
                 </div>
 
-                {/* progressed */}
-                {globalProgress && (
-                    <div className='px-4 mt-4'>
-                        <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm text-[#424242]">
-                                <span className="text-[#FF6B8A] font-semibold">
-                                    {globalProgress.total_videos > 0 
-                                        ? Math.round((globalProgress.watched_count / globalProgress.total_videos) * 100) 
-                                        : 0}%
-                                </span>{" "}
-                                watched .{globalProgress.watched_count}/{globalProgress.total_videos} lessons
-                            </p>
-
-                            <button className="text-sm font-medium text-[#FF6B8A]">
-                                Filter
-                            </button>
-                        </div>
-
-                        <div className="w-full h-2 bg-[#E5E5E5] rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-[#FF6B8A] rounded-full"
-                                style={{ width: `${globalProgress.total_videos > 0 ? (globalProgress.watched_count / globalProgress.total_videos) * 100 : 0}%` }}
-                            />
-                        </div>
-                    </div>
-                )}
             </div>
 
             {/* Module Categories */}
