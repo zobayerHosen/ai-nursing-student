@@ -4,7 +4,7 @@ import { useCoreLearning } from "@/hooks";
 import { ChevronDown, ChevronRight, Search } from 'lucide-react';
 import Image from "next/image";
 import Link from 'next/link';
-import { useState, Suspense, useRef, useEffect } from 'react';
+import { useState, Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 
 const SidebarContent = ({ onClose }) => {
@@ -16,24 +16,6 @@ const SidebarContent = ({ onClose }) => {
   const categories = coreLearningData || [];
 
   const hasMore = coreLearningPagination?.count > (coreLearningData?.length || 0);
-  const observerTarget = useRef(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasMore && !isFetching) {
-          setLimit(prev => prev + 2);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => observer.disconnect();
-  }, [hasMore, isFetching]);
 
   const handleToggle = (id) => {
     setOpenCategory((prev) => (prev === id ? null : id));
@@ -178,13 +160,17 @@ const SidebarContent = ({ onClose }) => {
             );
           })}
 
-          {/* Infinite Scroll Target */}
-          {hasMore && (
-            <div ref={observerTarget} className="flex justify-center pt-4 pb-2 h-10">
-              {isFetching && (
-                <div className="w-5 h-5 border-2 border-[#FF6B8A] border-t-transparent rounded-full animate-spin" />
-              )}
-            </div>
+          {/* Load More Button */}
+          {!isLoading && hasMore && (
+              <div className="flex justify-center pt-4 pb-2">
+                  <button
+                      onClick={() => setLimit(prev => prev + 2)}
+                      disabled={isFetching}
+                      className="px-4 py-2 bg-primary/80 text-white rounded text-sm font-medium hover:bg-primary/60 transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                      {isFetching ? "Loading..." : "See More"}
+                  </button>
+              </div>
           )}
         </div>
       </aside>

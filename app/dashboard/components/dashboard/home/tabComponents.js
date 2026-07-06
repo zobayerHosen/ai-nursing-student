@@ -1,6 +1,6 @@
 import Flashcards from "./flashcard/TabFlashcards";
-import LessonVideos from "./LessonVideos";
-import NgnNclex from "./NgnNclex";
+import LessonVideos from "./tab-lessons-videos/LessonVideos";
+import NgnNclex from "./tab-nclex/NgnNclex";
 import StudyNotesTab from "./tab-study-notes/StudyNotes"
 
 export const TABS = [

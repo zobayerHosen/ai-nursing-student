@@ -69,7 +69,7 @@ export default function NotificationPanel({ isOpen, onClose }) {
       {/* Notification Panel */}
       <div
         ref={panelRef}
-        className="fixed md:absolute top-16 md:top-7 right-0 md:right-0 md:mt-3 z-1000 w-full sm:w-96 md:w-105 bg-white rounded-none md:rounded-2xl shadow-xl md:shadow-2xl border-0 md:border border-gray-200 md:max-h-150 flex flex-col animate-in slide-in-from-top-2 fade-in duration-200"
+        className="fixed md:absolute top-16 md:top-7 right-0 md:right-0 md:mt-3 z-1000 w-full sm:w-96 md:w-105 bg-white rounded-none md:rounded-bl-2xl md:rounded-br-2xl shadow-xl md:shadow-2xl border-0 md:border border-gray-200 md:max-h-150 flex flex-col animate-in slide-in-from-top-2 fade-in duration-200"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">

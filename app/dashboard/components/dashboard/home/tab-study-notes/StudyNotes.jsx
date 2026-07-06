@@ -159,11 +159,11 @@ const StudyNotesTab = () => {
                 <div className="space-y-12 min-w-[140px]">
                     {data.map((item) => (
                         <div key={item.name}>
-                            <h3 className="text-[52px] font-serif text-[#233043] leading-none">
+                            <h3 className="text-2xl text-[#233043] leading-none">
                                 {item?.value ?? ""}
                             </h3>
 
-                            <p className="text-[#8B97A7] text-xl mt-2">
+                            <p className="text-[#8B97A7] text-lg mt-2">
                                 {item?.percentage ?? ""}
                             </p>
                         </div>
