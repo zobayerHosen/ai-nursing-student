@@ -1,6 +1,10 @@
-import UnderConstraction from "../components/underconstraction";
+import NclexClient from "./components/nclex-client";
 
-const NclexExamPage = () => {
-  return <UnderConstraction />
+export const metadata = {
+  title: "NCLEX Exams | STEMRN",
+  description: "Practice NCLEX exams with comprehensive question bank and Next-Gen NCLEX RN simulator",
 };
-export default NclexExamPage;
+
+export default function NclexExamPage() {
+  return <NclexClient />;
+}
