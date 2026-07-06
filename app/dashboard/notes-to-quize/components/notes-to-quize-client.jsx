@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import {
   useGenerateQuiz,
   useGetAllQuizzes,
+  useGetQuizById,
 } from "@/hooks/interactive-tools";
 import QuizeSidebar from "./quize-sidebar";
 
@@ -16,13 +17,21 @@ export default function NotesToQuizeClient() {
   const [selectedCategory, setSelectedCategory] = useState("Anatomy");
   const [selectedDifficulty, setSelectedDifficulty] = useState("beginner");
   const [selectedFile, setSelectedFile] = useState(null);
+  const [contentSource, setContentSource] = useState("");
   const [generatedResult, setGeneratedResult] = useState(null);
+  const [sidebarTab, setSidebarTab] = useState("tool");
+  const [viewingHistoryId, setViewingHistoryId] = useState(null);
   const { generateNclexQuiz, isPending } = useGenerateQuiz();
   const { quizzes } = useGetAllQuizzes();
+  const { quiz: historyQuiz, isLoading: isLoadingHistory } =
+    useGetQuizById(viewingHistoryId);
 
   const handleGenerate = async () => {
-    if (!selectedFile) {
-      toast.error("Please upload a notes file");
+    const hasFile = !!selectedFile;
+    const hasContent = contentSource.trim().length > 0;
+
+    if (!hasFile && !hasContent) {
+      toast.error("Please upload a file or enter content source");
       return;
     }
 
@@ -36,7 +45,12 @@ export default function NotesToQuizeClient() {
     }
 
     const formData = new FormData();
-    formData.append("file", selectedFile, selectedFile.name);
+    if (selectedFile) {
+      formData.append("file", selectedFile, selectedFile.name);
+    }
+    if (hasContent) {
+      formData.append("content_source", contentSource);
+    }
     formData.append("question_requested", String(selectedQuestionCount));
     formData.append("nclex_category", selectedCategory);
     formData.append("question_type", selectedDifficulty);
@@ -45,6 +59,7 @@ export default function NotesToQuizeClient() {
       const response = await generateNclexQuiz(formData);
       setGeneratedResult(response?.data ?? null);
       setHasGenerated(true);
+      setViewingHistoryId(null);
       toast.success(response?.message ?? "Quiz generated successfully");
     } catch (error) {
       toast.error(error?.response?.data?.message ?? "Failed to generate quiz");
@@ -54,7 +69,17 @@ export default function NotesToQuizeClient() {
   const handleReset = () => {
     setHasGenerated(false);
     setGeneratedResult(null);
+    setViewingHistoryId(null);
   };
+
+  const handleSelectHistory = (id) => {
+    setViewingHistoryId(id);
+    setHasGenerated(false);
+    setGeneratedResult(null);
+  };
+
+  const displayResult = viewingHistoryId ? historyQuiz : generatedResult;
+  const isLoadingDisplay = viewingHistoryId ? isLoadingHistory : false;
 
   return (
     <section className="flex min-h-[calc(100vh-82px)] flex-col bg-[#F8F9FA] text-[#333E49] lg:flex-row">
@@ -67,8 +92,15 @@ export default function NotesToQuizeClient() {
         setSelectedDifficulty={setSelectedDifficulty}
         selectedFile={selectedFile}
         setSelectedFile={setSelectedFile}
+        contentSource={contentSource}
+        setContentSource={setContentSource}
         onGenerate={handleGenerate}
         isGenerating={isPending}
+        activeTab={sidebarTab}
+        onTabChange={setSidebarTab}
+        quizzes={quizzes}
+        onSelectHistory={handleSelectHistory}
+        selectedHistoryId={viewingHistoryId}
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -91,8 +123,16 @@ export default function NotesToQuizeClient() {
         </div>
 
         <main className="flex-1 p-4 sm:p-6">
-          {hasGenerated ? (
-            <GeneratedQuiz result={generatedResult} onClear={handleReset} />
+          {hasGenerated || viewingHistoryId ? (
+            isLoadingDisplay ? (
+              <div className="flex min-h-[52vh] items-center justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#E5E7EB] border-t-[#2C5F8D]" />
+              </div>
+            ) : displayResult ? (
+              <GeneratedQuiz result={displayResult} onClear={handleReset} />
+            ) : (
+              <EmptyQuiz recentCount={quizzes.length} />
+            )
           ) : (
             <EmptyQuiz recentCount={quizzes.length} />
           )}
@@ -133,7 +173,10 @@ function getQuestions(result) {
 
 function getOptions(options) {
   if (Array.isArray(options)) {
-    return options.map((option, index) => [String.fromCharCode(65 + index), option]);
+    return options.map((option, index) => [
+      String.fromCharCode(65 + index),
+      option,
+    ]);
   }
 
   if (options && typeof options === "object") {

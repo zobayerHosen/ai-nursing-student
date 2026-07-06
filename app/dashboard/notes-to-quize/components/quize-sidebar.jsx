@@ -1,4 +1,4 @@
-import { CloudUpload } from "lucide-react";
+import { CloudUpload, History, Settings2 } from "lucide-react";
 
 const difficultyLevels = ["beginner", "Intermediate", "Advanced"];
 
@@ -21,8 +21,15 @@ export default function QuizeSidebar({
   setSelectedDifficulty,
   selectedFile,
   setSelectedFile,
+  contentSource,
+  setContentSource,
   onGenerate,
   isGenerating,
+  activeTab,
+  onTabChange,
+  quizzes,
+  onSelectHistory,
+  selectedHistoryId,
 }) {
   const handleQuestionCountChange = (event) => {
     const value = Number(event.target.value);
@@ -36,89 +43,160 @@ export default function QuizeSidebar({
   };
 
   return (
-    <aside className="w-full shrink-0 border-r border-[#E5E7EB] bg-white px-4 py-5 sm:px-6 lg:min-h-[calc(100vh-82px)] lg:w-[330px] xl:w-[360px]">
-      <div className="mx-auto flex max-w-md flex-col gap-4 lg:max-w-none">
-        <div>
-          <h1 className="text-lg font-semibold text-[#222427]">
-            Notes to Quiz
-          </h1>
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-xs font-semibold text-[#222427]">Content Source</p>
-          <textarea
-            defaultValue="Paste notes, a topic, or textbook content... e.g. Cardiomedications, fluid & electrolytes, NCLEX priority"
-            className="min-h-32 w-full resize-none rounded-lg border border-[#E6ECF2] bg-[#F8FAFC] p-3 text-xs leading-5 text-[#53606D] outline-none transition focus:border-[#2C5F8D] focus:bg-white"
-          />
-        </div>
-
-        <label className="flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-lg border border-[#DCE5EF] bg-[#E8EEF5] px-4 py-5 text-center transition hover:border-[#2C5F8D] hover:bg-[#E3ECF5]">
-          <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#2C5F8D] text-white">
-            <CloudUpload size={18} />
-          </span>
-          <span className="text-xs font-semibold text-[#222427]">
-            Drop files or click to browse
-          </span>
-          <span className="mt-1 text-[10px] font-medium uppercase text-[#697586]">
-            PDF - DOCX - PPTX - Images
-          </span>
-          <input
-            type="file"
-            className="hidden"
-            accept=".pdf,.doc,.docx,.ppt,.pptx,image/*"
-            onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
-          />
-          {selectedFile ? (
-            <span className="mt-2 max-w-full truncate text-[11px] font-semibold text-[#2C5F8D]">
-              {selectedFile.name}
-            </span>
-          ) : null}
-        </label>
-
-        <div className="space-y-2">
-          <label
-            htmlFor="quiz-question-count"
-            className="text-xs font-semibold text-[#222427]"
-          >
-            Question Amount
-          </label>
-          <input
-            id="quiz-question-count"
-            type="number"
-            min="1"
-            max="30"
-            value={selectedQuestionCount}
-            onChange={handleQuestionCountChange}
-            className="h-10 w-full rounded-lg border border-[#E6ECF2] bg-[#F8FAFC] px-3 text-xs font-semibold text-[#3F4852] outline-none transition focus:border-[#2C5F8D] focus:bg-white"
-          />
-          <p className="text-[10px] font-medium text-[#697586]">
-            Maximum 30 questions
-          </p>
-        </div>
-
-        <OptionGroup
-          label="Nclex Category"
-          options={nclexCategories}
-          selectedOption={selectedCategory}
-          onSelect={setSelectedCategory}
-        />
-
-        <OptionGroup
-          label="Difficulty"
-          options={difficultyLevels}
-          selectedOption={selectedDifficulty}
-          onSelect={setSelectedDifficulty}
-        />
-
+    <aside className="w-full shrink-0 border-r border-[#E5E7EB] bg-white lg:min-h-[calc(100vh-82px)] lg:w-[330px] xl:w-[360px]">
+      {/* Tab headers */}
+      <div className="flex border-b border-[#E5E7EB]">
         <button
           type="button"
-          onClick={onGenerate}
-          disabled={isGenerating}
-          className="mt-1 h-11 w-full rounded-md bg-[#2C5F8D] text-xs font-semibold text-white transition hover:bg-[#244F77] disabled:cursor-not-allowed disabled:opacity-70"
+          onClick={() => onTabChange("tool")}
+          className={`flex flex-1 items-center justify-center gap-2 px-4 py-3 text-xs font-semibold transition ${
+            activeTab === "tool"
+              ? "border-b-2 border-[#2C5F8D] text-[#2C5F8D]"
+              : "text-[#697586] hover:text-[#2C5F8D]"
+          }`}
         >
-          {isGenerating ? "Generating..." : "Generate Quiz"}
+          <Settings2 size={14} />
+          Tool
+        </button>
+        <button
+          type="button"
+          onClick={() => onTabChange("history")}
+          className={`flex flex-1 items-center justify-center gap-2 px-4 py-3 text-xs font-semibold transition ${
+            activeTab === "history"
+              ? "border-b-2 border-[#2C5F8D] text-[#2C5F8D]"
+              : "text-[#697586] hover:text-[#2C5F8D]"
+          }`}
+        >
+          <History size={14} />
+          History
         </button>
       </div>
+
+      {activeTab === "tool" ? (
+        <div className="px-4 py-5 sm:px-6">
+          <div className="mx-auto flex max-w-md flex-col gap-4 lg:max-w-none">
+            <div>
+              <h1 className="text-lg font-semibold text-[#222427]">
+                Notes to Quiz
+              </h1>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-[#222427]">
+                Content Source
+              </p>
+              <textarea
+                value={contentSource}
+                onChange={(e) => setContentSource(e.target.value)}
+                placeholder="Paste notes, a topic, or textbook content... e.g. Cardiomedications, fluid & electrolytes, NCLEX priority"
+                className="min-h-32 w-full resize-none rounded-lg border border-[#E6ECF2] bg-[#F8FAFC] p-3 text-xs leading-5 text-[#53606D] outline-none transition focus:border-[#2C5F8D] focus:bg-white"
+              />
+            </div>
+
+            <label className="flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-lg border border-[#DCE5EF] bg-[#E8EEF5] px-4 py-5 text-center transition hover:border-[#2C5F8D] hover:bg-[#E3ECF5]">
+              <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#2C5F8D] text-white">
+                <CloudUpload size={18} />
+              </span>
+              <span className="text-xs font-semibold text-[#222427]">
+                Drop files or click to browse
+              </span>
+              <span className="mt-1 text-[10px] font-medium uppercase text-[#697586]">
+                PDF - DOCX - PPTX - Images
+              </span>
+              <input
+                type="file"
+                className="hidden"
+                accept=".pdf,.doc,.docx,.ppt,.pptx,image/*"
+                onChange={(event) =>
+                  setSelectedFile(event.target.files?.[0] ?? null)
+                }
+              />
+              {selectedFile ? (
+                <span className="mt-2 max-w-full truncate text-[11px] font-semibold text-[#2C5F8D]">
+                  {selectedFile.name}
+                </span>
+              ) : null}
+            </label>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="quiz-question-count"
+                className="text-xs font-semibold text-[#222427]"
+              >
+                Question Amount
+              </label>
+              <input
+                id="quiz-question-count"
+                type="number"
+                min="1"
+                max="30"
+                value={selectedQuestionCount}
+                onChange={handleQuestionCountChange}
+                className="h-10 w-full rounded-lg border border-[#E6ECF2] bg-[#F8FAFC] px-3 text-xs font-semibold text-[#3F4852] outline-none transition focus:border-[#2C5F8D] focus:bg-white"
+              />
+              <p className="text-[10px] font-medium text-[#697586]">
+                Maximum 30 questions
+              </p>
+            </div>
+
+            <OptionGroup
+              label="Nclex Category"
+              options={nclexCategories}
+              selectedOption={selectedCategory}
+              onSelect={setSelectedCategory}
+            />
+
+            <OptionGroup
+              label="Difficulty"
+              options={difficultyLevels}
+              selectedOption={selectedDifficulty}
+              onSelect={setSelectedDifficulty}
+            />
+
+            <button
+              type="button"
+              onClick={onGenerate}
+              disabled={isGenerating}
+              className="mt-1 h-11 w-full rounded-md bg-[#2C5F8D] text-xs font-semibold text-white transition hover:bg-[#244F77] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isGenerating ? "Generating..." : "Generate Quiz"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="px-4 py-5 sm:px-6">
+          <h2 className="text-sm font-semibold text-[#222427] mb-4">
+            Quiz History
+          </h2>
+          {quizzes.length === 0 ? (
+            <p className="text-[11px] text-[#697586]">No quiz history yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {quizzes.map((quiz, index) => (
+                <button
+                  key={quiz?.id ?? index}
+                  type="button"
+                  onClick={() => onSelectHistory(quiz?.id)}
+                  className={`w-full rounded-lg border px-3 py-2.5 text-left text-xs transition ${
+                    selectedHistoryId === quiz?.id
+                      ? "border-[#2C5F8D] bg-[#E8F2FC] text-[#2C5F8D]"
+                      : "border-[#E5E7EB] text-[#3F4852] hover:bg-[#F8FAFC]"
+                  }`}
+                >
+                  <p className="font-semibold truncate">
+                    {quiz?.nclex_category ?? quiz?.title ?? `Quiz ${index + 1}`}
+                  </p>
+                  {quiz?.created_at ? (
+                    <p className="mt-0.5 text-[10px] text-[#697586]">
+                      {new Date(quiz.created_at).toLocaleDateString()}
+                    </p>
+                  ) : null}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </aside>
   );
 }

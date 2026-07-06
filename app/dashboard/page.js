@@ -8,7 +8,7 @@ const DashboardPage = () => {
     const ActiveComponent = TAB_COMPONENTS[activeTab]
 
     return (
-        <div className='w-full flex flex-col gap-6 p-4 xl:p-6 bg-[#F7F7F7] min-h-screen'>
+        <div className='w-full flex flex-col gap-6 p-4 xl:p-6 bg-[#F7F7F7]'>
             {/* Tabs Navigation */}
             <div className="flex flex-wrap items-center gap-3 bg-white p-4 rounded-xl border border-[#EEEEEE] shadow-sm mb-2">
                 {TABS.map((tab) => (
