@@ -65,7 +65,7 @@ export default function StudyNoteClient() {
           {currentNote?.content_name ?? "Not Found"}
         </h1>
 
-        <div className="w-full h-[calc(100vh-250px)] min-h-[500px] relative">
+        <div className="w-full h-[calc(100vh-250px)] min-h-125 relative">
           {currentNote?.content_file_url ? (
             <>
               {isIframeLoading && (
