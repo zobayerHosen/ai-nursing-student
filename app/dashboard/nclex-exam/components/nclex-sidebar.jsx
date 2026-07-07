@@ -73,5 +73,4 @@ const NclexSidebar = ({ section, onSectionChange, onClose }) => {
     </aside>
   );
 };
-
 export default NclexSidebar;

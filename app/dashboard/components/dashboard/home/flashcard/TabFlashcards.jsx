@@ -6,65 +6,71 @@ import {
   Cell,
   ResponsiveContainer,
 } from "recharts";
-import { flashcardData } from "./tab-flashcardData";
+import { flashcardData as staticFlashcardData } from "./tab-flashcardData";
 import TabFlashcardCategoryCard from "./TabFlashcardCategoryCard";
-
-const cardData = [
-  {
-    name: "Easy",
-    value: 30,
-    color: "#5BC8B1",
-  },
-  {
-    name: "Hard",
-    value: 240,
-    color: "#F56497",
-  },
-  {
-    name: "New",
-    value: 137,
-    color: "#DED4C1",
-  },
-];
-
-const totalCards = cardData.reduce(
-  (acc, item) => acc + item.value,
-  0
-);
-
-const CenterLabel = () => (
-  <>
-    <text
-      x="50%"
-      y="48%"
-      textAnchor="middle"
-      dominantBaseline="middle"
-      style={{
-        fontSize: "32px",
-        fontWeight: 700,
-        fill: "#111827",
-      }}
-    >
-      {totalCards}
-    </text>
-
-    <text
-      x="50%"
-      y="63%"
-      textAnchor="middle"
-      dominantBaseline="middle"
-      style={{
-        fontSize: "12px",
-        fill: "#8B97A7",
-        letterSpacing: "1px",
-      }}
-    >
-      CARDS
-    </text>
-  </>
-);
+import { useGetFlashcardProgress } from "@/hooks/flashcards";
 
 const TabFlashcards = () => {
+  const { overall, categories, isLoading } = useGetFlashcardProgress();
+
+  if (isLoading) {
+    return <div className="p-8 text-center text-[#8B97A7] bg-white rounded-2xl">Loading progress...</div>;
+  }
+
+  const newCards = overall ? overall.total_cards - overall.reviewed_cards : 0;
+  
+  const cardData = [
+    {
+      name: "Easy",
+      value: overall ? overall.easy : 0,
+      color: "#5BC8B1",
+    },
+    {
+      name: "Hard",
+      value: overall ? overall.hard : 0,
+      color: "#F56497",
+    },
+    {
+      name: "New",
+      value: newCards > 0 ? newCards : 0,
+      color: "#DED4C1",
+    },
+  ];
+
+  const totalCards = overall ? overall.total_cards : 0;
+
+  const CenterLabel = () => (
+    <>
+      <text
+        x="50%"
+        y="48%"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        style={{
+          fontSize: "32px",
+          fontWeight: 700,
+          fill: "#111827",
+        }}
+      >
+        {totalCards}
+      </text>
+
+      <text
+        x="50%"
+        y="63%"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        style={{
+          fontSize: "12px",
+          fill: "#8B97A7",
+          letterSpacing: "1px",
+        }}
+      >
+        CARDS
+      </text>
+    </>
+  );
+
   return (
     <div className="bg-white rounded-2xl">
       {/* Header */}
@@ -134,12 +140,26 @@ const TabFlashcards = () => {
 
       {/* Category Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
-        {flashcardData.map((card, index) => (
-          <TabFlashcardCategoryCard
-            key={index}
-            {...card}
-          />
-        ))}
+        {categories?.map((cat, index) => {
+          const staticData = staticFlashcardData[index % staticFlashcardData.length];
+          const progressPercent = cat.total_cards > 0 ? Math.round((cat.reviewed_cards / cat.total_cards) * 100) : 0;
+          const recallPercent = cat.reviewed_cards > 0 ? Math.round((cat.easy / cat.reviewed_cards) * 100) : 0;
+          
+          return (
+            <TabFlashcardCategoryCard
+              key={index}
+              title={cat.category_name}
+              icon={staticData.icon}
+              due={cat.hard}
+              totalCards={cat.total_cards}
+              recall={recallPercent}
+              easy={cat.easy}
+              progress={progressPercent}
+              color={staticData.color}
+              iconBg={staticData.iconBg}
+            />
+          );
+        })}
       </div>
     </div>
   );
