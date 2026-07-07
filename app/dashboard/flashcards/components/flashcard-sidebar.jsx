@@ -3,7 +3,6 @@
 import { useGetFlashcardCategory } from "@/hooks/flashcards";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 const CATEGORY_COLORS = [
@@ -14,13 +13,9 @@ const CATEGORY_COLORS = [
 ];
 
 const FlashCardSidebar = ({ onClose }) => {
-    const { flashcardData, isLoading, isError, isFetching } = useGetFlashcardCategory();
+    const { flashcardData, isLoading } = useGetFlashcardCategory();
 
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const currentTab = searchParams.get('tab') || "study";
     const [expandCategories, setExpandCategories] = useState(null);
-    const [activeTab, setActiveTab] = useState(currentTab);
 
     // Calculate total decks (cards) and total questions
     let totalDecks = 0;
@@ -37,11 +32,6 @@ const FlashCardSidebar = ({ onClose }) => {
         });
     }
 
-    // Note: tab handlers
-    const handleTabClick = (tab) => {
-        setActiveTab(tab);
-        router.push(`/dashboard/flashcards?tab=${tab}`);
-    };
 
     // Note: categories handlers
     const handleCategoryClick = (categorySlug) => {
@@ -67,27 +57,10 @@ const FlashCardSidebar = ({ onClose }) => {
                 </div>
             </div>
 
-            {/* tab buttons */}
-            <div className="pt-4 flex items-center border-b border-gray-300">
-                <button
-                    onClick={() => handleTabClick('study')}
-                    className={`w-1/2 cursor-pointer text-center py-1.5 rounded font-medium ${activeTab === 'study' ? 'bg-primary text-white' : ''}`}
-                >
-                    Study
-                </button>
-                <button
-                    onClick={() => handleTabClick('progress')}
-                    className={`w-1/2 cursor-pointer text-center py-1.5  rounded text-black ${activeTab === 'progress' ? 'bg-primary text-white' : ''}`}
-                >
-                    Progress
-                </button>
-            </div>
 
             {/* active content data */}
-            {
-                activeTab === 'study' ? (
-                    <div className="mt-4 flex flex-col gap-3">
-                        {isLoading && <div className="text-center py-4 text-gray-500">Loading categories...</div>}
+            <div className="mt-4 flex flex-col gap-3">
+                {isLoading && <div className="text-center py-4 text-gray-500">Loading categories...</div>}
                         {!isLoading && flashcardData?.map((category, index) => {
                             const colors = CATEGORY_COLORS[index % CATEGORY_COLORS.length];
 
@@ -135,11 +108,7 @@ const FlashCardSidebar = ({ onClose }) => {
                                 </div>
                             );
                         })}
-                    </div>
-                ) : (
-                    <></>
-                )
-            }
+            </div>
         </aside>
     );
 };
