@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Menu } from "lucide-react";
-import { SAMPLE_QUESTIONS, NGN_TYPES } from "./data";
+import { NGN_TYPES } from "./data";
 import NclexSidebar from "./nclex-sidebar";
 import PracticeByCategorySection from "./practice-category";
 import FullNCLEXSection from "./full-nclex-section";

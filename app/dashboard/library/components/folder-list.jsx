@@ -8,9 +8,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useDeleteLibrary } from "@/hooks";
 import DeleteModal from "./delete-modal";
 import FolderCreateModal from "./folder-create-modal";
-import Image from "next/image";
-
-const BASEURL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const FolderList = ({ folder, toggleFolder, onClose }) => {
     const queryClient = useQueryClient();
@@ -78,22 +75,20 @@ const FolderList = ({ folder, toggleFolder, onClose }) => {
                     <ChevronDown className={`w-4.5 h-4.5 text-gray-500 transition-transform ${folder?.isOpen ? "rotate-180" : ""}`} />
 
                     {/* Icon */}
-                    {folder?.icon?.icon ? (
-                        <Image
-                            src={`${BASEURL}${folder?.icon?.icon}`}
-                            alt="icon"
-                            width={20}
-                            height={20}
-                            className="shrink-0"
+                    <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="shrink-0"
+                        style={{ color: folder?.color || '#9ca3af' }}
+                    >
+                        <path
+                            d="M2 4C2 3.44772 2.44772 3 3 3H7.58579C7.851 3 8.10536 3.10536 8.29289 3.29289L10 5H17C17.5523 5 18 5.44772 18 6V16C18 16.5523 17.5523 17 17 17H3C2.44772 17 2 16.5523 2 16V4Z"
+                            fill="currentColor"
                         />
-                    ) : (
-                        <div
-                            className="w-5 h-5 shrink-0 rounded flex items-center justify-center text-xs font-semibold text-white uppercase"
-                            style={{ backgroundColor: folder?.color || '#9ca3af' }}
-                        >
-                            {folder?.name?.charAt(0)}
-                        </div>
-                    )}
+                    </svg>
 
                     {/* Text */}
                     <div>

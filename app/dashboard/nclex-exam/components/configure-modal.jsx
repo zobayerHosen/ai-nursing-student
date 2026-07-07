@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { NGN_TYPES } from "./data";
 
 const MODE_OPTIONS = [
   {
@@ -61,7 +60,7 @@ export default function ConfigureModal({ category, subtopic, questionStats, onCl
           </div>
           <button
             onClick={onClose}
-            className="bg-transparent text-[#6b7280] border border-[#e5e7eb] rounded-lg px-2.5 py-1.5 text-xs font-medium cursor-pointer transition-all hover:bg-[#f9fafb] hover:text-[#111827] flex-shrink-0"
+            className="bg-transparent text-[#6b7280] border border-[#e5e7eb] rounded-lg px-2.5 py-1.5 text-xs font-medium cursor-pointer transition-all hover:bg-[#f9fafb] hover:text-[#111827] shrink-0"
           >
             ✕
           </button>
@@ -92,7 +91,7 @@ export default function ConfigureModal({ category, subtopic, questionStats, onCl
                   }`}
                 >
                   <div
-                    className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 bg-white ${
+                    className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 bg-white ${
                       isActive ? "border-[#2C5F8D]" : "border-[#cbd5e1]"
                     }`}
                   >
