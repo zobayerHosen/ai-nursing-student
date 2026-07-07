@@ -3,7 +3,7 @@
 import React from 'react';
 import { EditorContent } from '@tiptap/react';
 
-export default function NoteCanvas({ noteTitle, setNoteTitle, editor }) {
+export default function NoteCanvas({ editor }) {
   return (
     <>
       <style>{`
@@ -89,15 +89,6 @@ export default function NoteCanvas({ noteTitle, setNoteTitle, editor }) {
       `}</style>
       
       <div className="w-full bg-white border border-gray-200/70 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] h-[calc(100vh-250px)] min-h-[400px] max-h-[calc(100vh-200px)] p-8 flex flex-col overflow-hidden">
-        
-        {/* Main Big Note Title Heading */}
-        <input 
-          type="text" 
-          value={noteTitle} 
-          onChange={(e) => setNoteTitle(e.target.value)}
-          className="text-3xl font-bold text-[#333E49] outline-none border-none placeholder-gray-300 w-full mb-4 tracking-tight bg-transparent flex-shrink-0"
-          placeholder="Untitled Note"
-        />
 
         {/* Tiptap Engine Mounting Point - This is where scrolling happens */}
         <div className="flex-1 w-full text-sm text-[#333E49] leading-relaxed font-normal min-h-0 overflow-hidden

@@ -15,13 +15,10 @@ import {
   FaListOl
 } from 'react-icons/fa6';
 
-export default function Toolbar({ editor }) {
-  if (!editor) return null;
-
+export default function Toolbar({ editor, onAIFormat, isFormatting }) {
   // State for modals
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
-  const [isFormatting, setIsFormatting] = useState(false);
 
   // State to track active states manually
   const [activeStates, setActiveStates] = useState({
@@ -187,111 +184,11 @@ export default function Toolbar({ editor }) {
     }, 50);
   };
 
-  // AI Format function
+  // AI Format function - delegates to parent's API handler
   const applyAIFormat = () => {
-    if (!editor) return;
-    
-    setIsFormatting(true);
-    
-    try {
-      const content = editor.getText();
-      
-      if (!content.trim()) {
-        alert('No content to format. Please add some text first.');
-        setIsFormatting(false);
-        return;
-      }
-
-      const formattedHtml = formatContentWithAI(content);
-      editor.commands.setContent(formattedHtml);
-      
-      setShowAIModal(false);
-      setIsFormatting(false);
-      
-    } catch (error) {
-      console.error('AI Format error:', error);
-      alert('Failed to format content. Please try again.');
-      setIsFormatting(false);
-    }
-  };
-
-  // Custom formatting function
-  const formatContentWithAI = (text) => {
-    const lines = text.split('\n').filter(line => line.trim());
-    
-    if (lines.length === 0) {
-      return '<p>No content to format.</p>';
-    }
-
-    let html = '';
-    let inList = false;
-    let listItems = [];
-    let titleDetected = false;
-
-    for (let i = 0; i < lines.length; i++) {
-      let line = lines[i].trim();
-      
-      if (!line) continue;
-
-      if (line.startsWith('- ') || line.startsWith('• ') || line.startsWith('* ')) {
-        listItems.push(line.substring(2).trim());
-        inList = true;
-        continue;
-      }
-
-      if (/^\d+\.\s/.test(line)) {
-        const parts = line.split('. ');
-        listItems.push(parts.slice(1).join('. '));
-        inList = true;
-        continue;
-      }
-
-      if (inList) {
-        html += `<ul>\n`;
-        listItems.forEach(item => {
-          html += `  <li>${item}</li>\n`;
-        });
-        html += `</ul>\n`;
-        listItems = [];
-        inList = false;
-      }
-
-      if (!titleDetected && i === 0 && line.length < 60) {
-        html += `<h1>${line}</h1>\n`;
-        titleDetected = true;
-        continue;
-      }
-
-      if (line.length < 50 || line.endsWith(':') || line.match(/^[A-Z][a-z]+\s+[A-Z]/)) {
-        if (line.length > 10 && line.length < 60) {
-          html += `<h2>${line}</h2>\n`;
-          continue;
-        }
-      }
-
-      if (line.split(' ').length <= 3 && line.length < 30 && line !== lines[0]) {
-        html += `<h3>${line}</h3>\n`;
-        continue;
-      }
-
-      if (line.startsWith('> ') || line.includes(' said ') || line.includes('according to')) {
-        const quoteText = line.startsWith('> ') ? line.substring(2) : line;
-        html += `<blockquote>${quoteText}</blockquote>\n`;
-        continue;
-      }
-
-      html += `<p>${line}</p>\n`;
-    }
-
-    if (inList && listItems.length > 0) {
-      html += `<ul>\n`;
-      listItems.forEach(item => {
-        html += `  <li>${item}</li>\n`;
-      });
-      html += `</ul>\n`;
-    }
-
-    return html || '<p>No content to format.</p>';
+    if (!onAIFormat) return;
+    setShowAIModal(false);
+    onAIFormat();
   };
 
   // AI Format modal handler
