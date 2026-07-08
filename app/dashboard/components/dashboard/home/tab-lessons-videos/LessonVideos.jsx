@@ -9,35 +9,9 @@ import {
 } from "recharts";
 import RecentlyWatched from "./RecentlyWatched";
 import TopicProgress from "./TopicProgress";
+import { useGetVideoLessonsProgress } from "@/hooks";
 
-const totalLessons = 82;
-
-const lessonData = [
-  {
-    name: "Watched",
-    value: 28,
-    subtitle: "Lessons you've completed",
-    color: "#F5659A",
-  },
-  {
-    name: "In progress",
-    value: 3,
-    subtitle: "Started but not finished",
-    color: "#F4A51C",
-  },
-  {
-    name: "Not started",
-    value: 51,
-    subtitle: "Still to watch",
-    color: "#E7DDCC",
-  },
-];
-
-const completedPercentage = Math.round(
-  (lessonData[0].value / totalLessons) * 100
-);
-
-const CenterLabel = () => (
+const CenterLabel = ({ completedPercentage }) => (
   <>
     <text
       x="50%"
@@ -70,6 +44,43 @@ const CenterLabel = () => (
 );
 
 export default function LessonVideos() {
+  const { progressData, isLoading, isError } = useGetVideoLessonsProgress();
+
+  if (isLoading) {
+    return <div className="p-8 text-center text-gray-500">Loading progress data...</div>;
+  }
+
+  const librarySummary = progressData?.library_summary;
+  const topicsData = progressData?.topics || [];
+  const watchedData = progressData?.recently_watched || [];
+
+  const totalLessons = librarySummary?.total_videos || 0;
+
+  const getProgressValue = (progressStr) => parseInt(progressStr?.split("/")[0] || 0, 10);
+
+  const lessonData = [
+    {
+      name: "Watched",
+      value: getProgressValue(librarySummary?.completed?.progress),
+      subtitle: "Lessons you've completed",
+      color: "#F5659A",
+    },
+    {
+      name: "In progress",
+      value: getProgressValue(librarySummary?.in_progress?.progress),
+      subtitle: "Started but not finished",
+      color: "#F4A51C",
+    },
+    {
+      name: "Not started",
+      value: getProgressValue(librarySummary?.not_started?.progress),
+      subtitle: "Still to watch",
+      color: "#E7DDCC",
+    },
+  ];
+
+  const completedPercentage = parseInt(librarySummary?.completed?.percentage?.replace("%", "") || 0, 10);
+
   return (
     <div className="bg-white rounded-3xl">
       {/* Header */}
@@ -113,7 +124,7 @@ export default function LessonVideos() {
                 ))}
               </Pie>
 
-              <CenterLabel />
+              <CenterLabel completedPercentage={completedPercentage} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -164,8 +175,8 @@ export default function LessonVideos() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6 mt-10">
-        <TopicProgress />
-        <RecentlyWatched />
+        <TopicProgress topicsData={topicsData} />
+        <RecentlyWatched watchedData={watchedData} />
       </div>
     </div>
   );

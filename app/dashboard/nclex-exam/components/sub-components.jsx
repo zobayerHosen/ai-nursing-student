@@ -12,7 +12,7 @@ export function Donut({ size = 140, stroke = 14, value, color = "#16a34a", bg = 
   const off = circ - (value / 100) * circ;
 
   return (
-    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={bg} strokeWidth={stroke} />
         <circle
@@ -249,7 +249,7 @@ export function RationaleBlock({ question, userAnswer }) {
       {/* Header */}
       <div className="flex items-center justify-between px-4.5 py-3.5 bg-white border-b border-[#e2e8f0]">
         <div className="flex items-center gap-2.5">
-          <div className="w-7.5 h-7.5 rounded-lg bg-[#FE5E7E] flex items-center justify-center flex-shrink-0 shadow-[0_2px_5px_rgba(254,94,126,0.28)]">
+          <div className="w-7.5 h-7.5 rounded-lg bg-[#FE5E7E] flex items-center justify-center shrink-0 shadow-[0_2px_5px_rgba(254,94,126,0.28)]">
             <CheckIcon />
           </div>
           <div className="text-[15px] font-bold text-[#0f172a] tracking-tight">
@@ -267,7 +267,7 @@ export function RationaleBlock({ question, userAnswer }) {
         {/* Clinical Reasoning */}
         <div className="mb-4">
           <div className="flex items-center gap-2.5 mb-2.5">
-            <div className="w-[3px] h-3.5 bg-[#FE5E7E] rounded-sm flex-shrink-0" />
+            <div className="w-[3px] h-3.5 bg-[#FE5E7E] rounded-sm shrink-0" />
             <div className="text-[11px] font-bold text-[#FE5E7E] tracking-wide uppercase">
               Clinical Reasoning — Reading the Trend
             </div>
@@ -297,7 +297,7 @@ export function RationaleBlock({ question, userAnswer }) {
         {/* Why Others Fail */}
         <div>
           <div className="flex items-center gap-2.5 mb-2.5">
-            <div className="w-[3px] h-3.5 bg-[#FE5E7E] rounded-sm flex-shrink-0" />
+            <div className="w-[3px] h-3.5 bg-[#FE5E7E] rounded-sm shrink-0" />
             <div className="text-[11px] font-bold text-[#FE5E7E] tracking-wide uppercase">
               {q.type === "matrix"
                 ? "Row-by-Row Breakdown"
@@ -324,7 +324,7 @@ export function RationaleBlock({ question, userAnswer }) {
                       }`}
                     >
                       <div
-                        className={`w-6.5 h-6.5 rounded-lg flex items-center justify-center flex-shrink-0 text-[11px] font-extrabold font-mono ${
+                        className={`w-6.5 h-6.5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-extrabold font-mono ${
                           gotItRight ? "bg-[#dcfce7] text-[#16a34a]" : "bg-[#fde8ec] text-[#FE5E7E]"
                         }`}
                       >
@@ -379,7 +379,7 @@ export function RationaleBlock({ question, userAnswer }) {
                       }`}
                     >
                       <div
-                        className={`w-6.5 h-6.5 rounded-lg flex items-center justify-center flex-shrink-0 text-[11px] font-extrabold font-mono ${
+                        className={`w-6.5 h-6.5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-extrabold font-mono ${
                           isUserCorrect ? "bg-[#dcfce7] text-[#16a34a]" : "bg-[#fde8ec] text-[#FE5E7E]"
                         }`}
                       >
@@ -426,7 +426,7 @@ export function RationaleBlock({ question, userAnswer }) {
                       }`}
                     >
                       <div
-                        className={`w-6.5 h-6.5 rounded-lg flex items-center justify-center flex-shrink-0 text-[11px] font-extrabold font-mono ${
+                        className={`w-6.5 h-6.5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-extrabold font-mono ${
                           gotItRight ? "bg-[#dcfce7] text-[#16a34a]" : "bg-[#fde8ec] text-[#FE5E7E]"
                         }`}
                       >
@@ -456,7 +456,7 @@ export function RationaleBlock({ question, userAnswer }) {
                       }`}
                     >
                       <div
-                        className={`w-6.5 h-6.5 rounded-lg flex items-center justify-center flex-shrink-0 text-[11px] font-extrabold font-mono ${
+                        className={`w-6.5 h-6.5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-extrabold font-mono ${
                           isCorrect ? "bg-[#dcfce7] text-[#16a34a]" : "bg-[#fde8ec] text-[#FE5E7E]"
                         }`}
                       >
@@ -494,7 +494,7 @@ export function QuestionStats({ question }) {
         {/* Left */}
         <div>
           <div className="flex items-center gap-2.5 text-[13px] text-[#475569] mb-3.5">
-            <div className="w-6.5 h-6.5 rounded-lg bg-[#fde8ec] text-[#FE5E7E] flex items-center justify-center flex-shrink-0 text-sm">
+            <div className="w-6.5 h-6.5 rounded-lg bg-[#fde8ec] text-[#FE5E7E] flex items-center justify-center shrink-0 text-sm">
               ⚙
             </div>
             <span className="text-[#64748b]">Difficulty level —</span>
@@ -507,7 +507,7 @@ export function QuestionStats({ question }) {
           </div>
           {typeof q.peerCorrectPct === "number" && (
             <div className="flex items-center gap-2.5 text-[13px] text-[#475569] mb-3.5">
-              <div className="w-6.5 h-6.5 rounded-lg bg-[#ecfdf5] text-[#16a34a] flex items-center justify-center flex-shrink-0 text-sm">
+              <div className="w-6.5 h-6.5 rounded-lg bg-[#ecfdf5] text-[#16a34a] flex items-center justify-center shrink-0 text-sm">
                 🏃
               </div>
               <span className="font-bold text-[#0f172a]">{q.peerCorrectPct}%</span>
@@ -515,7 +515,7 @@ export function QuestionStats({ question }) {
             </div>
           )}
           <div className="flex items-center gap-2.5 text-[13px] text-[#475569]">
-            <div className="w-6.5 h-6.5 rounded-lg bg-[#fef3c7] text-[#d97706] flex items-center justify-center flex-shrink-0 text-sm">
+            <div className="w-6.5 h-6.5 rounded-lg bg-[#fef3c7] text-[#d97706] flex items-center justify-center shrink-0 text-sm">
               ★
             </div>
             <span className="text-[#64748b]">Category —</span>
