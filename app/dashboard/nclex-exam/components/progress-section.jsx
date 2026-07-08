@@ -117,7 +117,7 @@ export default function ProgressSection() {
             </div>
 
             <div className="flex items-center gap-6 mb-5.5">
-              <div className="relative flex-shrink-0" style={{ width: 140, height: 140 }}>
+              <div className="relative shrink-0" style={{ width: 140, height: 140 }}>
                 <svg width={140} height={140} style={{ transform: "rotate(-90deg)" }}>
                   <circle cx={70} cy={70} r={56} fill="none" stroke="#fee2e2" strokeWidth={14} />
                   <circle
@@ -140,14 +140,14 @@ export default function ProgressSection() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#16a34a] flex-shrink-0" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#16a34a] shrink-0" />
                   <div>
                     <div className="text-lg font-extrabold text-[#16a34a]">485</div>
                     <div className="text-xs text-[#64748b]">Correct (69%)</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#f87171] flex-shrink-0" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#f87171] shrink-0" />
                   <div>
                     <div className="text-lg font-extrabold text-[#dc2626]">215</div>
                     <div className="text-xs text-[#64748b]">Incorrect (31%)</div>
@@ -203,7 +203,7 @@ export default function ProgressSection() {
                       {cat.name}
                     </div>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[11px] font-bold flex-shrink-0 ${
+                      className={`px-2 py-0.5 rounded-full text-[11px] font-bold shrink-0 ${
                         ahead ? "bg-[#dcfce7] text-[#166534]" : "bg-[#fee2e2] text-[#991b1b]"
                       }`}
                     >
@@ -211,11 +211,11 @@ export default function ProgressSection() {
                       {cat.delta}% vs peers
                     </span>
                     <div className="flex-1" />
-                    <div className="text-xs text-[#64748b] flex-shrink-0">
+                    <div className="text-xs text-[#64748b] shrink-0">
                       {cat.questions} questions
                     </div>
                     <div
-                      className="text-base font-extrabold w-[42px] text-right flex-shrink-0"
+                      className="text-base font-extrabold w-[42px] text-right shrink-0"
                       style={{ color: scoreColor(cat.score) }}
                     >
                       {cat.score}%

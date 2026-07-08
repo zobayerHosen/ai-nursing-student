@@ -35,7 +35,7 @@ export default function FullNCLEXSection({ onStartExam, consumedExams }) {
               >
                 <div className="flex items-center gap-4">
                   <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                    className="w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0"
                     style={{
                       background: isConsumed
                         ? "#f1f5f9"

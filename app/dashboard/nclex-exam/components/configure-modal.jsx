@@ -160,7 +160,7 @@ export default function ConfigureModal({ category, subtopic, questionStats, onCl
             value={count}
             onChange={(e) => setCount(+e.target.value)}
             className="w-full accent-[#2C5F8D]"
-          />
+          /> 
           <div className="flex justify-between text-[11px] text-[#94a3b8] mt-1">
             <span>5</span>
             <span>40</span>

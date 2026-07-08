@@ -1,80 +1,11 @@
 import Link from "next/link";
 import RecentlyWatchedCard from "./RecentlyWatchedCard";
 
-import {
-  Heart,
-  Pill,
-  Brain,
-  Stethoscope,
-  Baby,
-} from "lucide-react";
+import { PlayCircle } from "lucide-react";
 
-const watched = [
-  {
-    title: "Hypertension Management",
-    category: "Cardiovascular",
-    watched: "2 hours ago",
-    duration: "18:20",
-    status: "Completed",
-    icon: Heart,
-    color: "#FF5E96",
-    iconBg: "#FFE5EF",
-  },
-  {
-    title: "Anticoagulants & Reversal",
-    category: "Pharmacology",
-    watched: "Yesterday",
-    duration: "18:40",
-    status: "18% watched",
-    icon: Pill,
-    color: "#F59E0B",
-    iconBg: "#FEF3C7",
-  },
-  {
-    title: "Heart Anatomy & The Flow",
-    category: "Cardiovascular",
-    watched: "Yesterday",
-    duration: "12:30",
-    status: "Completed",
-    icon: Heart,
-    color: "#FF5E96",
-    iconBg: "#FFE5EF",
-  },
-  {
-    title: "Stroke Assessment",
-    category: "Neurological",
-    watched: "2 days ago",
-    duration: "15:20",
-    status: "12% watched",
-    icon: Brain,
-    color: "#8B5CF6",
-    iconBg: "#F3E8FF",
-  },
-  {
-    title: "COPD Acute Exacerbation",
-    category: "Respiratory",
-    watched: "3 days ago",
-    duration: "16:10",
-    status: "Completed",
-    icon: Stethoscope,
-    color: "#12BCE3",
-    iconBg: "#DDF7FB",
-  },
-  {
-    title: "Postpartum Hemorrhage",
-    category: "Maternal-Newborn",
-    watched: "4 days ago",
-    duration: "14:50",
-    status: "Completed",
-    icon: Baby,
-    color: "#FF5E96",
-    iconBg: "#FFE5EF",
-  },
-];
-
-export default function RecentlyWatched() {
+export default function RecentlyWatched({ watchedData = [] }) {
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-xl">
+    <div className="bg-white rounded-3xl p-6 shadow-xl h-full">
       <div className="flex justify-between mb-6">
         <h2 className="text-2xl font-medium">
           Recently watched
@@ -94,12 +25,24 @@ export default function RecentlyWatched() {
       </div>
 
       <div>
-        {watched.map((item) => (
+        {watchedData.map((item, index) => (
           <RecentlyWatchedCard
-            key={item.title}
-            {...item}
+            key={index}
+            icon={PlayCircle}
+            title={item.lesson}
+            category={item.module_name}
+            watched={new Date(item.watched_at).toLocaleDateString()}
+            duration={`${item.duration}m`}
+            status={item.status}
+            color="#FF5E96"
+            iconBg="#FFE5EF"
           />
         ))}
+        {watchedData.length === 0 && (
+          <div className="text-center text-gray-500 py-10">
+            No recently watched videos.
+          </div>
+        )}
       </div>
     </div>
   );

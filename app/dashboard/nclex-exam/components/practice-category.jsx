@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CURRICULUM, SAMPLE_QUESTIONS } from "./data";
 import ConfigureModal from "./configure-modal";
+import { IoMdArrowDropdown } from "react-icons/io";
 
 const CATEGORY_ICONS = {
   "fund-basics": (
@@ -51,7 +52,7 @@ export default function PracticeByCategorySection({ onStartExam, computeStats, a
           </p>
         </div>
 
-        {CURRICULUM.map((sec, si) => (
+        {CURRICULUM?.map((sec, si) => (
           <div key={sec.id} className="mb-4" style={{ animation: `fadeUp 0.3s ease ${si * 0.05}s both` }}>
             {/* Section header */}
             <button
@@ -65,19 +66,18 @@ export default function PracticeByCategorySection({ onStartExam, computeStats, a
                 {sec.categories.reduce((a, c) => a + c.subtopics.reduce((x, s) => x + s.count, 0), 0)} questions
               </span>
               <span
-                className={`text-[11px] text-[#475569] font-bold inline-block transition-transform duration-200 ${
-                  expandedSec[sec.id] ? "rotate-180" : ""
-                }`}
+                className={`text-[11px] text-[#475569] font-bold inline-block transition-transform duration-200 ${expandedSec[sec.id] ? "rotate-180" : ""
+                  }`}
               >
-                ▾
+                <IoMdArrowDropdown className="text-2xl" />
               </span>
             </button>
 
             {expandedSec[sec.id] && (
               <div className="flex flex-col gap-2">
-                {sec.categories.map((cat) => {
+                {sec?.categories?.map((cat) => {
                   const isOpen = expanded[cat.id];
-                  const catTotal = cat.subtopics.reduce((a, s) => a + s.count, 0);
+                  const catTotal = cat?.subtopics?.reduce((a, s) => a + s.count, 0);
                   const secColor = "#2C5F8D";
                   const secBg = "#eef4fb";
 
@@ -97,7 +97,7 @@ export default function PracticeByCategorySection({ onStartExam, computeStats, a
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-bold text-[#0f172a]">{cat.label}</div>
                           <div className="text-xs text-[#94a3b8] mt-0.5">
-                            {cat.subtopics.length} subtopics ·{" "}
+                            {cat?.subtopics?.length} subtopics ·{" "}
                             <span className="font-semibold" style={{ color: secColor }}>
                               {catTotal} questions
                             </span>
@@ -105,7 +105,7 @@ export default function PracticeByCategorySection({ onStartExam, computeStats, a
                         </div>
                       </div>
 
-                      {/* Action buttons */}
+                      {/* Practice all and practice by subtopic action buttons */}
                       <div
                         className="grid grid-cols-2 gap-px border-t"
                         style={{ borderColor: `${secColor}18` }}
@@ -140,32 +140,30 @@ export default function PracticeByCategorySection({ onStartExam, computeStats, a
                           }}
                         >
                           <span
-                            className={`text-[15px] inline-block transition-transform duration-200 ${
-                              isOpen ? "rotate-90" : ""
-                            }`}
+                            className={`text-[15px] inline-block transition-transform duration-200 ${isOpen ? "rotate-90" : ""
+                              }`}
                             style={{ color: isOpen ? secColor : "#94a3b8" }}
                           >
                             ☰
                           </span>
                           <div className="text-left">
-                            <div
+                            <h5
                               className="text-xs font-bold"
                               style={{ color: isOpen ? secColor : "#475569" }}
                             >
                               Practice by Subtopic
-                            </div>
-                            <div className="text-[10px] text-[#94a3b8] mt-0.5">
+                            </h5>
+                            <p className="text-[10px] text-[#94a3b8] mt-0.5">
                               {cat.subtopics.length} topics to choose from
-                            </div>
+                            </p>
                           </div>
-                          <span
-                            className={`ml-auto text-[10px] font-bold inline-block transition-transform duration-200 ${
-                              isOpen ? "rotate-180" : ""
-                            }`}
+                          <div
+                            className={`ml-auto text-[10px] font-bold inline-block transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                              }`}
                             style={{ color: isOpen ? secColor : "#94a3b8" }}
                           >
-                            ▾
-                          </span>
+                            <IoMdArrowDropdown className="text-2xl" />
+                          </div>
                         </button>
                       </div>
 
@@ -181,27 +179,27 @@ export default function PracticeByCategorySection({ onStartExam, computeStats, a
                             <span>Subtopic</span>
                             <span className="text-right">Questions</span>
                           </div>
-                          {cat.subtopics.map((sub, si) => (
+                          {cat?.subtopics?.map((sub, si) => (
                             <div
-                              key={sub.name}
+                              key={sub?.name}
                               className="grid grid-cols-[1fr_64px_110px] px-4 py-2.5 items-center gap-2 transition-colors cursor-pointer hover:bg-[#f8fbff] "
                               style={{
                                 borderBottom:
-                                  si < cat.subtopics.length - 1 ? "1px solid #f8fafc" : "none",
+                                  si < cat?.subtopics?.length - 1 ? "1px solid #f8fafc" : "none",
                               }}
                               onClick={() => launch(cat, sub)}
                             >
                               <div>
-                                <div className="text-[13px] font-semibold text-[#1e293b] mb-0.5">
-                                  {sub.name}
-                                </div>
-                                <div className="text-[11px] text-[#94a3b8] leading-relaxed">
-                                  {sub.desc}
-                                </div>
+                                <h6 className="text-[13px] font-semibold text-[#1e293b] mb-0.5">
+                                  {sub?.name ?? ""}
+                                </h6>
+                                <p className="text-[11px] text-[#94a3b8] leading-relaxed">
+                                  {sub?.desc ?? ""}
+                                </p>
                               </div>
                               <div className="text-right">
                                 <span className="text-[13px] font-bold" style={{ color: secColor }}>
-                                  {sub.count}
+                                  {sub?.count ?? ""}
                                 </span>
                                 <span className="text-[10px] text-[#94a3b8] ml-0.5">Qs</span>
                               </div>
@@ -258,4 +256,4 @@ export default function PracticeByCategorySection({ onStartExam, computeStats, a
       )}
     </div>
   );
-}
+};

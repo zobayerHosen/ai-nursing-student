@@ -1,13 +1,13 @@
-// components/dashboard-tabs/lesson-videos/TopicProgressCard.jsx
+import Image from "next/image";
 
 export default function TopicProgressCard({
+  logo,
   icon: Icon,
   title,
   completed,
   total,
-  progress,
-  color,
-  iconBg,
+  color = "#3B82F6", // default color if none provided
+  iconBg = "#E6F0FF",
 }) {
   return (
     <div className="space-y-3 ">
@@ -15,13 +15,17 @@ export default function TopicProgressCard({
         {/* Left */}
         <div className="flex items-center gap-3">
           <div
-            className="w-8 h-8 rounded-sm flex items-center justify-center"
+            className="w-8 h-8 rounded-sm flex items-center justify-center overflow-hidden relative"
             style={{ background: iconBg }}
           >
-            <Icon
-              size={17}
-              style={{ color }}
-            />
+            {logo ? (
+              <Image src={logo} alt={title} fill className="object-cover" />
+            ) : Icon ? (
+              <Icon
+                size={17}
+                style={{ color }}
+              />
+            ) : null}
           </div>
 
           <h3 className="font-semibold text-[#233043]">

@@ -17,7 +17,6 @@ const FlashCardSidebar = ({ onClose }) => {
 
     const [expandCategories, setExpandCategories] = useState(null);
 
-    // Calculate total decks (cards) and total questions
     let totalDecks = 0;
     let totalQuestions = 0;
 

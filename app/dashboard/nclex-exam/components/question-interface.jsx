@@ -233,9 +233,8 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
               {score.correct} of {score.total} correct
             </div>
             <div
-              className={`inline-flex items-center px-5.5 py-2 rounded-full font-bold text-sm ${
-                pass ? "bg-[#dcfce7] text-[#166534]" : "bg-[#fee2e2] text-[#991b1b]"
-              }`}
+              className={`inline-flex items-center px-5.5 py-2 rounded-full font-bold text-sm ${pass ? "bg-[#dcfce7] text-[#166534]" : "bg-[#fee2e2] text-[#991b1b]"
+                }`}
             >
               {pass ? "✓ Passing Score — Great work!" : "Keep Practicing — You're Getting There!"}
             </div>
@@ -303,12 +302,12 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                 {reviewFilter === "all"
                   ? "Full Question Review"
                   : reviewFilter === "correct"
-                  ? "Correct Answers"
-                  : reviewFilter === "incorrect"
-                  ? "Incorrect Answers"
-                  : reviewFilter === "flagged"
-                  ? "Flagged Questions"
-                  : "Skipped Questions"}
+                    ? "Correct Answers"
+                    : reviewFilter === "incorrect"
+                      ? "Incorrect Answers"
+                      : reviewFilter === "flagged"
+                        ? "Flagged Questions"
+                        : "Skipped Questions"}
               </div>
               <div className="text-xs text-[#94a3b8]">
                 {(() => {
@@ -378,7 +377,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                         const bubbleContent = unans ? i + 1 : isCorrect ? "✓" : isPartial ? `${credit.percent}%` : "✗";
                         return (
                           <div
-                            className="flex items-center justify-center font-bold flex-shrink-0"
+                            className="flex items-center justify-center font-bold shrink-0"
                             style={{
                               width: isPartial ? 40 : 32,
                               height: 32,
@@ -405,23 +404,23 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                               color: unans
                                 ? "#94a3b8"
                                 : isCorrect
-                                ? "#16a34a"
-                                : credit.points > 0
-                                ? "#d97706"
-                                : "#dc2626",
+                                  ? "#16a34a"
+                                  : credit.points > 0
+                                    ? "#d97706"
+                                    : "#dc2626",
                             }}
                           >
                             {unans
                               ? "Skipped"
                               : qq.type === "matrix"
-                              ? `${credit.points} of ${credit.max} rows correct`
-                              : qq.type === "cloze"
-                              ? `${credit.points} of ${credit.max} blanks correct`
-                              : qq.type === "fill-blank"
-                              ? String(userAns).trim() || "(empty)"
-                              : Array.isArray(userAns)
-                              ? userAns.map((ai) => LETTERS[ai]).join(", ")
-                              : qq.options[userAns]}
+                                ? `${credit.points} of ${credit.max} rows correct`
+                                : qq.type === "cloze"
+                                  ? `${credit.points} of ${credit.max} blanks correct`
+                                  : qq.type === "fill-blank"
+                                    ? String(userAns).trim() || "(empty)"
+                                    : Array.isArray(userAns)
+                                      ? userAns.map((ai) => LETTERS[ai]).join(", ")
+                                      : qq.options[userAns]}
                           </span>
                           {!isCorrect && !unans && qq.type !== "matrix" && qq.type !== "cloze" && (
                             <>
@@ -429,13 +428,13 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                               <span className="font-semibold text-[#16a34a]">
                                 {qq.type === "fill-blank"
                                   ? (() => {
-                                      const cfg = qq.blankInput || {};
-                                      const c = Array.isArray(cfg.correct) ? cfg.correct[0] : cfg.correct;
-                                      return `${c}${cfg.unit ? ` ${cfg.unit}` : ""}`;
-                                    })()
+                                    const cfg = qq.blankInput || {};
+                                    const c = Array.isArray(cfg.correct) ? cfg.correct[0] : cfg.correct;
+                                    return `${c}${cfg.unit ? ` ${cfg.unit}` : ""}`;
+                                  })()
                                   : Array.isArray(qq.correct)
-                                  ? qq.correct.map((ci) => LETTERS[ci]).join(", ")
-                                  : qq.options[qq.correct]}
+                                    ? qq.correct.map((ci) => LETTERS[ci]).join(", ")
+                                    : qq.options[qq.correct]}
                               </span>
                             </>
                           )}
@@ -446,7 +445,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                           )}
                         </div>
                       </div>
-                      {flagged[i] && <span className="text-amber-500 text-base flex-shrink-0">⚑</span>}
+                      {flagged[i] && <span className="text-amber-500 text-base shrink-0">⚑</span>}
                     </div>
 
                     <div className="ml-[46px]">
@@ -531,7 +530,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
               className="flex items-center gap-1.5 text-[13px] font-semibold whitespace-nowrap"
               style={{ color: timeLeft < 60 ? "#fecaca" : "white" }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                 <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
               </svg>
               <span>
@@ -541,7 +540,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
             </div>
           )}
           <div className="flex items-center gap-1.5 text-xs font-semibold opacity-95 whitespace-nowrap">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
               <rect x="4" y="5" width="16" height="16" rx="2" /><path d="M9 5V3h6v2" /><line x1="8" y1="11" x2="16" y2="11" /><line x1="8" y1="15" x2="13" y2="15" />
             </svg>
             <span>
@@ -562,7 +561,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
               color: "white",
             }}
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill={flagged[current] ? "#fde047" : "none"} stroke={flagged[current] ? "#fde047" : "white"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill={flagged[current] ? "#fde047" : "none"} stroke={flagged[current] ? "#fde047" : "white"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
               <path d="M4 21V4h13l-2 4 2 4H4" />
             </svg>
             <span className="whitespace-nowrap">{flagged[current] ? "FLAGGED" : "MARK FOR LATER"}</span>
@@ -664,8 +663,8 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                     const userPicks = Array.isArray(userAnswer)
                       ? userAnswer
                       : Array.isArray(selected)
-                      ? selected
-                      : [];
+                        ? selected
+                        : [];
                     const userPick = userPicks[blankIdx];
                     const correctOpt = blank.correct;
                     const isAnsweredNow = isAnswered;
@@ -691,8 +690,8 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                               wasCorrect
                                 ? "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 6l3 3 5-6' stroke='%2316a34a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")"
                                 : wasWrong
-                                ? "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M3 3l6 6m0-6l-6 6' stroke='%23FE5E7E' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")"
-                                : "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10' fill='none'%3E%3Cpath d='M2 4l3 3 3-3' stroke='%232C5F8D' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
+                                  ? "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M3 3l6 6m0-6l-6 6' stroke='%23FE5E7E' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")"
+                                  : "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10' fill='none'%3E%3Cpath d='M2 4l3 3 3-3' stroke='%232C5F8D' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
                             backgroundRepeat: "no-repeat",
                             backgroundPosition: "right 9px center",
                             WebkitAppearance: "none",
@@ -726,7 +725,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                 <table className="w-full border-collapse text-[13px]">
                   <thead>
                     <tr>
-                      <th className="bg-[#f8fafc] text-[#475569] px-3.5 py-2.5 text-center font-bold text-[11px] tracking-wide uppercase border-b border-[#e2e8f0] text-left w-[40%]">
+                      <th className="bg-[#f8fafc] text-[#475569] px-3.5 py-2.5 font-bold text-[11px] tracking-wide uppercase border-b border-[#e2e8f0] text-left w-[40%]">
                         {" "}
                       </th>
                       {q.matrixCols.map((col, ci) => (
@@ -744,8 +743,8 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                       const userPicks = Array.isArray(userAnswer)
                         ? userAnswer
                         : Array.isArray(selected)
-                        ? selected
-                        : [];
+                          ? selected
+                          : [];
                       const userPickedCol = userPicks[ri];
                       const correctCol = q.correct[ri];
                       const rowAnswered = isAnswered;
@@ -756,7 +755,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                             <div className="flex items-center">
                               <span className="flex-1">{row}</span>
                               {rowAnswered && (
-                                <span className="inline-flex items-center justify-center w-[18px] h-[18px] ml-1.5 flex-shrink-0">
+                                <span className="inline-flex items-center justify-center w-[18px] h-[18px] ml-1.5 shrink-0">
                                   {rowGotItRight ? (
                                     <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                       <path d="M4 10.5l4 4 8-9" />
@@ -798,14 +797,13 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                             return (
                               <td key={ci} className="p-0 border-b border-[#f1f5f9]">
                                 <div
-                                  className={`flex items-center justify-center py-2.5 px-2 cursor-pointer transition-colors min-h-[46px] ${cellBg} ${
-                                    rowAnswered ? "cursor-default" : "hover:bg-[#f3f6fa]"
-                                  }`}
+                                  className={`flex items-center justify-center py-2.5 px-2 cursor-pointer transition-colors min-h-[46px] ${cellBg} ${rowAnswered ? "cursor-default" : "hover:bg-[#f3f6fa]"
+                                    }`}
                                   style={{ borderLeft: "1px solid #f1f5f9" }}
                                   onClick={() => !rowAnswered && handleMatrixSelect(ri, ci)}
                                 >
                                   <div
-                                    className="w-[18px] h-[18px] rounded-full border flex items-center justify-center flex-shrink-0 transition-all bg-white"
+                                    className="w-[18px] h-[18px] rounded-full border flex items-center justify-center shrink-0 transition-all bg-white"
                                     style={{ borderColor: radioBg || "#cbd5e1" }}
                                   >
                                     <div
@@ -876,7 +874,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                           </span>
                         )}
                         {isAnsweredNow && (
-                          <span className="flex-shrink-0">
+                          <span className="shrink-0">
                             {isUserCorrect ? (
                               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M4 10.5l4 4 8-9" />
@@ -944,32 +942,30 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                       key={i}
                       disabled={isAnsweredNow}
                       onClick={() => handleSelect(i)}
-                      className={`w-full text-left px-3 py-2 rounded-lg border cursor-pointer font-sans text-sm font-normal transition-all flex items-start gap-2.5 leading-relaxed mb-0.5 text-[#1e293b] ${
-                        isAnsweredNow ? "cursor-default" : "hover:bg-[#f3f6fa]"
-                      } ${optBg} ${optBorder}`}
+                      className={`w-full text-left px-3 py-2 rounded-lg border cursor-pointer font-sans text-sm font-normal transition-all flex items-start gap-2.5 leading-relaxed mb-0.5 text-[#1e293b] ${isAnsweredNow ? "cursor-default" : "hover:bg-[#f3f6fa]"
+                        } ${optBg} ${optBorder}`}
                       style={{ borderColor: "transparent" }}
                     >
                       <div
-                        className={`flex-shrink-0 w-[18px] h-[18px] flex items-center justify-center mt-0.5 border transition-all bg-white ${
-                          isCheckbox ? "rounded" : "rounded-full"
-                        }`}
+                        className={`shrink-0 w-[18px] h-[18px] flex items-center justify-center mt-0.5 border transition-all bg-white ${isCheckbox ? "rounded" : "rounded-full"
+                          }`}
                         style={{
                           borderColor:
                             isAnsweredNow && isCorrectOpt
                               ? "#16a34a"
                               : isUserWrong
-                              ? "#FE5E7E"
-                              : isSelectedNow
-                              ? "#2C5F8D"
-                              : "#cbd5e1",
+                                ? "#FE5E7E"
+                                : isSelectedNow
+                                  ? "#2C5F8D"
+                                  : "#cbd5e1",
                           background:
                             isAnsweredNow && isCorrectOpt
                               ? "#16a34a"
                               : isUserWrong
-                              ? "#FE5E7E"
-                              : isSelectedNow && isCheckbox
-                              ? "#2C5F8D"
-                              : "white",
+                                ? "#FE5E7E"
+                                : isSelectedNow && isCheckbox
+                                  ? "#2C5F8D"
+                                  : "white",
                         }}
                       >
                         {isCheckbox ? (
@@ -997,14 +993,14 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                           {opt.slice(3)}
                         </span>
                         {isAnsweredNow && isCorrectOpt && (
-                          <span className="flex-shrink-0 text-[#16a34a] mt-0.5">
+                          <span className="shrink-0 text-[#16a34a] mt-0.5">
                             <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M4 10.5l4 4 8-9" />
                             </svg>
                           </span>
                         )}
                         {isUserWrong && (
-                          <span className="flex-shrink-0 text-[#FE5E7E] mt-0.5">
+                          <span className="shrink-0 text-[#FE5E7E] mt-0.5">
                             <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M5 5l10 10M15 5L5 15" />
                             </svg>
@@ -1069,7 +1065,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
         {/* Right - Rationale panel */}
         {revealed && (
           <div
-            className="w-[440px] flex-shrink-0 flex flex-col bg-white overflow-hidden animate-[slideInRight_0.25s_ease]"
+            className="w-[440px] shrink-0 flex flex-col bg-white overflow-hidden animate-[slideInRight_0.25s_ease]"
             style={{ borderLeft: "1px solid #e2e8f0" }}
           >
             <div className="flex-1 flex flex-col overflow-hidden">
@@ -1100,12 +1096,12 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                 }
                 return (
                   <div
-                    className="px-5 py-3.5 border-b border-[#f1f5f9] flex-shrink-0"
+                    className="px-5 py-3.5 border-b border-[#f1f5f9] shrink-0"
                     style={{ background: bannerBg }}
                   >
                     <div className="flex items-center gap-2.5">
                       <div
-                        className="w-[34px] h-[34px] rounded-lg flex items-center justify-center text-base flex-shrink-0"
+                        className="w-[34px] h-[34px] rounded-lg flex items-center justify-center text-base shrink-0"
                         style={{ background: iconBg }}
                       >
                         {icon}
@@ -1134,7 +1130,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
         {/* Navigator */}
         {showNav && (
           <div
-            className="w-[220px] bg-white border-l border-[#e2e8f0] p-4 overflow-auto flex-shrink-0 animate-[slideInRight_0.2s_ease]"
+            className="w-[220px] bg-white border-l border-[#e2e8f0] p-4 overflow-auto shrink-0 animate-[slideInRight_0.2s_ease]"
           >
             <div className="text-xs font-bold text-[#0f172a] mb-3">Navigator</div>
             <div className="grid grid-cols-5 gap-1.5 mb-3.5">
@@ -1149,23 +1145,22 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                     onClick={() => setCurrent(i)}
                     className="w-full aspect-square rounded-lg cursor-pointer text-[11px] font-bold transition-all relative"
                     style={{
-                      border: `2px solid ${
-                        isCur ? "#2C5F8D" : isAns ? (isCorr ? "#86efac" : "#fca5a5") : "#e2e8f0"
-                      }`,
+                      border: `2px solid ${isCur ? "#2C5F8D" : isAns ? (isCorr ? "#86efac" : "#fca5a5") : "#e2e8f0"
+                        }`,
                       background: isCur
                         ? "#eef4fb"
                         : isAns
-                        ? isCorr
-                          ? "#f0fdf4"
-                          : "#fff5f5"
-                        : "white",
+                          ? isCorr
+                            ? "#f0fdf4"
+                            : "#fff5f5"
+                          : "white",
                       color: isCur
                         ? "#2C5F8D"
                         : isAns
-                        ? isCorr
-                          ? "#16a34a"
-                          : "#dc2626"
-                        : "#94a3b8",
+                          ? isCorr
+                            ? "#16a34a"
+                            : "#dc2626"
+                          : "#94a3b8",
                     }}
                   >
                     {i + 1}
@@ -1185,7 +1180,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
               ].map(([bg, bdr, lbl]) => (
                 <div key={lbl} className="flex items-center gap-1.5 text-[11px] text-[#94a3b8]">
                   <div
-                    className="w-3 h-3 rounded-sm flex-shrink-0"
+                    className="w-3 h-3 rounded-sm shrink-0"
                     style={{ background: bg, border: `1.5px solid ${bdr}` }}
                   />
                   {lbl}
@@ -1219,7 +1214,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
             onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
               <path d="M16 17l5-5-5-5" /><line x1="21" y1="12" x2="9" y2="12" /><path d="M9 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4" />
             </svg>
             <span><u>E</u>nd</span>
@@ -1235,11 +1230,11 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
               }}
             >
               {paused ? (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" className="flex-shrink-0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" className="shrink-0">
                   <polygon points="6 4 20 12 6 20 6 4" />
                 </svg>
               ) : (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                   <line x1="9" y1="4" x2="9" y2="20" /><line x1="15" y1="4" x2="15" y2="20" />
                 </svg>
               )}
@@ -1261,7 +1256,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
               cursor: current === 0 ? "not-allowed" : "pointer",
             }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
               <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
             </svg>
             <span><u>P</u>revious</span>
@@ -1310,14 +1305,14 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
             {current < questions.length - 1 ? (
               <>
                 <span><u>N</u>ext</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                   <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
                 </svg>
               </>
             ) : (
               <>
                 <span><u>F</u>inish</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </>
@@ -1328,7 +1323,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
 
       {/* Pause overlay */}
       {paused && mode === "test" && (
-        <div className="absolute inset-0 bg-[#0f172a/92] z-[300] flex items-center justify-center backdrop-blur-lg">
+        <div className="absolute inset-0 bg-[#0f172a/92] z-300 flex items-center justify-center backdrop-blur-lg">
           <div className="text-center" style={{ animation: "scaleIn 0.2s ease" }}>
             <div className="text-[64px] mb-3.5">⏸</div>
             <div className="text-2xl font-extrabold text-white mb-1.5 font-serif">Exam Paused</div>
@@ -1348,11 +1343,11 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
 
       {/* Calculator */}
       {showCalc && (
-        <div className="absolute z-[200] top-[92px]" style={{ right: showNav ? 250 : 16, animation: "scaleIn 0.2s ease" }}>
+        <div className="absolute z-200 top-[92px]" style={{ right: showNav ? 250 : 16, animation: "scaleIn 0.2s ease" }}>
           <div className="relative">
             <button
               onClick={() => setShowCalc(false)}
-              className="absolute -top-2 -right-2 w-[22px] h-[22px] rounded-full bg-red-500 border-2 border-white text-white text-[11px] cursor-pointer flex items-center justify-center font-bold z-[201] shadow-[0_2px_6px_rgba(0,0,0,0.2)]"
+              className="absolute -top-2 -right-2 w-[22px] h-[22px] rounded-full bg-red-500 border-2 border-white text-white text-[11px] cursor-pointer flex items-center justify-center font-bold z-201 shadow-[0_2px_6px_rgba(0,0,0,0.2)]"
             >
               ✕
             </button>
@@ -1392,7 +1387,7 @@ function ExitConfirmOverlay({ onCancel, onConfirm }) {
           💡 If you'd like to spend more time reviewing your rationales, click Cancel — there's no time limit on the review screen.
         </div>
         <div className="bg-[#fef2f2] border border-[#fecaca] rounded-lg px-3.5 py-2.5 mb-4.5 text-xs text-[#7f1d1d] leading-relaxed flex gap-2 items-start">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
             <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
           <span><strong>Account Integrity Notice:</strong> Sharing exam content, taking screenshots, downloading, copying, or pasting any part of this exam will result in <strong>permanent termination of your account</strong> with no refund.</span>
@@ -1414,4 +1409,4 @@ function ExitConfirmOverlay({ onCancel, onConfirm }) {
       </div>
     </div>
   );
-}
+};
