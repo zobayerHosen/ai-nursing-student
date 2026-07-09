@@ -28,7 +28,7 @@ const SuccessContent = () => {
                     </Link>
                     <Link
                         href="/dashboard"
-                        className="text-sm font-semibold text-[#2c5f8d] hover:text-[#0b2447] transition-colors"
+                        className="text-sm font-semibold text-primary hover:text-[#0b2447] transition-colors"
                     >
                         Go to Dashboard →
                     </Link>
@@ -101,7 +101,7 @@ const SuccessContent = () => {
                                 transition={{ delay: 0.45, duration: 0.5 }}
                                 className="bg-[#EAEFF4]/60 rounded-2xl p-5 mb-8 text-left border border-[rgba(11,36,71,0.06)]"
                             >
-                                <h4 className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#4a5568] mb-3">
+                                <h4 className="text-[11px] font-bold tracking-widest uppercase text-[#4a5568] mb-3">
                                     Order Summary
                                 </h4>
                                 <div className="space-y-2.5">
