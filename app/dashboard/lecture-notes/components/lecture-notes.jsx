@@ -8,7 +8,6 @@ import Highlight from '@tiptap/extension-highlight';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import ImageExtension from '@tiptap/extension-image';
-import Sidebar from './sidebar';
 import Toolbar from './toolbar';
 import NoteCanvas from './note-canvas';
 import SaveNameModal from './save-name-modal';
@@ -26,6 +25,7 @@ import {
   useUpdateNote,
   useFormatNoteWithAI,
 } from '@/hooks/interactive-tools/lecture-notes.hook';
+import LectureNotesSidebar from './lecture-notes-sidebar';
 
 export default function LectureNotes() {
   const [activeTab, setActiveTab] = useState('upload');
@@ -370,7 +370,7 @@ export default function LectureNotes() {
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        <Sidebar
+        <LectureNotesSidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           onConvert={handleConvert}

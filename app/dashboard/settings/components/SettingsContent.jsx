@@ -2,13 +2,14 @@
 
 import React, { useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { User, CreditCard, Lock, Bell } from "lucide-react";
+import { User, CreditCard, Lock, Bell, DollarSign } from "lucide-react";
 
 // Sub-components
 import GeneralSettings from "./GeneralSettings";
 import PaymentBillingSettings from "./PaymentBillingSettings";
 import PasswordSettings from "./user-profile/PasswordSettings";
 import NotificationSettings from "./NotificationSettings";
+import PricingPage from "@/app/(root)/components/pricing/pricing";
 
 export default function SettingsContent() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function SettingsContent() {
 
   const tabs = [
     { id: "general", label: "General", icon: <User size={16} /> },
+    { id: "subscription-billing", label: "Subscription Billing", icon: <DollarSign size={16} /> },
     { id: "payment-billing", label: "Payment & Billing", icon: <CreditCard size={16} /> },
     { id: "password", label: "Password", icon: <Lock size={16} /> },
     { id: "notifications", label: "Notifications", icon: <Bell size={16} /> },
@@ -34,8 +36,10 @@ export default function SettingsContent() {
     switch (activeTab) {
       case "general":
         return <GeneralSettings />;
+      case "subscription-billing":
+        return <PricingPage />;
       case "payment-billing":
-        return <PaymentBillingSettings />;
+        return <PaymentBillingSettings />;  
       case "password":
         return <PasswordSettings />;
       case "notifications":

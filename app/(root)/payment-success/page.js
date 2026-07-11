@@ -140,8 +140,8 @@ const SuccessContent = () => {
                                 <ArrowRight className="w-4 h-4" />
                             </Link>
                             <Link
-                                href="/dashboard/subscription-plan"
-                                className="flex-1 flex items-center justify-center gap-2 bg-white text-[#0b2447] border border-[rgba(11,36,71,0.16)] py-3.5 px-6 rounded-xl font-semibold text-sm transition-all duration-200 hover:bg-[rgba(11,36,71,0.04)] hover:border-[#0b2447] active:scale-[0.98]"
+                                href="/dashboard/settings?tab=subscription-billing"
+                                className="flex-1 flex-row flex items-center justify-center gap-2 bg-white text-[#0b2447] border border-[rgba(11,36,71,0.16)] py-3.5 px-6 rounded-xl font-semibold text-sm transition-all duration-200 hover:bg-[rgba(11,36,71,0.04)] hover:border-[#0b2447] active:scale-[0.98]"
                             >
                                 View Subscription
                             </Link>
