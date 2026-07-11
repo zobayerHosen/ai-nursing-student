@@ -293,7 +293,6 @@ export function RationaleBlock({ question, userAnswer }) {
             </div>
           </div>
         )}
-
         {/* Why Others Fail */}
         <div>
           <div className="flex items-center gap-2.5 mb-2.5">
@@ -477,7 +476,6 @@ export function RationaleBlock({ question, userAnswer }) {
     </div>
   );
 }
-
 // ═══════════════════════════════════════════════════════
 // QUESTION STATS
 // ═══════════════════════════════════════════════════════
@@ -548,4 +546,4 @@ export function QuestionStats({ question }) {
       </div>
     </div>
   );
-}
+};

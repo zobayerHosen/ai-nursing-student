@@ -71,3 +71,9 @@ body {
   box-shadow: none !important;
   border: none;
 }
+
+
+/* Note: react-flow attribution */
+.react-flow__attribution a {
+    display: none;
+}

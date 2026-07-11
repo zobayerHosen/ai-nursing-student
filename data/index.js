@@ -1197,41 +1197,41 @@ export const faqSections = [
 export const platformLinks = [
   {
     title: "NCLEX Prep",
-    href: "/nclex-prep",
+    href: "#",
   },
   {
     title: "Flashcards",
-    href: "/flashcards",
+    href: "#",
   },
   {
     title: "CARA AI Tutor",
-    href: "/cara-ai-tutor",
+    href: "#",
   },
   {
     title: "Study Notes",
-    href: "/study-notes",
+    href: "#",
   },
 ];
 
 export const companyLinks = [
   {
     title: "About Us",
-    href: "/about-us",
+    href: "#",
   },
   {
     title: "Blog",
-    href: "/blog",
+    href: "#",
   },
   {
     title: "Pricing",
-    href: "/pricing",
+    href: "#",
   },
 ];
 
 export const legalLinks = [
   {
     title: "Terms of Use",
-    href: "/terms-of-use",
+    href: "/terms-conditions",
   },
   {
     title: "Privacy Policy",
@@ -1239,11 +1239,11 @@ export const legalLinks = [
   },
   {
     title: "CA Residents",
-    href: "/ca-residents",
+    href: "#",
   },
   {
     title: "HIPAA Notice",
-    href: "/hipaa-notice",
+    href: "#",
   },
 ];
 
