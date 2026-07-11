@@ -87,7 +87,7 @@ function SwipeableNoteItem({
             : 'bg-[#F8F9FA] hover:bg-[#E9F0F7] border-transparent'
         }`}
       >
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
           currentNoteId === note.id
             ? 'bg-[#2B5C8F] text-white'
             : 'bg-[#E3ECF5]/60 text-[#2B5C8F]'
@@ -110,7 +110,7 @@ function SwipeableNoteItem({
         </div>
 
         {/* Drag Handle indicator */}
-        <div className="opacity-0 group-hover:opacity-40 transition-opacity self-center flex-shrink-0 text-gray-400 px-1 cursor-grab active:cursor-grabbing">
+        <div className="opacity-0 group-hover:opacity-40 transition-opacity self-center shrink-0 text-gray-400 px-1 cursor-grab active:cursor-grabbing">
           <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-4">
             <circle cx="2" cy="2" r="1.5" fill="currentColor"/>
             <circle cx="2" cy="8" r="1.5" fill="currentColor"/>
@@ -125,7 +125,7 @@ function SwipeableNoteItem({
   );
 }
 
-export default function Sidebar({
+export default function LectureNotesSidebar({
   activeTab,
   setActiveTab,
   onConvert,

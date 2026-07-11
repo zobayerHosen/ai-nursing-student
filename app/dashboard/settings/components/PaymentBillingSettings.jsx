@@ -84,7 +84,7 @@ export default function PaymentBillingSettings() {
                     </button>
 
                     <Link
-                      href={"/dashboard/subscription-plan"}
+                      href={"/dashboard/settings?tab=subscription-billing"}
                       className="bg-[#2C5F8D] hover:bg-[#224b70] text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-sm active:scale-95 transition-all cursor-pointer"
                     >
                       Switch Plan

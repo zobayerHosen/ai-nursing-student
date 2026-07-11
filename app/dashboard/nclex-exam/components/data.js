@@ -770,7 +770,7 @@ export const RATIONALE_IMAGES = {
       <text x="101" y="60" font-size="9" fill="white" font-weight="700">K &lt; 3.5 → HOLD digoxin</text>
       <rect x="168" y="46" width="272" height="20" fill="#16a34a" rx="0 10 10 0"/>
       <text x="280" y="60" font-size="9" fill="white" font-weight="700">K ≥ 3.5 → Safe to administer</text>
-      <line x1="154" y1="38" x2="154" y2="72" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="4"/>
+      <line x1="154" y1="38" x2="154" y2="72" stroke="#7c3aed" strokeWidth="2.5" stroke-dasharray="4"/>
       <text x="156" y="36" font-size="10" font-weight="700" fill="#7c3aed">Patient: 3.1 ⚠</text>
       <text x="100" y="80" font-size="9" fill="#64748b">2.5</text>
       <text x="236" y="80" font-size="9" fill="#64748b">3.5 (threshold)</text>

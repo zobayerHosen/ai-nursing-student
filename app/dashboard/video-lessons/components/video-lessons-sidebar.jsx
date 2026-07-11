@@ -10,8 +10,9 @@ const SidebarContent = ({ onClose }) => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { modulesData, isLoading } = useGetModules();
-
+    
     const modules = modulesData?.modules || [];
+    console.log("Modules data", modules)
     const currentModuleId = searchParams.get("moduleId");
 
     const handleCategoryClick = (moduleId) => {
@@ -57,7 +58,6 @@ const SidebarContent = ({ onClose }) => {
                     if (!moduleData) return null;
 
                     const isActive = String(currentModuleId) === String(moduleData?.id);
-                    const videoCount = moduleData?.videos?.length || 0;
 
                     return (
                         <div
@@ -95,7 +95,9 @@ const SidebarContent = ({ onClose }) => {
 
                                             <div className="flex items-center gap-2 mt-1">
                                                 <p className="text-xs text-[#7A7A7A]">
-                                                    {moduleData?.total_topic || `${videoCount} video${videoCount !== 1 ? "s" : ""}`}
+                                                    {moduleItem?.video_progress?.watched_count} /
+                                                    {moduleItem?.video_progress?.total_videos}
+                                                    
                                                 </p>
                                             </div>
                                         </div>

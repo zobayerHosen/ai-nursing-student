@@ -9,8 +9,8 @@ import min_logo from "@/public/assets/mini_logo.png";
 import { usePathname } from "next/navigation";
 import { sidebarData } from "@/dummydata";
 import { IoClose } from "react-icons/io5";
-import { ArrowBigDownDash, LogOut } from "lucide-react";
-import { useState } from "react";
+import { ArrowBigDownDash, LogOut, ChevronDown, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Modal } from "antd";
 import { useLogout } from "@/hooks";
 import LoadingIcon from "@/components/loading-icon";
@@ -19,6 +19,25 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
     const { logout, isPending } = useLogout();
     const pathname = usePathname();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const [expandedItems, setExpandedItems] = useState({});
+
+    useEffect(() => {
+        const newExpanded = {};
+        sidebarData?.forEach((section) => {
+            section.items?.forEach((item) => {
+                if (item.subItems) {
+                    const isSubActive = item.subItems.some(sub => 
+                        pathname === sub.href || (sub.href !== "/dashboard" && pathname.startsWith(sub.href + "/"))
+                    );
+                    const isParentActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href + "/"));
+                    if (isSubActive || isParentActive) {
+                        newExpanded[item.name] = true;
+                    }
+                }
+            });
+        });
+        setExpandedItems(newExpanded);
+    }, [pathname]);
 
     return (
         <>
@@ -85,24 +104,30 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                                 {/* INTERACTIVE AI TOOLS DESIGN */}
                                 <div
                                     className={
-                                        section.title === "INTERACTIVE TOOLS"
+                                        section.title === "AI TOOLS"
                                             ? `grid ${collapsed ? "grid-cols-1 gap-1" : "grid-cols-2 gap-3"}`
                                             : "space-y-1"
                                     }
                                 >
                                     {section.items.map((item, index) => {
-                                        const isActive =
+                                        const isParentActive =
                                             pathname === item.href ||
                                             (item.href !== "/dashboard" &&
                                                 pathname.startsWith(item.href + "/"));
+                                        const isAnySubActive = item.subItems?.some(subItem =>
+                                            pathname === subItem.href ||
+                                            (subItem.href !== "/dashboard" &&
+                                                pathname.startsWith(subItem.href + "/"))
+                                        );
+                                        const isActive = isParentActive || isAnySubActive;
 
                                         return (
-                                            <div key={index}>
+                                            <div key={index} className="flex flex-col w-full">
                                                 {item.button ? (
                                                     <button
                                                         onClick={() => setShowLogoutModal(true)}
                                                         className={
-                                                            section.title === "INTERACTIVE TOOLS"
+                                                            section.title === "AI TOOLS"
                                                                 ? `w-full flex flex-col items-center justify-center text-center border border-[#E5E7EB] hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 ${collapsed ? "gap-0 h-10 border-0" : "h-22 px-2 rounded-2xl"}`
                                                                 : `cursor-pointer w-full flex items-center p-3 transition-all duration-200 ${collapsed ? "gap-0 h-10 justify-center" : "gap-3"} hover:bg-gray-100 text-[#424242]`
                                                         }
@@ -118,7 +143,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                                                         {!collapsed && (
                                                             <span
                                                                 className={
-                                                                    section.title === "INTERACTIVE TOOLS"
+                                                                    section.title === "AI TOOLS"
                                                                         ? "text-[11px] leading-4 font-medium text-[#555555]"
                                                                         : "text-sm font-medium"
                                                                 }
@@ -128,45 +153,132 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                                                         )}
                                                     </button>
                                                 ) : (
-                                                    <Link
-                                                        key={index}
-                                                        href={item.href}
-                                                        title={item.name}
-                                                        onClick={() => setIsSidebarOpen(false)}
-                                                        className={
-                                                            section.title === "INTERACTIVE TOOLS"
-                                                                ? `flex flex-col items-center justify-center text-center border border-[#E5E7EB] hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 ${collapsed ? "gap-0 h-10 border-0" : "h-22 px-2 rounded-2xl"} ${isActive ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary" : ""}`
-                                                                : `flex items-center p-3 transition-all duration-200 ${collapsed ? "gap-0 h-10 justify-center" : "gap-3"} ${isActive
-                                                                    ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary"
-                                                                    : "hover:bg-gray-100 text-[#424242]"
-                                                                }`
-                                                        }
-                                                    >
-                                                        {/* Icon */}
-                                                        <div
-                                                            className={`flex items-center justify-center shrink-0 ${section.title === "INTERACTIVE TOOLS"
-                                                                ? `${isActive ? "text-primary" : "text-[#7B7B7B]"} [&_svg_path]:fill-current ${collapsed ? "mb-0" : "mb-1"} font-semibold`
-                                                                : isActive
-                                                                    ? "text-primary [&_svg_path]:fill-current"
-                                                                    : "text-[#7B7B7B] [&_svg_path]:fill-current"
-                                                                } [&_svg]:w-5 [&_svg]:h-5`}
+                                                    <>
+                                                        <Link
+                                                            href={item.href}
+                                                            title={item.name}
+                                                            onClick={() => setIsSidebarOpen(false)}
+                                                            className={
+                                                                section.title === "AI TOOLS"
+                                                                    ? `flex flex-col items-center justify-center text-center border border-[#E5E7EB] hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 ${collapsed ? "gap-0 h-10 border-0" : "h-22 px-2 rounded-2xl"} ${isActive ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary" : ""}`
+                                                                    : `flex items-center transition-all duration-200 ${collapsed ? "p-3 h-10 justify-center gap-0" : "p-3 gap-3 justify-between"} ${isActive
+                                                                        ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary"
+                                                                        : "hover:bg-gray-100 text-[#424242]"
+                                                                    }`
+                                                            }
                                                         >
-                                                            {item.icon}
-                                                        </div>
+                                                            <div className={`${section.title === "AI TOOLS" ? "flex flex-col items-center gap-1" : "flex items-center gap-3"}`}>
+                                                                {/* Icon */}
+                                                                <div
+                                                                    className={`flex items-center justify-center shrink-0 ${section.title === "AI TOOLS"
+                                                                        ? `${isActive ? "text-primary" : "text-[#7B7B7B]"} [&_svg_path]:fill-current ${collapsed ? "mb-0" : "mb-1"} font-semibold`
+                                                                        : isActive
+                                                                            ? "text-primary [&_svg_path]:fill-current"
+                                                                            : "text-[#7B7B7B] [&_svg_path]:fill-current"
+                                                                        } [&_svg]:w-5 [&_svg]:h-5`}
+                                                                >
+                                                                    {item.icon}
+                                                                </div>
 
-                                                        {/* Text */}
-                                                        {!collapsed && (
-                                                            <span
-                                                                className={
-                                                                    section.title === "INTERACTIVE TOOLS"
-                                                                        ? "text-[11px] leading-4 font-medium text-[#555555]"
-                                                                        : "text-sm font-medium"
-                                                                }
-                                                            >
-                                                                {item.name}
-                                                            </span>
+                                                                {/* Text */}
+                                                                {!collapsed && (
+                                                                    <span
+                                                                        className={
+                                                                            section.title === "AI TOOLS"
+                                                                                ? "text-[11px] leading-4 font-medium text-[#555555]"
+                                                                                : "text-sm font-medium"
+                                                                        }
+                                                                    >
+                                                                        {item.name}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Chevron for sub-items */}
+                                                            {item.subItems && !collapsed && (
+                                                                <span
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        setExpandedItems(prev => ({
+                                                                            ...prev,
+                                                                            [item.name]: !prev[item.name]
+                                                                        }));
+                                                                    }}
+                                                                    className="p-1 hover:bg-black/5 rounded transition-colors ml-auto flex items-center justify-center text-gray-400 hover:text-gray-600"
+                                                                >
+                                                                    {expandedItems[item.name] ? (
+                                                                        <ChevronDown size={16} />
+                                                                    ) : (
+                                                                        <ChevronRight size={16} />
+                                                                    )}
+                                                                </span>
+                                                            )}
+                                                        </Link>
+
+                                                        {/* Sub Items - Expanded view */}
+                                                        {item.subItems && expandedItems[item.name] && !collapsed && (
+                                                            <div className="ml-6.5 mt-1 mb-2 space-y-1 border-l border-[#DFE1E7] pl-3">
+                                                                {item.subItems.map((subItem, subIndex) => {
+                                                                    const isSubActive =
+                                                                        pathname === subItem.href ||
+                                                                        (subItem.href !== "/dashboard" &&
+                                                                            pathname.startsWith(subItem.href + "/"));
+
+                                                                    return (
+                                                                        <Link
+                                                                            key={subIndex}
+                                                                            href={subItem.href}
+                                                                            title={subItem.name}
+                                                                            onClick={() => setIsSidebarOpen(false)}
+                                                                            className={`flex items-center gap-2.5 p-2 rounded-lg text-[13px] font-medium transition-all duration-200 ${isSubActive
+                                                                                ? "bg-[rgba(44,95,141,0.05)] text-primary"
+                                                                                : "hover:bg-gray-100 text-[#555555] hover:text-[#2C5F8D]"
+                                                                            }`}
+                                                                        >
+                                                                            <div
+                                                                                className={`flex items-center justify-center shrink-0 ${isSubActive ? "text-primary" : "text-[#7B7B7B]"} [&_svg_path]:fill-current [&_svg]:w-4.5 [&_svg]:h-4.5`}
+                                                                            >
+                                                                                {subItem.icon}
+                                                                            </div>
+                                                                            <span>{subItem.name}</span>
+                                                                        </Link>
+                                                                    );
+                                                                })}
+                                                            </div>
                                                         )}
-                                                    </Link>
+
+                                                        {/* Sub Items - Collapsed view (show as flat icon-only items) */}
+                                                        {item.subItems && collapsed && (
+                                                            <>
+                                                                {item.subItems.map((subItem, subIndex) => {
+                                                                    const isSubActive =
+                                                                        pathname === subItem.href ||
+                                                                        (subItem.href !== "/dashboard" &&
+                                                                            pathname.startsWith(subItem.href + "/"));
+
+                                                                    return (
+                                                                        <Link
+                                                                            key={`collapsed-${subIndex}`}
+                                                                            href={subItem.href}
+                                                                            title={subItem.name}
+                                                                            onClick={() => setIsSidebarOpen(false)}
+                                                                            className={`flex items-center transition-all duration-200 p-3 h-10 justify-center gap-0 ${isSubActive
+                                                                                ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary"
+                                                                                : "hover:bg-gray-100 text-[#424242]"
+                                                                            }`}
+                                                                        >
+                                                                            <div
+                                                                                className={`flex items-center justify-center shrink-0 ${isSubActive ? "text-primary [&_svg_path]:fill-current" : "text-[#7B7B7B] [&_svg_path]:fill-current"} [&_svg]:w-5 [&_svg]:h-5`}
+                                                                            >
+                                                                                {subItem.icon}
+                                                                            </div>
+                                                                        </Link>
+                                                                    );
+                                                                })}
+                                                            </>
+                                                        )}
+                                                    </>
                                                 )}
                                             </div>
                                         );
