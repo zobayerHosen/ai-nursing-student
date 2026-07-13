@@ -3,7 +3,81 @@
 @import "tailwindcss";
 
 @theme inline {
+  /* ─── Primary Brand Colors ─────────────────────────────── */
   --color-primary: #2c5f8d;
+  --color-primary-50: #eef4f9;
+  --color-primary-100: #d4e2f0;
+  --color-primary-200: #aecce5;
+  --color-primary-300: #7bafd4;
+  --color-primary-400: #4d92c0;
+  --color-primary-500: #2c5f8d;
+  --color-primary-600: #234d73;
+  --color-primary-700: #1c3d5c;
+  --color-primary-800: #162f47;
+  --color-primary-900: #0f2031;
+
+  /* ─── Accent Colors ───────────────────────────────────── */
+  --color-accent-coral: #e14564;
+  --color-accent-coral-50: #fdeef1;
+  --color-accent-coral-100: #f9d4dc;
+  --color-accent-coral-200: #f4a9b9;
+  --color-accent-coral-300: #ee7d96;
+  --color-accent-coral-400: #e85273;
+  --color-accent-coral-500: #e14564;
+
+  --color-accent-amber: #d97706;
+  --color-accent-amber-50: #fef5e7;
+  --color-accent-amber-100: #fde3b8;
+  --color-accent-amber-200: #fbd189;
+  --color-accent-amber-300: #f9bf5a;
+  --color-accent-amber-400: #f7ad2b;
+  --color-accent-amber-500: #d97706;
+
+  --color-accent-teal: #0d9488;
+  --color-accent-teal-50: #edfafa;
+  --color-accent-teal-100: #c8eeed;
+  --color-accent-teal-200: #a1e0de;
+  --color-accent-teal-300: #5bb9b4;
+  --color-accent-teal-400: #2da39d;
+  --color-accent-teal-500: #0d9488;
+
+  --color-accent-violet: #7c3aed;
+  --color-accent-violet-50: #f5f3ff;
+  --color-accent-violet-100: #ede9fe;
+  --color-accent-violet-200: #ddd6fe;
+  --color-accent-violet-300: #c4b5fd;
+  --color-accent-violet-400: #a78bfa;
+  --color-accent-violet-500: #7c3aed;
+
+  /* ─── Semantic Colors ─────────────────────────────────── */
+  --color-success: #059669;
+  --color-success-50: #f0fdf6;
+  --color-success-100: #d1fae5;
+  --color-warning: #d97706;
+  --color-warning-50: #fefce8;
+  --color-warning-100: #fef9c3;
+  --color-error: #dc2626;
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-info: #0284c7;
+  --color-info-50: #f0f9ff;
+  --color-info-100: #e0f2fe;
+
+  /* ─── Surface & Background ────────────────────────────── */
+  --color-surface: #f6f8fa;
+  --color-surface-card: #ffffff;
+  --color-surface-hover: #f0f3f7;
+  --color-border: #e2e5ea;
+  --color-border-light: #eef1f5;
+
+  /* ─── Text Colors ─────────────────────────────────────── */
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-text-tertiary: #9ca3af;
+  --color-text-disabled: #d1d5db;
+  --color-text-on-primary: #ffffff;
+
+  /* ─── Fonts ────────────────────────────────────────────── */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
