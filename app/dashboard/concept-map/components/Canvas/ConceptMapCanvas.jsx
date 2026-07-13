@@ -200,13 +200,13 @@ export default function ConceptMapCanvas({
             return '#CBD5E1';
           }}
           maskColor="rgba(241, 245, 249, 0.6)"
-          className="!bg-white/90 !border !border-slate-200 !rounded-xl !shadow-md"
+          className="bg-white/90! border! border-slate-200! rounded-xl! shadow-md!"
           style={{ width: 180, height: 120 }}
         />
 
         {/* Controls */}
         <Controls
-          className="!bg-white/90 !border !border-slate-200 !rounded-xl !shadow-md !backdrop-blur-sm"
+          className="bg-white/90 border! border-slate-200! rounded-xl! shadow-md! backdrop-blur-sm!"
           showInteractive={false}
         />
       </ReactFlow>

@@ -484,7 +484,7 @@ export default function CalendarsToolShell() {
   // ════════════════════════════════════════════════════════════════════════
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f8fafd] via-white to-[#eef5fb]">
+    <div className="min-h-screen bg-linear-to-br from-[#f8fafd] via-white to-[#eef5fb]">
       {/* Background decorative elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
@@ -496,7 +496,7 @@ export default function CalendarsToolShell() {
         {/* ─── HEADER */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/20">
+            <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/20">
               <Calendar className="text-white" size={22} />
             </div>
             <div>
@@ -1036,7 +1036,7 @@ export default function CalendarsToolShell() {
                   )}
                 </div>
 
-                {/* ─── Add Event Form ─────────────────────── */}
+                {/* ─── Add Event Form */}
                 {showAddEventForm && selectedDate && (
                   <div className="mb-4 p-4 rounded-2xl bg-linear-to-br from-primary/4 to-blue-50/50 border border-primary/10">
                     <div className="space-y-3">

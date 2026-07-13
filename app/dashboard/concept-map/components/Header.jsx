@@ -6,13 +6,12 @@
 'use client';
 
 import React from 'react';
-import { GitFork, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export default function Header({
   mapTitle,
   onTitleChange,
   onHistoryOpen,
-  onShareOpen,
   onExport,
   nodeCount,
   edgeCount,
@@ -22,9 +21,6 @@ export default function Header({
       <div className="flex items-center justify-between max-w-full mx-auto">
         {/* Left: Logo + Title Editor */}
         <div className="flex items-center gap-3 min-w-0">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-linear-to-br from-blue-600 to-indigo-600 shadow-lg shadow-indigo-500/20 flex-none">
-            <GitFork className="w-4.5 h-4.5 text-white" />
-          </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <input
@@ -56,40 +52,20 @@ export default function Header({
           {/* My Maps */}
           <button
             onClick={onHistoryOpen}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
-                       border border-slate-200 bg-white text-slate-600
-                       hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm cursor-pointer"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"
-                 strokeLinecap="round" strokeLinejoin="round">
+              strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
               <path d="M21 3v5h-5M12 7v5l3 3" />
             </svg>
             My Maps
           </button>
 
-          {/* Share */}
-          <button
-            onClick={onShareOpen}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
-                       border border-slate-200 bg-white text-slate-600
-                       hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm cursor-pointer"
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="18" cy="5" r="3" />
-              <circle cx="6" cy="12" r="3" />
-              <circle cx="18" cy="19" r="3" />
-              <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" />
-            </svg>
-            Share
-          </button>
-
           {/* Export PDF */}
           <button
             onClick={onExport}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
-                       bg-rose-600 text-white border border-rose-600
-                       hover:bg-rose-500 transition-all shadow-md shadow-rose-600/10 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 text-white border border-rose-600 hover:bg-rose-500 transition-all shadow-md shadow-rose-600/10 cursor-pointer"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />

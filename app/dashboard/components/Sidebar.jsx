@@ -330,7 +330,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                     </div>
 
                     {/* Title */}
-                    <h2 className="text-xl font-semibold text-[#111827] mb-2">
+                    <h2 className="text-xl font-semibold text-text-primary mb-2">
                         Logout
                     </h2>
 
