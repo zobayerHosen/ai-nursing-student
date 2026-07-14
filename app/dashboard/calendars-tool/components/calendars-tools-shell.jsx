@@ -308,7 +308,7 @@ export default function CalendarsToolShell() {
 
     // Read file for preview metadata
     const reader = new FileReader();
-    reader.onload = () => {};
+    reader.onload = () => { };
     reader.readAsArrayBuffer(file);
   }, []);
 
@@ -453,12 +453,12 @@ export default function CalendarsToolShell() {
 
     const timeStr = newEvent.time
       ? (() => {
-          const [h, m] = newEvent.time.split(":");
-          const hour = parseInt(h);
-          const ampm = hour >= 12 ? "PM" : "AM";
-          const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-          return `${hour12}:${m} ${ampm}`;
-        })()
+        const [h, m] = newEvent.time.split(":");
+        const hour = parseInt(h);
+        const ampm = hour >= 12 ? "PM" : "AM";
+        const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+        return `${hour12}:${m} ${ampm}`;
+      })()
       : "9:00 AM";
 
     const newEv = {
@@ -567,13 +567,12 @@ export default function CalendarsToolShell() {
                     return (
                       <div key={step.id} className="flex items-center gap-3">
                         <div
-                          className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${
-                            isDone
-                              ? "bg-emerald-100 text-emerald-600"
-                              : isActive
+                          className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${isDone
+                            ? "bg-emerald-100 text-emerald-600"
+                            : isActive
                               ? "bg-primary/10 text-primary ring-2 ring-primary/30"
                               : "bg-gray-100 text-gray-300"
-                          }`}
+                            }`}
                         >
                           {isDone ? (
                             <CheckCircle size={14} />
@@ -584,13 +583,12 @@ export default function CalendarsToolShell() {
                           )}
                         </div>
                         <span
-                          className={`text-xs font-medium transition-colors ${
-                            isDone
-                              ? "text-gray-500"
-                              : isActive
+                          className={`text-xs font-medium transition-colors ${isDone
+                            ? "text-gray-500"
+                            : isActive
                               ? "text-primary font-semibold"
                               : "text-gray-300"
-                          }`}
+                            }`}
                         >
                           {step.label}
                         </span>
@@ -618,11 +616,10 @@ export default function CalendarsToolShell() {
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onClick={() => fileInputRef.current?.click()}
-                className={`relative bg-white rounded-3xl border-2 border-dashed p-8 cursor-pointer transition-all duration-300 group ${
-                  dragOver
-                    ? "border-primary bg-primary/5 shadow-lg shadow-primary/10 scale-[1.01]"
-                    : "border-gray-200 hover:border-primary/40 hover:bg-gray-50/50 hover:shadow-md"
-                }`}
+                className={`relative bg-white rounded-3xl border-2 border-dashed p-8 cursor-pointer transition-all duration-300 group ${dragOver
+                  ? "border-primary bg-primary/5 shadow-lg shadow-primary/10 scale-[1.01]"
+                  : "border-gray-200 hover:border-primary/40 hover:bg-gray-50/50 hover:shadow-md"
+                  }`}
               >
                 <input
                   ref={fileInputRef}
@@ -634,11 +631,10 @@ export default function CalendarsToolShell() {
                 <div className="flex flex-col items-center text-center max-w-lg mx-auto">
                   {/* Upload icon */}
                   <div
-                    className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 ${
-                      dragOver
-                        ? "bg-primary text-white scale-110 shadow-lg shadow-primary/30"
-                        : "bg-primary/10 text-primary group-hover:scale-105 group-hover:shadow-md"
-                    }`}
+                    className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 ${dragOver
+                      ? "bg-primary text-white scale-110 shadow-lg shadow-primary/30"
+                      : "bg-primary/10 text-primary group-hover:scale-105 group-hover:shadow-md"
+                      }`}
                   >
                     <Upload size={28} />
                   </div>
@@ -737,9 +733,8 @@ export default function CalendarsToolShell() {
                     <Trash2 size={13} />
                     Remove
                   </button>
-                  <div className={`p-1.5 rounded-lg transition-colors ${
-                    showSyllabusDetails ? "text-gray-600" : "text-gray-400"
-                  }`}>
+                  <div className={`p-1.5 rounded-lg transition-colors ${showSyllabusDetails ? "text-gray-600" : "text-gray-400"
+                    }`}>
                     {showSyllabusDetails ? <EyeOff size={16} /> : <Eye size={16} />}
                   </div>
                 </div>
@@ -847,11 +842,10 @@ export default function CalendarsToolShell() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                activeTab === tab.id
-                  ? "bg-primary text-white shadow-md shadow-primary/20"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-              }`}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === tab.id
+                ? "bg-primary text-white shadow-md shadow-primary/20"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
             >
               <tab.icon size={16} />
               {tab.label}
@@ -936,15 +930,14 @@ export default function CalendarsToolShell() {
                       onDragOver={(e) => handleCellDragOver(e, date)}
                       onDragLeave={(e) => handleCellDragLeave(e, date)}
                       onDrop={(e) => handleCellDrop(e, date)}
-                      className={`aspect-square p-1.5 rounded-xl transition-all duration-200 relative group ${
-                        isDragOver
-                          ? "bg-primary/15 text-primary ring-2 ring-primary/40 scale-105 shadow-lg"
-                          : isSelected
+                      className={`aspect-square p-1.5 rounded-xl transition-all duration-200 relative group ${isDragOver
+                        ? "bg-primary/15 text-primary ring-2 ring-primary/40 scale-105 shadow-lg"
+                        : isSelected
                           ? "bg-primary text-white shadow-md shadow-primary/20 ring-2 ring-primary/30"
                           : isToday
-                          ? "bg-primary/10 text-primary font-bold"
-                          : "hover:bg-gray-50 text-gray-700"
-                      } ${isDragging ? "cursor-grabbing" : ""}`}
+                            ? "bg-primary/10 text-primary font-bold"
+                            : "hover:bg-gray-50 text-gray-700"
+                        } ${isDragging ? "cursor-grabbing" : ""}`}
                     >
                       <span className="text-sm font-medium">{date}</span>
                       {/* Drag over indicator with dashed border overlay */}
@@ -957,9 +950,8 @@ export default function CalendarsToolShell() {
                           {dayEvents.slice(0, 3).map((event, idx) => (
                             <span
                               key={idx}
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                isSelected || isDragOver ? "bg-white/70" : EVENT_STYLES[event.type]?.dot || "bg-gray-400"
-                              }`}
+                              className={`w-1.5 h-1.5 rounded-full ${isSelected || isDragOver ? "bg-white/70" : EVENT_STYLES[event.type]?.dot || "bg-gray-400"
+                                }`}
                             />
                           ))}
                           {dayEvents.length > 3 && (
@@ -1021,11 +1013,10 @@ export default function CalendarsToolShell() {
                   {selectedDate && (
                     <button
                       onClick={() => setShowAddEventForm(!showAddEventForm)}
-                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-                        showAddEventForm
-                          ? "bg-rose-50 text-rose-600"
-                          : "bg-primary/5 text-primary hover:bg-primary/10"
-                      }`}
+                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${showAddEventForm
+                        ? "bg-rose-50 text-rose-600"
+                        : "bg-primary/5 text-primary hover:bg-primary/10"
+                        }`}
                     >
                       {showAddEventForm ? (
                         <>Cancel</>
@@ -1061,13 +1052,12 @@ export default function CalendarsToolShell() {
                               <button
                                 key={t}
                                 onClick={() => setNewEvent((prev) => ({ ...prev, type: t }))}
-                                className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                                  newEvent.type === t
-                                    ? t === "study"
-                                      ? "bg-blue-100 text-blue-700 border border-blue-200"
-                                      : "bg-rose-100 text-rose-700 border border-rose-200"
-                                    : "bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100"
-                                }`}
+                                className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${newEvent.type === t
+                                  ? t === "study"
+                                    ? "bg-blue-100 text-blue-700 border border-blue-200"
+                                    : "bg-rose-100 text-rose-700 border border-rose-200"
+                                  : "bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100"
+                                  }`}
                               >
                                 {t === "study" ? "Study" : "Exam"}
                               </button>
@@ -1118,11 +1108,10 @@ export default function CalendarsToolShell() {
                         <button
                           onClick={handleAddEvent}
                           disabled={!newEvent.title.trim()}
-                          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
-                            newEvent.title.trim()
-                              ? "bg-primary text-white shadow-sm shadow-primary/20 hover:bg-[#244d72]"
-                              : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                          }`}
+                          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${newEvent.title.trim()
+                            ? "bg-primary text-white shadow-sm shadow-primary/20 hover:bg-[#244d72]"
+                            : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            }`}
                         >
                           Add to Calendar
                         </button>
@@ -1169,11 +1158,10 @@ export default function CalendarsToolShell() {
                         draggable
                         onDragStart={(e) => handleEventDragStart(e, event, "panel")}
                         onDragEnd={handleEventDragEnd}
-                        className={`group flex items-start gap-2 p-2.5 rounded-2xl transition-all duration-200 border ${
-                          isDraggingThis
-                            ? "opacity-40 border-primary/30 bg-primary/5 shadow-sm"
-                            : "hover:bg-gray-50 border-transparent hover:border-gray-200"
-                        } ${isDragging ? "cursor-grabbing" : "cursor-grab active:cursor-grabbing"}`}
+                        className={`group flex items-start gap-2 p-2.5 rounded-2xl transition-all duration-200 border ${isDraggingThis
+                          ? "opacity-40 border-primary/30 bg-primary/5 shadow-sm"
+                          : "hover:bg-gray-50 border-transparent hover:border-gray-200"
+                          } ${isDragging ? "cursor-grabbing" : "cursor-grab active:cursor-grabbing"}`}
                       >
                         {/* Drag handle */}
                         <div className="flex flex-col items-center justify-center pt-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
@@ -1213,11 +1201,10 @@ export default function CalendarsToolShell() {
                                     handleDecreaseHours(globalIdx >= 0 ? globalIdx : idx);
                                   }}
                                   disabled={(event.hours || 2) <= 0.5}
-                                  className={`p-0.5 rounded transition-colors ${
-                                    (event.hours || 2) <= 0.5
-                                      ? "text-gray-200 cursor-not-allowed"
-                                      : "text-gray-500 hover:text-rose-500 hover:bg-rose-50"
-                                  }`}
+                                  className={`p-0.5 rounded transition-colors ${(event.hours || 2) <= 0.5
+                                    ? "text-gray-200 cursor-not-allowed"
+                                    : "text-gray-500 hover:text-rose-500 hover:bg-rose-50"
+                                    }`}
                                   title="Decrease hours"
                                 >
                                   <Minus size={10} />
@@ -1306,12 +1293,10 @@ export default function CalendarsToolShell() {
           </div>
         )}
 
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/*  STUDY PLAN TAB                                                  */}
-        {/* ════════════════════════════════════════════════════════════════ */}
+        {/* STUDY PLAN TAB */}
         {activeTab === "schedule" && (
           <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6">
-            {/* ─── LEFT: Study Schedule ─────────────────────────────── */}
+            {/* ─── LEFT: Study Schedule ──── */}
             <div className="space-y-5">
               {/* Overview Card */}
               <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
@@ -1376,6 +1361,12 @@ export default function CalendarsToolShell() {
                             {event.details && (
                               <p className="text-xs text-gray-500 mt-0.5">{event.details}</p>
                             )}
+                          </div>
+
+                          <div className="w-full flex items-center justify-between">
+                            <button>
+                                See more
+                            </button>
                           </div>
 
                           {/* Action buttons */}
