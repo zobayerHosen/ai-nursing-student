@@ -240,6 +240,9 @@ export default function TutorChat() {
             connectionStatus={connectionStatus}
             isStreaming={isStreaming}
             streamingText={streamingText}
+            voiceStatus={voiceStatus}
+            voiceError={voiceError}
+            onToggleVoiceChat={toggleVoiceChat}
           />
           <ChatInput
             onSendMessage={handleSendMessage}

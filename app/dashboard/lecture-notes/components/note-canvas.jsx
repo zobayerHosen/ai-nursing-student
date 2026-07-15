@@ -3,7 +3,7 @@
 import React from 'react';
 import { EditorContent } from '@tiptap/react';
 
-export default function NoteCanvas({ editor }) {
+export default function NoteCanvas({ editor, isFormatting = false }) {
   return (
     <>
       <style>{`
@@ -88,7 +88,23 @@ export default function NoteCanvas({ editor }) {
         }
       `}</style>
       
-      <div className="w-full bg-white border border-gray-200/70 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] h-[calc(100vh-250px)] min-h-[400px] max-h-[calc(100vh-200px)] p-8 flex flex-col overflow-hidden">
+      <div className="relative w-full bg-white border border-gray-200/70 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] h-[calc(100vh-250px)] min-h-[400px] max-h-[calc(100vh-200px)] p-8 flex flex-col overflow-hidden">
+
+        {/* AI Format Loading Overlay */}
+        {isFormatting && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/80 backdrop-blur-[2px] rounded-2xl">
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative w-12 h-12">
+                <div className="absolute inset-0 rounded-full border-4 border-[#2B5C8F]/20"></div>
+                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#2B5C8F] animate-spin"></div>
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-semibold text-[#333E49]">AI Formatting</p>
+                <p className="text-xs text-gray-400 mt-1">Analyzing and restructuring content...</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tiptap Engine Mounting Point - This is where scrolling happens */}
         <div className="flex-1 w-full text-sm text-[#333E49] leading-relaxed font-normal min-h-0 overflow-hidden

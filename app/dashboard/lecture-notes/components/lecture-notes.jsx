@@ -434,7 +434,7 @@ export default function LectureNotes() {
             />
           </div>
           <div className="w-full max-w-6xl flex-1 min-h-0">
-            <NoteCanvas editor={editor} />
+            <NoteCanvas editor={editor} isFormatting={isFormatting} />
           </div>
         </main>
       </div>

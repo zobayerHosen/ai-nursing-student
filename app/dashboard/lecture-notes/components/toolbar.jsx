@@ -397,8 +397,8 @@ export default function Toolbar({ editor, onAIFormat, isFormatting }) {
             onClick={handleAIFormat}
             disabled={isFormatting}
           >
-            <IoSparkles className="w-3.5 h-3.5" />
-            {isFormatting ? 'Formatting...' : 'AI Format'}
+            <IoSparkles className={`w-3.5 h-3.5 ${isFormatting ? 'animate-pulse' : ''}`} />
+            AI Format
           </button>
         </div>
 
@@ -518,7 +518,7 @@ export default function Toolbar({ editor, onAIFormat, isFormatting }) {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1999] p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-1999 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-[#333E49]">Delete All Content</h3>
@@ -552,7 +552,7 @@ export default function Toolbar({ editor, onAIFormat, isFormatting }) {
 
       {/* AI Format Modal - Professional */}
       {showAIModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1999] p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-1999 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
@@ -578,19 +578,19 @@ export default function Toolbar({ editor, onAIFormat, isFormatting }) {
               </p>
               <ul className="text-xs text-gray-600 space-y-2">
                 <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 bg-[#2B5C8F] rounded-full mt-1.5 flex-shrink-0"></span>
+                  <span className="w-1.5 h-1.5 bg-[#2B5C8F] rounded-full mt-1.5 shrink-0"></span>
                   <span>Detect and format headings <span className="text-gray-400">(H1, H2, H3)</span></span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 bg-[#2B5C8F] rounded-full mt-1.5 flex-shrink-0"></span>
+                  <span className="w-1.5 h-1.5 bg-[#2B5C8F] rounded-full mt-1.5 shrink-0"></span>
                   <span>Create bulleted lists from key points</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 bg-[#2B5C8F] rounded-full mt-1.5 flex-shrink-0"></span>
+                  <span className="w-1.5 h-1.5 bg-[#2B5C8F] rounded-full mt-1.5 shrink-0"></span>
                   <span>Format blockquotes for important quotes</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 bg-[#2B5C8F] rounded-full mt-1.5 flex-shrink-0"></span>
+                  <span className="w-1.5 h-1.5 bg-[#2B5C8F] rounded-full mt-1.5 shrink-0"></span>
                   <span>Organize content structure logically</span>
                 </li>
                 <li className="flex items-start gap-3">
@@ -620,8 +620,8 @@ export default function Toolbar({ editor, onAIFormat, isFormatting }) {
                   isFormatting ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
-                <IoSparkles className="w-4 h-4" />
-                {isFormatting ? 'Formatting...' : 'Apply AI Format'}
+                <IoSparkles className={`w-4 h-4 ${isFormatting ? 'animate-spin' : ''}`} />
+                Apply AI Format
               </button>
             </div>
           </div>

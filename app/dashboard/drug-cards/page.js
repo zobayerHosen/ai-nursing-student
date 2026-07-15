@@ -1,5 +1,5 @@
-import UnderConstraction from "../components/underconstraction";
+import DrugCardShell from "./components/drug-card-shell";
 
 export default function DrugCardsPage() {
-  return <UnderConstraction />;
+  return <DrugCardShell />
 }

@@ -1,5 +1,5 @@
-import CalendarsToolsShell from "./components/calendars-tools-shell";
+import UnderConstraction from "../components/underconstraction";
 
 export default function CalendarsToolPage() {
-  return <CalendarsToolsShell />
+  return <UnderConstraction />
 }

@@ -125,7 +125,7 @@ export default function ChatInput({
             Voice call failed
           </span>
           {voiceError && (
-            <span className="text-[10px] text-red-400 ml-1 max-w-[180px] truncate">
+            <span className="text-[10px] text-red-400 ml-1 max-w-45 truncate">
               {voiceError}
             </span>
           )}
