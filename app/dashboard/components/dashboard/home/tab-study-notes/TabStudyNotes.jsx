@@ -9,6 +9,7 @@ import {
 } from "recharts";
 import AllNursingAreas from "./AllNursingAreas";
 import RecentlyCompleted from "./RecentlyCompleted";
+import { useStudyNotesProgress } from "@/hooks/core-learning/study-notes-progress.hook";
 
 const data = [
     {
@@ -77,6 +78,9 @@ const CenterLabel = () => {
 };
 
 const StudyNotesTab = () => {
+    const { content_summary, recentActivity, topics, isLoading, isError, error } = useStudyNotesProgress();
+
+    console.log({ content_summary, recentActivity, topics });
     return (
         <div className="w-full bg-white rounded-2xl">
             {/* Header */}

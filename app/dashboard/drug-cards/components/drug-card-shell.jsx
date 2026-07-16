@@ -285,7 +285,7 @@ const DrugCardContent = () => {
         {/* Loader Panel */}
         <div className="absolute inset-0 bg-[#F8F9FA]/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 z-10">
           <div className="bg-white border border-[#E4E7EC] rounded-2xl p-8 shadow-xl max-w-md w-full flex flex-col items-center gap-6 relative overflow-hidden">
-            <div className="absolute top-0 left-0 h-1 bg-gradient-to-r from-[#2C5F8D] to-[#4A90E2] transition-all duration-300" style={{ width: `${progress}%` }} />
+            <div className="absolute top-0 left-0 h-1 bg-linear-to-r from-[#2C5F8D] to-[#4A90E2] transition-all duration-300" style={{ width: `${progress}%` }} />
             
             <div className="w-16 h-16 bg-[#F0F7FC] rounded-2xl flex items-center justify-center text-[#2C5F8D] animate-spin duration-3000">
               <RefreshCw size={32} />
@@ -359,7 +359,7 @@ const DrugCardContent = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print-grid">
         {/* Mechanism of Action */}
         <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-3 print-card">
-          <h3 className="text-sm font-bold text-[#1D2939] flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
+          <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
             <Activity size={18} className="shrink-0" />
             Mechanism of Action
           </h3>
@@ -370,7 +370,7 @@ const DrugCardContent = () => {
 
         {/* Key Labs to Monitor */}
         <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-3 print-card">
-          <h3 className="text-sm font-bold text-[#1D2939] flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
+          <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
             <FlaskConical size={18} className="shrink-0" />
             Key Labs to Monitor
           </h3>
@@ -381,7 +381,7 @@ const DrugCardContent = () => {
 
         {/* Indications */}
         <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-3 print-card">
-          <h3 className="text-sm font-bold text-[#1D2939] flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
+          <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
             <CheckSquare size={18} className="shrink-0" />
             Indications
           </h3>
@@ -397,7 +397,7 @@ const DrugCardContent = () => {
 
         {/* Contraindications */}
         <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-3 print-card">
-          <h3 className="text-sm font-bold text-[#1D2939] flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
+          <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
             <AlertTriangle size={18} className="text-[#D97706] shrink-0" />
             Contraindications & Precautions
           </h3>
@@ -413,7 +413,7 @@ const DrugCardContent = () => {
 
         {/* Side Effects / Adverse Reactions */}
         <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-4 print-card md:col-span-2 print-full">
-          <h3 className="text-sm font-bold text-[#1D2939] flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
+          <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
             <HeartOff size={18} className="text-[#D92D20] shrink-0" />
             Side Effects & Adverse Reactions
           </h3>
@@ -449,7 +449,7 @@ const DrugCardContent = () => {
 
         {/* Nursing Considerations */}
         <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-3 print-card">
-          <h3 className="text-sm font-bold text-[#1D2939] flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
+          <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
             <ClipboardCheck size={18} className="shrink-0" />
             Nursing Considerations & Assessments
           </h3>
@@ -465,7 +465,7 @@ const DrugCardContent = () => {
 
         {/* Patient Teaching */}
         <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-3 print-card">
-          <h3 className="text-sm font-bold text-[#1D2939] flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
+          <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
             <GraduationCap size={18} className="shrink-0" />
             Patient & Family Teaching
           </h3>
@@ -482,7 +482,7 @@ const DrugCardContent = () => {
         {/* Antidote */}
         {drug.antidote && (
           <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-3 print-card md:col-span-2 print-full">
-            <h3 className="text-sm font-bold text-[#1D2939] flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
+            <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
               <Shield size={18} className="text-[#10B981] shrink-0" />
               Antidote & Reversal Agents
             </h3>
