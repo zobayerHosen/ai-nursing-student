@@ -1,0 +1,70 @@
+/* react-big-calendar overrides */
+.rbc-wrapper {
+  font-family: inherit;
+}
+.rbc-wrapper .rbc-calendar {
+  font-family: inherit;
+}
+.rbc-wrapper .rbc-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: #667085;
+  padding: 8px 4px;
+  border-bottom: 1px solid #F2F4F7;
+  background: #F9FAFB;
+}
+.rbc-wrapper .rbc-off-range-bg {
+  background: #FAFAFA;
+}
+.rbc-wrapper .rbc-today {
+  background: #EFF6FF;
+}
+.rbc-wrapper .rbc-date-cell {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  padding: 4px 6px;
+}
+.rbc-wrapper .rbc-date-cell.rbc-now {
+  color: #3B82F6;
+}
+.rbc-wrapper .rbc-button-link {
+  font-size: 12px;
+  font-weight: 600;
+}
+.rbc-wrapper .rbc-event {
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  padding: 1px 4px !important;
+}
+.rbc-wrapper .rbc-event.rbc-selected {
+  outline: 2px solid #3B82F6;
+}
+.rbc-wrapper .rbc-show-more {
+  font-size: 10px;
+  color: #3B82F6;
+  font-weight: 600;
+}
+.rbc-wrapper .rbc-time-header-cell .rbc-header {
+  font-size: 11px;
+}
+.rbc-wrapper .rbc-time-slot {
+  font-size: 10px;
+  color: #9CA3AF;
+}
+.rbc-wrapper .rbc-time-view {
+  border: none;
+}
+.rbc-wrapper .rbc-time-content {
+  border-top: 1px solid #F2F4F7;
+}
+.rbc-wrapper .rbc-day-slot .rbc-time-slot {
+  border-top: 1px solid #F9FAFB;
+}
+.rbc-wrapper .rbc-timeslot-group {
+  border-bottom: 1px solid #F2F4F7;
+}
+.rbc-wrapper .rbc-current-time-indicator {
+  background: #EF4444;
+  height: 2px;
+}
