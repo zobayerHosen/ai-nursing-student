@@ -8,7 +8,7 @@ import { useState, Suspense } from 'react';
 
 const SidebarContent = ({ onClose }) => {
     const [openCategory, setOpenCategory] = useState(null);
-    const [limit, setLimit] = useState(2);
+    const [limit, setLimit] = useState(20);
     const { coreLearningData, isLoading, coreLearningPagination, isFetching } = useCoreLearning("study_notes", { limit });
     const categories = coreLearningData || [];
 
@@ -81,6 +81,8 @@ const SidebarContent = ({ onClose }) => {
                                                 <Image
                                                     src={category.cover.startsWith('http') ? category.cover : `${process.env.NEXT_PUBLIC_BASE_URL || ''}${category.cover}`}
                                                     alt={category.title}
+                                                    width={350}
+                                                    height={150}
                                                     className="w-full h-full object-cover"
                                                 />
                                             ) : (
