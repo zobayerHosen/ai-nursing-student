@@ -65,7 +65,7 @@ const SidebarContent = ({ onClose }) => {
                                     onClick={() => handleToggle(category?.id)}
                                     className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-[#F3F3F3] transition"
                                 >
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-1.5">
                                         {/* Arrow */}
                                         <div>
                                             {isOpen ? (
@@ -76,7 +76,7 @@ const SidebarContent = ({ onClose }) => {
                                         </div>
 
                                         {/* Icon */}
-                                        <div className="w-10 h-10 shrink-0 rounded-md bg-[#E5E7EB] flex items-center justify-center overflow-hidden border border-[#EEEEEE]">
+                                        <div className="w-6 h-6 shrink-0 rounded-md bg-[#E5E7EB] flex items-center justify-center overflow-hidden border border-[#EEEEEE]">
                                             {category?.cover ? (
                                                 <Image
                                                     src={category.cover.startsWith('http') ? category.cover : `${process.env.NEXT_PUBLIC_BASE_URL || ''}${category.cover}`}
@@ -86,7 +86,7 @@ const SidebarContent = ({ onClose }) => {
                                                     className="w-full h-full object-cover"
                                                 />
                                             ) : (
-                                                <span className="text-sm font-bold text-[#6D6D6D]">
+                                                <span className="text-xs font-semibold text-[#6D6D6D]">
                                                     {category?.title?.charAt(0) || "C"}
                                                 </span>
                                             )}

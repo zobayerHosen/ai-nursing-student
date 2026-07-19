@@ -7,7 +7,7 @@ import { useGetLibrary } from "@/hooks";
 
 const LibrarySidebar = ({ onClose }) => {
     const { libraryData, isLoading} = useGetLibrary();
-
+    console.log("Library data", libraryData)
     const [isModalOpen, setIsModalOpen] = useState(false);
     // Track which folder IDs are expanded (separate from API data)
     const [openFolderIds, setOpenFolderIds] = useState(new Set());

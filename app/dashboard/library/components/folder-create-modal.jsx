@@ -22,13 +22,15 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, folderData }) => {
         if (folderData) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setFolderName(folderData.name || "");
-            setSelectedColor(folderData.color || "");
+            // Note: use color_id if available, otherwise icon?.id as fallback
+            const existingColorId = folderData.color_id || folderData.icon?.id || null;
+            setSelectedColor(existingColorId);
         } else {
             setFolderName("");
             if (folderColorData?.length > 0) {
-                setSelectedColor(folderColorData[0]?.color);
+                setSelectedColor(folderColorData[0]?.id);
             } else {
-                setSelectedColor("");
+                setSelectedColor(null);
             }
         }
     }, [folderData, isModalOpen, folderColorData]);
@@ -38,7 +40,7 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, folderData }) => {
 
         const payload = {
             name: folderName,
-            color: selectedColor
+            color_id: selectedColor
         };
 
         if (folderData) {
@@ -50,7 +52,7 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, folderData }) => {
                     queryClient.invalidateQueries({ queryKey: ["library-get"] })
                     // Note: reset all data
                     setFolderName("");
-                    setSelectedColor(folderColorData?.[0]?.color || "");
+                    setSelectedColor(folderColorData?.[0]?.id || null);
                     setIsModalOpen(false);
                 },
 
@@ -67,7 +69,7 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, folderData }) => {
                     queryClient.invalidateQueries({ queryKey: ["library-get"] })
                     // Note: reset all data
                     setFolderName("");
-                    setSelectedColor(folderColorData?.[0]?.color || "");
+                    setSelectedColor(folderColorData?.[0]?.id || null);
                     setIsModalOpen(false);
                 },
 
