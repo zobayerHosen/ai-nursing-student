@@ -1,5 +1,5 @@
-import UnderConstraction from "../components/underconstraction";
+import CarePlanBuilderShell from "./components/care-plan-builder-shell";
 
 export default function CarePlanBuildersPage() {
-  return <UnderConstraction />;
+  return <CarePlanBuilderShell />
 }
