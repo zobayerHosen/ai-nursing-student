@@ -11,25 +11,9 @@ import AllNursingAreas from "./AllNursingAreas";
 import RecentlyCompleted from "./RecentlyCompleted";
 import { useStudyNotesProgress } from "@/hooks/core-learning/study-notes-progress.hook";
 
-const data = [
-    {
-        name: "Complete",
-        value: 100,
-        percentage: "42%",
-        color: "#4CC9A0",
-    },
-    {
-        name: "Not Started",
-        value: 100,
-        percentage: "49%",
-        color: "#D6D0C5",
-    },
-];
 
-const total = data.reduce((acc, item) => acc + item.value, 0);
-const completedPercentage = 73;
 
-const CenterLabel = () => {
+const CenterLabel = ({ completedPercentage = 0 }) => {
     return (
         <>
             <text
@@ -80,7 +64,31 @@ const CenterLabel = () => {
 const StudyNotesTab = () => {
     const { content_summary, recentActivity, topics, isLoading, isError, error } = useStudyNotesProgress();
 
-    console.log({ content_summary, recentActivity, topics });
+    if (isLoading) return <div>Loading...</div>;
+
+    const chartData = [
+        {
+            name: "Complete",
+            value: content_summary?.marked_completed?.count || 0,
+            percentage: content_summary?.marked_completed?.percentage || "0%",
+            color: "#4CC9A0",
+        },
+        {
+            name: "In Progress",
+            value: content_summary?.in_progress?.count || 0,
+            percentage: content_summary?.in_progress?.percentage || "0%",
+            color: "#FBBF24",
+        },
+        {
+            name: "Not Started",
+            value: content_summary?.not_started?.count || 0,
+            percentage: content_summary?.not_started?.percentage || "0%",
+            color: "#D6D0C5",
+        },
+    ];
+
+    const completedPercentage = content_summary?.total_completed?.percentage?.replace('%', '') || 0;
+
     return (
         <div className="w-full bg-white rounded-2xl">
             {/* Header */}
@@ -88,7 +96,7 @@ const StudyNotesTab = () => {
                 <div>
                     <h2 className="text-3xl text-[#233043]">
                         Coverage at a glance
-                    </h2>
+                    </h2> 
 
                     <p className="text-[#8B97A7] mt-2">
                         Self-marked progress across all study notes
@@ -109,30 +117,30 @@ const StudyNotesTab = () => {
                 <div className="w-[240px] h-[240px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                            <Pie
-                                data={data}
-                                innerRadius={75}
-                                outerRadius={95}
-                                paddingAngle={0}
-                                dataKey="value"
-                                stroke="none"
-                            >
-                                {data.map((entry) => (
-                                    <Cell
-                                        key={entry.name}
-                                        fill={entry.color}
-                                    />
-                                ))}
-                            </Pie>
+                                <Pie
+                                    data={chartData}
+                                    innerRadius={75}
+                                    outerRadius={95}
+                                    paddingAngle={0}
+                                    dataKey="value"
+                                    stroke="none"
+                                >
+                                    {chartData.map((entry) => (
+                                        <Cell
+                                            key={entry.name}
+                                            fill={entry.color}
+                                        />
+                                    ))}
+                                </Pie>
 
-                            <CenterLabel />
+                                <CenterLabel completedPercentage={completedPercentage} />
                         </PieChart>
                     </ResponsiveContainer>
                 </div>
 
                 {/* Labels */}
                 <div className="flex-1 space-y-10">
-                    {data.map((item) => (
+                    {chartData.map((item) => (
                         <div
                             key={item.name}
                             className="flex items-center gap-4"
@@ -152,6 +160,8 @@ const StudyNotesTab = () => {
                                 <p className="text-[#8B97A7] text-sm">
                                     {item.name === "Not Started"
                                         ? "Still to read"
+                                        : item.name === "In Progress"
+                                        ? "Currently reading"
                                         : "Marked when fully studied"}
                                 </p>
                             </div>
@@ -161,21 +171,21 @@ const StudyNotesTab = () => {
 
                 {/* Stats */}
                 <div className="space-y-12 min-w-[140px]">
-                    {data.map((item) => (
+                    {chartData.map((item) => (
                         <div key={item.name}>
                             <h3 className="text-2xl text-[#233043] leading-none">
-                                {item?.value ?? ""}
+                                {item?.value ?? 0}
                             </h3>
 
                             <p className="text-[#8B97A7] text-lg mt-2">
-                                {item?.percentage ?? ""}
+                                {item?.percentage ?? "0%"}
                             </p>
                         </div>
                     ))}
                 </div>
             </div>
-            <AllNursingAreas />
-            <RecentlyCompleted />
+            <AllNursingAreas topics={topics} />
+            <RecentlyCompleted recentActivity={recentActivity} />
         </div>
     );
 };

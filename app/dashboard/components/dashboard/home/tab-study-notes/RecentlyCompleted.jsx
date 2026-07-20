@@ -3,40 +3,9 @@
 import Link from "next/link";
 import RecentlyCompletedCard from "./RecentlyCompletedCard";
 
-const completedTopic = [
-    {
-        title: "Raynaud's Disease — Cold-Triggered Digital Ischemia",
-        category: "Cardiovascular",
-        department: "Medical-Surgical Nursing",
-        completedAt: "2 hours ago",
-    },
-    {
-        title: "Heart Failure — Left vs Right Sided Manifestations",
-        category: "Cardiovascular",
-        department: "Medical-Surgical Nursing",
-        completedAt: "Yesterday",
-    },
-    {
-        title: "Beta Blockers — Mechanism & Nursing Considerations",
-        category: "Cardiac Medications",
-        department: "Pharmacology",
-        completedAt: "Yesterday",
-    },
-    {
-        title: "Postpartum Hemorrhage — Recognition & Priority Actions",
-        category: "Postpartum Care",
-        department: "Maternal-Newborn Nursing",
-        completedAt: "2 days ago",
-    },
-    {
-        title: "Therapeutic Communication Techniques",
-        category: "Anxiety Disorders",
-        department: "Mental Health Nursing",
-        completedAt: "3 days ago",
-    },
-];
+const RecentlyCompleted = ({ recentActivity = [] }) => {
+    if (!recentActivity || recentActivity.length === 0) return null;
 
-const RecentlyCompleted = () => {
     return (
         <section className="mt-20">
             {/* Header */}
@@ -47,12 +16,12 @@ const RecentlyCompleted = () => {
                     </h2>
 
                     <p className="mt-2 text-[#7D8794]">
-                        Your last 5 self-marked topics
+                        Your last {recentActivity.length} self-marked topics
                     </p>
                 </div>
 
                 <Link
-                    href="#"
+                    href="/dashboard/study-notes"
                     className="text-[#233043] text-md font-medium hover:underline"
                 >
                     View full history →
@@ -61,10 +30,13 @@ const RecentlyCompleted = () => {
 
             {/* List */}
             <div className="">
-                {completedTopic.map((item) => (
+                {recentActivity.map((item, index) => (
                     <RecentlyCompletedCard
-                        key={item.title}
-                        {...item}
+                        key={item.category_id || index}
+                        title={item.title}
+                        category={item.subtitle || "Study Note"}
+                        department={""}
+                        completedAt={item.completed_at || "Recently"}
                     />
                 ))}
             </div>

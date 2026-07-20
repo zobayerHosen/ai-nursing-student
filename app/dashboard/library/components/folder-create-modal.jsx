@@ -49,7 +49,7 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, folderData }) => {
 
                 onSuccess: (data) => {
                     toast.success(data?.message ?? "Folder renamed successfully!");
-                    queryClient.invalidateQueries({ queryKey: ["library-get"] })
+                    queryClient.invalidateQueries({ queryKey: ["library-get"] });
                     // Note: reset all data
                     setFolderName("");
                     setSelectedColor(folderColorData?.[0]?.id || null);

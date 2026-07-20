@@ -24,7 +24,7 @@ const RecentlyCompletedCard = ({
                     </h3>
 
                     <p className="mt-1 text-sm text-[#7D8794]">
-                        {category} · {department}
+                        {category} {department && `· ${department}`}
                     </p>
                 </div>
             </div>

@@ -41,6 +41,7 @@ const statusColors = {
 export default function NursingAreaCard({
   title,
   icon,
+  cover,
   status,
   progress,
   completed,
@@ -57,10 +58,14 @@ export default function NursingAreaCard({
       <div className="flex justify-between items-start mb-5">
         <div className="flex items-center gap-4">
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden shrink-0"
             style={{ background: iconBg }}
           >
-            <Icon size={20} className="text-[#2F5D8A]" />
+            {cover ? (
+              <img src={cover} alt={title} className="w-full h-full object-cover" />
+            ) : (
+              <Icon size={20} className="text-[#2F5D8A]" />
+            )}
           </div>
 
           <h3 className="text-[18px] font-medium text-[#223247]">
