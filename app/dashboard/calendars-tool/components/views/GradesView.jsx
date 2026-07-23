@@ -150,7 +150,7 @@ function CourseBlock({ course, events }) {
                   Save
                 </button>
               ) : (
-                <div className="w-[46px]"/>
+                <div className="w-11.5"/>
               )}
             </div>
           );

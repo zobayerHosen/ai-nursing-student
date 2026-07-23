@@ -65,7 +65,7 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
                     <Clock size={14} />
                     <span>History</span>
                     <span
-                        className={`ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full px-1.5 text-[10px] font-bold leading-none ${activeTab === "history"
+                        className={`ml-0.5 inline-flex items-center justify-center min-w-4.5 h-4.5 rounded-full px-1.5 text-[10px] font-bold leading-none ${activeTab === "history"
                                 ? "bg-[#2C5F8D] text-white"
                                 : "bg-[#E2E8F0] text-[#475569]"
                             }`}

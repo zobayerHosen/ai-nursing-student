@@ -29,7 +29,7 @@ export default function CarePlanBuilderShell() {
 
             {/* Empty State Card */}
             <div className="flex-1 flex items-center justify-center">
-                <div className="bg-white rounded-[24px] shadow-sm border border-[#E4E7EC] p-8 md:p-12 w-full max-w-3xl flex flex-col items-center text-center">
+                <div className="bg-white rounded-3xl shadow-sm border border-[#E4E7EC] p-8 md:p-12 w-full max-w-3xl flex flex-col items-center text-center">
                     
                     <div className="w-16 h-16 bg-[#2C5F8D] rounded-full flex items-center justify-center text-white mb-6 shadow-md">
                         <FileText size={32} />

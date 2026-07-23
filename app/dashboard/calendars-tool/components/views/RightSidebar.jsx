@@ -14,7 +14,7 @@ export default function RightSidebar({ onUploadMore }) {
     .slice(0, 7);
 
   return (
-    <div className="w-full lg:w-[280px] shrink-0 flex flex-col gap-4">
+    <div className="w-full lg:w-70 shrink-0 flex flex-col gap-4">
       {/* My Courses */}
       <div className="bg-white border border-[#E4E7EC] rounded-2xl p-4 shadow-sm">
         <div className="flex items-center justify-between mb-3">

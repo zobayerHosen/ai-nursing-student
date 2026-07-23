@@ -53,7 +53,7 @@ export default function CarePlanBuilderDetails({ id }) {
                     <button 
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-5 py-4 text-[13px] font-semibold whitespace-nowrap border-b-2 transition-colors flex-1 text-center min-w-[120px] ${
+                        className={`px-5 py-4 text-[13px] font-semibold whitespace-nowrap border-b-2 transition-colors flex-1 text-center min-w-30 ${
                             activeTab === tab 
                             ? "border-[#2C5F8D] text-[#2C5F8D]" 
                             : "border-transparent text-[#64748B] hover:text-[#344054] hover:bg-gray-50"
@@ -98,7 +98,7 @@ export default function CarePlanBuilderDetails({ id }) {
                             </h3>
                             
                             <div className="border border-[#E5E7EB] rounded-xl p-4 flex items-center gap-4 hover:border-[#2C5F8D]/40 transition-colors cursor-pointer bg-white">
-                                <div className="w-[38px] h-[38px] rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                                <div className="w-9.5 h-9.5 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
                                     <span className="font-bold text-[13px]">#1</span>
                                 </div>
                                 <div>

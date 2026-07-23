@@ -114,7 +114,7 @@ const StudyNotesTab = () => {
             {/* Content */}
             <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
                 {/* Chart */}
-                <div className="w-[240px] h-[240px]">
+                <div className="w-60 h-60">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                                 <Pie
@@ -170,7 +170,7 @@ const StudyNotesTab = () => {
                 </div>
 
                 {/* Stats */}
-                <div className="space-y-12 min-w-[140px]">
+                <div className="space-y-12 min-w-35">
                     {chartData.map((item) => (
                         <div key={item.name}>
                             <h3 className="text-2xl text-[#233043] leading-none">

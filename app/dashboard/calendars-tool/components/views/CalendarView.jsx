@@ -145,7 +145,7 @@ export default function CalendarView({ onUploadMore }) {
               <button onClick={() => navigate(-1)} className="w-7 h-7 flex items-center justify-center border border-[#E4E7EC] rounded-lg hover:bg-[#F9FAFB] transition-all">
                 <ChevronLeft size={14} />
               </button>
-              <span className="text-sm font-bold text-[#1D2939] min-w-[110px] text-center">{monthLabel}</span>
+              <span className="text-sm font-bold text-[#1D2939] min-w-27.5 text-center">{monthLabel}</span>
               <button onClick={() => navigate(1)} className="w-7 h-7 flex items-center justify-center border border-[#E4E7EC] rounded-lg hover:bg-[#F9FAFB] transition-all">
                 <ChevronRight size={14} />
               </button>

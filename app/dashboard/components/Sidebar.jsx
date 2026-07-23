@@ -9,7 +9,7 @@ import min_logo from "@/public/assets/mini_logo.png";
 import { usePathname } from "next/navigation";
 import { sidebarData } from "@/dummydata";
 import { IoClose } from "react-icons/io5";
-import { ArrowBigDownDash, LogOut, ChevronDown, ChevronRight } from "lucide-react";
+import { ArrowBigDownDash, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Modal } from "antd";
 import { useLogout } from "@/hooks";

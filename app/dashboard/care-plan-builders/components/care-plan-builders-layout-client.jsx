@@ -21,7 +21,7 @@ export default function CarePlanBuildersLayoutClient({ children }) {
             {/* Sidebar Wrapper */}
             <div
                 className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 xl:relative xl:translate-x-0
-        ${isSidebarOpen ? "translate-x-0 z-999" : "-translate-x-full"} w-[80%] sm:w-80 xl:w-[330px] shrink-0 bg-white border-r border-[#E5E7EB] flex flex-col`}
+        ${isSidebarOpen ? "translate-x-0 z-999" : "-translate-x-full"} w-[80%] sm:w-80 xl:w-82.5 shrink-0 bg-white border-r border-[#E5E7EB] flex flex-col`}
             >
                 <CarePlanBuilderSidebar onClose={() => setIsSidebarOpen(false)} />
             </div>
