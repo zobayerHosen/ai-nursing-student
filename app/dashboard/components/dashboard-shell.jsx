@@ -60,10 +60,7 @@ const DashboardShell = ({ children }) => {
                     isSidebarOpen={isSidebarOpen}
                     setIsSidebarOpen={setIsSidebarOpen}
                 />
-
-                <div className="flex-1 w-full">
-                    {children}
-                </div>
+                <main className="flex-1 w-full overflow-x-hidden">{children}</main>
             </div>
         </div>
     );

@@ -1,448 +1,97 @@
-// ============================================================
-//  Main Page - STEMRN Concept Map Application
-//  Wires together all components:
-//  - Header with title editor and action buttons
-//  - Toolbar with canvas tools
-//  - LeftSidebar with AI chat and node palette
-//  - ConceptMapCanvas with React Flow
-//  - RightInspector for node details
-//  - Modals for editing, sharing, history
-// ============================================================
+"use client";
 
-'use client';
+import { useState } from "react";
+import { Menu } from "lucide-react";
+import ConceptMapSidebar from "./concept-map-sidebar";
+import ConceptMapHeader from "./concept-map-header";
+import ConceptMapToolbar from "./concept-map-toolbar";
+import ConceptMapCanvas from "./concept-map-canvas";
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import dynamic from 'next/dynamic';
-import { addEdge } from '@xyflow/react';
+/* sample map data */
+const SAMPLE_MAP = {
+  title: "Heart Failure Clinical Concept Map",
+  nodes: [
+    { id: "central-1", label: "Heart Failure", details: "Adult patient \u2022 Cardiac pump dysfunction with systemic manifestations", category: "Central" },
+    { id: "risk-1", label: "Risk Factors", details: ". Advanced age\n. History of hypertension\n. Coronary artery disease\n. Diabetes mellitus\n. Previous MI", category: "Risk Factor" },
+    { id: "subjective-1", label: "Subjective Data", details: ". Shortness of breath\n. Fatigue and weakness\n. Orthopnea\n. Paroxysmal nocturnal dyspnea\n. Decreased exercise tolerance", category: "Subjective Data" },
+    { id: "objective-1", label: "Objective Data", details: ". Elevated BP\n. Tachycardia\n. Crackles in lung bases\n. Peripheral edema\n. Jugular venous distention\n. S3 heart sound\n. Elevated BNP\n. Decreased ejection fraction on echo", category: "Objective Data" },
+    { id: "nanda-1", label: "Decreased Cardiac Output", details: ". r/t altered contractility and preload/afterload imbalance\n. AEB tachycardia, fatigue, dyspnea, decreased EF, elevated BNP", category: "Nursing Diagnosis" },
+    { id: "nanda-2", label: "Excess Fluid Volume", details: ". r/t compromised regulatory mechanisms and decreased cardiac output\n. AEB peripheral edema, crackles, JVD, weight gain, dyspnea", category: "Nursing Diagnosis" },
+    { id: "nanda-3", label: "Impaired Gas Exchange", details: ". r/t alveolar-capillary membrane changes and fluid in alveoli\n. AEB dyspnea, crackles, decreased SpO2, orthopnea", category: "Nursing Diagnosis" },
+    { id: "nanda-4", label: "Activity Intolerance", details: ". r/t imbalance between oxygen supply and demand\n. AEB fatigue, dyspnea on exertion, decreased exercise tolerance", category: "Nursing Diagnosis" },
+    { id: "intervention-1", label: "Cardiac Output Interventions", details: ". Monitor vital signs q4h\n. Continuous cardiac monitoring\n. Assess heart sounds for S3/S4\n. Monitor I&O strictly\n. Daily weights same time/scale\n. Assess for signs of decreased perfusion", category: "Intervention" },
+    { id: "intervention-2", label: "Fluid Management", details: ". Administer diuretics as ordered\n. Strict I&O monitoring\n. Daily weights\n. Fluid restriction as ordered\n. Monitor electrolytes\n. Assess edema and JVD\n. Elevate legs when sitting", category: "Intervention" },
+    { id: "intervention-3", label: "Respiratory Support", details: ". Administer oxygen as ordered\n. Monitor SpO2 continuously\n. Assess lung sounds q4h\n. Position in high Fowler's\n. Encourage deep breathing\n. Monitor respiratory rate and effort", category: "Intervention" },
+    { id: "intervention-4", label: "Activity Management", details: ". Balance rest and activity\n. Assist with ADLs as needed\n. Monitor response to activity\n. Gradual increase in activity as tolerated\n. Energy conservation techniques\n. Fall precautions", category: "Intervention" },
+    { id: "med-1", label: "Loop Diuretics (Furosemide)", details: ". For fluid overload and pulmonary congestion\n. Nursing: monitor K+, Mg, daily weight, BP, UOP, I&O\n. Assess for dehydration and electrolyte imbalance", category: "Medication" },
+    { id: "med-2", label: "ACE Inhibitors", details: ". For afterload reduction and cardiac remodeling prevention\n. Nursing: monitor BP, K+, renal function, assess for dry cough\n. Hold if SBP <100 mmHg", category: "Medication" },
+    { id: "med-3", label: "Beta Blockers", details: ". For heart rate control and improved cardiac function\n. Nursing: monitor HR and BP, hold if HR <60 or SBP <100\n. Assess for bronchospasm", category: "Medication" },
+    { id: "med-4", label: "Digoxin", details: ". For improved contractility and rate control in AFib\n. Nursing: monitor HR, K+, digoxin level, assess for toxicity\n. Hold if HR <60 bpm", category: "Medication" },
+    { id: "complication-1", label: "Acute Decompensation", details: ". Acute pulmonary edema\n. Cardiogenic shock\n. Respiratory failure requiring intubation\n. Sudden cardiac death", category: "Complication" },
+    { id: "complication-2", label: "Chronic Complications", details: ". Progressive renal insufficiency\n. Hepatic congestion and dysfunction\n. Cardiac cachexia\n. Thromboembolic events\n. Arrhythmias (AFib, VT)", category: "Complication" },
+  ],
+  edges: [
+    { id: "e_risk-1_central-1", source: "risk-1", target: "central-1", label: "contributes to" },
+    { id: "e_subjective-1_central-1", source: "subjective-1", target: "central-1", label: "evidenced by" },
+    { id: "e_objective-1_central-1", source: "objective-1", target: "central-1", label: "evidenced by" },
+    { id: "e_central-1_nanda-1", source: "central-1", target: "nanda-1", label: "priority" },
+    { id: "e_central-1_nanda-2", source: "central-1", target: "nanda-2", label: "leads to" },
+    { id: "e_central-1_nanda-3", source: "central-1", target: "nanda-3", label: "leads to" },
+    { id: "e_central-1_nanda-4", source: "central-1", target: "nanda-4", label: "leads to" },
+    { id: "e_nanda-1_intervention-1", source: "nanda-1", target: "intervention-1", label: "managed by" },
+    { id: "e_nanda-2_intervention-2", source: "nanda-2", target: "intervention-2", label: "managed by" },
+    { id: "e_nanda-3_intervention-3", source: "nanda-3", target: "intervention-3", label: "managed by" },
+    { id: "e_nanda-4_intervention-4", source: "nanda-4", target: "intervention-4", label: "managed by" },
+    { id: "e_central-1_med-1", source: "central-1", target: "med-1", label: "treated with" },
+    { id: "e_central-1_med-2", source: "central-1", target: "med-2", label: "treated with" },
+    { id: "e_central-1_med-3", source: "central-1", target: "med-3", label: "treated with" },
+    { id: "e_central-1_med-4", source: "central-1", target: "med-4", label: "treated with" },
+    { id: "e_central-1_complication-1", source: "central-1", target: "complication-1", label: "progresses to" },
+    { id: "e_central-1_complication-2", source: "central-1", target: "complication-2", label: "long-term risk" },
+  ],
+};
 
-// Import our components
-import Header from '../components/Header';
-import Toolbar from '../components/Toolbar';
-import LeftSidebar from '../components/Sidebar/LeftSidebar';
-import RightInspector from '../components/Sidebar/RightInspector';
-import EditNodeModal from '../components/Modals/EditNodeModal';
-import EdgeModal from '../components/Modals/EdgeModal';
-import ShareModal from '../components/Modals/ShareModal';
-import HistoryModal from '../components/Modals/HistoryModal';
-import { NodeActionsProvider } from '@/lib/concept-map/NodeActionsContext';
-import useMapStore from '@/hooks/concept-map/useMapStore';
-import { layoutGeneratedMap } from '@/lib/concept-map/layoutEngine';
-
-// Dynamically import the canvas to avoid SSR issues with React Flow
-const ConceptMapCanvas = dynamic(
-  () => import('../components/Canvas/ConceptMapCanvas'),
-  { ssr: false }
-);
-
-export default function ConceptMapShell() {
-  // --- State Management ---
-  const store = useMapStore();
-  const {
-    nodes, edges, selectedNode, setSelectedNode,
-    mapTitle, setMapTitle,
-    caraHasGenerated,
-    linkMode, setLinkMode, linkSource, setLinkSource,
-    onNodesChange, onEdgesChange,
-    undo, redo, saveMap,
-    loadMap, newBlankMap, deleteMap, renameMap, getAllMaps,
-    addNode, updateNode, deleteNodeById, addEdgeWithLabel,
-    updateEdge, deleteEdgeById, generateFromAI, applyAIGeneratedAdditions,
-  } = store;
-
-  // --- Modal States ---
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [edgeModalOpen, setEdgeModalOpen] = useState(false);
-  const [shareModalOpen, setShareModalOpen] = useState(false);
-  const [historyModalOpen, setHistoryModalOpen] = useState(false);
-  const [editingEdge, setEditingEdge] = useState(null);
-
-  // --- Toolbar Mode (select/add/link) ---
-  const [activeTool, setActiveTool] = useState('select');
-  const [pendingNodeType, setPendingNodeType] = useState(null);
-
-  // --- Zoom Level ---
-  const [zoomLevel, setZoomLevel] = useState('100%');
-
-  // React Flow instance ref for zoom/fit control
-  const reactFlowInstanceRef = useRef(null);
-
-  // Refs for auto-save (avoid stale closure)
-  const nodesRef = useRef(nodes);
-  const edgesRef = useRef(edges);
-  const mapTitleRef = useRef(mapTitle);
-  useEffect(() => { nodesRef.current = nodes; }, [nodes]);
-  useEffect(() => { edgesRef.current = edges; }, [edges]);
-  useEffect(() => { mapTitleRef.current = mapTitle; }, [mapTitle]);
-
-  // Refs
-  const reactFlowWrapper = useRef(null);
-
-  // --- Auto-save (every 30s) ---
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (nodesRef.current.length > 0) saveMap();
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [saveMap]);
-
-  // Save on title change
-  useEffect(() => {
-    if (nodes.length > 0) {
-      const timer = setTimeout(() => saveMap(), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [mapTitle, nodes, saveMap]);
-
-  // --- Keyboard Shortcuts ---
-  useEffect(() => {
-    function handleKeyDown(e) {
-      // Ignore if typing in an input/textarea
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-
-      // Delete selected node
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (selectedNode && !e.target.closest('.react-flow')) {
-          deleteNodeById(selectedNode.id);
-        }
-      }
-
-      // Edit selected node
-      if (e.key === 'e' || e.key === 'E' || e.key === 'Enter') {
-        if (selectedNode) {
-          e.preventDefault();
-          setEditModalOpen(true);
-        }
-      }
-
-      // Escape - deselect
-      if (e.key === 'Escape') {
-        setSelectedNode(null);
-        setLinkMode(false);
-        setLinkSource(null);
-        setActiveTool('select');
-      }
-
-      // Undo/Redo
-      if ((e.metaKey || e.ctrlKey) && e.key === 'z') { e.preventDefault(); undo(); }
-      if ((e.metaKey || e.ctrlKey) && e.key === 'y') { e.preventDefault(); redo(); }
-
-      // Save
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); saveMap(); }
-
-      // Tool shortcuts
-      if (e.key === 'v' || e.key === 'V') setActiveTool('select');
-      if (e.key === 'a' || e.key === 'A') setActiveTool('add');
-      if (e.key === 'l' || e.key === 'L') {
-        setActiveTool(activeTool === 'link' ? 'select' : 'link');
-        setLinkMode(activeTool !== 'link');
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNode, linkMode, undo, redo, saveMap, deleteNodeById, setLinkMode, setLinkSource, setSelectedNode, activeTool]);
-
-  // --- Event Handlers ---
-
-  /** Handle canvas node click - select node */
-  const handleNodeClick = useCallback((event, node) => {
-    setSelectedNode(node);
-  }, [setSelectedNode]);
-
-  /** Handle canvas node double-click - open edit modal */
-  const handleNodeDoubleClick = useCallback((event, node) => {
-    setSelectedNode(node);
-    setEditModalOpen(true);
-  }, [setSelectedNode]);
-
-  /** Handle pane click - deselect */
-  const handlePaneClick = useCallback(() => {
-    setSelectedNode(null);
-  }, [setSelectedNode]);
-
-  /** Handle connect event (drag from handle to handle) */
-  const handleConnect = useCallback((params) => {
-    addEdgeWithLabel(params.source, params.target, '');
-  }, [addEdgeWithLabel]);
-
-  /** Handle edge click - open edge edit modal */
-  const handleEdgeClick = useCallback((event, edge) => {
-    setEditingEdge(edge);
-    setEdgeModalOpen(true);
-  }, []);
-
-  /** Handle node deletion from canvas */
-  const handleNodeDelete = useCallback((nodeId) => {
-    deleteNodeById(nodeId);
-  }, [deleteNodeById]);
-
-  /** Edit action from toolbar */
-  const handleEditClick = useCallback(() => {
-    if (selectedNode) {
-      setEditModalOpen(true);
-    } else {
-      // Flash warning
-      const btn = document.activeElement;
-      if (btn) {
-        btn.classList.add('ring-2', 'ring-rose-500');
-        setTimeout(() => btn.classList.remove('ring-2', 'ring-rose-500'), 500);
-      }
-    }
-  }, [selectedNode]);
-
-  /** Add node tool - activates add mode where clicking canvas places a node */
-  const handleAddTool = useCallback(() => {
-    setActiveTool('select');
-    setPendingNodeType('diagnosis');
-    // Place a node at a default position
-    const newNode = addNode('diagnosis', {
-      x: 300 + Math.random() * 200,
-      y: 200 + Math.random() * 300,
-    });
-    setSelectedNode(newNode);
-    setEditModalOpen(true);
-  }, [addNode, setSelectedNode]);
-
-  /** Link tool toggle */
-  const handleLinkTool = useCallback(() => {
-    const newMode = !linkMode;
-    setLinkMode(newMode);
-    setLinkSource(null);
-    setActiveTool(newMode ? 'link' : 'select');
-  }, [linkMode, setLinkMode, setLinkSource]);
-
-  /** Zoom controls - use React Flow instance methods */
-  const handleZoomIn = useCallback(() => {
-    if (reactFlowInstanceRef.current) {
-      reactFlowInstanceRef.current.zoomIn();
-      const z = reactFlowInstanceRef.current.getZoom();
-      setZoomLevel(Math.round(z * 100) + '%');
-    }
-  }, []);
-
-  const handleZoomOut = useCallback(() => {
-    if (reactFlowInstanceRef.current) {
-      reactFlowInstanceRef.current.zoomOut();
-      const z = reactFlowInstanceRef.current.getZoom();
-      setZoomLevel(Math.round(z * 100) + '%');
-    }
-  }, []);
-
-  /** AI map generation callback */
-  const handleGenerateMap = useCallback((aiData) => {
-    const result = generateFromAI(aiData);
-    setSelectedNode(null);
-    // The canvas will auto-fit via its own useEffect
-  }, [generateFromAI, setSelectedNode]);
-
-  /** AI refinement callback */
-  const handleRefineMap = useCallback((additions) => {
-    applyAIGeneratedAdditions(additions);
-  }, [applyAIGeneratedAdditions]);
-
-  /** Add node from palette (click on canvas will place it) */
-  const handlePaletteAddNode = useCallback((nodeType) => {
-    const newNode = addNode(nodeType, {
-      x: 300 + Math.random() * 300,
-      y: 200 + Math.random() * 300,
-    });
-    setSelectedNode(newNode);
-    setEditModalOpen(true);
-  }, [addNode, setSelectedNode]);
-
-  /** Save edited node from modal */
-  const handleEditNodeSave = useCallback((nodeId, data) => {
-    updateNode(nodeId, data);
-  }, [updateNode]);
-
-  /** Save edge from modal */
-  const handleEdgeSave = useCallback((edgeId, data) => {
-    updateEdge(edgeId, data);
-  }, [updateEdge]);
-
-  /** Delete edge from modal */
-  const handleEdgeDelete = useCallback((edgeId) => {
-    deleteEdgeById(edgeId);
-  }, [deleteEdgeById]);
-
-  /** Add edge from link mode (two-click) */
-  const handleAddEdge = useCallback((source, target) => {
-    addEdgeWithLabel(source, target, '');
-  }, [addEdgeWithLabel]);
-
-  /** Get current map snapshot for AI refinement */
-  const currentMapSnapshot = {
-    title: mapTitle,
-    nodes: nodes.map((n) => ({ id: n.id, type: n.data?.nodeType, title: n.data?.title, body: n.data?.body })),
-    edges: edges.map((e) => ({ from: e.source, to: e.target, phrase: e.label })),
-  };
+const ConceptMapShell = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [mapData] = useState(SAMPLE_MAP);
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900">
-      {/* Background grid overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)]
-                      bg-size-[4rem_4rem] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]
-                      pointer-events-none opacity-50" />
-
-      {/* Ambient glow effects */}
-      <div className="absolute top-[-15%] left-[-10%] w-[60%] h-[60%] rounded-full bg-rose-600/5 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-15%] right-[-10%] w-[60%] h-[60%] rounded-full bg-indigo-600/5 blur-[120px] pointer-events-none" />
-
-      {/* Header */}
-      <Header
-        mapTitle={mapTitle}
-        onTitleChange={setMapTitle}
-        onHistoryOpen={() => setHistoryModalOpen(true)}
-        onExport={() => {
-          setShareModalOpen(true);
-        }}
-        nodeCount={nodes.length}
-        edgeCount={edges.length}
-      />
-
-      {/* Toolbar */}
-      <Toolbar
-        activeTool={activeTool}
-        onSelect={() => { setActiveTool('select'); setLinkMode(false); setLinkSource(null); }}
-        onAdd={handleAddTool}
-        onLink={handleLinkTool}
-        onEdit={handleEditClick}
-        onUndo={undo}
-        onRedo={redo}
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-        onFit={() => {
-          if (reactFlowInstanceRef.current) {
-            reactFlowInstanceRef.current.fitView({ padding: 0.3, duration: 300 });
-          }
-        }}
-        onSave={saveMap}
-        onPrint={() => window.print()}
-        zoomLevel={zoomLevel}
-        nodeCount={nodes.length}
-        edgeCount={edges.length}
-      />
-
-      {/* Main layout: LeftSidebar | Canvas | RightInspector */}
-      <main className="flex-1 flex overflow-hidden relative z-10" style={{ minHeight: 0 }}>
-        {/* Left Sidebar */}
-        <LeftSidebar
-          onGenerateMap={handleGenerateMap}
-          onRefineMap={handleRefineMap}
-          currentMap={currentMapSnapshot}
-          caraHasGenerated={caraHasGenerated}
-          onAddNode={handlePaletteAddNode}
+    <div className="flex flex-col xl:flex-row h-full xl:min-h-[calc(100vh-80px)] relative w-full bg-[#F8F9FA]">
+      {/* Mobile overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 xl:hidden backdrop-blur-sm"
+          onClick={() => setIsSidebarOpen(false)}
         />
+      )}
 
-        {/* Canvas Area */}
-        <NodeActionsProvider
-          onEdit={(nodeId) => {
-            const node = nodes.find(n => n.id === nodeId);
-            if (node) {
-              setSelectedNode(node);
-              setEditModalOpen(true);
-            }
-          }}
-          onDelete={(nodeId) => deleteNodeById(nodeId)}
-          onLink={(nodeId) => {
-            setLinkMode(true);
-            setLinkSource(nodeId);
-            setActiveTool('link');
-          }}
-          selectedNodeId={selectedNode?.id}
-        >
-        <section className="flex-1 flex flex-col min-w-0 relative" data-canvas>
-          {/* Link mode indicator */}
-          {linkMode && (
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 px-5 py-1.5 rounded-full text-xs font-medium
-                            bg-blue-600 text-white shadow-lg shadow-blue-600/30 animate-pulse">
-              {linkSource
-                ? 'Click the target node to connect'
-                : 'Click the source node first'}
-            </div>
-          )}
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 xl:relative xl:translate-x-0
+          ${isSidebarOpen ? "translate-x-0 z-[999]" : "-translate-x-full"} w-[80%] sm:w-80 xl:w-82.5 shrink-0 bg-white border-r border-[#E5E7EB] flex flex-col`}
+      >
+        <ConceptMapSidebar onClose={() => setIsSidebarOpen(false)} />
+      </div>
 
-          <div className="flex-1 w-full h-full" ref={reactFlowWrapper}>
-            <ConceptMapCanvas
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={handleConnect}
-              onNodeClick={handleNodeClick}
-              onNodeDoubleClick={handleNodeDoubleClick}
-              onPaneClick={handlePaneClick}
-              onNodeDelete={handleNodeDelete}
-              onEdgeClick={handleEdgeClick}
-              linkMode={linkMode}
-              linkSource={linkSource}
-              setLinkSource={setLinkSource}
-              setLinkMode={setLinkMode}
-              onAddEdge={handleAddEdge}
-              onReactFlowInit={(instance) => { reactFlowInstanceRef.current = instance; }}
-            />
-          </div>
-        </section>
-        </NodeActionsProvider>
+      {/* Main content */}
+      <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        {/* Mobile toggle */}
+        <div className="xl:hidden p-4 border-b border-black/10 flex items-center gap-3 bg-white sticky top-0 z-30">
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer"
+          >
+            <Menu size={20} className="text-[#2C5F8D]" />
+          </button>
+          <h2 className="font-semibold text-lg text-[#2C5F8D]">Concept Map</h2>
+        </div>
 
-        {/* Right Inspector */}
-        <RightInspector
-          selectedNode={selectedNode}
-          onUpdateNode={handleEditNodeSave}
-          onDeleteNode={deleteNodeById}
-          allNodes={nodes}
-          onSelectNode={setSelectedNode}
-        />
+        <ConceptMapHeader title={mapData.title} />
+        <ConceptMapToolbar />
+        <ConceptMapCanvas mapData={mapData} />
       </main>
-
-      {/* === MODALS === */}
-
-      {/* Edit Node Modal */}
-      <EditNodeModal
-        isOpen={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        node={selectedNode}
-        onSave={handleEditNodeSave}
-        onDelete={deleteNodeById}
-      />
-
-      {/* Edge Label Modal */}
-      <EdgeModal
-        isOpen={edgeModalOpen}
-        onClose={() => { setEdgeModalOpen(false); setEditingEdge(null); }}
-        edge={editingEdge}
-        onSave={handleEdgeSave}
-        onDelete={handleEdgeDelete}
-      />
-
-      {/* Share Modal */}
-      <ShareModal
-        isOpen={shareModalOpen}
-        onClose={() => setShareModalOpen(false)}
-        nodes={nodes}
-        edges={edges}
-        mapTitle={mapTitle}
-      />
-
-      {/* History Modal */}
-      <HistoryModal
-        isOpen={historyModalOpen}
-        onClose={() => setHistoryModalOpen(false)}
-        maps={getAllMaps()}
-        currentMapId={store.currentMapId}
-        onLoadMap={loadMap}
-        onDeleteMap={deleteMap}
-        onRenameMap={renameMap}
-        onNewMap={() => { newBlankMap(); setHistoryModalOpen(false); }}
-        onImportMap={(data, fileName) => {
-          // Import a map from JSON data
-          const result = layoutGeneratedMap({
-            centralConcept: { title: data.title || fileName },
-            ...data
-          });
-          generateFromAI(result);
-        }}
-      />
     </div>
   );
-}
+};
+
+export default ConceptMapShell;

@@ -1,36 +1,22 @@
-// ============================================================
-//  useMapStore - Central state management for the concept map
-//  Manages nodes, edges, undo/redo history, and localStorage
-// ============================================================
-
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import {
-  useNodesState,
-  useEdgesState,
-} from '@xyflow/react';
-import { uid, TYPE_DEFAULT_COLORS, NODE_DEFAULTS } from '@/lib/concept-map/constants';
-import { layoutGeneratedMap, applyNodeAdditions } from '@/lib/concept-map/layoutEngine';
-import { getDemoMaps } from '@/lib/concept-map/sampleData';
 
 const MAPS_KEY = 'stemrn_maps';
 const CURRENT_MAP_KEY = 'stemrn_current_map_id';
 
-/**
- * Load all saved maps from localStorage
- */
+function uid() {
+  return 'n_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+}
+
 function loadAllMaps() {
   try {
     return JSON.parse(localStorage.getItem(MAPS_KEY) || '{}');
-  } catch (e) {
+  } catch {
     return {};
   }
 }
 
-/**
- * Persist all maps to localStorage
- */
 function persistAllMaps(maps) {
   try {
     localStorage.setItem(MAPS_KEY, JSON.stringify(maps));
@@ -43,52 +29,60 @@ function newMapId() {
   return 'map_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
 }
 
-/**
- * Create a new node object suitable for React Flow.
- * The `nodeType` field in `data` maps to our custom component type.
- */
-export function createFlowNode(nodeType, position = { x: 400, y: 400 }, overrides = {}) {
-  const defaults = NODE_DEFAULTS[nodeType] || NODE_DEFAULTS.diagnosis;
-  return {
-    id: uid(),
-    type: 'conceptNode',
-    position,
-    data: {
-      nodeType,
-      title: overrides.title || defaults.title,
-      body: overrides.body || defaults.body,
-      fill: overrides.fill || null,
-      border: overrides.border || null,
-      textColor: overrides.textColor || null,
-    },
-  };
-}
+const HEART_FAILURE_DEFAULT = {
+  title: 'Heart Failure Clinical Concept Map',
+  nodes: [
+    { id: 'central-1', label: 'Heart Failure', details: 'Adult patient • Cardiac pump dysfunction with systemic manifestations', category: 'Central' },
+    { id: 'risk-1', label: 'Risk Factors', details: '. Advanced age\n. History of hypertension\n. Coronary artery disease\n. Diabetes mellitus\n. Previous MI', category: 'Risk Factor' },
+    { id: 'subjective-1', label: 'Subjective Data', details: '. Shortness of breath\n. Fatigue and weakness\n. Orthopnea\n. Paroxysmal nocturnal dyspnea\n. Decreased exercise tolerance', category: 'Subjective Data' },
+    { id: 'objective-1', label: 'Objective Data', details: '. Elevated BP\n. Tachycardia\n. Crackles in lung bases\n. Peripheral edema\n. Jugular venous distention\n. S3 heart sound\n. Elevated BNP\n. Decreased ejection fraction on echo', category: 'Objective Data' },
+    { id: 'nanda-1', label: 'Decreased Cardiac Output', details: '. r/t altered contractility and preload/afterload imbalance\n. AEB tachycardia, fatigue, dyspnea, decreased EF, elevated BNP', category: 'Nursing Diagnosis' },
+    { id: 'nanda-2', label: 'Excess Fluid Volume', details: '. r/t compromised regulatory mechanisms and decreased cardiac output\n. AEB peripheral edema, crackles, JVD, weight gain, dyspnea', category: 'Nursing Diagnosis' },
+    { id: 'nanda-3', label: 'Impaired Gas Exchange', details: '. r/t alveolar-capillary membrane changes and fluid in alveoli\n. AEB dyspnea, crackles, decreased SpO2, orthopnea', category: 'Nursing Diagnosis' },
+    { id: 'nanda-4', label: 'Activity Intolerance', details: '. r/t imbalance between oxygen supply and demand\n. AEB fatigue, dyspnea on exertion, decreased exercise tolerance', category: 'Nursing Diagnosis' },
+    { id: 'intervention-1', label: 'Cardiac Output Interventions', details: '. Monitor vital signs q4h\n. Continuous cardiac monitoring\n. Assess heart sounds for S3/S4\n. Monitor I&O strictly\n. Daily weights same time/scale\n. Assess for signs of decreased perfusion', category: 'Intervention' },
+    { id: 'intervention-2', label: 'Fluid Management', details: '. Administer diuretics as ordered\n. Strict I&O monitoring\n. Daily weights\n. Fluid restriction as ordered\n. Monitor electrolytes\n. Assess edema and JVD\n. Elevate legs when sitting', category: 'Intervention' },
+    { id: 'intervention-3', label: 'Respiratory Support', details: '. Administer oxygen as ordered\n. Monitor SpO2 continuously\n. Assess lung sounds q4h\n. Position in high Fowler\'s\n. Encourage deep breathing\n. Monitor respiratory rate and effort', category: 'Intervention' },
+    { id: 'intervention-4', label: 'Activity Management', details: '. Balance rest and activity\n. Assist with ADLs as needed\n. Monitor response to activity\n. Gradual increase in activity as tolerated\n. Energy conservation techniques\n. Fall precautions', category: 'Intervention' },
+    { id: 'med-1', label: 'Loop Diuretics (Furosemide)', details: '. For fluid overload and pulmonary congestion\n. Nursing: monitor K+, Mg, daily weight, BP, UOP, I&O\n. Assess for dehydration and electrolyte imbalance', category: 'Medication' },
+    { id: 'med-2', label: 'ACE Inhibitors', details: '. For afterload reduction and cardiac remodeling prevention\n. Nursing: monitor BP, K+, renal function, assess for dry cough\n. Hold if SBP <100 mmHg', category: 'Medication' },
+    { id: 'med-3', label: 'Beta Blockers', details: '. For heart rate control and improved cardiac function\n. Nursing: monitor HR and BP, hold if HR <60 or SBP <100\n. Assess for bronchospasm', category: 'Medication' },
+    { id: 'med-4', label: 'Digoxin', details: '. For improved contractility and rate control in AFib\n. Nursing: monitor HR, K+, digoxin level, assess for toxicity\n. Hold if HR <60 bpm', category: 'Medication' },
+    { id: 'complication-1', label: 'Acute Decompensation', details: '. Acute pulmonary edema\n. Cardiogenic shock\n. Respiratory failure requiring intubation\n. Sudden cardiac death', category: 'Complication' },
+    { id: 'complication-2', label: 'Chronic Complications', details: '. Progressive renal insufficiency\n. Hepatic congestion and dysfunction\n. Cardiac cachexia\n. Thromboembolic events\n. Arrhythmias (AFib, VT)', category: 'Complication' },
+  ],
+  edges: [
+    { id: 'e_risk', source: 'risk-1', target: 'central-1', label: 'contributes to' },
+    { id: 'e_subj', source: 'subjective-1', target: 'central-1', label: 'evidenced by' },
+    { id: 'e_obj', source: 'objective-1', target: 'central-1', label: 'evidenced by' },
+    { id: 'e_dx1', source: 'central-1', target: 'nanda-1', label: 'priority' },
+    { id: 'e_dx2', source: 'central-1', target: 'nanda-2', label: 'leads to' },
+    { id: 'e_dx3', source: 'central-1', target: 'nanda-3', label: 'leads to' },
+    { id: 'e_dx4', source: 'central-1', target: 'nanda-4', label: 'leads to' },
+    { id: 'e_int1', source: 'nanda-1', target: 'intervention-1', label: 'managed by' },
+    { id: 'e_int2', source: 'nanda-2', target: 'intervention-2', label: 'managed by' },
+    { id: 'e_int3', source: 'nanda-3', target: 'intervention-3', label: 'managed by' },
+    { id: 'e_int4', source: 'nanda-4', target: 'intervention-4', label: 'managed by' },
+    { id: 'e_med1', source: 'central-1', target: 'med-1', label: 'treated with' },
+    { id: 'e_med2', source: 'central-1', target: 'med-2', label: 'treated with' },
+    { id: 'e_med3', source: 'central-1', target: 'med-3', label: 'treated with' },
+    { id: 'e_med4', source: 'central-1', target: 'med-4', label: 'treated with' },
+    { id: 'e_comp1', source: 'central-1', target: 'complication-1', label: 'progresses to' },
+    { id: 'e_comp2', source: 'central-1', target: 'complication-2', label: 'long-term risk' },
+  ],
+};
 
-/**
- * Main hook that manages the concept map state.
- */
 export default function useMapStore() {
-  // React Flow node/edge state
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes] = useState([]);
+  const [edges, setEdges] = useState([]);
+  const [mapTitle, setMapTitle] = useState('Heart Failure Clinical Concept Map');
+  const [currentMapId, setCurrentMapId] = useState(null);
+  const [selectedNodeId, setSelectedNodeId] = useState(null);
 
-  // Selection state
-  const [selectedNode, setSelectedNode] = useState(null);
-
-  // Undo/redo history stacks
   const historyRef = useRef([]);
   const futureRef = useRef([]);
 
-  // Map metadata
-  const [mapTitle, setMapTitle] = useState('Untitled Concept Map');
-  const [currentMapId, setCurrentMapId] = useState(null);
-  const [caraHasGenerated, setCaraHasGenerated] = useState(false);
-
-  // Link mode
-  const [linkMode, setLinkMode] = useState(false);
-  const [linkSource, setLinkSource] = useState(null);
-
-  // Initialize from localStorage or demos
+  // Initialize from localStorage or default data
   useEffect(() => {
     try {
       const lastId = localStorage.getItem(CURRENT_MAP_KEY);
@@ -97,325 +91,146 @@ export default function useMapStore() {
         if (maps[lastId]) {
           const m = maps[lastId];
           setCurrentMapId(lastId);
-          setMapTitle(m.title || 'Untitled Concept Map');
+          setMapTitle(m.title || 'Untitled');
           setNodes(m.nodes || []);
           setEdges(m.edges || []);
-          setCaraHasGenerated((m.nodes || []).length > 0);
           return;
         }
       }
     } catch (e) {
       console.warn('Could not load from localStorage:', e);
     }
-
-    // No saved map: load demo data
-    loadDemoData();
+    // Load default heart failure map
+    const id = newMapId();
+    setCurrentMapId(id);
+    setNodes(HEART_FAILURE_DEFAULT.nodes);
+    setEdges(HEART_FAILURE_DEFAULT.edges);
+    setMapTitle(HEART_FAILURE_DEFAULT.title);
+    const maps = {};
+    maps[id] = { id, title: HEART_FAILURE_DEFAULT.title, nodes: HEART_FAILURE_DEFAULT.nodes, edges: HEART_FAILURE_DEFAULT.edges, created: new Date().toISOString(), modified: new Date().toISOString() };
+    persistAllMaps(maps);
+    localStorage.setItem(CURRENT_MAP_KEY, id);
   }, []);
 
-  /**
-   * Load the demo CHF map into state
-   */
-  function loadDemoData() {
-    const { CHF_MAP, PNEUMONIA_MAP } = getDemoMaps();
-    const { nodes: chfNodes, edges: chfEdges, title } = layoutGeneratedMap(CHF_MAP);
-
-    // Build second demo for history
-    const { nodes: pnNodes, edges: pnEdges, title: pnTitle } = layoutGeneratedMap(PNEUMONIA_MAP);
-
-    const now = new Date();
-    const yesterday = new Date(now.getTime() - 86400000);
-    const lastWeek = new Date(now.getTime() - 7 * 86400000);
-
-    const maps = {};
-
-    // Pneumonia (older)
-    const pnId = 'map_demo_pneumonia';
-    maps[pnId] = {
-      id: pnId,
-      title: pnTitle,
-      nodes: pnNodes,
-      edges: pnEdges,
-      created: lastWeek.toISOString(),
-      modified: yesterday.toISOString(),
-    };
-
-    // CHF (current)
-    const chfId = 'map_demo_chf';
-    maps[chfId] = {
-      id: chfId,
-      title: title,
-      nodes: chfNodes,
-      edges: chfEdges,
-      created: yesterday.toISOString(),
-      modified: now.toISOString(),
-    };
-
-    persistAllMaps(maps);
-    localStorage.setItem(CURRENT_MAP_KEY, chfId);
-
-    setCurrentMapId(chfId);
-    setMapTitle(title);
-    setNodes(chfNodes);
-    setEdges(chfEdges);
-    setCaraHasGenerated(true);
-  }
-
-  /**
-   * Push current state onto undo history
-   */
   const pushHistory = useCallback(() => {
     historyRef.current.push(JSON.stringify({ nodes, edges }));
     if (historyRef.current.length > 50) historyRef.current.shift();
     futureRef.current = [];
   }, [nodes, edges]);
 
-  /**
-   * Undo last action
-   */
   const undo = useCallback(() => {
     if (!historyRef.current.length) return;
     futureRef.current.push(JSON.stringify({ nodes, edges }));
     const prev = JSON.parse(historyRef.current.pop());
     setNodes(prev.nodes);
     setEdges(prev.edges);
-  }, [nodes, edges, setNodes, setEdges]);
+  }, [nodes, edges]);
 
-  /**
-   * Redo last undone action
-   */
   const redo = useCallback(() => {
     if (!futureRef.current.length) return;
     historyRef.current.push(JSON.stringify({ nodes, edges }));
     const nxt = JSON.parse(futureRef.current.pop());
     setNodes(nxt.nodes);
     setEdges(nxt.edges);
-  }, [nodes, edges, setNodes, setEdges]);
+  }, [nodes, edges]);
 
-  /**
-   * Save current map to localStorage
-   */
   const saveMap = useCallback(() => {
     let mapId = currentMapId;
     const maps = loadAllMaps();
-
     if (!mapId) {
       mapId = newMapId();
       setCurrentMapId(mapId);
       localStorage.setItem(CURRENT_MAP_KEY, mapId);
     }
-
     const existing = maps[mapId];
     const now = new Date().toISOString();
-
-    maps[mapId] = {
-      id: mapId,
-      title: mapTitle,
-      nodes,
-      edges,
-      created: existing?.created || now,
-      modified: now,
-    };
-
+    maps[mapId] = { id: mapId, title: mapTitle, nodes, edges, created: existing?.created || now, modified: now };
     persistAllMaps(maps);
   }, [currentMapId, mapTitle, nodes, edges]);
 
-  /**
-   * Load a specific map by ID
-   */
   const loadMap = useCallback((mapId) => {
     const maps = loadAllMaps();
     const m = maps[mapId];
     if (!m) return;
-
     setCurrentMapId(mapId);
     localStorage.setItem(CURRENT_MAP_KEY, mapId);
     setNodes(m.nodes || []);
     setEdges(m.edges || []);
-    setMapTitle(m.title || 'Untitled Concept Map');
-    setCaraHasGenerated((m.nodes || []).length > 0);
+    setMapTitle(m.title || 'Untitled');
+    setSelectedNodeId(null);
     historyRef.current = [];
     futureRef.current = [];
-  }, [setNodes, setEdges]);
+  }, []);
 
-  /**
-   * Start a new blank map
-   */
   const newBlankMap = useCallback(() => {
     setCurrentMapId(null);
     localStorage.removeItem(CURRENT_MAP_KEY);
     setNodes([]);
     setEdges([]);
     setMapTitle('Untitled Concept Map');
-    setCaraHasGenerated(false);
-    setSelectedNode(null);
+    setSelectedNodeId(null);
     historyRef.current = [];
     futureRef.current = [];
-  }, [setNodes, setEdges]);
+  }, []);
 
-  /**
-   * Delete a map by ID
-   */
   const deleteMap = useCallback((mapId) => {
     const maps = loadAllMaps();
     delete maps[mapId];
     persistAllMaps(maps);
-    if (currentMapId === mapId) {
-      newBlankMap();
-    }
+    if (currentMapId === mapId) newBlankMap();
   }, [currentMapId, newBlankMap]);
 
-  /**
-   * Rename a map
-   */
   const renameMap = useCallback((mapId, newTitle) => {
     const maps = loadAllMaps();
     if (!maps[mapId]) return;
     maps[mapId].title = newTitle;
     maps[mapId].modified = new Date().toISOString();
     persistAllMaps(maps);
-    if (currentMapId === mapId) {
-      setMapTitle(newTitle);
-    }
+    if (currentMapId === mapId) setMapTitle(newTitle);
   }, [currentMapId]);
 
-  /**
-   * Add a node to the map
-   */
-  const addNode = useCallback((nodeType, position, overrides = {}) => {
-    pushHistory();
-    const newNode = createFlowNode(nodeType, position, overrides);
-    setNodes((nds) => [...nds, newNode]);
-    return newNode;
-  }, [pushHistory, setNodes]);
+  const getAllMaps = useCallback(() => Object.values(loadAllMaps()), []);
 
-  /**
-   * Update a node's data
-   */
-  const updateNode = useCallback((nodeId, newData) => {
+  const updateNode = useCallback((nodeId, updates) => {
     pushHistory();
-    setNodes((nds) =>
-      nds.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, ...newData } } : n))
-    );
-  }, [pushHistory, setNodes]);
+    setNodes(prev => prev.map(n => n.id === nodeId ? { ...n, ...updates } : n));
+  }, [pushHistory]);
 
-  /**
-   * Delete a node and its connected edges
-   */
   const deleteNodeById = useCallback((nodeId) => {
     pushHistory();
-    setNodes((nds) => nds.filter((n) => n.id !== nodeId));
-    setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
-    setSelectedNode((prev) => (prev?.id === nodeId ? null : prev));
-  }, [pushHistory, setNodes, setEdges]);
+    setNodes(prev => prev.filter(n => n.id !== nodeId));
+    setEdges(prev => prev.filter(e => e.source !== nodeId && e.target !== nodeId));
+  }, [pushHistory]);
 
-  /**
-   * Add an edge between two nodes with an optional label
-   */
-  const addEdgeWithLabel = useCallback((source, target, label = '') => {
+  const addNode = useCallback((nodeType) => {
     pushHistory();
-    const newEdge = {
-      id: uid(),
-      source,
-      target,
-      label,
-      type: 'smoothstep',
-      data: { emphasis: false },
+    const categoryMap = {
+      central: 'Central', subjective: 'Subjective Data', objective: 'Objective Data',
+      risk: 'Risk Factor', diagnosis: 'Nursing Diagnosis', intervention: 'Intervention',
+      medication: 'Medication', complication: 'Complication', outcome: 'Outcome',
     };
-    setEdges((eds) => [...eds, newEdge]);
-  }, [pushHistory, setEdges]);
-
-  /**
-   * Update an edge's label/data
-   */
-  const updateEdge = useCallback((edgeId, newData) => {
-    pushHistory();
-    setEdges((eds) =>
-      eds.map((e) => (e.id === edgeId ? { ...e, ...newData } : e))
-    );
-  }, [pushHistory, setEdges]);
-
-  /**
-   * Delete an edge
-   */
-  const deleteEdgeById = useCallback((edgeId) => {
-    pushHistory();
-    setEdges((eds) => eds.filter((e) => e.id !== edgeId));
-  }, [pushHistory, setEdges]);
-
-  /**
-   * Generate a full map from AI response data
-   */
-  const generateFromAI = useCallback((aiData) => {
-    pushHistory();
-    const { nodes: newNodes, edges: newEdges, title } = layoutGeneratedMap(aiData);
-    setNodes(newNodes);
-    setEdges(newEdges);
-    setMapTitle(title || 'Concept Map');
-    setCaraHasGenerated(true);
-    setSelectedNode(null);
-    return { nodes: newNodes, edges: newEdges, title };
-  }, [pushHistory, setNodes, setEdges]);
-
-  /**
-   * Apply incremental AI additions to the map
-   */
-  const applyAIGeneratedAdditions = useCallback((additions) => {
-    pushHistory();
-    const result = applyNodeAdditions(additions, nodes, edges);
-    setNodes(result.nodes);
-    setEdges(result.edges);
-  }, [pushHistory, nodes, edges, setNodes, setEdges]);
-
-  /**
-   * Get all maps for the history modal
-   */
-  const getAllMaps = useCallback(() => {
-    return Object.values(loadAllMaps());
-  }, []);
+    const defaults = {
+      central: { label: 'Central Concept', details: 'Define the core clinical picture' },
+      subjective: { label: 'Subjective data', details: '• patient reports...' },
+      objective: { label: 'Objective data', details: '• vital / lab / exam findings' },
+      diagnosis: { label: 'Nursing diagnosis', details: 'r/t ...\nAEB ...' },
+      intervention: { label: 'Intervention', details: '• nursing action' },
+      medication: { label: 'Medication', details: '• drug name\n• indication\n• nursing considerations' },
+      complication: { label: 'Complication', details: '• potential adverse event' },
+      risk: { label: 'Risk factor', details: '• vulnerability' },
+      outcome: { label: 'Expected outcome', details: 'Patient will...\nMeasurable: ...' },
+    };
+    const def = defaults[nodeType] || defaults.diagnosis;
+    const newNode = { id: uid(), label: def.label, details: def.details, category: categoryMap[nodeType] || 'Nursing Diagnosis' };
+    setNodes(prev => [...prev, newNode]);
+    return newNode;
+  }, [pushHistory]);
 
   return {
-    // State
-    nodes,
-    edges,
-    selectedNode,
-    setSelectedNode,
-    mapTitle,
-    setMapTitle,
-    currentMapId,
-    caraHasGenerated,
-    linkMode,
-    setLinkMode,
-    linkSource,
-    setLinkSource,
-
-    // React Flow handlers
-    setNodes,
-    setEdges,
-    onNodesChange,
-    onEdgesChange,
-
-    // Undo/redo
-    undo,
-    redo,
-
-    // Map CRUD
-    saveMap,
-    loadMap,
-    newBlankMap,
-    deleteMap,
-    renameMap,
-    getAllMaps,
-
-    // Node operations
-    addNode,
-    updateNode,
-    deleteNodeById,
-    addEdgeWithLabel,
-    updateEdge,
-    deleteEdgeById,
-
-    // AI operations
-    generateFromAI,
-    applyAIGeneratedAdditions,
+    nodes, setNodes, edges, setEdges,
+    mapTitle, setMapTitle,
+    currentMapId, selectedNodeId, setSelectedNodeId,
+    undo, redo, saveMap, loadMap, newBlankMap, deleteMap, renameMap, getAllMaps,
+    updateNode, deleteNodeById, addNode,
   };
 }

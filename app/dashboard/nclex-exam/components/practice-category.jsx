@@ -13,7 +13,7 @@ const CATEGORY_EXAM_ICONS = (
   </svg>
 )
 
-export default function PracticeByCategorySection({ onStartExam, computeStats, applyFilter }) {
+export default function PracticeByCategorySection({ onStartExam, computeStats, category, isLoading }) {
   const [expanded, setExpanded] = useState({});
   const [expandedSec, setExpandedSec] = useState(Object.fromEntries(CURRICULUM.map((s) => [s.id, false])));
   const [configuring, setConfiguring] = useState(null);
@@ -35,18 +35,18 @@ export default function PracticeByCategorySection({ onStartExam, computeStats, a
           </p>
         </div>
 
-        {CURRICULUM?.map((sec, si) => (
-          <div key={sec.id} className="mb-4" style={{ animation: `fadeUp 0.3s ease ${si * 0.05}s both` }}>
+        {category?.map((sec, si) => (
+          <div key={sec?.category?.id} className="mb-4" style={{ animation: `fadeUp 0.3s ease ${si * 0.05}s both` }}>
             {/* Section header */}
             <button
-              onClick={() => toggleSec(sec.id)}
+              onClick={() => toggleSec(sec?.category?.id)}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 bg-[#f8fafc] border border-[#e2e8f0] rounded-md cursor-pointer mb-2.5 transition-all font-sans"
             >
               <p>{CATEGORY_EXAM_ICONS}</p>
-              <span className="text-[13px] font-extrabold text-[#475569] flex-1 text-left">{sec.section}</span>
+              <span className="text-[13px] font-extrabold text-[#475569] flex-1 text-left">{sec?.category?.title}</span>
               <span className="text-xs text-[#94a3b8] font-medium">
-                {sec.categories.reduce((a, c) => a + c.subtopics.length, 0)} topics ·{" "}
-                {sec.categories.reduce((a, c) => a + c.subtopics.reduce((x, s) => x + s.count, 0), 0)} questions
+                {sec?.total_subtopic} topics ·{" "}
+                {sec?.total_category_question} questions
               </span>
               <span
                 className={`text-[11px] text-[#475569] font-bold inline-block transition-transform duration-200 ${expandedSec[sec.id] ? "rotate-180" : ""

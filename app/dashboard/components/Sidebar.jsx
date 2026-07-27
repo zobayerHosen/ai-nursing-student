@@ -122,7 +122,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                                         const isActive = isParentActive || isAnySubActive;
 
                                         return (
-                                            <div key={index} className="flex flex-col w-full">
+                                            <div key={index} className={`flex flex-col w-full ${section.title === "AI TOOLS" && item.name === "Concept Map" && !collapsed ? "col-span-2" : ""}`}>
                                                 {item.button ? (
                                                     <button
                                                         onClick={() => setShowLogoutModal(true)}
@@ -160,7 +160,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                                                             onClick={() => setIsSidebarOpen(false)}
                                                             className={
                                                                 section.title === "AI TOOLS"
-                                                                    ? `flex flex-col items-center justify-center text-center border border-[#E5E7EB] hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 ${collapsed ? "gap-0 h-10 border-0" : "h-22 px-2 rounded-2xl"} ${isActive ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary" : ""}`
+                                                                    ? `flex flex-col items-center justify-center text-center border border-[#E5E7EB] hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 ${collapsed ? "gap-0 h-10 border-0" : "h-22 px-2 rounded-2xl"} ${isActive ? "bg-[rgba(44,95,141,0.10)] text-primary" : ""}`
                                                                     : `flex items-center transition-all duration-200 ${collapsed ? "p-3 h-10 justify-center gap-0" : "p-3 gap-3 justify-between"} ${isActive
                                                                         ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary"
                                                                         : "hover:bg-gray-100 text-[#424242]"

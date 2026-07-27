@@ -4,9 +4,12 @@ import { useState } from "react";
 import { NGN_TYPES } from "../../nclex-exam/components/data";
 import PracticeByCategorySection from "../../nclex-exam/components/practice-category";
 import QuestionInterface from "../../nclex-exam/components/question-interface";
-import { SAMPLE_QUESTIONS } from "../../nclex-exam/components/data";
+import { useCategoryList } from "@/hooks/practice";
 
 export default function QbankClient() {
+  const {category, isLoading} = useCategoryList()
+  console.log("🚀 ~ QbankClient ~ category:", category)
+
   const [examState, setExamState] = useState(null);
   const [qHistory, setQHistory] = useState({});
   const [qMarked, setQMarked] = useState({});
@@ -27,20 +30,6 @@ export default function QbankClient() {
       if (!qHistory[q.id]) buckets.unused[key]++;
     });
     return buckets;
-  };
-
-  const applyFilter = (questions, filter) => {
-    switch (filter) {
-      case "incorrect":
-        return questions.filter((q) => qHistory[q.id] === "incorrect");
-      case "marked":
-        return questions.filter((q) => qMarked[q.id]);
-      case "unused":
-        return questions.filter((q) => !qHistory[q.id]);
-      case "all":
-      default:
-        return questions;
-    }
   };
 
   const handleStartExam = (questions, mode, title, opts = {}) => {
@@ -102,7 +91,8 @@ export default function QbankClient() {
         <PracticeByCategorySection
           onStartExam={handleStartExam}
           computeStats={computeStats}
-          applyFilter={applyFilter}
+          category={category}
+          isLoading={isLoading}
         />
       </div>
     </div>
