@@ -1,0 +1,45 @@
+{
+  "success": true,
+  "message": "Topic list retrieved successfully.",
+  "status": 200,
+  "data": [
+    {
+      "category": {
+        "id": 1,
+        "title": "Medical Surgical",
+        "total_question": 8,
+        "topic": [
+          {
+            "id": 1,
+            "title": "Cardiovascular & Hematology",
+            "subtopics": [
+              {
+                "id": 1,
+                "title": "Heart Failur",
+                "total_question": 8
+              },
+              {
+                "id": 2,
+                "title": "Acute Coronary Syndrome",
+                "total_question": 2
+              },
+              {
+                "id": 3,
+                "title": "Arrythmais",
+                "total_question": 1
+              },
+              {
+                "id": 4,
+                "title": "Hypertension",
+                "total_question": 0
+              }
+            ]
+          }
+        ]
+      },
+      "total_topic": 1,
+      "total_subtopic": 4,
+      "total_category_question": 11
+    }
+  ]
+}

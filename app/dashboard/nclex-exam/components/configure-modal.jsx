@@ -4,7 +4,7 @@ import { useState } from "react";
 
 const MODE_OPTIONS = [
   {
-    id: "practice",
+    id: "tutorial",
     label: "Tutorial Mode",
     desc: "Receive instant explanations after submitting your answers.",
   },
@@ -16,7 +16,7 @@ const MODE_OPTIONS = [
 ];
 
 export default function ConfigureModal({ category, subtopic, onClose, onStart }) {
-  const [mode, setMode] = useState("practice");
+  const [mode, setMode] = useState("tutorial");
   const [count, setCount] = useState(10);
 
   const title = subtopic || category.label;

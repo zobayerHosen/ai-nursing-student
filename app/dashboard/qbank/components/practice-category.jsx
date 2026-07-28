@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CURRICULUM, SAMPLE_QUESTIONS } from "./data";
-import ConfigureModal from "./configure-modal";
+import { CURRICULUM, SAMPLE_QUESTIONS } from "../../nclex-exam/components/data";
+import ConfigureModal from "../../nclex-exam/components/configure-modal";
 import { IoMdArrowDropdown } from "react-icons/io";
 
 const CATEGORY_EXAM_ICONS = (
@@ -15,7 +15,7 @@ const CATEGORY_EXAM_ICONS = (
 
 export default function PracticeByCategorySection({ onStartExam, computeStats, category, isLoading }) {
   const [expanded, setExpanded] = useState({});
-  const [expandedSec, setExpandedSec] = useState(Object.fromEntries(CURRICULUM.map((s) => [s.id, false])));
+  const [expandedSec, setExpandedSec] = useState({});
   const [configuring, setConfiguring] = useState(null);
 
   const toggle = (id) => setExpanded((e) => ({ ...e, [id]: !e[id] }));
@@ -35,7 +35,31 @@ export default function PracticeByCategorySection({ onStartExam, computeStats, c
           </p>
         </div>
 
-        {category?.map((sec, si) => (
+        {isLoading ? (
+          <div className="flex flex-col gap-3 mt-2">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+              <div key={i} className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-md px-4 py-3.5 flex items-center justify-between animate-pulse">
+                <div className="flex items-center gap-3 w-1/3">
+                  <div className="w-5 h-5 bg-[#cbd5e1] rounded"></div>
+                  <div className="flex-1 h-4 bg-[#cbd5e1] rounded w-full"></div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="h-3 bg-[#cbd5e1] rounded w-32"></div>
+                  <div className="w-4 h-4 bg-[#cbd5e1] rounded"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (!category || category.length === 0) ? (
+          <div className="flex flex-col items-center justify-center p-10 bg-white border border-[#e2e8f0] rounded-xl shadow-sm text-center mt-6">
+            <div className="w-16 h-16 bg-[#f1f5f9] rounded-full flex items-center justify-center mb-4">
+              <span className="text-2xl text-[#94a3b8]">📁</span>
+            </div>
+            <h3 className="text-[15px] font-bold text-[#0f172a] mb-1.5">No Categories Available</h3>
+            <p className="text-[13px] text-[#64748b]">Check back later for new practice materials.</p>
+          </div>
+        ) : (
+          category?.map((sec, si) => (
           <div key={sec?.category?.id} className="mb-4" style={{ animation: `fadeUp 0.3s ease ${si * 0.05}s both` }}>
             {/* Section header */}
             <button
@@ -45,22 +69,29 @@ export default function PracticeByCategorySection({ onStartExam, computeStats, c
               <p>{CATEGORY_EXAM_ICONS}</p>
               <span className="text-[13px] font-extrabold text-[#475569] flex-1 text-left">{sec?.category?.title}</span>
               <span className="text-xs text-[#94a3b8] font-medium">
-                {sec?.total_subtopic} topics ·{" "}
+                {sec?.total_topic} topics ·{" "}
                 {sec?.total_category_question} questions
               </span>
               <span
-                className={`text-[11px] text-[#475569] font-bold inline-block transition-transform duration-200 ${expandedSec[sec.id] ? "rotate-180" : ""
+                className={`text-[11px] text-[#475569] font-bold inline-block transition-transform duration-200 ${expandedSec[sec?.category?.id] ? "rotate-180" : ""
                   }`}
               >
                 <IoMdArrowDropdown className="text-2xl" />
               </span>
             </button>
 
-            {expandedSec[sec.id] && (
+            {expandedSec[sec?.category?.id] && (
               <div className="flex flex-col gap-2">
-                {sec?.categories?.map((cat) => {
+                {(!sec?.category?.topic || sec?.category?.topic.length === 0) && (
+                  <div className="flex flex-col items-center justify-center p-6 bg-white border border-[#e2e8f0] rounded-md shadow-sm text-center">
+                    <span className="text-xl mb-2 opacity-80">🗂️</span>
+                    <h4 className="text-[14px] font-bold text-[#1e293b] mb-1">No Topics Found</h4>
+                    <p className="text-[12px] text-[#64748b] font-medium">Topics for this category are currently unavailable. Please check back later.</p>
+                  </div>
+                )}
+                {sec?.category?.topic?.length > 0 && sec.category.topic.map((cat) => {
                   const isOpen = expanded[cat.id];
-                  const catTotal = cat?.subtopics?.reduce((a, s) => a + s.count, 0);
+                  const catTotal = cat?.subtopics?.reduce((a, s) => a + (s.total_question || 0), 0) || 0;
                   const secColor = "#2C5F8D";
                   const secBg = "#eef4fb";
 
@@ -72,7 +103,7 @@ export default function PracticeByCategorySection({ onStartExam, computeStats, c
                       {/* Category header */}
                       <div className="flex items-center gap-3 px-4.5 py-3.5">
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-bold text-[#0f172a]">{cat.label}</div>
+                          <div className="text-sm font-bold text-[#0f172a]">{cat.title}</div>
                           <div className="text-xs text-[#94a3b8] mt-0.5">
                             {cat?.subtopics?.length} subtopics ·{" "}
                             <span className="font-semibold" style={{ color: secColor }}>
@@ -131,7 +162,7 @@ export default function PracticeByCategorySection({ onStartExam, computeStats, c
                               Practice by Subtopic
                             </h5>
                             <p className="text-[10px] text-[#94a3b8] mt-0.5">
-                              {cat.subtopics.length} topics to choose from
+                              {cat?.subtopics?.length || 0} topics to choose from
                             </p>
                           </div>
                           <div
@@ -150,54 +181,61 @@ export default function PracticeByCategorySection({ onStartExam, computeStats, c
                           className="animate-[fadeIn_0.2s_ease]"
                           style={{ borderTop: `1px solid ${secColor}18` }}
                         >
-                          <div
-                            className="grid grid-cols-[1fr_64px_110px] px-4 py-1.5 bg-[#f8fafc] border-b border-[#f1f5f9] text-[10px] font-bold text-[#94a3b8] tracking-wide uppercase gap-2"
-                          >
-                            <span>Subtopic</span>
-                            <span className="text-right">Questions</span>
-                          </div>
-                          {cat?.subtopics?.map((sub, si) => (
-                            <div
-                              key={sub?.name}
-                              className="grid grid-cols-[1fr_64px_110px] px-4 py-2.5 items-center gap-2 transition-colors cursor-pointer hover:bg-[#f8fbff] "
-                              style={{
-                                borderBottom:
-                                  si < cat?.subtopics?.length - 1 ? "1px solid #f8fafc" : "none",
-                              }}
-                              onClick={() => launch(cat, sub)}
-                            >
-                              <div>
-                                <h6 className="text-[13px] font-semibold text-[#1e293b] mb-0.5">
-                                  {sub?.name ?? ""}
-                                </h6>
-                                <p className="text-[11px] text-[#94a3b8] leading-relaxed">
-                                  {sub?.desc ?? ""}
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <span className="text-[13px] font-bold" style={{ color: secColor }}>
-                                  {sub?.count ?? ""}
-                                </span>
-                                <span className="text-[10px] text-[#94a3b8] ml-0.5">Qs</span>
-                              </div>
-                              <div className="text-right">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    launch(cat, sub);
-                                  }}
-                                  className="px-3 py-1 rounded-md border text-[11px] font-bold cursor-pointer font-sans transition-all whitespace-nowrap"
-                                  style={{
-                                    borderColor: `${secColor}44`,
-                                    background: secBg,
-                                    color: secColor,
-                                  }}
-                                >
-                                  Practice →
-                                </button>
-                              </div>
+                          {(!cat?.subtopics || cat.subtopics.length === 0) ? (
+                            <div className="flex flex-col items-center justify-center px-4 py-8 text-center bg-[#f8fafc]">
+                              <span className="text-lg mb-2 opacity-80">📝</span>
+                              <h5 className="text-[13px] font-bold text-[#1e293b] mb-1">No Subtopics Available</h5>
+                              <p className="text-[11px] text-[#64748b] font-medium max-w-[250px]">There are currently no subtopics to practice within this topic.</p>
                             </div>
-                          ))}
+                          ) : (
+                            <>
+                              <div
+                                className="grid grid-cols-[1fr_64px_110px] px-4 py-1.5 bg-[#f8fafc] border-b border-[#f1f5f9] text-[10px] font-bold text-[#94a3b8] tracking-wide uppercase gap-2"
+                              >
+                                <span>Subtopic</span>
+                                <span className="text-right">Questions</span>
+                              </div>
+                              {cat.subtopics.map((sub, si) => (
+                                <div
+                                  key={sub?.id || sub?.title}
+                                  className="grid grid-cols-[1fr_64px_110px] px-4 py-2.5 items-center gap-2 transition-colors cursor-pointer hover:bg-[#f8fbff] "
+                                  style={{
+                                    borderBottom:
+                                      si < cat?.subtopics?.length - 1 ? "1px solid #f8fafc" : "none",
+                                  }}
+                                  onClick={() => launch(cat, sub)}
+                                >
+                                  <div>
+                                    <h6 className="text-[13px] font-semibold text-[#1e293b] mb-0.5">
+                                      {sub?.title ?? ""}
+                                    </h6>
+                                  </div>
+                                  <div className="text-right">
+                                    <span className="text-[13px] font-bold" style={{ color: secColor }}>
+                                      {sub?.total_question ?? 0}
+                                    </span>
+                                    <span className="text-[10px] text-[#94a3b8] ml-0.5">Qs</span>
+                                  </div>
+                                  <div className="text-right">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        launch(cat, sub);
+                                      }}
+                                      className="px-3 py-1 rounded-md border text-[11px] font-bold cursor-pointer font-sans transition-all whitespace-nowrap"
+                                      style={{
+                                        borderColor: `${secColor}44`,
+                                        background: secBg,
+                                        color: secColor,
+                                      }}
+                                    >
+                                      Practice →
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </>
+                          )}
                         </div>
                       )}
                     </div>
@@ -206,24 +244,24 @@ export default function PracticeByCategorySection({ onStartExam, computeStats, c
               </div>
             )}
           </div>
-        ))}
+        )))}
       </div>
 
       {/* Configure Modal */}
       {configuring && (
         <ConfigureModal
           category={configuring.category}
-          subtopic={configuring.subtopic ? configuring.subtopic.name : null}
+          subtopic={configuring.subtopic ? configuring.subtopic.title : null}
           questionStats={(() => {
             const traditionalPool = SAMPLE_QUESTIONS;
             return computeStats ? computeStats(traditionalPool) : null;
           })()}
           onClose={() => setConfiguring(null)}
           onStart={(cfg) => {
-            const subName = configuring.subtopic?.name;
+            const subName = configuring.subtopic?.title;
             const label = subName
-              ? `${configuring.category.label} — ${subName}`
-              : configuring.category.label;
+              ? `${configuring.category.title} — ${subName}`
+              : configuring.category.title;
             const pool = applyFilter ? applyFilter(SAMPLE_QUESTIONS, cfg.filter) : SAMPLE_QUESTIONS;
             const finalPool = pool.length > 0 ? pool : SAMPLE_QUESTIONS;
             setConfiguring(null);

@@ -359,7 +359,7 @@ export default function ConceptMapCanvas({ mapData }) {
           <div ref={layoutRef} className="cm-layout" />
           <svg ref={svgRef} className="cm-edges" />
         </div>
-
+ 
         {/* Zoom bar */}
         <div className="cm-zoombar">
           <button type="button" onClick={() => zoomBy(1.2)} className="cm-zoom-btn" title="Zoom in"><Plus size={16} /></button>

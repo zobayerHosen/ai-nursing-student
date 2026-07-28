@@ -2,13 +2,18 @@
 
 import { useState } from "react";
 import { NGN_TYPES } from "../../nclex-exam/components/data";
-import PracticeByCategorySection from "../../nclex-exam/components/practice-category";
+import PracticeByCategorySection from "./practice-category";
 import QuestionInterface from "../../nclex-exam/components/question-interface";
 import { useCategoryList } from "@/hooks/practice";
 
 export default function QbankClient() {
-  const {category, isLoading} = useCategoryList()
-  console.log("🚀 ~ QbankClient ~ category:", category)
+  const { category, isLoading } = useCategoryList()
+
+
+  console.log("Category List:--->", category);
+
+
+
 
   const [examState, setExamState] = useState(null);
   const [qHistory, setQHistory] = useState({});
@@ -75,9 +80,9 @@ export default function QbankClient() {
     <div className="w-full flex flex-col h-full xl:min-h-[calc(100vh-80px)] relative bg-[#f4f6f9]">
       {/* Top bar - larger screens */}
       <div className="hidden xl:flex bg-white border-b border-[#e2e8f0] px-7 h-13.5 items-center justify-between shrink-0">
-        <div className="text-[15px] font-bold text-[#0f172a]">
+        <span className="text-[15px] font-bold text-[#0f172a]">
           Tutorial QBank
-        </div>
+        </span>
         <div className="flex items-center gap-3">
           <div className="text-xs text-[#64748b] flex items-center gap-1.5">
             <span className="text-amber-500">⭐</span>
