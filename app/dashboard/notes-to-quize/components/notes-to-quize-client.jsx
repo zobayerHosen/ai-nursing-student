@@ -14,8 +14,6 @@ import QuizeSidebar from "./quize-sidebar";
 export default function NotesToQuizeClient() {
   const [hasGenerated, setHasGenerated] = useState(false);
   const [selectedQuestionCount, setSelectedQuestionCount] = useState(10);
-  const [selectedCategory, setSelectedCategory] = useState("Anatomy");
-  const [selectedDifficulty, setSelectedDifficulty] = useState("beginner");
   const [selectedFile, setSelectedFile] = useState(null);
   const [contentSource, setContentSource] = useState("");
   const [generatedResult, setGeneratedResult] = useState(null);
@@ -52,8 +50,8 @@ export default function NotesToQuizeClient() {
       formData.append("content_source", contentSource);
     }
     formData.append("question_requested", String(selectedQuestionCount));
-    formData.append("nclex_category", selectedCategory);
-    formData.append("question_type", selectedDifficulty);
+    // formData.append("nclex_category", selectedCategory);
+    // formData.append("question_type", selectedDifficulty);
 
     try {
       const response = await generateNclexQuiz(formData);
@@ -86,10 +84,6 @@ export default function NotesToQuizeClient() {
       <QuizeSidebar
         selectedQuestionCount={selectedQuestionCount}
         setSelectedQuestionCount={setSelectedQuestionCount}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        selectedDifficulty={selectedDifficulty}
-        setSelectedDifficulty={setSelectedDifficulty}
         selectedFile={selectedFile}
         setSelectedFile={setSelectedFile}
         contentSource={contentSource}

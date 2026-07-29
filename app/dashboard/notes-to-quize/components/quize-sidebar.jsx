@@ -1,25 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { CloudUpload, History, Settings2 } from "lucide-react";
 
-const difficultyLevels = ["beginner", "Intermediate", "Advanced"];
-
-const nclexCategories = [
-  "Anatomy",
-  "Key Terms",
-  "Definitions",
-  "Clinical",
-  "Drugs",
-  "Labs",
-  "NCLEX Tips",
-];
-
 export default function QuizeSidebar({
   selectedQuestionCount,
   setSelectedQuestionCount,
-  selectedCategory,
-  setSelectedCategory,
-  selectedDifficulty,
-  setSelectedDifficulty,
   selectedFile,
   setSelectedFile,
   contentSource,
@@ -173,20 +157,6 @@ export default function QuizeSidebar({
                       Maximum 30 questions
                     </p>
                   </div>
-
-                  <OptionGroup
-                    label="Nclex Category"
-                    options={nclexCategories}
-                    selectedOption={selectedCategory}
-                    onSelect={setSelectedCategory}
-                  />
-
-                  <OptionGroup
-                    label="Difficulty"
-                    options={difficultyLevels}
-                    selectedOption={selectedDifficulty}
-                    onSelect={setSelectedDifficulty}
-                  />
 
                   <button
                     type="button"

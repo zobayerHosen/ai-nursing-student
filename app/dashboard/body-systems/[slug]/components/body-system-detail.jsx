@@ -78,12 +78,12 @@ const BodySystemDetail = ({ systemData }) => {
   const coverUrl = currentContent?.cover || currentContent?.content_cover_url || systemData?.cover;
 
   return (
-    <div className="flex h-screen bg-[#F8F9FA] overflow-hidden max-lg:flex-col max-lg:h-auto max-lg:overflow-y-auto">
+    <div className="flex h-[calc(100vh-100px)] bg-[#F8F9FA] overflow-hidden max-lg:flex-col max-lg:h-auto max-lg:overflow-visible">
       
       {/* LEFT COLUMN: Diagram Canvas Viewer (Locked on Desktop) */}
       <div className="flex-1 h-full relative flex flex-col p-8 max-sm:p-4 w-full overflow-hidden max-lg:h-auto max-lg:overflow-visible">
         {/* Title Block */}
-        <div className="mb-6 shrink-0">
+        <div className="shrink-0">
           <button 
             onClick={() => router.back()} 
             className="cursor-pointer inline-flex items-center text-sm text-slate-500 hover:text-primary mb-4 transition-colors"

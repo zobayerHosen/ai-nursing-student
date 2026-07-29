@@ -244,16 +244,18 @@ export default function TutorChat() {
             voiceError={voiceError}
             onToggleVoiceChat={toggleVoiceChat}
           />
-          <ChatInput
-            onSendMessage={handleSendMessage}
-            activeMode={activeMode}
-            setActiveMode={setActiveMode}
-            voiceStatus={voiceStatus}
-            voiceError={voiceError}
-            onToggleVoiceChat={toggleVoiceChat}
-            connectionStatus={connectionStatus}
-            isStreaming={isStreaming}
-          />
+          {activeMode === 'chat' && (
+            <ChatInput
+              onSendMessage={handleSendMessage}
+              activeMode={activeMode}
+              setActiveMode={setActiveMode}
+              voiceStatus={voiceStatus}
+              voiceError={voiceError}
+              onToggleVoiceChat={toggleVoiceChat}
+              connectionStatus={connectionStatus}
+              isStreaming={isStreaming}
+            />
+          )}
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const BodySystemList = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 12;
   const offset = (currentPage - 1) * itemsPerPage;
 
   const { coreLearningData, coreLearningPagination, isLoading } = useCoreLearning("body_system", { limit: itemsPerPage, offset });
@@ -45,7 +45,7 @@ const BodySystemList = () => {
           <Link
             key={system.id}
             href={`/dashboard/body-systems/${system.id}`}
-            className="group bg-white rounded-2xl shadow-sm border border-transparent hover:border-primary hover:shadow-md transition-all duration-300 flex flex-col items-center p-4 text-center"
+            className="group bg-white rounded-2xl border border-gray-200 hover:border-primary transition-all duration-300 flex flex-col items-center p-4 text-center"
           >
             {/* Optimized image container */}
             <div className="relative w-full aspect-square bg-white rounded-xl mb-4 overflow-hidden flex items-center justify-center p-2">

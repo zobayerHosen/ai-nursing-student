@@ -1,5 +1,6 @@
 "use client";
 
+import { useStartExam } from "@/hooks";
 import { useState } from "react";
 
 const MODE_OPTIONS = [
@@ -16,9 +17,11 @@ const MODE_OPTIONS = [
 ];
 
 export default function ConfigureModal({ category, subtopic, totalQuestions, onClose, onStart }) {
+  const { startExam, isPending } = useStartExam();
+
   const maxAvailable = totalQuestions || category?.count || 0;
   const minLimit = Math.min(2, Math.max(1, maxAvailable));
-  
+
   const [mode, setMode] = useState("tutorial");
   const [count, setCount] = useState(Math.max(minLimit, Math.min(2, maxAvailable)));
 
@@ -26,6 +29,18 @@ export default function ConfigureModal({ category, subtopic, totalQuestions, onC
   const sub = subtopic
     ? `${category?.title || category?.label} — subtopic`
     : `${maxAvailable} questions available`;
+
+  // handle start
+  const handleStart = () => {
+    const data = {
+      mode,
+      question_select: count,
+      category_id: category?.id,
+      subcategory_id: subtopic?.id || null,
+    };
+    startExam(data);
+    onStart(data);
+  };
 
   return (
     <div
@@ -64,16 +79,14 @@ export default function ConfigureModal({ category, subtopic, totalQuestions, onC
               <div
                 key={m.id}
                 onClick={() => setMode(m.id)}
-                className={`p-3.5 rounded-lg border cursor-pointer transition-all ${
-                  mode === m.id
-                    ? "border-[#2C5F8D] bg-[#eef4fb]"
-                    : "border-[#e2e8f0] bg-white"
-                }`}
+                className={`p-3.5 rounded-lg border cursor-pointer transition-all ${mode === m.id
+                  ? "border-[#2C5F8D] bg-[#eef4fb]"
+                  : "border-[#e2e8f0] bg-white"
+                  }`}
               >
                 <div
-                  className={`text-[13px] font-bold mb-1 ${
-                    mode === m.id ? "text-[#2C5F8D]" : "text-[#1e293b]"
-                  }`}
+                  className={`text-[13px] font-bold mb-1 ${mode === m.id ? "text-[#2C5F8D]" : "text-[#1e293b]"
+                    }`}
                 >
                   {m.label}
                 </div>
@@ -99,7 +112,7 @@ export default function ConfigureModal({ category, subtopic, totalQuestions, onC
             value={count}
             onChange={(e) => setCount(+e.target.value)}
             className="w-full accent-[#2C5F8D]"
-          /> 
+          />
           <div className="flex justify-between text-[11px] text-[#94a3b8] mt-1">
             <span>{minLimit}</span>
             <span>{maxAvailable}</span>

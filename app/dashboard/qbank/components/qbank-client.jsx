@@ -4,10 +4,13 @@ import { useState } from "react";
 import { NGN_TYPES } from "../../nclex-exam/components/data";
 import PracticeByCategorySection from "./practice-category";
 import QuestionInterface from "../../nclex-exam/components/question-interface";
-import { useCategoryList } from "@/hooks/practice";
+import { useCategoryList, useExamQuestion } from "@/hooks/practice";
 
 export default function QbankClient() {
   const { category, isLoading } = useCategoryList();
+  const { examQuestion, isLoading: examQuestionLoading } = useExamQuestion();
+
+  console.log("examQuestion", examQuestion)
 
   const [examState, setExamState] = useState(null);
   const [qHistory, setQHistory] = useState({});

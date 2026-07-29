@@ -14,14 +14,12 @@ const TracYourProgress = () => {
 
             {/* progress shortcut part */}
             <div className="border rounded-xl border-gray-200 p-6 w-200">
-                
+        
             </div>
 
             {/* upcoming task */}
             <div className="">
-
-
-
+                
             </div>
 
 

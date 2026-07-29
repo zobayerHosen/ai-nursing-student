@@ -1,21 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { CloudUpload, History, Settings2 } from "lucide-react";
 
-const focusAreas = [
-  "Anatomy",
-  "Key Terms",
-  "Definitions",
-  "Clinical",
-  "Drugs",
-  "Labs",
-  "NCLEX Tips",
-];
-
 export default function FlashcardsSidebar({
   selectedCardCount,
   setSelectedCardCount,
-  selectedFocus,
-  setSelectedFocus,
   selectedFile,
   setSelectedFile,
   contentSource,
@@ -168,26 +156,6 @@ export default function FlashcardsSidebar({
                     <p className="text-[10px] font-medium text-[#697586]">
                       Maximum 30 cards
                     </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <p className="text-xs font-semibold text-[#222427]">Focus Area</p>
-                    <div className="flex flex-wrap gap-2">
-                      {focusAreas.map((area) => (
-                        <button
-                          key={area}
-                          type="button"
-                          onClick={() => setSelectedFocus(area)}
-                          className={`rounded-md px-3 py-2 text-[11px] font-semibold transition ${
-                            selectedFocus === area
-                              ? "bg-[#D9ECFF] text-[#2C5F8D]"
-                              : "bg-[#F2F4F7] text-[#3F4852] hover:bg-[#E8EEF5]"
-                          }`}
-                        >
-                          {area}
-                        </button>
-                      ))}
-                    </div>
                   </div>
 
                   <button

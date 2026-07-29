@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CURRICULUM, SAMPLE_QUESTIONS } from "../../nclex-exam/components/data";
+import { SAMPLE_QUESTIONS } from "../../nclex-exam/components/data";
 import ConfigureModal from "../../nclex-exam/components/configure-modal";
 import { IoMdArrowDropdown } from "react-icons/io";
 
@@ -13,7 +13,7 @@ const CATEGORY_EXAM_ICONS = (
   </svg>
 );
 
-export default function PracticeByCategorySection({ onStartExam, computeStats, category, isLoading }) {
+export default function PracticeByCategorySection({ onStartExam, category, isLoading }) {
   const [expanded, setExpanded] = useState({});
   const [expandedSec, setExpandedSec] = useState({});
   const [configuring, setConfiguring] = useState(null);

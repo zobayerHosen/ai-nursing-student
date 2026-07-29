@@ -5,5 +5,14 @@ export const categoryListService = async (axiosInstance) => {
 }
 
 
+// start exam service
+export const startExamService = async (axiosInstance, data) => {
+    const response = await axiosInstance.post(`/start-exam/`, data);
+    return response?.data;
+}
 
-// Category list get
+// Question data get for exam by exam id
+export const getExamQuestionService = async (axiosInstance, examId) => {
+    const response = await axiosInstance.get(`/nclex/subtopic/${examId}/`);
+    return response?.data;
+}
