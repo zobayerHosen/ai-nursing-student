@@ -15,14 +15,17 @@ const MODE_OPTIONS = [
   },
 ];
 
-export default function ConfigureModal({ category, subtopic, onClose, onStart }) {
+export default function ConfigureModal({ category, subtopic, totalQuestions, onClose, onStart }) {
+  const maxAvailable = totalQuestions || category?.count || 0;
+  const minLimit = Math.min(2, Math.max(1, maxAvailable));
+  
   const [mode, setMode] = useState("tutorial");
-  const [count, setCount] = useState(10);
+  const [count, setCount] = useState(Math.max(minLimit, Math.min(2, maxAvailable)));
 
-  const title = subtopic || category.label;
+  const title = subtopic || category?.title || category?.label;
   const sub = subtopic
-    ? `${category.label} — subtopic`
-    : `${category.count} questions available`;
+    ? `${category?.title || category?.label} — subtopic`
+    : `${maxAvailable} questions available`;
 
   return (
     <div
@@ -90,16 +93,16 @@ export default function ConfigureModal({ category, subtopic, onClose, onStart })
           </div>
           <input
             type="range"
-            min={5}
-            max={40}
-            step={5}
+            min={minLimit}
+            max={maxAvailable}
+            step={1}
             value={count}
             onChange={(e) => setCount(+e.target.value)}
             className="w-full accent-[#2C5F8D]"
           /> 
           <div className="flex justify-between text-[11px] text-[#94a3b8] mt-1">
-            <span>5</span>
-            <span>40</span>
+            <span>{minLimit}</span>
+            <span>{maxAvailable}</span>
           </div>
         </div>
 

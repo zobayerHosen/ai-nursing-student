@@ -7,13 +7,7 @@ import QuestionInterface from "../../nclex-exam/components/question-interface";
 import { useCategoryList } from "@/hooks/practice";
 
 export default function QbankClient() {
-  const { category, isLoading } = useCategoryList()
-
-
-  console.log("Category List:--->", category);
-
-
-
+  const { category, isLoading } = useCategoryList();
 
   const [examState, setExamState] = useState(null);
   const [qHistory, setQHistory] = useState({});
