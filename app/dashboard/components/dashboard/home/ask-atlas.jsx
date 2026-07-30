@@ -1,222 +1,81 @@
 "use client";
 
-import { BiSolidMicrophone } from "react-icons/bi";
-import { useEffect, useRef } from "react";
 import Link from "next/link";
+import { ArrowRight, Lightbulb, Mic } from "lucide-react";
 
 export default function AskAtlas() {
-  const canvasRef = useRef(null);
-  const rafRef = useRef(null);
+  const suggestedQuestions = [
+    "Explain oxidative phosphorylation",
+    "How does mitochondria make ATP?",
+    "Difference between mitochondria and chloroplast?",
+    "Give me a quiz on this topic"
+  ];
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-
-    const CSS_W = 620;
-    const CSS_H = 260;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-    canvas.width = CSS_W * dpr;
-    canvas.height = CSS_H * dpr;
-    canvas.style.width = CSS_W + "px";
-    canvas.style.height = CSS_H + "px";
-
-    ctx.scale(dpr, dpr);
-
-    const centerY = CSS_H / 2;
-    const centerX = CSS_W / 2;
-
-    // 🔥 Global animation speed
-    // 1 = original
-    // 0.5 = 2x slower
-    // 0.2 = 5x slower
-    // 0.1 = 10x slower
-    const ANIMATION_SPEED = 0.5;
-
-    // Eye/lens envelope
-    const envelope = (x) => {
-      const t = (x - centerX) / (CSS_W / 2);
-      const clamped = Math.max(-1, Math.min(1, t));
-      return Math.sqrt(Math.max(0, 1 - clamped * clamped));
-    };
-
-    const strands = [
-      {
-        freq: 0.028,
-        amp: 46,
-        phase: 0,
-        speed: 0.0011,
-        color: [56, 214, 255],
-        size: 1.3,
-        density: 2.1,
-      },
-      {
-        freq: 0.021,
-        amp: 34,
-        phase: 1.7,
-        speed: -0.0008,
-        color: [110, 140, 255],
-        size: 1.1,
-        density: 2.4,
-      },
-      {
-        freq: 0.034,
-        amp: 28,
-        phase: 3.1,
-        speed: 0.0009,
-        color: [190, 110, 255],
-        size: 1.1,
-        density: 2.6,
-      },
-      {
-        freq: 0.017,
-        amp: 52,
-        phase: 4.4,
-        speed: -0.0006,
-        color: [80, 190, 255],
-        size: 1.4,
-        density: 1.9,
-      },
-      {
-        freq: 0.04,
-        amp: 20,
-        phase: 2.2,
-        speed: 0.0012,
-        color: [210, 130, 255],
-        size: 0.9,
-        density: 3.0,
-      },
-      {
-        freq: 0.024,
-        amp: 38,
-        phase: 5.4,
-        speed: -0.0009,
-        color: [70, 160, 255],
-        size: 1.0,
-        density: 2.2,
-      },
-    ];
-
-    let t = 0;
-
-    function draw() {
-      ctx.clearRect(0, 0, CSS_W, CSS_H);
-
-      strands.forEach((s) => {
-        for (let x = 0; x <= CSS_W; x += s.density) {
-          const env = envelope(x);
-          if (env <= 0.01) continue;
-
-          const y =
-            centerY +
-            Math.sin(
-              x * s.freq +
-              s.phase +
-              t * (s.speed * 60 * ANIMATION_SPEED)
-            ) *
-            s.amp *
-            env +
-            Math.sin(
-              x * s.freq * 2.3 +
-              s.phase * 1.6 +
-              t * 0.004 * ANIMATION_SPEED
-            ) *
-            6 *
-            env;
-
-          // Dust jitter
-          const jitter =
-            (Math.sin(
-              x * 12.9898 +
-              s.phase * 78.233 +
-              Math.floor(t * 1.5 * ANIMATION_SPEED)
-            ) *
-              43758.5453) %
-            1;
-
-          const jy = y + jitter * 5 * env;
-
-          const alpha = 0.15 + env * 0.55;
-          const [r, g, b] = s.color;
-
-          ctx.beginPath();
-          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-          ctx.arc(
-            x,
-            jy,
-            s.size * (0.5 + env * 0.8),
-            0,
-            Math.PI * 2
-          );
-          ctx.fill();
-        }
-      });
-
-      t += ANIMATION_SPEED;
-
-      rafRef.current = requestAnimationFrame(draw);
-    }
-
-    draw();
-
-    return () => {
-      cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
+  const wavePattern = [6, 10, 8, 14, 12, 18, 24, 20, 28, 22, 16, 12, 8, 6];
+  const fullWave = [...wavePattern, 32, ...[...wavePattern].reverse()];
 
   return (
-    <Link
-      href="/dashboard/my-tutor"
-      className="w-full"
-    >
-      <section className="relative flex h-85 w-full flex-col items-center justify-center overflow-hidden rounded-xl bg-[#12142c]">
-        {/* Ambient glow */}
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-65 w-125 rounded-full bg-cyan-500/5 blur-[100px]" />
-        </div>
+    <div className="w-full flex flex-col lg:flex-row items-stretch gap-6">
+      {/* Left Box: Talk with Lumi */}
+      <Link
+        href="/dashboard/my-tutor"
+        className="flex-1 min-h-[220px] bg-[#326798] rounded-[24px] flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-[#2C5F8D] transition-colors relative overflow-hidden group shadow-sm"
+      >
+        <style>{`
+                    @keyframes blink-fade {
+                        0%, 100% { opacity: 0.3; }
+                        50% { opacity: 1; }
+                    }
+                `}</style>
 
-        {/* Orb + Wave */}
-        <div
-          className="relative flex items-center justify-center"
-          style={{ width: 400, height: 260 }}
-        >
-          <canvas
-            ref={canvasRef}
-            className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-          />
-
-          {/* Ellipse */}
-          <div className="absolute left-1/2 top-1/2 h-57.5 w-95 -translate-x-1/2 -translate-y-1/2">
-            <div className="absolute inset-0 rounded-full bg-cyan-400/20 blur-2xl" />
-
+        {/* Waveform */}
+        <div className="flex items-center gap-[3px] justify-center h-16 mb-3">
+          {fullWave.map((h, i) => (
             <div
-              className="absolute inset-0 rounded-full"
+              key={i}
+              className="w-[2px] bg-white rounded-full"
               style={{
-                background:
-                  "radial-gradient(ellipse at center, rgba(10,12,30,0.35) 0%, rgba(10,12,30,0.05) 60%, rgba(10,12,30,0) 75%)",
+                height: `${h}px`,
+                animation: `blink-fade 1.2s infinite ease-in-out ${(i % 5) * 0.15}s`
               }}
             />
-
-            <div
-              className="absolute inset-0 rounded-full"
-              style={{
-                boxShadow:
-                  "0 0 12px 2px rgba(45,212,255,.55),0 0 40px 6px rgba(45,212,255,.25),inset 0 0 25px rgba(45,212,255,.25)",
-              }}
-            />
-          </div>
+          ))}
         </div>
 
-        <p className="text-lg  tracking-wide text-cyan-200">
-          Ask Atlas anything
+        {/* Microphone Icon */}
+        <div className="w-12 h-12 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+          <svg width="41" height="41" viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path opacity="0.4" d="M38.5228 15.6777C37.2378 15.6777 36.195 16.5345 36.195 17.5944C36.195 24.7529 29.1208 30.5775 20.4265 30.5775C11.7298 30.5775 4.6556 24.7529 4.6556 17.5944C4.6556 16.5345 3.61275 15.6777 2.3278 15.6777C1.04285 15.6777 0 16.5345 0 17.5944C0 26.2192 7.92849 33.3394 18.0987 34.2958V38.152C18.0987 39.21 19.1392 40.0687 20.4265 40.0687C21.7114 40.0687 22.7543 39.21 22.7543 38.152V34.2958C32.9221 33.3394 40.8506 26.2192 40.8506 17.5944C40.8506 16.5345 39.8077 15.6777 38.5228 15.6777Z" fill="#ffff" />
+            <path d="M20.0034 26.48H20.846C26.619 26.48 31.3025 22.6257 31.3025 17.8725V8.60946C31.3025 3.85241 26.619 0 20.846 0H20.0034C14.2304 0 9.54688 3.85241 9.54688 8.60946V17.8725C9.54688 22.6257 14.2304 26.48 20.0034 26.48Z" fill="#fff" />
+          </svg>
+        </div>
+
+        {/* Text */}
+        <p className="text-base text-white tracking-wide">
+          Talk with Cara
         </p>
+      </Link>
 
-        <button className="cursor-pointer flex h-10 w-10  transition-transform duration-300 hover:scale-110">
-          <BiSolidMicrophone
-            className="h-8 w-8 text-[#00d1f19d]"
-          />
-        </button>
-      </section>
-    </Link>
+      {/* Right Box: Suggested things to ask */}
+      <div className="w-full lg:w-[45%] xl:w-[40%] bg-white rounded-[24px] border border-[#E2E8F0] p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] flex flex-col">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-[15px] font-bold text-[#1e293b]">Suggested things to ask</h2>
+          <Lightbulb className="w-[18px] h-[18px] text-[#9333EA] fill-[#9333EA]/10" />
+        </div>
+
+        <div className="flex flex-col gap-3 flex-1 justify-center">
+          {suggestedQuestions.map((q, idx) => (
+            <Link
+              key={idx}
+              href="/dashboard/my-tutor"
+              className="w-full flex items-center justify-between bg-[#FAFAF9] border border-[#F3E8FF] hover:bg-[#F3E8FF] hover:border-[#E9D5FF] transition-all rounded-xl px-4 py-3 cursor-pointer group shadow-sm"
+            >
+              <span className="text-[12.5px] font-semibold text-[#8B5CF6] pr-4 leading-tight">{q}</span>
+              <ArrowRight className="w-[15px] h-[15px] text-[#8B5CF6] shrink-0 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

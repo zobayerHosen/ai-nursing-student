@@ -96,7 +96,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
 
                                 {/* Section Title */}
                                 {!collapsed && (
-                                    <p className="text-xs text-[#9CA3AF] font-bold uppercase tracking-wider mb-3 px-1">
+                                    <p className="text-xs text-[#8E9199] font-bold uppercase tracking-wider mb-3 px-1">
                                         {section.title}
                                     </p>
                                 )}
@@ -129,7 +129,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                                                         className={
                                                             section.title === "AI TOOLS"
                                                                 ? `w-full flex flex-col items-center justify-center text-center border border-[#E5E7EB] hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 ${collapsed ? "gap-0 h-10 border-0" : "h-22 px-2 rounded-2xl"}`
-                                                                : `cursor-pointer w-full flex items-center p-3 transition-all duration-200 ${collapsed ? "gap-0 h-10 justify-center" : "gap-3"} hover:bg-gray-100 text-[#424242]`
+                                                                : `cursor-pointer w-full flex items-center p-3 transition-all duration-200 ${collapsed ? "gap-0 h-10 justify-center" : "gap-3"} hover:bg-gray-100 text-[#64748B]`
                                                         }
                                                     >
                                                         {/* Icon */}
@@ -144,7 +144,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                                                             <span
                                                                 className={
                                                                     section.title === "AI TOOLS"
-                                                                        ? "text-[11px] leading-4 font-medium text-[#555555]"
+                                                                        ? "text-[11px] leading-4 font-medium text-[#64748B]"
                                                                         : "text-sm font-medium"
                                                                 }
                                                             >
@@ -163,7 +163,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                                                                     ? `flex flex-col items-center justify-center text-center border border-[#E5E7EB] hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 ${collapsed ? "gap-0 h-10 border-0" : "h-22 px-2 rounded-2xl"} ${isActive ? "bg-[rgba(44,95,141,0.10)] text-primary" : ""}`
                                                                     : `flex items-center transition-all duration-200 ${collapsed ? "p-3 h-10 justify-center gap-0" : "p-3 gap-3 justify-between"} ${isActive
                                                                         ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary"
-                                                                        : "hover:bg-gray-100 text-[#424242]"
+                                                                        : "hover:bg-gray-100 text-[#64748B]"
                                                                     }`
                                                             }
                                                         >
@@ -185,7 +185,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                                                                     <span
                                                                         className={
                                                                             section.title === "AI TOOLS"
-                                                                                ? "text-[11px] leading-4 font-medium text-[#555555]"
+                                                                                ? "text-[11px] leading-4 font-medium text-[#64748B]"
                                                                                 : "text-sm font-medium"
                                                                         }
                                                                     >

@@ -10,24 +10,25 @@ import { FaFacebookF } from "react-icons/fa";
 import { GoBellFill } from "react-icons/go";
 import { TbBrandTiktok } from "react-icons/tb";
 import NotificationPanel from "./NotificationPanel";
+import { settingsIcon } from "@/dummydata";
 
 // Social Icons Data
 const socialIcons = [
-    {
-        id: 1,
-        icon: BsInstagram,
-        color: "text-pink-500",
-    },
-    {
-        id: 2,
-        icon: TbBrandTiktok,
-        color: "text-black",
-    },
-    {
-        id: 3,
-        icon: FaFacebookF,
-        color: "text-blue-600",
-    },
+    // {
+    //     id: 1,
+    //     icon: BsInstagram,
+    //     color: "text-pink-500",
+    // },
+    // {
+    //     id: 2,
+    //     icon: TbBrandTiktok,
+    //     color: "text-black",
+    // },
+    // {
+    //     id: 3,
+    //     icon: FaFacebookF,
+    //     color: "text-blue-600",
+    // },
     {
         id: 4,
         icon: GoBellFill,
@@ -118,7 +119,6 @@ export default function DashboardHeader({
                                             </span>
                                         )}
                                     </button>
-
                                 </div>
                             );
                         }
@@ -191,6 +191,14 @@ export default function DashboardHeader({
                         </div>
                     )}
                 </div>
+
+                <Link
+                    href={"/dashboard/settings"}
+                     className="relative w-7 h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 shrink-0 cursor-pointer transition-colors"
+                    aria-label="Settings"
+                >
+                    {settingsIcon}
+                </Link>
 
                 {/* Profile */}
                 <Link href={"/dashboard/settings"} className="shrink-0 ring-1 rounded-full ring-gray-300">
