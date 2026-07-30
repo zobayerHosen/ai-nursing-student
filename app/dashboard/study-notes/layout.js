@@ -8,7 +8,7 @@ export default function StudyNotesLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="flex flex-col xl:flex-row h-full xl:min-h-[calc(100vh-80px)] relative">
+    <div className="flex flex-col xl:flex-row h-full xl:h-[calc(100vh-80px)] relative overflow-hidden">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div
@@ -19,8 +19,8 @@ export default function StudyNotesLayout({ children }) {
 
       {/* Sidebar Wrapper */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 xl:relative xl:translate-x-0
-        ${isSidebarOpen ? "translate-x-0 z-[999]" : "-translate-x-full"} w-[80%] sm:w-80 xl:w-82.5 shrink-0 bg-white`}
+        className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 xl:sticky xl:top-0 xl:self-start xl:translate-x-0
+        ${isSidebarOpen ? "translate-x-0 z-[999]" : "-translate-x-full"} w-[80%] sm:w-80 xl:w-82.5 shrink-0 bg-white xl:h-full`}
       >
         <StudyNoteSidebar onClose={() => setIsSidebarOpen(false)} />
       </div>

@@ -23,41 +23,49 @@ export default function AllNursingAreas({ topics = [] }) {
     const notStartedCount = topics.filter(t => getStatusText(t.status) === "notStarted").length;
 
     return (
-        <div className="mt-20">
-            {/* header */}
-            <div className="flex flex-col gap-2 mb-8">
-                <h2 className="text-2xl text-[#223247]">
-                    All nursing areas
-                </h2>
+        <div className="mt-8">
+            {/* Header & Filter */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                {/* Left: Title */}
+                <div className="flex flex-col gap-1">
+                    <h2 className="text-xl font-bold text-[#1E293B]">
+                        All nursing areas
+                    </h2>
+                    <p className="text-[#64748B] text-[12px] font-medium">
+                        Mark a topic complete when you&apos;ve absorbed it · Filter by status
+                    </p>
+                </div>
 
-                {/* · Filter by status */}
-                <p className="text-[#7D8794]">
-                    Mark a topic complete when you've absorbed it.
-                </p>
-            </div>
+                {/* Right: filter */}
+                <div className="flex flex-wrap items-center gap-2">
+                    <button 
+                        onClick={() => setFilter("all")}
+                        className={`${filter === "all" ? "bg-[#0F4770] text-white" : "bg-[#F1F5F9] text-[#475569] hover:bg-[#E2E8F0]"} px-4 py-1.5 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1.5`}
+                    >
+                        All <span className={`${filter === "all" ? "bg-white/20" : "bg-[#E2E8F0]"} px-1.5 py-0.5 rounded-md`}>{topics.length}</span>
+                    </button>
 
-            {/* filter */}
-            <div className="flex flex-wrap gap-3 mb-8">
-                <button 
-                    onClick={() => setFilter("all")}
-                    className={`${filter === "all" ? "bg-[#1E2F44] text-white" : "bg-[#F1F1F1] text-black"} px-6 py-3 rounded-full`}
-                >
-                    All {topics.length}
-                </button>
+                    <button 
+                        onClick={() => setFilter("progress")}
+                        className={`${filter === "progress" ? "bg-[#0F4770] text-white" : "bg-[#F1F5F9] text-[#475569] hover:bg-[#E2E8F0]"} px-4 py-1.5 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1.5`}
+                    >
+                        In Progress <span className={`${filter === "progress" ? "bg-white/20" : "bg-[#E2E8F0]"} px-1.5 py-0.5 rounded-md`}>{topics.filter(t => getStatusText(t.status) === "progress").length}</span>
+                    </button>
 
-                <button 
-                    onClick={() => setFilter("complete")}
-                    className={`${filter === "complete" ? "bg-[#1E2F44] text-white" : "bg-[#F1F1F1] text-black"} px-6 py-3 rounded-full`}
-                >
-                    Complete {completeCount}
-                </button>
+                    <button 
+                        onClick={() => setFilter("complete")}
+                        className={`${filter === "complete" ? "bg-[#0F4770] text-white" : "bg-[#F1F5F9] text-[#475569] hover:bg-[#E2E8F0]"} px-4 py-1.5 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1.5`}
+                    >
+                        Completed <span className={`${filter === "complete" ? "bg-white/20" : "bg-[#E2E8F0]"} px-1.5 py-0.5 rounded-md`}>{completeCount}</span>
+                    </button>
 
-                <button 
-                    onClick={() => setFilter("notStarted")}
-                    className={`${filter === "notStarted" ? "bg-[#1E2F44] text-white" : "bg-[#F1F1F1] text-black"} px-6 py-3 rounded-full`}
-                >
-                    Not started {notStartedCount}
-                </button>
+                    <button 
+                        onClick={() => setFilter("notStarted")}
+                        className={`${filter === "notStarted" ? "bg-[#0F4770] text-white" : "bg-[#F1F5F9] text-[#475569] hover:bg-[#E2E8F0]"} px-4 py-1.5 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1.5`}
+                    >
+                        Not Started <span className={`${filter === "notStarted" ? "bg-white/20" : "bg-[#E2E8F0]"} px-1.5 py-0.5 rounded-md`}>{notStartedCount}</span>
+                    </button>
+                </div>
             </div>
 
             {/* cards */}
