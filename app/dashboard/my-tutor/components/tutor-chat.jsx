@@ -1,17 +1,78 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Toolbar from './toolbar';
 import ChatWindow from './chat-window';
 import ChatInput from './chat-input';
 import { useTutorChat, useGetVoiceSession } from '@/hooks/interactive-tools';
+import { useGetUser } from '@/hooks';
 
-// Avatar Constants 
+// Avatar Constants
+const TUTOR_AVATAR = '/images/ai-tutor-avatar.png';
 
-const USER_AVATAR =
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100';
-const TUTOR_AVATAR =
-  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=100';
+// ─── Local chat history helpers ────────────────────────────────────
+// The conversation is mirrored into localStorage so it survives a
+// browser reload, and merged with any server-side history.
+
+const CHAT_LOG_KEY = 'mytutor_chat_log_v1';
+
+function readLocalChatLog() {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(CHAT_LOG_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.warn('Could not read local tutor chat log:', error);
+    return [];
+  }
+}
+
+function writeLocalChatLog(messages) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(CHAT_LOG_KEY, JSON.stringify(messages));
+  } catch (error) {
+    console.warn('Could not save local tutor chat log:', error);
+  }
+}
+
+// Normalize server message content (may be an array of content blocks)
+function normalizeContent(content) {
+  if (Array.isArray(content)) {
+    const parts = content
+      .map((block) => {
+        if (block && typeof block === 'object' && block.type === 'text') {
+          return block.text || '';
+        }
+        if (
+          block &&
+          typeof block === 'object' &&
+          block.type === 'image_url'
+        ) {
+          return '[Image attachment]';
+        }
+        return '';
+      })
+      .filter(Boolean);
+    return parts.join('\n') || '[Attachment]';
+  }
+  return content || '';
+}
+
+function formatTime(isoString) {
+  if (!isoString) return '';
+  try {
+    const date = new Date(isoString);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return '';
+  }
+}
 
 // Ephemeral Key Extraction
 
@@ -23,9 +84,10 @@ function extractEphemeralKey(responseData) {
   return responseData?.ephemeral_key || null;
 }
 
-// Component 
+// Component
 
 export default function TutorChat() {
+  const { user } = useGetUser()
   // UI state
   const [activeMode, setActiveMode] = useState('chat');
   const [messages, setMessages] = useState([]);
@@ -40,8 +102,29 @@ export default function TutorChat() {
   const { getVoiceSession, isPending: voiceSessionPending } =
     useGetVoiceSession();
 
+  // Load persisted chat history from localStorage on mount
+  useEffect(() => {
+    const localMessages = readLocalChatLog();
+    if (localMessages.length) {
+      setMessages((prev) => {
+        // Avoid clobbering any messages that arrived before this effect ran
+        if (prev.length) return prev;
+        return localMessages.map((m, i) => ({
+          id: `local-${m.created_at || Date.now()}-${i}`,
+          sender: m.sender === 'user' ? 'user' : 'tutor',
+          avatar: m.sender === 'user' ? user?.profile_photo : TUTOR_AVATAR,
+          text: m.content || m.text || '',
+          file: m.file || null,
+          created_at: m.created_at || '',
+          timestamp: formatTime(m.created_at) || m.timestamp || '',
+        }));
+      });
+    }
+  }, []);
+
   // When streaming completes, append the tutor's full message
   const handleChatComplete = useCallback((finalText) => {
+    if (!finalText) return;
     setMessages((prev) => [
       ...prev,
       {
@@ -49,8 +132,51 @@ export default function TutorChat() {
         sender: 'tutor',
         avatar: TUTOR_AVATAR,
         text: finalText,
+        file: null,
+        created_at: new Date().toISOString(),
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
       },
     ]);
+  }, []);
+
+  // Merge server-side chat history with the current (local) messages,
+  // deduplicating by sender + content + timestamp.
+  const handleChatHistory = useCallback((serverMessages = []) => {
+    if (!Array.isArray(serverMessages) || !serverMessages.length) return;
+
+    setMessages((prev) => {
+      const merged = [...prev];
+      // Dedupe on sender + text so local & server copies of the same
+      // message collide even when their timestamps differ (client vs
+      // server clock skew) — avoids duplicate bubbles on reload.
+      const seenKeys = new Set(
+        merged.map((m) => `${m.sender}|${m.text}`)
+      );
+
+      serverMessages.forEach((raw, i) => {
+        const sender = raw.role === 'user' ? 'user' : 'tutor';
+        const text = normalizeContent(raw.content);
+        if (!text) return;
+        const key = `${sender}|${text}`;
+        if (seenKeys.has(key)) return;
+        seenKeys.add(key);
+        const createdAt = raw.created_at || '';
+        merged.push({
+          id: `server-${createdAt || Date.now()}-${i}`,
+          sender,
+          avatar: sender === 'user' ? user?.profile_photo : TUTOR_AVATAR,
+          text,
+          file: null,
+          created_at: createdAt,
+          timestamp: formatTime(createdAt),
+        });
+      });
+
+      return merged;
+    });
   }, []);
 
   const {
@@ -62,48 +188,87 @@ export default function TutorChat() {
   } = useTutorChat({
     autoConnect: true,
     onChatComplete: handleChatComplete,
+    onChatHistory: handleChatHistory,
   });
 
-  //  Send message handler
+  //  Send message handler (text and/or file)
   const handleSendMessage = useCallback(
-    async ({ type, content, file }) => {
-      if (type === 'text' && content) {
-        // Optimistically add user message
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: Date.now(),
-            sender: 'user',
-            avatar: USER_AVATAR,
-            text: content,
-          },
-        ]);
+    async ({ content, file }) => {
+      const text = (content || '').trim();
 
-        const sent = await wsSendMessage({ text: content });
-        if (!sent) {
-          console.warn('[TutorChat] Message failed to send');
+      if (!text && !file) return;
+
+      // Optimistically add user message (with file info if attached)
+      const nowIso = new Date().toISOString();
+
+      // Build file metadata with persistent base64 preview for images
+      let fileMeta = null;
+      if (file) {
+        const isImage = file.type?.startsWith('image/');
+        let previewUrl = null;
+
+        if (isImage) {
+          // Convert to base64 data URL so it survives page reloads
+          previewUrl = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(file);
+          });
         }
-      } else if (type === 'file' && file) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: Date.now(),
-            sender: 'user',
-            avatar: USER_AVATAR,
-            text: `[Attached File: ${file.name}]`,
-          },
-        ]);
-        try {
-          await wsSendFile({ file, text: '' });
-        } catch (err) {
-          console.error('Failed to send file:', err);
+
+        fileMeta = {
+          name: file.name,
+          type: file.type || 'file',
+          previewUrl,
+        };
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          sender: 'user',
+          avatar: user?.profile_photo,
+          text,
+          file: fileMeta,
+          created_at: nowIso,
+          timestamp: formatTime(nowIso),
+        },
+      ]);
+
+      try {
+        if (file) {
+          // AI reads the file and responds to the optional prompt
+          await wsSendFile({ file, text });
+        } else if (text) {
+          const sent = await wsSendMessage({ text });
+          if (!sent) {
+            console.warn('[TutorChat] Message failed to send');
+          }
         }
+      } catch (err) {
+        console.error('[TutorChat] Failed to send message:', err);
       }
     },
     [wsSendMessage, wsSendFile]
   );
 
-  // WebRTC Voice Call 
+  // Persist the conversation to localStorage whenever it changes
+  useEffect(() => {
+    if (!messages.length) return;
+    writeLocalChatLog(
+      messages.map((m) => ({
+        sender: m.sender,
+        content: m.text,
+        created_at: m.created_at || new Date().toISOString(),
+        file: m.file || null,
+        timestamp: m.timestamp || '',
+      }))
+    );
+  }, [messages]);
+
+  // WebRTC Voice Call
   const stopVoiceChat = useCallback(() => {
     if (pcRef.current) {
       pcRef.current.close();
@@ -219,18 +384,18 @@ export default function TutorChat() {
   // Render
 
   return (
-    <div className="w-full mx-auto p-4 md:p-6 flex flex-col h-[calc(100vh-100px)] overflow-hidden">
+    <div className="w-full mx-auto p-4 md:p-6 flex flex-col h-[calc(100vh-60px)] overflow-hidden">
       {/* Page Header */}
-      <header className="shrink-0 mb-4">
+      {/* <header className="shrink-0 mb-4">
         <h1 className="text-xl font-bold text-gray-900 tracking-tight">
           Welcome, Tonny!
         </h1>
         <p className="text-xs text-gray-500 mt-0.5">My Tutor / Conversation</p>
-      </header>
+      </header> */}
 
       <div className="flex flex-col xl:flex-row gap-6 items-stretch xl:items-start flex-1 h-full min-h-0 w-full overflow-hidden">
         {/* Toolbar */}
-        <Toolbar activeMode={activeMode} setActiveMode={setActiveMode} />
+        <Toolbar activeMode={activeMode} setActiveMode={setActiveMode} connectionStatus={connectionStatus} />
 
         {/* Chat Area */}
         <div className="bg-white border border-gray-100 rounded-2xl shadow-sm flex flex-col overflow-hidden flex-1 w-full h-full min-h-0 xl:self-stretch">

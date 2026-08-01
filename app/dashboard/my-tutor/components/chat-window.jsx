@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import React, { useRef, useEffect } from 'react';
-import { Mic, PhoneOff, Volume2, Loader2 } from 'lucide-react';
+import { Mic, PhoneOff, Volume2, Loader2, FileText } from 'lucide-react';
+import FormattedMessage from './formatted-message';
 
 export default function ChatWindow({
   messages,
@@ -223,8 +224,19 @@ export default function ChatWindow({
   // CHAT MODE UI (existing)
   return (
     <div className="flex-1 h-full overflow-y-auto p-4 md:p-6 space-y-6 min-h-0 bg-white">
+      {/* Reconnecting banner */}
+      {connectionStatus === 'disconnected' && messages?.length > 0 && (
+        <div className="flex items-center gap-2 px-3.5 py-2.5 bg-amber-50 border border-amber-200 rounded-xl">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+          <p className="text-xs text-amber-700 font-medium">
+            Connection lost — reconnecting to tutor service. Your messages will
+            send once the connection is restored.
+          </p>
+        </div>
+      )}
+
       {/* Empty state */}
-      {messages.length === 0 && !isStreaming && (
+      {messages?.length === 0 && !isStreaming && (
         <div className="flex flex-col items-center justify-center h-full text-center py-12">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
             <span className="text-3xl">💬</span>
@@ -245,17 +257,19 @@ export default function ChatWindow({
 
       {/* Message bubbles */}
       {messages.map((msg) => {
-        const isUser = msg.sender === 'user';
+        const isUser = msg?.sender === 'user';
+        const isImageAttachment =
+          msg?.file && msg?.file?.type && msg?.file?.type.startsWith('image');
         return (
           <div
             key={msg.id}
-            className={`flex gap-3 max-w-xl ${
-              isUser ? 'ml-auto flex-row-reverse' : 'mr-auto'
+            className={`flex gap-3 ${
+              isUser ? 'max-w-xl ml-auto flex-row-reverse' : 'max-w-3xl mr-auto'
             }`}
           >
             <Image
-              src={msg.avatar}
-              alt={msg.sender}
+              src={msg?.avatar}
+              alt={msg?.sender}
               width={40}
               height={40}
               className="w-8 h-8 rounded-full object-cover shrink-0"
@@ -263,17 +277,53 @@ export default function ChatWindow({
 
             <div className="space-y-1 max-w-[85%]">
               <div
-                className={`rounded-2xl p-4 text-sm leading-relaxed shadow-sm ${
+                className={`rounded-xl p-4 text-sm leading-relaxed shadow-sm ${
                   isUser
                     ? 'bg-primary text-white rounded-tr-none'
                     : 'bg-gray-50 text-gray-800 border border-gray-100 rounded-tl-none'
                 }`}
               >
-                {msg.text}
+                {/* Image preview or file chip */}
+                {msg?.file && isImageAttachment && msg?.file?.previewUrl && (
+                  <div className="mb-2">
+                    <div className={`overflow-hidden rounded-lg border ${
+                      isUser ? 'border-white/20' : 'border-gray-200'
+                    }`}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={msg.file.previewUrl}
+                        alt={msg.file.name || 'Image attachment'}
+                        className="max-w-full max-h-60 w-auto h-auto object-contain rounded-lg"
+                      />
+                    </div>
+                    <p className={`text-[10px] mt-1 truncate ${
+                      isUser ? 'text-white/60' : 'text-gray-400'
+                    }`}>
+                      {msg.file.name}
+                    </p>
+                  </div>
+                )}
+                {msg?.file && (!isImageAttachment || !msg?.file?.previewUrl) && (
+                  <div
+                    className={`flex items-center gap-2 mb-2 px-2.5 py-1.5 rounded-lg border text-xs ${
+                      isUser
+                        ? 'bg-white/15 border-white/25 text-white'
+                        : 'bg-gray-100 border-gray-200 text-gray-700'
+                    }`}
+                  >
+                    <span className="shrink-0">
+                      <FileText className="w-3.5 h-3.5" />
+                    </span>
+                    <span className="font-medium truncate">
+                      {msg?.file?.name}
+                    </span>
+                  </div>
+                )}
+                <FormattedMessage content={msg?.text} isUser={isUser} />
               </div>
-              {msg.timestamp && (
+              {msg?.timestamp && (
                 <p className="text-[10px] text-gray-400 text-center w-full block py-2">
-                  {msg.timestamp}
+                  {msg?.timestamp}
                 </p>
               )}
             </div>
@@ -285,15 +335,16 @@ export default function ChatWindow({
       {isStreaming && streamingText && (
         <div className="flex gap-3 max-w-3xl mr-auto">
           <Image
-            src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=100"
+            src="/images/ai-tutor-avatar.png"
             alt="Cara"
             width={40}
             height={40}
+            
             className="w-8 h-8 rounded-full object-cover shrink-0"
           />
-          <div className="space-y-1">
+          <div className="space-y-1 max-w-3xl">
             <div className="rounded-2xl rounded-tl-none p-4 text-sm leading-relaxed bg-gray-50 text-gray-800 border border-gray-100 shadow-sm">
-              {streamingText}
+              <FormattedMessage content={streamingText} isUser={false} />
               <span className="inline-block w-1.5 h-4 bg-primary/70 rounded-sm ml-0.5 animate-pulse" />
             </div>
           </div>
@@ -304,7 +355,7 @@ export default function ChatWindow({
       {isStreaming && !streamingText && (
         <div className="flex gap-3 max-w-3xl mr-auto">
           <Image
-            src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=100"
+            src="/images/ai-tutor-avatar.png"
             alt="Cara"
             width={40}
             height={40}
