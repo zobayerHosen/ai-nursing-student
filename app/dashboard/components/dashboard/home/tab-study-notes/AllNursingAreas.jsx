@@ -38,28 +38,28 @@ export default function AllNursingAreas({ topics = [] }) {
 
                 {/* Right: filter */}
                 <div className="flex flex-wrap items-center gap-2">
-                    <button 
+                    <button
                         onClick={() => setFilter("all")}
                         className={`${filter === "all" ? "bg-[#0F4770] text-white" : "bg-[#F1F5F9] text-[#475569] hover:bg-[#E2E8F0]"} px-4 py-1.5 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1.5`}
                     >
                         All <span className={`${filter === "all" ? "bg-white/20" : "bg-[#E2E8F0]"} px-1.5 py-0.5 rounded-md`}>{topics.length}</span>
                     </button>
 
-                    <button 
+                    <button
                         onClick={() => setFilter("progress")}
                         className={`${filter === "progress" ? "bg-[#0F4770] text-white" : "bg-[#F1F5F9] text-[#475569] hover:bg-[#E2E8F0]"} px-4 py-1.5 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1.5`}
                     >
                         In Progress <span className={`${filter === "progress" ? "bg-white/20" : "bg-[#E2E8F0]"} px-1.5 py-0.5 rounded-md`}>{topics.filter(t => getStatusText(t.status) === "progress").length}</span>
                     </button>
 
-                    <button 
+                    <button
                         onClick={() => setFilter("complete")}
                         className={`${filter === "complete" ? "bg-[#0F4770] text-white" : "bg-[#F1F5F9] text-[#475569] hover:bg-[#E2E8F0]"} px-4 py-1.5 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1.5`}
                     >
                         Completed <span className={`${filter === "complete" ? "bg-white/20" : "bg-[#E2E8F0]"} px-1.5 py-0.5 rounded-md`}>{completeCount}</span>
                     </button>
 
-                    <button 
+                    <button
                         onClick={() => setFilter("notStarted")}
                         className={`${filter === "notStarted" ? "bg-[#0F4770] text-white" : "bg-[#F1F5F9] text-[#475569] hover:bg-[#E2E8F0]"} px-4 py-1.5 rounded-full text-[11px] font-bold transition-colors flex items-center gap-1.5`}
                     >
@@ -74,7 +74,6 @@ export default function AllNursingAreas({ topics = [] }) {
                     // Match with static data to get icon and iconBg if available
                     const staticMatch = staticAreas.find(s => s.title.toLowerCase() === item.title.toLowerCase());
                     const [completedStr, totalStr] = (item.progress || "0/0").split("/");
-                    
                     const cardProps = {
                         title: item.title,
                         icon: staticMatch?.icon || "medical",
@@ -97,4 +96,4 @@ export default function AllNursingAreas({ topics = [] }) {
             </div>
         </div>
     );
-}
+};

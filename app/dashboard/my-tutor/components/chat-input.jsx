@@ -38,6 +38,10 @@ export default function ChatInput({
     };
   }, [previewUrl]);
 
+
+
+
+
   const clearAttachedFile = () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setAttachedFile(null);

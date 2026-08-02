@@ -83,7 +83,7 @@ const ConceptMapShell = () => {
           >
             <Menu size={20} className="text-[#2C5F8D]" />
           </button>
-          <h2 className="font-semibold text-lg text-[#2C5F8D]">Concept Map</h2>
+          <h2 className="font-semibold text-lg text-[#2C5F8D]">Concept Map </h2>
         </div>
 
         <ConceptMapHeader title={mapData.title} />

@@ -194,7 +194,7 @@ export default function DashboardHeader({
 
                 <Link
                     href={"/dashboard/settings"}
-                     className="relative w-7 h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 shrink-0 cursor-pointer transition-colors"
+                    className="relative w-7 h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 shrink-0 cursor-pointer transition-colors"
                     aria-label="Settings"
                 >
                     {settingsIcon}
