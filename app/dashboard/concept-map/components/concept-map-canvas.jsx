@@ -1,10 +1,12 @@
 "use client";
 
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback, useImperativeHandle, forwardRef } from "react";
 import { Plus, Minus, Maximize2 } from "lucide-react";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import "./concept-map-canvas.css";
 
-/* ── category → visual class mapping*/
+/* ── category → visual class mapping */
 const CAT_STYLES = {
   Central:           { bg: "#1f3a5f", border: "#1f3a5f", ink: "#ffffff", eyebrow: "#b9c9de", head: "#ffffff" },
   "Risk Factor":     { bg: "#ede4fb", border: "#9b6fd6", ink: "#3d2466", eyebrow: "#7c3aed", head: "#7c3aed" },
@@ -17,7 +19,10 @@ const CAT_STYLES = {
 };
 const DEFAULT_STYLE = { bg: "#eee", border: "#999", ink: "#333", eyebrow: "#666", head: "#333" };
 
-export default function ConceptMapCanvas({ mapData }) {
+const ConceptMapCanvas = forwardRef(function ConceptMapCanvas(
+  { mapData, onNodeClick, onEdgePicked },
+  ref
+) {
   const viewportRef = useRef(null);
   const canvasRef = useRef(null);
   const layoutRef = useRef(null);
@@ -28,6 +33,12 @@ export default function ConceptMapCanvas({ mapData }) {
   const manualPos = useRef({});
   const [nodeCount, setNodeCount] = useState(0);
   const [edgeCount, setEdgeCount] = useState(0);
+
+  const onNodeClickRef = useRef(onNodeClick);
+  const onEdgePickedRef = useRef(onEdgePicked);
+
+  useEffect(() => { onNodeClickRef.current = onNodeClick; }, [onNodeClick]);
+  useEffect(() => { onEdgePickedRef.current = onEdgePicked; }, [onEdgePicked]);
 
   /* ── helpers */
   const applyTransform = useCallback(() => {
@@ -124,11 +135,13 @@ export default function ConceptMapCanvas({ mapData }) {
     applyTransform();
   }, [applyTransform]);
 
-  /* ── makeDraggable ────────────────────────────────── */
+  /* ── makeDraggable (drag + click-to-edit) ── */
   const makeDraggable = useCallback((card) => {
-    let dragging = false, startX = 0, startY = 0, origL = 0, origT = 0, frame = null;
+    let dragging = false, isMoved = false, startX = 0, startY = 0, origL = 0, origT = 0, frame = null;
+
     const onMove = (e) => {
       if (!dragging) return;
+      isMoved = true;
       const dx = (e.clientX - startX) / viewRef.current.scale;
       const dy = (e.clientY - startY) / viewRef.current.scale;
       card.style.left = (origL + dx) + "px"; card.style.top = (origT + dy) + "px";
@@ -143,14 +156,21 @@ export default function ConceptMapCanvas({ mapData }) {
       manualPos.current[card.dataset.nodeId] = { x: parseFloat(card.style.left), y: parseFloat(card.style.top) };
       drawEdges();
     };
+
     card.addEventListener("mousedown", (e) => {
       e.stopPropagation(); e.preventDefault();
-      dragging = true; startX = e.clientX; startY = e.clientY;
+      dragging = true; isMoved = false; startX = e.clientX; startY = e.clientY;
       origL = parseFloat(card.style.left) || 0; origT = parseFloat(card.style.top) || 0;
       card.classList.add("cm-dragging");
       document.body.style.userSelect = "none";
       window.addEventListener("mousemove", onMove);
       window.addEventListener("mouseup", onUp);
+    });
+
+    card.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (isMoved) return;
+      onNodeClickRef.current?.(card.dataset.nodeId);
     });
   }, [drawEdges]);
 
@@ -272,11 +292,23 @@ export default function ConceptMapCanvas({ mapData }) {
     if (byCat["Medication"]?.length) { const row = mkDiv("cm-row"); byCat["Medication"].forEach(n => addCard(n, "Medication", row)); stage.appendChild(row); }
     if (byCat["Complication"]?.length) { const row = mkDiv("cm-row"); byCat["Complication"].forEach(n => addCard(n, "Complication", row)); stage.appendChild(row); }
 
+    const KNOWN = new Set(Object.keys(CAT_STYLES));
+    const otherCats = Object.keys(byCat).filter(c => !KNOWN.has(c));
+    if (otherCats.length) {
+      const cap = document.createElement("div");
+      cap.className = "cm-section-caption";
+      cap.textContent = "Unrecognized categories";
+      stage.appendChild(cap);
+      const row = mkDiv("cm-row");
+      otherCats.forEach(c => byCat[c].forEach(n => addCard(n, c, row)));
+      stage.appendChild(row);
+    }
+
     // Phase 2: measure & place
     requestAnimationFrame(() => {
       const positions = {};
-      orderedIds.forEach(id => { const r = relRect(stagedCat[id], stage); positions[id] = { x: r.x, y: r.y, w: r.w, h: r.h }; });
-      document.body.removeChild(stage);
+      orderedIds.forEach(id => { if (stagedCat[id]) { const r = relRect(stagedCat[id], stage); positions[id] = { x: r.x, y: r.y, w: r.w, h: r.h }; } });
+      if (stage.parentNode) document.body.removeChild(stage);
 
       const layout = layoutRef.current;
       if (!layout) return;
@@ -284,10 +316,11 @@ export default function ConceptMapCanvas({ mapData }) {
 
       const elById = {};
       orderedIds.forEach(id => {
-        const n = byId[id], cat = n.category || "Unknown";
+        const n = byId[id]; if (!n) return;
+        const cat = n.category || "Unknown";
         const card = makeCard(n, cat);
         card.style.position = "absolute";
-        const pos = manualPos.current[id] || positions[id];
+        const pos = manualPos.current[id] || positions[id] || { x: 100, y: 100 };
         card.style.left = pos.x + "px"; card.style.top = pos.y + "px";
         layout.appendChild(card);
         elById[id] = card;
@@ -306,16 +339,115 @@ export default function ConceptMapCanvas({ mapData }) {
 
       setNodeCount(nodes.length);
       setEdgeCount(edgesDataRef.current.length);
-      requestAnimationFrame(() => { drawEdges(); fitToView(); });
+      requestAnimationFrame(() => { drawEdges(); if (Object.keys(manualPos.current).length === 0) fitToView(); });
     });
   }, [mapData, makeCard, relRect, resolveOverlaps, normalizeLayoutBounds, makeDraggable, drawEdges, fitToView]);
+
+  /* ── imperative API exposed to parent ─────────────── */
+  const resetLayout = useCallback(() => {
+    manualPos.current = {};
+    renderMap();
+  }, [renderMap]);
+
+  const exportPDF = useCallback(async () => {
+    const layout = layoutRef.current;
+    const canvasEl = canvasRef.current;
+    const svg = svgRef.current;
+    if (!layout || !canvasEl) return;
+    const cards = Array.from(layout.querySelectorAll(".cm-card"));
+    if (!cards.length) return;
+
+    // 1. Compute exact bounding box across all cards
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    const originalPositions = [];
+    cards.forEach(card => {
+      const left = parseFloat(card.style.left) || 0;
+      const top = parseFloat(card.style.top) || 0;
+      const width = card.offsetWidth;
+      const height = card.offsetHeight;
+      originalPositions.push({ card, left, top });
+      if (left < minX) minX = left;
+      if (top < minY) minY = top;
+      if (left + width > maxX) maxX = left + width;
+      if (top + height > maxY) maxY = top + height;
+    });
+
+    const padding = 60;
+    const shiftX = -minX + padding;
+    const shiftY = -minY + padding;
+    const exportWidth = Math.ceil(maxX - minX + padding * 2);
+    const exportHeight = Math.ceil(maxY - minY + padding * 2);
+
+    // 2. Temporarily shift cards so left-most node sits at padding
+    const origTransform = canvasEl.style.transform;
+    const origWidth = canvasEl.style.width;
+    const origHeight = canvasEl.style.height;
+    canvasEl.style.transform = "none";
+    canvasEl.style.width = exportWidth + "px";
+    canvasEl.style.height = exportHeight + "px";
+    layout.style.width = exportWidth + "px";
+    layout.style.height = exportHeight + "px";
+
+    cards.forEach(item => {
+      item.style.left = ((parseFloat(item.style.left) || 0) + shiftX) + "px";
+      item.style.top = ((parseFloat(item.style.top) || 0) + shiftY) + "px";
+    });
+    drawEdges();
+
+    if (svg) {
+      svg.setAttribute("width", exportWidth);
+      svg.setAttribute("height", exportHeight);
+      svg.setAttribute("viewBox", `0 0 ${exportWidth} ${exportHeight}`);
+    }
+
+    const restore = () => {
+      originalPositions.forEach(item => {
+        item.card.style.left = item.left + "px";
+        item.card.style.top = item.top + "px";
+      });
+      canvasEl.style.transform = origTransform;
+      canvasEl.style.width = origWidth;
+      canvasEl.style.height = origHeight;
+      drawEdges();
+    };
+
+    try {
+      const canvas = await html2canvas(canvasEl, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        width: exportWidth,
+        height: exportHeight,
+        windowWidth: exportWidth,
+        windowHeight: exportHeight,
+      });
+      const imgData = canvas.toDataURL("image/jpeg", 0.98);
+      const pdf = new jsPDF({
+        unit: "pt",
+        format: [exportWidth + 20, exportHeight + 20],
+        orientation: exportWidth > exportHeight ? "landscape" : "portrait",
+      });
+      pdf.addImage(imgData, "JPEG", 10, 10, exportWidth, exportHeight);
+      pdf.save(`Clinical_Concept_Map_${Date.now()}.pdf`);
+    } catch (err) {
+      // Fallback: browser print
+      window.print();
+    } finally {
+      restore();
+    }
+  }, [drawEdges]);
+
+  useImperativeHandle(ref, () => ({ resetLayout, exportPDF }), [resetLayout, exportPDF]);
 
   /* pan & zoom */
   useEffect(() => {
     const vp = viewportRef.current;
     if (!vp) return;
     let dragging = false, lastX = 0, lastY = 0;
-    const onDown = (e) => { dragging = true; lastX = e.clientX; lastY = e.clientY; vp.classList.add("cm-panning"); };
+
+    const onDown = (e) => {
+      dragging = true; lastX = e.clientX; lastY = e.clientY; vp.classList.add("cm-panning");
+    };
     const onUp = () => { dragging = false; vp.classList.remove("cm-panning"); };
     const onMove = (e) => {
       if (!dragging) return;
@@ -339,8 +471,8 @@ export default function ConceptMapCanvas({ mapData }) {
     };
   }, [applyTransform, zoomBy, drawEdges, fitToView]);
 
-  /* render on data change */
-  useEffect(() => { manualPos.current = {}; renderMap(); }, [renderMap]);
+  /* render on data change — preserve manual positions */
+  useEffect(() => { renderMap(); }, [renderMap]);
 
   return (
     <div className="cm-wrapper">
@@ -359,7 +491,7 @@ export default function ConceptMapCanvas({ mapData }) {
           <div ref={layoutRef} className="cm-layout" />
           <svg ref={svgRef} className="cm-edges" />
         </div>
- 
+
         {/* Zoom bar */}
         <div className="cm-zoombar">
           <button type="button" onClick={() => zoomBy(1.2)} className="cm-zoom-btn" title="Zoom in"><Plus size={16} /></button>
@@ -369,8 +501,10 @@ export default function ConceptMapCanvas({ mapData }) {
       </div>
     </div>
   );
-}
+});
 
-/* tiny helpers  */
+/* tiny helpers */
 function esc(str) { return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 function mkDiv(cls) { const d = document.createElement("div"); if (cls) d.className = cls; return d; }
+
+export default ConceptMapCanvas;

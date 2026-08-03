@@ -6,3 +6,4 @@ export * from "./library";
 export * from "./interactive-tool";
 export * from "./procedure-lookup";
 export * from "./practice"
+export * from "./concept-map"

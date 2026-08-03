@@ -1,62 +1,195 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { Menu } from "lucide-react";
+import toast from "react-hot-toast";
 import ConceptMapSidebar from "./concept-map-sidebar";
 import ConceptMapHeader from "./concept-map-header";
-import ConceptMapToolbar from "./concept-map-toolbar";
 import ConceptMapCanvas from "./concept-map-canvas";
+import { AddNodeModal, EditNodeModal, EdgeLabelModal } from "./concept-map-modals";
+import {
+  useGetConceptMap,
+  useGenerateConceptMap,
+  useSaveConceptMap,
+} from "@/hooks/concept-map";
 
-/* sample map data */
-const SAMPLE_MAP = {
-  title: "Heart Failure Clinical Concept Map",
-  nodes: [
-    { id: "central-1", label: "Heart Failure", details: "Adult patient \u2022 Cardiac pump dysfunction with systemic manifestations", category: "Central" },
-    { id: "risk-1", label: "Risk Factors", details: ". Advanced age\n. History of hypertension\n. Coronary artery disease\n. Diabetes mellitus\n. Previous MI", category: "Risk Factor" },
-    { id: "subjective-1", label: "Subjective Data", details: ". Shortness of breath\n. Fatigue and weakness\n. Orthopnea\n. Paroxysmal nocturnal dyspnea\n. Decreased exercise tolerance", category: "Subjective Data" },
-    { id: "objective-1", label: "Objective Data", details: ". Elevated BP\n. Tachycardia\n. Crackles in lung bases\n. Peripheral edema\n. Jugular venous distention\n. S3 heart sound\n. Elevated BNP\n. Decreased ejection fraction on echo", category: "Objective Data" },
-    { id: "nanda-1", label: "Decreased Cardiac Output", details: ". r/t altered contractility and preload/afterload imbalance\n. AEB tachycardia, fatigue, dyspnea, decreased EF, elevated BNP", category: "Nursing Diagnosis" },
-    { id: "nanda-2", label: "Excess Fluid Volume", details: ". r/t compromised regulatory mechanisms and decreased cardiac output\n. AEB peripheral edema, crackles, JVD, weight gain, dyspnea", category: "Nursing Diagnosis" },
-    { id: "nanda-3", label: "Impaired Gas Exchange", details: ". r/t alveolar-capillary membrane changes and fluid in alveoli\n. AEB dyspnea, crackles, decreased SpO2, orthopnea", category: "Nursing Diagnosis" },
-    { id: "nanda-4", label: "Activity Intolerance", details: ". r/t imbalance between oxygen supply and demand\n. AEB fatigue, dyspnea on exertion, decreased exercise tolerance", category: "Nursing Diagnosis" },
-    { id: "intervention-1", label: "Cardiac Output Interventions", details: ". Monitor vital signs q4h\n. Continuous cardiac monitoring\n. Assess heart sounds for S3/S4\n. Monitor I&O strictly\n. Daily weights same time/scale\n. Assess for signs of decreased perfusion", category: "Intervention" },
-    { id: "intervention-2", label: "Fluid Management", details: ". Administer diuretics as ordered\n. Strict I&O monitoring\n. Daily weights\n. Fluid restriction as ordered\n. Monitor electrolytes\n. Assess edema and JVD\n. Elevate legs when sitting", category: "Intervention" },
-    { id: "intervention-3", label: "Respiratory Support", details: ". Administer oxygen as ordered\n. Monitor SpO2 continuously\n. Assess lung sounds q4h\n. Position in high Fowler's\n. Encourage deep breathing\n. Monitor respiratory rate and effort", category: "Intervention" },
-    { id: "intervention-4", label: "Activity Management", details: ". Balance rest and activity\n. Assist with ADLs as needed\n. Monitor response to activity\n. Gradual increase in activity as tolerated\n. Energy conservation techniques\n. Fall precautions", category: "Intervention" },
-    { id: "med-1", label: "Loop Diuretics (Furosemide)", details: ". For fluid overload and pulmonary congestion\n. Nursing: monitor K+, Mg, daily weight, BP, UOP, I&O\n. Assess for dehydration and electrolyte imbalance", category: "Medication" },
-    { id: "med-2", label: "ACE Inhibitors", details: ". For afterload reduction and cardiac remodeling prevention\n. Nursing: monitor BP, K+, renal function, assess for dry cough\n. Hold if SBP <100 mmHg", category: "Medication" },
-    { id: "med-3", label: "Beta Blockers", details: ". For heart rate control and improved cardiac function\n. Nursing: monitor HR and BP, hold if HR <60 or SBP <100\n. Assess for bronchospasm", category: "Medication" },
-    { id: "med-4", label: "Digoxin", details: ". For improved contractility and rate control in AFib\n. Nursing: monitor HR, K+, digoxin level, assess for toxicity\n. Hold if HR <60 bpm", category: "Medication" },
-    { id: "complication-1", label: "Acute Decompensation", details: ". Acute pulmonary edema\n. Cardiogenic shock\n. Respiratory failure requiring intubation\n. Sudden cardiac death", category: "Complication" },
-    { id: "complication-2", label: "Chronic Complications", details: ". Progressive renal insufficiency\n. Hepatic congestion and dysfunction\n. Cardiac cachexia\n. Thromboembolic events\n. Arrhythmias (AFib, VT)", category: "Complication" },
-  ],
-  edges: [
-    { id: "e_risk-1_central-1", source: "risk-1", target: "central-1", label: "contributes to" },
-    { id: "e_subjective-1_central-1", source: "subjective-1", target: "central-1", label: "evidenced by" },
-    { id: "e_objective-1_central-1", source: "objective-1", target: "central-1", label: "evidenced by" },
-    { id: "e_central-1_nanda-1", source: "central-1", target: "nanda-1", label: "priority" },
-    { id: "e_central-1_nanda-2", source: "central-1", target: "nanda-2", label: "leads to" },
-    { id: "e_central-1_nanda-3", source: "central-1", target: "nanda-3", label: "leads to" },
-    { id: "e_central-1_nanda-4", source: "central-1", target: "nanda-4", label: "leads to" },
-    { id: "e_nanda-1_intervention-1", source: "nanda-1", target: "intervention-1", label: "managed by" },
-    { id: "e_nanda-2_intervention-2", source: "nanda-2", target: "intervention-2", label: "managed by" },
-    { id: "e_nanda-3_intervention-3", source: "nanda-3", target: "intervention-3", label: "managed by" },
-    { id: "e_nanda-4_intervention-4", source: "nanda-4", target: "intervention-4", label: "managed by" },
-    { id: "e_central-1_med-1", source: "central-1", target: "med-1", label: "treated with" },
-    { id: "e_central-1_med-2", source: "central-1", target: "med-2", label: "treated with" },
-    { id: "e_central-1_med-3", source: "central-1", target: "med-3", label: "treated with" },
-    { id: "e_central-1_med-4", source: "central-1", target: "med-4", label: "treated with" },
-    { id: "e_central-1_complication-1", source: "central-1", target: "complication-1", label: "progresses to" },
-    { id: "e_central-1_complication-2", source: "central-1", target: "complication-2", label: "long-term risk" },
-  ],
-};
+/* ─── helpers ─── */
+function suggestEdgeLabel(sourceNode, targetNode) {
+  if (!sourceNode || !targetNode) return "leads to";
+  const tc = targetNode.category;
+  if (tc === "Intervention") return "managed by";
+  if (tc === "Medication") return "treated with";
+  if (tc === "Complication") return "progresses to";
+  if (tc === "Nursing Diagnosis") return "leads to";
+  if (tc === "Risk Factor") return "contributes to";
+  return "leads to";
+}
+
+const EMPTY_MAP = { title: "Clinical Concept Map", nodes: [], edges: [] };
 
 const ConceptMapShell = () => {
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [mapData] = useState(SAMPLE_MAP);
+  const [mapData, setMapData] = useState(EMPTY_MAP);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editingNodeId, setEditingNodeId] = useState(null);
+  // const [connectMode, setConnectMode] = useState(false);
+  const [pendingEdge, setPendingEdge] = useState(null); // { source, target, sourceLabel, targetLabel }
+  const canvasRef = useRef(null);
+  const hydratedRef = useRef(false);
+
+  /* ─── API hooks ─── */
+  const {
+    mapData: serverMap,
+    isLoading: isLoadingMap,
+    isError: loadError,
+  } = useGetConceptMap();
+  console.log("serverMap", serverMap);
+
+  const {
+    generate,
+    isPending: isGenerating,
+  } = useGenerateConceptMap();
+
+  const {
+    save,
+    isPending: isSaving,
+  } = useSaveConceptMap();
+
+  /* ─── Hydrate from server on first load (once only) ─── */
+  useEffect(() => {
+    if (!hydratedRef.current && serverMap && serverMap.nodes?.length > 0) {
+      hydratedRef.current = true;
+      setMapData(serverMap);
+    }
+  }, [serverMap]);
+
+  const editingNode = (mapData?.nodes || []).find((n) => n.id === editingNodeId) || null;
+
+  /* ─── node CRUD ─── */
+  const handleAddNode = useCallback(({ label, details, category, parentId }) => {
+    const newId = `n_${Date.now()}`;
+    setMapData((prev) => {
+      const newNode = { id: newId, label, details, category };
+      const newEdges = parentId
+        ? [...prev.edges, { id: `e_${parentId}_${newId}`, source: parentId, target: newId, label: category === "Intervention" ? "managed by" : "leads to" }]
+        : prev.edges;
+      return { ...prev, nodes: [...prev.nodes, newNode], edges: newEdges };
+    });
+    setAddModalOpen(false);
+    toast.success("Node added to the map!");
+  }, []);
+
+  const handleSaveNode = useCallback(({ id, label, details, category }) => {
+    setMapData((prev) => ({
+      ...prev,
+      nodes: prev.nodes.map((n) => (n.id === id ? { ...n, label, details, category } : n)),
+    }));
+    setEditingNodeId(null);
+    toast.success("Node updated!");
+  }, []);
+
+  const handleDeleteNode = useCallback((id) => {
+    setMapData((prev) => ({
+      ...prev,
+      nodes: prev.nodes.filter((n) => n.id !== id),
+      edges: prev.edges.filter((e) => e.source !== id && e.target !== id),
+    }));
+    setEditingNodeId(null);
+    toast.success("Node deleted.");
+  }, []);
+
+  /* ─── connect mode ─── */
+  // const handleToggleConnect = useCallback(() => {
+  //   setConnectMode((m) => !m);
+  // }, []);
+
+  /* two nodes picked on the canvas → open the label modal */
+  const handleEdgePicked = useCallback((sourceId, targetId) => {
+    const sourceNode = (mapData?.nodes || []).find((n) => n.id === sourceId);
+    const targetNode = (mapData?.nodes || []).find((n) => n.id === targetId);
+    if (!sourceNode || !targetNode) return;
+    setPendingEdge({
+      source: sourceId,
+      target: targetId,
+      sourceLabel: sourceNode.label,
+      targetLabel: targetNode.label,
+    });
+  }, [mapData?.nodes]);
+
+  const handleAddEdge = useCallback(
+    (label) => {
+      if (!pendingEdge) return;
+      const edgeId = `e_${pendingEdge.source}_${pendingEdge.target}_${Date.now()}`;
+      setMapData((prev) => ({
+        ...prev,
+        edges: [...prev.edges, { id: edgeId, source: pendingEdge.source, target: pendingEdge.target, label }],
+      }));
+      setPendingEdge(null);
+      toast.success("Connection added!");
+    },
+    [pendingEdge]
+  );
+
+  /* Esc exits connect mode */
+  // useEffect(() => {
+  //   if (!connectMode) return;
+  //   const onKey = (e) => {
+  //     if (e.key === "Escape") setConnectMode(false);
+  //   };
+  //   window.addEventListener("keydown", onKey);
+  //   return () => window.removeEventListener("keydown", onKey);
+  // }, [connectMode]);
+
+  /* ─── API: Save canvas to backend (PUT /api/concept-map/) ─── */
+  const handleSaveCanvas = useCallback(async () => {
+    try {
+      await save({
+        title: mapData.title || "Clinical Concept Map",
+        nodes: mapData.nodes || [],
+        edges: mapData.edges || [],
+      });
+      toast.success("Canvas saved to the server!");
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Could not save the canvas.");
+    }
+  }, [save, mapData]);
+
+  /* ─── API: Generate map from prompt (POST /api/concept-map/generate/) ─── */
+  const handleSendPrompt = useCallback(async (promptText) => {
+    if (!promptText?.trim()) return;
+    try {
+      const result = await generate({ prompt: promptText });
+      if (result) {
+        // normalizeMapObject is handled inside the hook, but we also get
+        // the raw response — re-normalize for the local state
+        const data = result?.data ?? result;
+        let normalized;
+        if (data.map && Array.isArray(data.map.nodes)) {
+          normalized = {
+            title: data.map.title || "Clinical Concept Map",
+            nodes: data.map.nodes || [],
+            edges: data.map.edges || [],
+          };
+        } else if (Array.isArray(data.nodes)) {
+          normalized = {
+            title: data.title || "Clinical Concept Map",
+            nodes: data.nodes || [],
+            edges: data.edges || [],
+          };
+        } else {
+          normalized = { title: "Clinical Concept Map", nodes: [], edges: [] };
+        }
+        setMapData(normalized);
+        toast.success("Concept map generated by CARA AI!");
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Failed to generate concept map.");
+    }
+  }, [generate]);
 
   return (
-    <div className="flex flex-col xl:flex-row h-full xl:min-h-[calc(100vh-80px)] relative w-full bg-[#F8F9FA]">
+    <div className="flex flex-col xl:flex-row h-full xl:min-h-[calc(100vh-80px)] relative w-full bg-[#EEF0F3]">
       {/* Mobile overlay */}
       {isSidebarOpen && (
         <div
@@ -68,9 +201,13 @@ const ConceptMapShell = () => {
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 xl:relative xl:translate-x-0
-          ${isSidebarOpen ? "translate-x-0 z-[999]" : "-translate-x-full"} w-[80%] sm:w-80 xl:w-82.5 shrink-0 bg-white border-r border-[#E5E7EB] flex flex-col`}
+          ${isSidebarOpen ? "translate-x-0 z-[999]" : "-translate-x-full"} w-[85%] md:w-[330px] shrink-0 bg-white border-r border-[#E5E7EB] flex flex-col`}
       >
-        <ConceptMapSidebar onClose={() => setIsSidebarOpen(false)} />
+        <ConceptMapSidebar
+          onClose={() => setIsSidebarOpen(false)}
+          onSendPrompt={handleSendPrompt}
+          isGenerating={isGenerating}
+        />
       </div>
 
       {/* Main content */}
@@ -83,13 +220,53 @@ const ConceptMapShell = () => {
           >
             <Menu size={20} className="text-[#2C5F8D]" />
           </button>
-          <h2 className="font-semibold text-lg text-[#2C5F8D]">Concept Map </h2>
+          <h2 className="font-semibold text-lg text-[#2C5F8D]">Concept Map</h2>
         </div>
 
-        <ConceptMapHeader title={mapData.title} />
-        <ConceptMapToolbar />
-        <ConceptMapCanvas mapData={mapData} />
+        <ConceptMapHeader
+          title={mapData?.title}
+          onAddNode={() => setAddModalOpen(true)}
+          onDownloadPDF={() => canvasRef.current?.exportPDF()}
+          onResetLayout={() => canvasRef.current?.resetLayout()}
+          onSaveCanvas={handleSaveCanvas}
+          // onToggleConnect={handleToggleConnect}
+          // isConnectMode={connectMode}
+          isSaving={isSaving}
+        />
+        <ConceptMapCanvas
+          ref={canvasRef}
+          mapData={mapData}
+          onNodeClick={setEditingNodeId}
+          // connectMode={connectMode}
+          onEdgePicked={handleEdgePicked}
+        />
       </main>
+
+      {/* Modals — key forces remount so form state resets each time */}
+      <AddNodeModal
+        key={addModalOpen ? "open" : "closed"}
+        open={addModalOpen}
+        nodes={mapData?.nodes || []}
+        onClose={() => setAddModalOpen(false)}
+        onAdd={handleAddNode}
+      />
+      <EditNodeModal
+        key={editingNodeId || "none"}
+        node={editingNode}
+        onClose={() => setEditingNodeId(null)}
+        onSave={handleSaveNode}
+        onDelete={handleDeleteNode}
+      />
+      <EdgeLabelModal
+        key={pendingEdge ? "edge-open" : "edge-closed"}
+        edge={pendingEdge}
+        defaultLabel={pendingEdge ? suggestEdgeLabel(
+          (mapData?.nodes || []).find((n) => n.id === pendingEdge.source),
+          (mapData?.nodes || []).find((n) => n.id === pendingEdge.target)
+        ) : "leads to"}
+        onClose={() => setPendingEdge(null)}
+        onConfirm={handleAddEdge}
+      />
     </div>
   );
 };
