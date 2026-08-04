@@ -146,24 +146,24 @@ export default function ConceptMapSidebar({ onClose, onSendPrompt, isGenerating 
                         e.preventDefault();
                         handleSend();
                     }}
-                    className="relative flex items-center bg-slate-100 rounded-2xl border border-slate-200 px-3 py-2 shadow-inner focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/20 transition"
+                    className="relative flex items-center bg-slate-100 rounded-xl border border-primary/40 focus-within:border-primary/90  px-3 py-2 shadow-inner transition outline-0"
                 >
                     <input
                         type="text"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Type patient clinical case..."
-                        className="w-full bg-transparent text-xs text-slate-800 placeholder-slate-400 focus:outline-none pr-16 pl-2 py-1"
+                        className="w-full bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none pr-16 pl-2 py-1"
                     />
                     {/* Action icons */}
                     <div className="absolute right-2 flex items-center gap-1.5">
-                        <button
+                        {/* <button
                             type="button"
                             className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 transition cursor-pointer"
                             title="Attach file"
                         >
                             <Paperclip size={14} />
-                        </button>
+                        </button> */}
                         <button
                             type="submit"
                             className="w-8 h-8 rounded-full bg-sky-600 hover:bg-sky-700 text-white flex items-center justify-center transition shadow-sm disabled:opacity-50 cursor-pointer"

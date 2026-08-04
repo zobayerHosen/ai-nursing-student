@@ -7,10 +7,17 @@ import ConceptMapSidebar from "./concept-map-sidebar";
 import ConceptMapHeader from "./concept-map-header";
 import ConceptMapCanvas from "./concept-map-canvas";
 import { AddNodeModal, EditNodeModal, EdgeLabelModal } from "./concept-map-modals";
+import HistoryModal from "./history-modal";
 import {
   useGetConceptMap,
   useGenerateConceptMap,
   useSaveConceptMap,
+  useGetConceptMaps,
+  useSelectConceptMap,
+  useCreateConceptMap,
+  useDeleteConceptMap,
+  useClearAllConceptMaps,
+  useImportConceptMap,
 } from "@/hooks/concept-map";
 
 /* ─── helpers ─── */
@@ -25,7 +32,7 @@ function suggestEdgeLabel(sourceNode, targetNode) {
   return "leads to";
 }
 
-const EMPTY_MAP = { title: "Clinical Concept Map", nodes: [], edges: [] };
+const EMPTY_MAP = { id: null, title: "Clinical Concept Map", nodes: [], edges: [] };
 
 const ConceptMapShell = () => {
 
@@ -33,8 +40,8 @@ const ConceptMapShell = () => {
   const [mapData, setMapData] = useState(EMPTY_MAP);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingNodeId, setEditingNodeId] = useState(null);
-  // const [connectMode, setConnectMode] = useState(false);
-  const [pendingEdge, setPendingEdge] = useState(null); // { source, target, sourceLabel, targetLabel }
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [pendingEdge, setPendingEdge] = useState(null);
   const canvasRef = useRef(null);
   const hydratedRef = useRef(false);
 
@@ -44,17 +51,23 @@ const ConceptMapShell = () => {
     isLoading: isLoadingMap,
     isError: loadError,
   } = useGetConceptMap();
-  console.log("serverMap", serverMap);
 
-  const {
-    generate,
-    isPending: isGenerating,
-  } = useGenerateConceptMap();
+  const { generate, isPending: isGenerating } = useGenerateConceptMap();
+  const { save, isPending: isSaving } = useSaveConceptMap();
 
+  // My Maps / History hooks
   const {
-    save,
-    isPending: isSaving,
-  } = useSaveConceptMap();
+    maps,
+    totalMaps,
+    totalNodes,
+    isLoading: isMapsLoading,
+    refetch: refetchMaps,
+  } = useGetConceptMaps();
+  const { selectMap, isPending: isSelecting } = useSelectConceptMap();
+  const { createMap, isPending: isCreating } = useCreateConceptMap();
+  const { deleteMap, isPending: isDeleting } = useDeleteConceptMap();
+  const { clearAll, isPending: isClearing } = useClearAllConceptMaps();
+  const { importMap, isPending: isImporting } = useImportConceptMap();
 
   /* ─── Hydrate from server on first load (once only) ─── */
   useEffect(() => {
@@ -65,6 +78,25 @@ const ConceptMapShell = () => {
   }, [serverMap]);
 
   const editingNode = (mapData?.nodes || []).find((n) => n.id === editingNodeId) || null;
+
+  /* ─── Rename (title change → save to backend) ─── */
+  const handleRenameMap = useCallback(async (newTitle) => {
+    const title = (newTitle || "").trim();
+    if (!title || title === mapData.title) return;
+
+    setMapData((prev) => ({ ...prev, title }));
+
+    try {
+      await save({
+        title,
+        nodes: mapData.nodes || [],
+        edges: mapData.edges || [],
+      });
+      toast.success("Map renamed!");
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Could not rename the map.");
+    }
+  }, [save, mapData]);
 
   /* ─── node CRUD ─── */
   const handleAddNode = useCallback(({ label, details, category, parentId }) => {
@@ -100,11 +132,6 @@ const ConceptMapShell = () => {
   }, []);
 
   /* ─── connect mode ─── */
-  // const handleToggleConnect = useCallback(() => {
-  //   setConnectMode((m) => !m);
-  // }, []);
-
-  /* two nodes picked on the canvas → open the label modal */
   const handleEdgePicked = useCallback((sourceId, targetId) => {
     const sourceNode = (mapData?.nodes || []).find((n) => n.id === sourceId);
     const targetNode = (mapData?.nodes || []).find((n) => n.id === targetId);
@@ -131,16 +158,6 @@ const ConceptMapShell = () => {
     [pendingEdge]
   );
 
-  /* Esc exits connect mode */
-  // useEffect(() => {
-  //   if (!connectMode) return;
-  //   const onKey = (e) => {
-  //     if (e.key === "Escape") setConnectMode(false);
-  //   };
-  //   window.addEventListener("keydown", onKey);
-  //   return () => window.removeEventListener("keydown", onKey);
-  // }, [connectMode]);
-
   /* ─── API: Save canvas to backend (PUT /api/concept-map/) ─── */
   const handleSaveCanvas = useCallback(async () => {
     try {
@@ -161,24 +178,24 @@ const ConceptMapShell = () => {
     try {
       const result = await generate({ prompt: promptText });
       if (result) {
-        // normalizeMapObject is handled inside the hook, but we also get
-        // the raw response — re-normalize for the local state
         const data = result?.data ?? result;
         let normalized;
         if (data.map && Array.isArray(data.map.nodes)) {
           normalized = {
+            id: data.map.id || null,
             title: data.map.title || "Clinical Concept Map",
             nodes: data.map.nodes || [],
             edges: data.map.edges || [],
           };
         } else if (Array.isArray(data.nodes)) {
           normalized = {
+            id: data.id || null,
             title: data.title || "Clinical Concept Map",
             nodes: data.nodes || [],
             edges: data.edges || [],
           };
         } else {
-          normalized = { title: "Clinical Concept Map", nodes: [], edges: [] };
+          normalized = { id: null, title: "Clinical Concept Map", nodes: [], edges: [] };
         }
         setMapData(normalized);
         toast.success("Concept map generated by CARA AI!");
@@ -187,6 +204,131 @@ const ConceptMapShell = () => {
       toast.error(err?.response?.data?.error || "Failed to generate concept map.");
     }
   }, [generate]);
+
+  /* ─── History: Select a map from My Maps ─── */
+  const handleSelectMap = useCallback(async (mapId) => {
+    try {
+      const result = await selectMap(mapId);
+      if (result) {
+        const data = result?.data ?? result;
+        let normalized;
+        if (data.map && Array.isArray(data.map.nodes)) {
+          normalized = {
+            id: data.map.id || null,
+            title: data.map.title || "Clinical Concept Map",
+            nodes: data.map.nodes || [],
+            edges: data.map.edges || [],
+          };
+        } else if (Array.isArray(data.nodes)) {
+          normalized = {
+            id: data.id || null,
+            title: data.title || "Clinical Concept Map",
+            nodes: data.nodes || [],
+            edges: data.edges || [],
+          };
+        } else {
+          normalized = EMPTY_MAP;
+        }
+        setMapData(normalized);
+        setHistoryOpen(false);
+        toast.success("Map loaded from history.");
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Failed to load map.");
+    }
+  }, [selectMap]);
+
+  /* ─── History: Create new empty map ─── */
+  const handleCreateMap = useCallback(async () => {
+    try {
+      const result = await createMap({ title: "Untitled Concept Map" });
+      if (result) {
+        const data = result?.data ?? result;
+        let normalized;
+        if (data.map && Array.isArray(data.map.nodes)) {
+          normalized = {
+            id: data.map.id || null,
+            title: data.map.title || "Untitled Concept Map",
+            nodes: data.map.nodes || [],
+            edges: data.map.edges || [],
+          };
+        } else {
+          normalized = {
+            id: data.id || null,
+            title: data.title || "Untitled Concept Map",
+            nodes: data.nodes || [],
+            edges: data.edges || [],
+          };
+        }
+        setMapData(normalized);
+        setHistoryOpen(false);
+        toast.success("New concept map created!");
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Failed to create map.");
+    }
+  }, [createMap]);
+
+  /* ─── History: Delete a specific map ─── */
+  const handleDeleteMap = useCallback(async (mapId) => {
+    try {
+      await deleteMap(mapId);
+      // If the deleted map is the current one, reset
+      if (mapData?.id === mapId) {
+        setMapData(EMPTY_MAP);
+      }
+      toast.success("Map deleted.");
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Failed to delete map.");
+    }
+  }, [deleteMap, mapData?.id]);
+
+  /* ─── History: Clear all maps ─── */
+  const handleClearAll = useCallback(async () => {
+    try {
+      await clearAll();
+      setMapData(EMPTY_MAP);
+      toast.success("All concept maps deleted.");
+      setHistoryOpen(false);
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Failed to clear maps.");
+    }
+  }, [clearAll]);
+
+  /* ─── History: Import a map from JSON ─── */
+  const handleImportMap = useCallback(async (jsonData) => {
+    try {
+      const result = await importMap({
+        title: jsonData.title || "Imported Concept Map",
+        nodes: jsonData.nodes || [],
+        edges: jsonData.edges || [],
+      });
+      if (result) {
+        const data = result?.data ?? result;
+        let normalized;
+        if (data.map && Array.isArray(data.map.nodes)) {
+          normalized = {
+            id: data.map.id || null,
+            title: data.map.title || "Imported Concept Map",
+            nodes: data.map.nodes || [],
+            edges: data.map.edges || [],
+          };
+        } else {
+          normalized = {
+            id: data.id || null,
+            title: data.title || "Imported Concept Map",
+            nodes: data.nodes || [],
+            edges: data.edges || [],
+          };
+        }
+        setMapData(normalized);
+        setHistoryOpen(false);
+        toast.success("Map imported successfully!");
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Failed to import map.");
+    }
+  }, [importMap]);
 
   return (
     <div className="flex flex-col xl:flex-row h-full xl:min-h-[calc(100vh-80px)] relative w-full bg-[#EEF0F3]">
@@ -201,7 +343,7 @@ const ConceptMapShell = () => {
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 xl:relative xl:translate-x-0
-          ${isSidebarOpen ? "translate-x-0 z-[999]" : "-translate-x-full"} w-[85%] md:w-[330px] shrink-0 bg-white border-r border-[#E5E7EB] flex flex-col`}
+          ${isSidebarOpen ? "translate-x-0 z-999" : "-translate-x-full"} w-[85%] md:w-82.5 shrink-0 bg-white border-r border-[#E5E7EB] flex flex-col`}
       >
         <ConceptMapSidebar
           onClose={() => setIsSidebarOpen(false)}
@@ -225,26 +367,24 @@ const ConceptMapShell = () => {
 
         <ConceptMapHeader
           title={mapData?.title}
+          onRenameMap={handleRenameMap}
           onAddNode={() => setAddModalOpen(true)}
           onDownloadPDF={() => canvasRef.current?.exportPDF()}
           onResetLayout={() => canvasRef.current?.resetLayout()}
           onSaveCanvas={handleSaveCanvas}
-          // onToggleConnect={handleToggleConnect}
-          // isConnectMode={connectMode}
+          onOpenHistory={() => setHistoryOpen(true)}
           isSaving={isSaving}
         />
         <ConceptMapCanvas
           ref={canvasRef}
           mapData={mapData}
           onNodeClick={setEditingNodeId}
-          // connectMode={connectMode}
           onEdgePicked={handleEdgePicked}
         />
       </main>
 
       {/* Modals — key forces remount so form state resets each time */}
       <AddNodeModal
-        key={addModalOpen ? "open" : "closed"}
         open={addModalOpen}
         nodes={mapData?.nodes || []}
         onClose={() => setAddModalOpen(false)}
@@ -266,6 +406,27 @@ const ConceptMapShell = () => {
         ) : "leads to"}
         onClose={() => setPendingEdge(null)}
         onConfirm={handleAddEdge}
+      />
+
+      {/* History / My Maps Modal */}
+      <HistoryModal
+        open={historyOpen}
+        maps={maps}
+        totalMaps={totalMaps}
+        totalNodes={totalNodes}
+        currentMapId={mapData?.id}
+        isLoading={isMapsLoading}
+        isSelecting={isSelecting}
+        isCreating={isCreating}
+        isDeleting={isDeleting}
+        isClearing={isClearing}
+        isImporting={isImporting}
+        onClose={() => setHistoryOpen(false)}
+        onSelectMap={handleSelectMap}
+        onCreateMap={handleCreateMap}
+        onDeleteMap={handleDeleteMap}
+        onClearAll={handleClearAll}
+        onImportMap={handleImportMap}
       />
     </div>
   );

@@ -1,22 +1,75 @@
 "use client";
 
-import { Plus, FileDown, RotateCcw, CloudUpload, Link2 } from "lucide-react";
+import { useState } from "react";
+import { Plus, CloudUpload, FolderOpen, Download, PenLine } from "lucide-react";
 
 export default function ConceptMapHeader({
+    title,
+    onRenameMap,
     onAddNode,
     onDownloadPDF,
-    onResetLayout,
+    // onResetLayout,
     onSaveCanvas,
-    // onToggleConnect,
-    // isConnectMode = false,
+    onOpenHistory,
+    isSaving = false,
 }) {
-    return (
-        <header className="h-16 bg-white border-b border-slate-200 px-4 lg:px-6 flex items-center justify-between z-30 shrink-0 shadow-sm">
-            {/* Left — brand + welcome */}
-            <div></div>
+    const [editingTitle, setEditingTitle] = useState(false);
+    const [titleValue, setTitleValue] = useState(title || "Clinical Concept Map");
 
-            {/* Right — actions + avatar */}
+    // Sync incoming title prop when not editing
+    const displayTitle = editingTitle ? titleValue : title || "Clinical Concept Map";
+
+    const handleTitleFocus = () => {
+        setEditingTitle(true);
+        setTitleValue(title || "Clinical Concept Map");
+    };
+
+    const handleTitleBlur = () => {
+        setEditingTitle(false);
+        if (onRenameMap && titleValue.trim() && titleValue.trim() !== title) {
+            onRenameMap(titleValue.trim());
+        }
+    };
+
+    const handleTitleKeyDown = (e) => {
+        if (e.key === "Enter") {
+            e.target.blur();
+        }
+        if (e.key === "Escape") {
+            setTitleValue(title || "Clinical Concept Map");
+            setEditingTitle(false);
+        }
+    };
+
+    return (
+        <header className="sticky top-0 w-full h-16 bg-white border-b border-slate-200 px-4 lg:px-6 flex items-center justify-between z-40 shrink-0 shadow-sm">
+            {/* Left — Editable title input */}
+            <div className="flex items-center gap-2 min-w-0 flex-1 mr-4">
+                <PenLine size={16} color="#2C5F8D" />
+                <input
+                    type="text"
+                    value={displayTitle}
+                    onChange={(e) => setTitleValue(e.target.value)}
+                    onFocus={handleTitleFocus}
+                    onBlur={handleTitleBlur}
+                    onKeyDown={handleTitleKeyDown}
+                    className="text-sm font-bold text-slate-800 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-500 focus:outline-none transition-colors py-1 px-1 truncate max-w-xs"
+                    title="Click to rename this concept map"
+                />
+            </div>
+
+            {/* Right — actions */}
             <div className="flex items-center gap-1.5 lg:gap-2 shrink-0">
+                {/* My Maps button */}
+                <button
+                    type="button"
+                    onClick={onOpenHistory}
+                    className="flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-[#555555] hover:bg-violet-100 transition border border-gray-200 cursor-pointer"
+                >
+                    <FolderOpen size={14} className="text-[#555555]" />
+                    <span className="hidden lg:inline">My Maps</span>
+                </button>
+
                 <button
                     type="button"
                     onClick={onAddNode}
@@ -26,48 +79,31 @@ export default function ConceptMapHeader({
                     <span className="hidden lg:inline">Add Node</span>
                 </button>
 
-                {/* Connect mode toggle */}
                 {/* <button
-                    type="button"
-                    onClick={onToggleConnect}
-                    className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer border ${
-                        isConnectMode
-                            ? "bg-sky-600 text-white border-sky-600 hover:bg-sky-700 shadow-sm"
-                            : "bg-slate-100 text-slate-700 border-transparent hover:bg-slate-200"
-                    }`}
-                    aria-pressed={isConnectMode}
-                    title={isConnectMode ? "Exit connect mode" : "Connect two nodes"}
-                >
-                    <Link2 size={14} className={isConnectMode ? "" : "text-sky-600"} />
-                    <span className="hidden lg:inline">
-                        {isConnectMode ? "Connecting" : "Connect"}
-                    </span>
-                </button> */}
-
-                <button
                     type="button"
                     onClick={onResetLayout}
                     className="flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer"
                 >
                     <RotateCcw size={14} />
                     <span className="hidden lg:inline">Reset Layout</span>
-                </button>
+                </button> */}
 
                 <button
                     type="button"
                     onClick={onSaveCanvas}
-                    className="flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm cursor-pointer"
+                    disabled={isSaving}
+                    className="flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm cursor-pointer disabled:opacity-50"
                 >
                     <CloudUpload size={14} />
-                    <span className="hidden lg:inline">Save Canvas</span>
+                    <span className="hidden lg:inline">{isSaving ? "Saving..." : "Save Canvas"}</span>
                 </button>
 
                 <button
                     type="button"
                     onClick={onDownloadPDF}
-                    className="flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition border border-indigo-200 cursor-pointer"
+                    className="flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-white hover:bg-primary/95 transition border border-gray-200 cursor-pointer"
                 >
-                    <FileDown size={14} className="text-indigo-600" />
+                    <Download size={16} className="text-white" />
                     <span className="hidden lg:inline">Export PDF</span>
                 </button>
 

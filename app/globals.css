@@ -149,7 +149,7 @@ body {
 
 /* Note: react-flow attribution */
 .react-flow__attribution a {
-    display: none;
+  display: none;
 }
 
 /* ─── Formatted AI Message Styles ──────────────────────── */
@@ -159,11 +159,11 @@ body {
   counter-reset: md-list;
 }
 
-.formatted-message ol > li {
+.formatted-message ol>li {
   counter-increment: md-list;
 }
 
-.formatted-message ol > li > span:first-child {
+.formatted-message ol>li>span:first-child {
   /* Replace the bullet dot with a number for ordered lists */
   display: inline-flex;
   align-items: center;
@@ -178,20 +178,20 @@ body {
   flex-shrink: 0;
 }
 
-.formatted-message ol > li > span:first-child::before {
+.formatted-message ol>li>span:first-child::before {
   content: counter(md-list);
 }
 
 /* Hide the bullet dot inside ordered lists (it becomes a number badge) */
-.formatted-message ol > li > span:first-child > * {
+.formatted-message ol>li>span:first-child>* {
   display: none;
 }
 
 /* Spacing resets inside message bubbles */
-.formatted-message > :first-child {
+.formatted-message> :first-child {
   margin-top: 0 !important;
 }
 
-.formatted-message > :last-child {
+.formatted-message> :last-child {
   margin-bottom: 0 !important;
 }

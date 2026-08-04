@@ -23,19 +23,16 @@ const SidebarContent = ({ onClose }) => {
             <aside className="w-full h-full border-r border-[#E2E8F0] bg-[#FAFAFA] overflow-y-auto overflow-x-hidden flex flex-col">
                 {/* header content */}
                 <div className="p-4 border-b border-[#E2E8F0] shrink-0 bg-white">
-                    <Link
-                        href="/dashboard/study-notes"
-                        onClick={() => { if (onClose) onClose(); }}
-                        className="block bg-[#326798] hover:bg-[#2C5F8D] transition-colors rounded-xl text-center py-2.5 mb-3 shadow-[0_2px_4px_rgba(0,0,0,0.1)] cursor-pointer"
-                    >
-                        <h4 className="text-white font-semibold text-[13px] tracking-wide">Dashboard Progress</h4>
-                    </Link>
+                    <h2 className="text-base font-bold text-[#111827] mb-3">
+                        Study Notes
+                    </h2>
+
                     {/* search study notes */}
                     <div className="relative w-full">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                         <input
                             type="text"
-                            placeholder="Quick search systems..."
+                            placeholder="Search Notes"
                             className="w-full pl-9 pr-4 py-2 border border-[#E2E8F0] rounded-[10px] text-[12px] outline-none text-gray-700 bg-white focus:border-[#326798] transition-colors"
                         />
                     </div>

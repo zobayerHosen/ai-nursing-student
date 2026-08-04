@@ -374,20 +374,40 @@
   <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between z-30 shrink-0 shadow-sm">
     <!-- Left Logo & Welcome -->
     <div class="flex items-center gap-4">
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 flex-shrink-0">
         <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white font-heading font-bold text-lg shadow-md shadow-sky-500/20">
           C
         </div>
         <span class="font-heading font-bold text-xl tracking-tight text-slate-900">CARA</span>
       </div>
       <div class="h-5 w-[1px] bg-slate-200"></div>
-      <h1 class="text-base font-semibold text-slate-800 flex items-center gap-2">
+      <h1 class="text-base font-semibold text-slate-800 flex items-center gap-2 flex-shrink-0">
         Welcome, <span id="headerUserName" class="text-slate-900 font-bold">Clinical Caregiver</span> 👋
       </h1>
+      <div class="h-5 w-[1px] bg-slate-200"></div>
+      <!-- Editable Concept Map Title -->
+      <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/10 transition">
+        <input 
+          type="text" 
+          id="currentMapTitleInput" 
+          class="bg-transparent font-semibold text-xs text-slate-800 focus:outline-none w-56 border-none" 
+          value="Clinical Concept Map" 
+          onblur="renameCurrentMap()"
+          onkeydown="if(event.key==='Enter') { this.blur(); }"
+          title="Click to rename map"
+        />
+        <i class="fa-solid fa-pen text-[9px] text-slate-400"></i>
+      </div>
     </div>
 
     <!-- Right Header Actions & Profile -->
     <div class="flex items-center gap-3">
+      <!-- My Maps History Trigger -->
+      <button onclick="openHistoryModal()" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 transition border border-rose-200">
+        <i class="fa-solid fa-folder-open text-rose-600"></i>
+        <span>My Maps</span>
+      </button>
+
       <!-- Bearer Token Config Modal Trigger -->
       <button onclick="toggleModal('tokenModal')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
         <i class="fa-solid fa-key text-amber-500"></i>
@@ -674,6 +694,88 @@
     </div>
   </div>
 
+  <!-- ================= MODAL: CONCEPT MAPS HISTORY ================= -->
+  <div id="historyModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] flex flex-col shadow-xl border border-slate-100 overflow-hidden">
+      <!-- Modal Header -->
+      <div class="p-6 border-b border-slate-150 flex items-center justify-between">
+        <div>
+          <h3 class="font-heading font-bold text-xl text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-folder-open text-sky-600"></i> My Concept Maps
+          </h3>
+          <p id="historyStats" class="text-xs text-slate-500 mt-1">0 maps • 0 total nodes</p>
+        </div>
+        <button onclick="toggleModal('historyModal')" class="text-slate-400 hover:text-slate-600 text-lg transition"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Controls Row -->
+      <div class="px-6 py-4 bg-slate-50 border-b border-slate-150 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <!-- Search bar -->
+        <div class="relative flex-1 max-w-md">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+          <input 
+            type="text" 
+            id="historySearchInput" 
+            placeholder="Search maps by title or content..." 
+            class="w-full text-xs pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 transition"
+            oninput="filterHistory()"
+          />
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Sort Dropdown -->
+          <div class="relative">
+            <select 
+              id="historySortSelect" 
+              class="appearance-none text-xs bg-white border border-slate-200 px-4 pr-10 py-2.5 rounded-xl focus:outline-none focus:border-sky-500 transition font-medium text-slate-700 cursor-pointer"
+              onchange="sortHistory()"
+            >
+              <option value="modified_desc" selected>Recently modified</option>
+              <option value="modified_asc">Least recently modified</option>
+              <option value="alpha_asc">Alphabetical (A-Z)</option>
+              <option value="alpha_desc">Alphabetical (Z-A)</option>
+            </select>
+            <i class="fa-solid fa-chevron-down absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[10px]"></i>
+          </div>
+
+          <!-- New Map Button -->
+          <button onclick="createNewEmptyMap()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white transition shadow-sm shadow-rose-500/10">
+            <i class="fa-solid fa-plus text-xs"></i>
+            <span>New Map</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid Body -->
+      <div class="flex-1 overflow-y-auto p-6 bg-slate-50/50">
+        <div id="historyGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Populated dynamically via JS -->
+        </div>
+        
+        <!-- Empty State -->
+        <div id="historyEmptyState" class="hidden flex-col items-center justify-center py-12 text-center text-slate-400">
+          <i class="fa-regular fa-folder-open text-5xl mb-3 text-slate-300"></i>
+          <p class="text-sm font-semibold">No concept maps found</p>
+          <p class="text-xs mt-1 text-slate-400">Try creating a new map or search for something else.</p>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-slate-150 flex items-center justify-between bg-white text-xs text-slate-500">
+        <button onclick="clearAllMaps()" class="text-slate-500 hover:text-rose-600 font-semibold transition flex items-center gap-1.5">
+          <i class="fa-regular fa-trash-can"></i>
+          <span>Clear all maps</span>
+        </button>
+        <button onclick="triggerImport()" class="text-slate-500 hover:text-sky-600 font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-import"></i>
+          <span>Import from JSON file</span>
+        </button>
+        <input type="file" id="importFileInput" class="hidden" accept=".json" onchange="handleImportFile(event)" />
+      </div>
+    </div>
+  </div>
+
+
   <!-- ================= JAVASCRIPT ENGINE ================= -->
   <script>
     const CATEGORY_CLASS = {
@@ -690,8 +792,9 @@
     let authToken = localStorage.getItem('concept_map_token') || '';
     let view = { x: 0, y: 0, scale: 1 };
     let currentEdgesData = []; // {s, t, label}
-    let currentMapData = { title: "Clinical Concept Map", nodes: [], edges: [] };
+    let currentMapData = { id: null, title: "Clinical Concept Map", nodes: [], edges: [] };
     let manualPositions = {}; // nodeId -> {x, y}
+    let allMaps = [];
 
     // On Load
     document.addEventListener("DOMContentLoaded", () => {
@@ -736,10 +839,11 @@
     }
 
     function normalizeMapObject(raw) {
-      if (!raw) return { title: "Clinical Concept Map", nodes: [], edges: [] };
+      if (!raw) return { id: null, title: "Clinical Concept Map", nodes: [], edges: [] };
       let data = (raw && raw.data) ? raw.data : raw;
       if (data.map && Array.isArray(data.map.nodes)) {
         return {
+          id: data.map.id || null,
           title: data.map.title || "Clinical Concept Map",
           nodes: data.map.nodes || [],
           edges: data.map.edges || []
@@ -747,12 +851,13 @@
       }
       if (Array.isArray(data.nodes)) {
         return {
+          id: data.id || null,
           title: data.title || "Clinical Concept Map",
           nodes: data.nodes || [],
           edges: data.edges || []
         };
       }
-      return { title: "Clinical Concept Map", nodes: [], edges: [] };
+      return { id: null, title: "Clinical Concept Map", nodes: [], edges: [] };
     }
 
     function escapeHtml(str) {
@@ -786,10 +891,14 @@
         if (res.status === 200) {
           const data = await res.json();
           currentMapData = normalizeMapObject(data);
+          document.getElementById('currentMapTitleInput').value = currentMapData.title || "Clinical Concept Map";
           showStatusLog('<i class="fa-solid fa-check"></i> Map loaded from server.', 'success');
           renderMap(currentMapData, false);
         } else if (res.status === 404) {
           showStatusLog('<i class="fa-solid fa-info-circle"></i> No saved map found. Enter prompt to build your map.');
+          document.getElementById('currentMapTitleInput').value = "Clinical Concept Map";
+          currentMapData = { id: null, title: "Clinical Concept Map", nodes: [], edges: [] };
+          renderMap(currentMapData, false);
         } else if (res.status === 401) {
           showStatusLog('<i class="fa-solid fa-lock"></i> Authentication required. Enter Bearer token.', 'error');
           toggleModal('tokenModal');
@@ -829,10 +938,16 @@
 
         if (res.ok) {
           currentMapData = normalizeMapObject(data);
+          document.getElementById('currentMapTitleInput').value = currentMapData.title || "Clinical Concept Map";
           input.value = '';
           manualPositions = {}; // Reset positions for fresh map
           showStatusLog('<i class="fa-solid fa-circle-check"></i> Latest concept map generated!', 'success');
           renderMap(currentMapData, false);
+
+          // Focus on title input for immediate renaming
+          const titleInput = document.getElementById('currentMapTitleInput');
+          titleInput.focus();
+          titleInput.select();
         } else if (res.status === 401) {
           showStatusLog('<i class="fa-solid fa-lock"></i> 401 Unauthorized. Enter Bearer token.', 'error');
           toggleModal('tokenModal');
@@ -847,7 +962,7 @@
     }
 
     // ---------------------------------------------------------------------------
-    // API Call 3: PUT /api/concept-map/ (Direct Manual Save)
+    // API Call 3: PUT /api/concept-map/ (Direct Manual Save / Rename)
     // ---------------------------------------------------------------------------
     async function saveCurrentMapToBackend() {
       showStatusLog('<i class="fa-solid fa-cloud-arrow-up fa-spin"></i> Saving state to server...');
@@ -871,6 +986,11 @@
 
         if (res.ok) {
           showStatusLog('<i class="fa-solid fa-circle-check"></i> Canvas state saved to backend database!', 'success');
+          // If the title changed, let's refresh the current title display
+          if (data.map) {
+            currentMapData.title = data.map.title;
+            document.getElementById('currentMapTitleInput').value = currentMapData.title;
+          }
         } else if (res.status === 401) {
           showStatusLog('<i class="fa-solid fa-lock"></i> 401 Unauthorized. Enter Bearer token.', 'error');
           toggleModal('tokenModal');
@@ -881,6 +1001,317 @@
         showStatusLog(`<i class="fa-solid fa-circle-xmark"></i> Network error: ${err.message}`, 'error');
       }
     }
+
+    async function renameCurrentMap() {
+      const titleInput = document.getElementById('currentMapTitleInput');
+      const newTitle = titleInput.value.trim();
+      if (!newTitle) {
+        titleInput.value = currentMapData.title || "Clinical Concept Map";
+        return;
+      }
+
+      if (newTitle === currentMapData.title) return;
+
+      currentMapData.title = newTitle;
+      await saveCurrentMapToBackend();
+    }
+
+    // ---------------------------------------------------------------------------
+    // Concept Map History Logic
+    // ---------------------------------------------------------------------------
+    async function openHistoryModal() {
+      toggleModal('historyModal');
+      await loadHistoryList();
+    }
+
+    async function loadHistoryList() {
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+        const res = await fetch('/api/concept-maps/', { method: 'GET', headers, credentials: 'same-origin' });
+        if (res.ok) {
+          const data = await res.json();
+          const payload = (data && data.data) ? data.data : data;
+          allMaps = payload.maps || [];
+          document.getElementById('historyStats').textContent = `${payload.total_maps || 0} maps • ${payload.total_nodes || 0} total nodes`;
+          filterHistory();
+        } else {
+          showStatusLog('<i class="fa-solid fa-triangle-exclamation"></i> Failed to load history.', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderHistoryGrid(mapsList) {
+      const grid = document.getElementById('historyGrid');
+      const emptyState = document.getElementById('historyEmptyState');
+      grid.innerHTML = '';
+      
+      if (mapsList.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      mapsList.forEach(m => {
+        const isCurrent = m.is_current;
+        
+        const card = document.createElement('div');
+        card.className = `relative p-5 rounded-2xl border transition duration-200 bg-white shadow-xs cursor-pointer group flex flex-col justify-between ${
+          isCurrent 
+            ? 'border-rose-300 bg-rose-50/20 ring-1 ring-rose-300' 
+            : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
+        }`;
+        
+        card.onclick = (e) => {
+          if (e.target.closest('.delete-btn')) return;
+          selectMapFromHistory(m.id);
+        };
+
+        const titleHtml = escapeHtml(m.title || "Untitled Concept Map");
+        const subtitleHtml = escapeHtml(m.subtitle || "Untitled");
+        const snippetHtml = m.snippet ? `<p class="text-[11px] text-slate-500 mt-2 italic line-clamp-2">${escapeHtml(m.snippet)}</p>` : '';
+        const timeText = getElapsedTimeText(m.updated_at);
+        
+        card.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between gap-3">
+              <h4 class="font-bold text-slate-800 text-sm tracking-tight line-clamp-1">${titleHtml}</h4>
+              <button class="delete-btn text-slate-400 hover:text-rose-600 p-1 rounded transition opacity-0 group-hover:opacity-100 duration-150" title="Delete Map">
+                <i class="fa-regular fa-trash-can text-xs"></i>
+              </button>
+            </div>
+            <p class="text-[10px] font-bold text-rose-500 mt-1 uppercase tracking-wide">${subtitleHtml}</p>
+            ${snippetHtml}
+          </div>
+
+          <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold bg-sky-50 text-sky-700 px-2 py-0.5 rounded-lg border border-sky-100">${m.nodes_count} nodes</span>
+              <span class="text-slate-400">${m.edges_count} links</span>
+              <span class="text-slate-300">•</span>
+              <span>${timeText}</span>
+            </div>
+            ${isCurrent ? `
+              <div class="flex items-center gap-1.5 text-xs text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100 shadow-2xs">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-600 animate-ping"></span>
+                <span>current</span>
+              </div>
+            ` : ''}
+          </div>
+        `;
+
+        const deleteBtn = card.querySelector('.delete-btn');
+        if (deleteBtn) {
+          deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            deleteMapFromHistory(m.id, m.title);
+          };
+        }
+
+        grid.appendChild(card);
+      });
+    }
+
+    function getElapsedTimeText(dateStr) {
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'Just now';
+      if (mins < 60) return `${mins}m ago`;
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      return `${days}d ago`;
+    }
+
+    async function selectMapFromHistory(id) {
+      showStatusLog('<i class="fa-solid fa-arrows-rotate fa-spin"></i> Loading map...');
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+        const res = await fetch(`/api/concept-maps/${id}/select/`, { method: 'POST', headers, credentials: 'same-origin' });
+        if (res.ok) {
+          const data = await res.json();
+          currentMapData = normalizeMapObject(data);
+          document.getElementById('currentMapTitleInput').value = currentMapData.title;
+          showStatusLog('<i class="fa-solid fa-check"></i> Map loaded from history.', 'success');
+          renderMap(currentMapData, false);
+          toggleModal('historyModal');
+          
+          // Focus and highlight title for easy immediate rename
+          const titleInput = document.getElementById('currentMapTitleInput');
+          titleInput.focus();
+          titleInput.select();
+        } else {
+          showStatusLog('<i class="fa-solid fa-triangle-exclamation"></i> Failed to select map.', 'error');
+        }
+      } catch (err) {
+        showStatusLog(`<i class="fa-solid fa-triangle-exclamation"></i> Error: ${err.message}`, 'error');
+      }
+    }
+
+    async function createNewEmptyMap() {
+      showStatusLog('<i class="fa-solid fa-spinner fa-spin"></i> Creating new map...');
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+        const res = await fetch('/api/concept-maps/', {
+          method: 'POST',
+          headers,
+          credentials: 'same-origin',
+          body: JSON.stringify({ title: "Untitled Concept Map" })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          currentMapData = normalizeMapObject(data);
+          document.getElementById('currentMapTitleInput').value = currentMapData.title;
+          manualPositions = {};
+          showStatusLog('<i class="fa-solid fa-circle-check"></i> New concept map created!', 'success');
+          renderMap(currentMapData, false);
+          toggleModal('historyModal');
+          
+          // Focus and highlight title input for immediate renaming
+          const titleInput = document.getElementById('currentMapTitleInput');
+          titleInput.focus();
+          titleInput.select();
+        } else {
+          showStatusLog('<i class="fa-solid fa-triangle-exclamation"></i> Failed to create map.', 'error');
+        }
+      } catch (err) {
+        showStatusLog(`<i class="fa-solid fa-triangle-exclamation"></i> Error: ${err.message}`, 'error');
+      }
+    }
+
+    async function deleteMapFromHistory(id, title) {
+      if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+        const res = await fetch(`/api/concept-maps/${id}/`, { method: 'DELETE', headers, credentials: 'same-origin' });
+        if (res.ok) {
+          showStatusLog('<i class="fa-solid fa-circle-check"></i> Map deleted successfully.', 'success');
+          if (currentMapData.id === id) {
+            await loadConceptMapFromBackend();
+          }
+          await loadHistoryList();
+        } else {
+          showStatusLog('<i class="fa-solid fa-triangle-exclamation"></i> Failed to delete map.', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function clearAllMaps() {
+      if (!confirm("Are you sure you want to delete all maps? This action cannot be undone!")) return;
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+        const res = await fetch('/api/concept-maps/clear/', { method: 'DELETE', headers, credentials: 'same-origin' });
+        if (res.ok) {
+          showStatusLog('<i class="fa-solid fa-circle-check"></i> All concept maps deleted.', 'success');
+          currentMapData = { id: null, title: "Clinical Concept Map", nodes: [], edges: [] };
+          document.getElementById('currentMapTitleInput').value = "Clinical Concept Map";
+          renderMap(currentMapData, false);
+          toggleModal('historyModal');
+        } else {
+          showStatusLog('<i class="fa-solid fa-triangle-exclamation"></i> Failed to clear maps.', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function triggerImport() {
+      document.getElementById('importFileInput').click();
+    }
+
+    function handleImportFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const json = JSON.parse(event.target.result);
+          if (!json.nodes || !json.edges) {
+            alert("Invalid concept map file format. Must contain 'nodes' and 'edges'.");
+            return;
+          }
+          
+          showStatusLog('<i class="fa-solid fa-spinner fa-spin"></i> Importing concept map...');
+          const headers = { 'Content-Type': 'application/json' };
+          if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+          const res = await fetch('/api/concept-maps/import/', {
+            method: 'POST',
+            headers,
+            credentials: 'same-origin',
+            body: JSON.stringify({
+              title: json.title || file.name.replace(/\.[^/.]+$/, ""),
+              nodes: json.nodes,
+              edges: json.edges
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            currentMapData = normalizeMapObject(data);
+            document.getElementById('currentMapTitleInput').value = currentMapData.title;
+            showStatusLog('<i class="fa-solid fa-circle-check"></i> Map imported successfully!', 'success');
+            renderMap(currentMapData, false);
+            toggleModal('historyModal');
+          } else {
+            showStatusLog('<i class="fa-solid fa-triangle-exclamation"></i> Import failed.', 'error');
+          }
+        } catch (err) {
+          alert("Failed to parse file: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    function filterHistory() {
+      const query = document.getElementById('historySearchInput').value.toLowerCase().trim();
+      let filtered = allMaps;
+      
+      if (query) {
+        filtered = allMaps.filter(m => 
+          (m.title || "").toLowerCase().includes(query) ||
+          (m.subtitle || "").toLowerCase().includes(query) ||
+          (m.snippet || "").toLowerCase().includes(query)
+        );
+      }
+      
+      const sortBy = document.getElementById('historySortSelect').value;
+      filtered.sort((a, b) => {
+        if (sortBy === 'modified_desc') {
+          return new Date(b.updated_at) - new Date(a.updated_at);
+        } else if (sortBy === 'modified_asc') {
+          return new Date(a.updated_at) - new Date(b.updated_at);
+        } else if (sortBy === 'alpha_asc') {
+          return (a.title || "").localeCompare(b.title || "");
+        } else if (sortBy === 'alpha_desc') {
+          return (b.title || "").localeCompare(a.title || "");
+        }
+        return 0;
+      });
+
+      renderHistoryGrid(filtered);
+    }
+
+    function sortHistory() {
+      filterHistory();
+    }
+
 
     // ---------------------------------------------------------------------------
     // PDF Export Function
@@ -914,7 +1345,7 @@
         if (top + height > maxY) maxY = top + height;
       });
 
-      // Safety padding around the entire map (60px on all sides)
+      // Safety padding around the entire map (50px on all 4 sides)
       const padding = 60;
       const shiftX = -minX + padding;
       const shiftY = -minY + padding;
@@ -1298,7 +1729,7 @@
               } else {
                 const push = overlapY / 2;
                 const dir = (a.y + a.h / 2) < (b.y + b.h / 2) ? 1 : -1;
-                if (!aPinned) a.y -= dir * push * (aPinned ? 2 : 1);
+                if (!aPinned) a.y -= dir * push * (bPinned ? 2 : 1);
                 if (!bPinned) b.y += dir * push * (aPinned ? 2 : 1);
               }
             }

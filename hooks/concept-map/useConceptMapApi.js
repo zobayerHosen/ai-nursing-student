@@ -4,19 +4,26 @@ import {
   getConceptMap,
   generateConceptMap,
   saveConceptMap,
+  getConceptMaps,
+  selectConceptMap,
+  createConceptMap,
+  deleteConceptMap,
+  clearAllConceptMaps,
+  importConceptMap,
 } from "@/services/concept-map";
 
 /**
- * Normalizes the raw API response into { title, nodes, edges }.
+ * Normalizes the raw API response into { id, title, nodes, edges }.
  * Mirrors the `normalizeMapObject()` logic from the HTML visualizer.
  */
 function normalizeMapObject(raw) {
-  if (!raw) return { title: "Clinical Concept Map", nodes: [], edges: [] };
+  if (!raw) return { id: null, title: "Clinical Concept Map", nodes: [], edges: [] };
 
   const data = raw?.data ?? raw;
 
   if (data.map && Array.isArray(data.map.nodes)) {
     return {
+      id: data.map.id || null,
       title: data.map.title || "Clinical Concept Map",
       nodes: data.map.nodes || [],
       edges: data.map.edges || [],
@@ -25,13 +32,14 @@ function normalizeMapObject(raw) {
 
   if (Array.isArray(data.nodes)) {
     return {
+      id: data.id || null,
       title: data.title || "Clinical Concept Map",
       nodes: data.nodes || [],
       edges: data.edges || [],
     };
   }
 
-  return { title: "Clinical Concept Map", nodes: [], edges: [] };
+  return { id: null, title: "Clinical Concept Map", nodes: [], edges: [] };
 }
 
 // ---------------------------------------------------------------------------
@@ -90,7 +98,7 @@ export const useGenerateConceptMap = () => {
 };
 
 // ---------------------------------------------------------------------------
-// PUT  /concept-map/  — Save (persist) the current concept map state
+// PUT  /concept-map/  — Save (persist) the current concept map state / rename
 // ---------------------------------------------------------------------------
 export const useSaveConceptMap = () => {
   const axiosInstance = axiosPrivateClient();
@@ -107,6 +115,7 @@ export const useSaveConceptMap = () => {
     mutationFn: (payload) => saveConceptMap(axiosInstance, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["concept-map"] });
+      queryClient.invalidateQueries({ queryKey: ["concept-maps"] });
     },
   });
 
@@ -118,3 +127,190 @@ export const useSaveConceptMap = () => {
     error,
   };
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// My Maps / History hooks (concept-maps — plural)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ---------------------------------------------------------------------------
+// GET /concept-maps/  — List all user's concept maps
+// ---------------------------------------------------------------------------
+export const useGetConceptMaps = () => {
+  const axiosInstance = axiosPrivateClient();
+
+  const { data, isLoading, isError, isFetching, error, refetch } = useQuery({
+    queryKey: ["concept-maps"],
+    queryFn: () => getConceptMaps(axiosInstance),
+    staleTime: 60 * 1000,
+    retry: false,
+  });
+
+  // Normalize response: { maps: [], total_maps, total_nodes }
+  const payload = data?.data ?? data;
+
+  return {
+    maps: payload?.maps || [],
+    totalMaps: payload?.total_maps || 0,
+    totalNodes: payload?.total_nodes || 0,
+    isLoading,
+    isError,
+    isFetching,
+    error,
+    refetch,
+  };
+};
+
+// ---------------------------------------------------------------------------
+// POST /concept-maps/{id}/select/  — Select & load a map from history
+// ---------------------------------------------------------------------------
+export const useSelectConceptMap = () => {
+  const axiosInstance = axiosPrivateClient();
+  const queryClient = useQueryClient();
+
+  const {
+    mutateAsync: selectMap,
+    isPending,
+    data,
+    isError,
+    error,
+  } = useMutation({
+    mutationKey: ["concept-map-select"],
+    mutationFn: (mapId) => selectConceptMap(axiosInstance, mapId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["concept-map"] });
+      queryClient.invalidateQueries({ queryKey: ["concept-maps"] });
+    },
+  });
+
+  return {
+    selectMap,
+    isPending,
+    selectedMap: data ? normalizeMapObject(data) : null,
+    data,
+    isError,
+    error,
+  };
+};
+
+// ---------------------------------------------------------------------------
+// POST /concept-maps/  — Create a new empty concept map
+// ---------------------------------------------------------------------------
+export const useCreateConceptMap = () => {
+  const axiosInstance = axiosPrivateClient();
+  const queryClient = useQueryClient();
+
+  const {
+    mutateAsync: createMap,
+    isPending,
+    data,
+    isError,
+    error,
+  } = useMutation({
+    mutationKey: ["concept-map-create"],
+    mutationFn: (payload) => createConceptMap(axiosInstance, payload || { title: "Untitled Concept Map" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["concept-map"] });
+      queryClient.invalidateQueries({ queryKey: ["concept-maps"] });
+    },
+  });
+
+  return {
+    createMap,
+    isPending,
+    createdMap: data ? normalizeMapObject(data) : null,
+    data,
+    isError,
+    error,
+  };
+};
+
+// ---------------------------------------------------------------------------
+// DELETE /concept-maps/{id}/  — Delete a specific map
+// ---------------------------------------------------------------------------
+export const useDeleteConceptMap = () => {
+  const axiosInstance = axiosPrivateClient();
+  const queryClient = useQueryClient();
+
+  const {
+    mutateAsync: deleteMap,
+    isPending,
+    isError,
+    error,
+  } = useMutation({
+    mutationKey: ["concept-map-delete"],
+    mutationFn: (mapId) => deleteConceptMap(axiosInstance, mapId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["concept-map"] });
+      queryClient.invalidateQueries({ queryKey: ["concept-maps"] });
+    },
+  });
+
+  return {
+    deleteMap,
+    isPending,
+    isError,
+    error,
+  };
+};
+
+// ---------------------------------------------------------------------------
+// DELETE /concept-maps/clear/  — Delete all maps
+// ---------------------------------------------------------------------------
+export const useClearAllConceptMaps = () => {
+  const axiosInstance = axiosPrivateClient();
+  const queryClient = useQueryClient();
+
+  const {
+    mutateAsync: clearAll,
+    isPending,
+    isError,
+    error,
+  } = useMutation({
+    mutationKey: ["concept-maps-clear"],
+    mutationFn: () => clearAllConceptMaps(axiosInstance),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["concept-map"] });
+      queryClient.invalidateQueries({ queryKey: ["concept-maps"] });
+    },
+  });
+
+  return {
+    clearAll,
+    isPending,
+    isError,
+    error,
+  };
+};
+
+// ---------------------------------------------------------------------------
+// POST /concept-maps/import/  — Import a concept map from JSON file
+// ---------------------------------------------------------------------------
+export const useImportConceptMap = () => {
+  const axiosInstance = axiosPrivateClient();
+  const queryClient = useQueryClient();
+
+  const {
+    mutateAsync: importMap,
+    isPending,
+    data,
+    isError,
+    error,
+  } = useMutation({
+    mutationKey: ["concept-map-import"],
+    mutationFn: (payload) => importConceptMap(axiosInstance, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["concept-map"] });
+      queryClient.invalidateQueries({ queryKey: ["concept-maps"] });
+    },
+  });
+
+  return {
+    importMap,
+    isPending,
+    importedMap: data ? normalizeMapObject(data) : null,
+    data,
+    isError,
+    error,
+  };
+};
+

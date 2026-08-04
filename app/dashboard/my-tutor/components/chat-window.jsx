@@ -263,9 +263,8 @@ export default function ChatWindow({
         return (
           <div
             key={msg.id}
-            className={`flex gap-3 ${
-              isUser ? 'max-w-xl ml-auto flex-row-reverse' : 'max-w-3xl mr-auto'
-            }`}
+            className={`flex gap-3 ${isUser ? 'max-w-xl ml-auto flex-row-reverse' : 'max-w-3xl mr-auto'
+              }`}
           >
             <Image
               src={msg?.avatar}
@@ -277,18 +276,16 @@ export default function ChatWindow({
 
             <div className="space-y-1 max-w-[85%]">
               <div
-                className={`rounded-xl p-4 text-sm leading-relaxed shadow-sm ${
-                  isUser
+                className={`rounded-xl p-4 text-sm leading-relaxed shadow-sm ${isUser
                     ? 'bg-primary text-white rounded-tr-none'
                     : 'bg-gray-50 text-gray-800 border border-gray-100 rounded-tl-none'
-                }`}
+                  }`}
               >
                 {/* Image preview or file chip */}
                 {msg?.file && isImageAttachment && msg?.file?.previewUrl && (
                   <div className="mb-2">
-                    <div className={`overflow-hidden rounded-lg border ${
-                      isUser ? 'border-white/20' : 'border-gray-200'
-                    }`}>
+                    <div className={`overflow-hidden rounded-lg border ${isUser ? 'border-white/20' : 'border-gray-200'
+                      }`}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={msg.file.previewUrl}
@@ -296,20 +293,18 @@ export default function ChatWindow({
                         className="max-w-full max-h-60 w-auto h-auto object-contain rounded-lg"
                       />
                     </div>
-                    <p className={`text-[10px] mt-1 truncate ${
-                      isUser ? 'text-white/60' : 'text-gray-400'
-                    }`}>
+                    <p className={`text-[10px] mt-1 truncate ${isUser ? 'text-white/60' : 'text-gray-400'
+                      }`}>
                       {msg.file.name}
                     </p>
                   </div>
                 )}
                 {msg?.file && (!isImageAttachment || !msg?.file?.previewUrl) && (
                   <div
-                    className={`flex items-center gap-2 mb-2 px-2.5 py-1.5 rounded-lg border text-xs ${
-                      isUser
+                    className={`flex items-center gap-2 mb-2 px-2.5 py-1.5 rounded-lg border text-xs ${isUser
                         ? 'bg-white/15 border-white/25 text-white'
                         : 'bg-gray-100 border-gray-200 text-gray-700'
-                    }`}
+                      }`}
                   >
                     <span className="shrink-0">
                       <FileText className="w-3.5 h-3.5" />
@@ -339,7 +334,7 @@ export default function ChatWindow({
             alt="Cara"
             width={40}
             height={40}
-            
+
             className="w-8 h-8 rounded-full object-cover shrink-0"
           />
           <div className="space-y-1 max-w-3xl">
