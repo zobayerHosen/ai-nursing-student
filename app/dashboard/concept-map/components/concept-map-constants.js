@@ -46,17 +46,31 @@ export const NODE_TYPE_CHIPS = [
     { value: "Medication", label: "Medication" },
 ];
 
+// Only node-type related background fills are kept; all other colors are commented out.
 export const BG_PALETTE = [
-    "#ffffff", "#f8fafc", "#f1f5f9", "#e2e8f0", "#cbd5e1", "#94a3b8", "#64748b", "#475569", "#334155", "#1e293b", "#0f172a",
-    "#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#22c55e", "#14b8a6", "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899",
-    "#fde5ef", "#fff2e0", "#e3f2fb", "#ede4fb", "#fde3e3", "#e8faf0", "#fef3c7", "#dbeafe", "#f0fdf4", "#fdf2f8", "#f5f3ff",
+    "#ffffff",
+    // "#f8fafc", "#f1f5f9", "#e2e8f0", "#cbd5e1", "#94a3b8", "#64748b", "#475569", "#334155", "#1e293b", "#0f172a",
+    // "#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#22c55e", "#14b8a6", "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899",
+    "#fde5ef", "#fff2e0", "#e3f2fb", "#ede4fb", "#fde3e3", "#e8faf0",
+    // "#fef3c7", "#dbeafe", "#f0fdf4", "#fdf2f8", "#f5f3ff",
 ];
 
+// Only node-type related font colors are kept; all other colors are commented out.
 export const FONT_PALETTE = [
-    "#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8",
-    "#ffffff", "#f8fafc", "#f1f5f9", "#e2e8f0", "#fde5ef", "#fde3e3",
-    "#7a1450", "#db2777", "#c62828", "#7a1414", "#c2760a", "#6b4200",
-    "#0f6fa3", "#073d5c", "#7c3aed", "#3d2466", "#15803d", "#14532d",
+    // "#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8",
+    "#ffffff",
+    // "#f8fafc", "#f1f5f9", "#e2e8f0", "#fde5ef", "#fde3e3",
+    "#7a1450",
+    // "#db2777", "#c62828",
+    "#7a1414",
+    // "#c2760a",
+    "#6b4200",
+    // "#0f6fa3",
+    "#073d5c",
+    // "#7c3aed",
+    "#3d2466",
+    // "#15803d",
+    "#14532d",
 ];
 
 export const CARA_TIPS = {
