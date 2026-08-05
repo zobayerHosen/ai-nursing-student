@@ -38,10 +38,10 @@ export function EditNodeModal({ node, onClose, onSave, onDelete }) {
     const tip = CARA_TIPS[category] || CARA_TIPS["Nursing Diagnosis"];
 
     return (
-        <div className="fixed inset-0 z-200 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-200 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
             <div className="bg-white rounded-2xl max-w-lg w-full shadow-xl border border-slate-100 flex flex-col max-h-[90vh]">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 pt-5 pb-3 shrink-0">
+                <div className="flex items-center justify-between px-4 sm:px-6 pt-4 sm:pt-5 pb-3 shrink-0">
                     <div>
                         <h3 className="font-bold text-base text-slate-900">Edit Node</h3>
                         <p className="text-[11px] text-slate-400 mt-0.5">Update title, details, and category</p>
@@ -56,7 +56,7 @@ export function EditNodeModal({ node, onClose, onSave, onDelete }) {
                 </div>
 
                 {/* Scrollable body */}
-                <div className="flex-1 overflow-y-auto px-6 pb-2 space-y-5 min-h-0">
+                <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-2 space-y-4 sm:space-y-5 min-h-0">
                     {/* NODE TYPE chips */}
                     <div>
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Node Type</p>
@@ -93,7 +93,7 @@ export function EditNodeModal({ node, onClose, onSave, onDelete }) {
                             value={label}
                             onChange={(e) => setLabel(e.target.value)}
                             required
-                            className={fieldCls}
+                            className={`${fieldCls} text-base sm:text-sm`}
                             placeholder="Node title..."
                         />
                     </div>
@@ -106,7 +106,7 @@ export function EditNodeModal({ node, onClose, onSave, onDelete }) {
                             value={details}
                             onChange={(e) => setDetails(e.target.value)}
                             required
-                            className={fieldCls}
+                            className={`${fieldCls} text-base sm:text-sm`}
                             placeholder="• vital / lab / exam"
                         />
                         <p className="text-[10px] text-slate-400 mt-1 italic">
@@ -176,7 +176,7 @@ export function EditNodeModal({ node, onClose, onSave, onDelete }) {
                     <div>
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Preview</p>
                         <div
-                            className="rounded-xl border p-3 w-full max-w-50"
+                            className="rounded-xl border p-3 w-full max-w-full sm:max-w-50"
                             style={{
                                 backgroundColor: activeBg,
                                 borderColor: catStyle.border,
@@ -205,11 +205,11 @@ export function EditNodeModal({ node, onClose, onSave, onDelete }) {
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-between items-center px-6 py-4 border-t border-slate-100 shrink-0">
+                <div className="flex justify-between items-center px-4 sm:px-6 py-3 sm:py-4 border-t border-slate-100 shrink-0 gap-2">
                     <button
                         type="button"
                         onClick={() => onDelete(node.id)}
-                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                        className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
                     >
                         <Trash2 size={13} />
                         Delete
@@ -218,14 +218,14 @@ export function EditNodeModal({ node, onClose, onSave, onDelete }) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer border border-slate-200"
+                            className="px-3 sm:px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer border border-slate-200"
                         >
                             Cancel
                         </button>
                         <button
                             type="button"
                             onClick={handleSubmit}
-                            className="px-4 py-2 text-xs font-semibold bg-sky-600 text-white hover:bg-sky-700 rounded-lg shadow-sm cursor-pointer"
+                            className="px-3 sm:px-4 py-2 text-xs font-semibold bg-sky-600 text-white hover:bg-sky-700 rounded-lg shadow-xs cursor-pointer"
                         >
                             Save Changes
                         </button>

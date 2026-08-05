@@ -223,3 +223,32 @@
   stroke-dasharray: 6 4;
   pointer-events: none;
 }
+
+/* ── Responsive adjustments for mobile & tablet ──────── */
+@media (max-width: 640px) {
+  .cm-stats-bar {
+    top: 10px;
+    right: 10px;
+    padding: 4px 8px;
+    gap: 6px;
+    border-radius: 6px;
+  }
+  .cm-stats-text {
+    font-size: 10px;
+  }
+  .cm-zoombar {
+    right: 10px;
+    bottom: 10px;
+    gap: 4px;
+  }
+  .cm-zoom-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+  }
+  .cm-zoom-fit {
+    padding: 0 8px;
+    font-size: 11px;
+  }
+}
+

@@ -34,24 +34,24 @@ export function AddNodeModal({ open, nodes = [], onClose, onAdd }) {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="fixed inset-0 z-200 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
+                    className="fixed inset-0 z-200 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
                 >
                     <motion.div
                         initial={{ scale: 0.95, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.95, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-xl border border-slate-100 space-y-4"
+                        className="bg-white rounded-2xl max-w-xl w-full p-4 sm:p-6 shadow-xl border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto"
                     >
                         <div className="flex items-center justify-between">
-                            <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-                                <Workflow />
+                            <h3 className="font-bold text-base sm:text-lg text-slate-900 flex items-center gap-2">
+                                <Workflow size={20} className="text-sky-600" />
                                 Add New Node
                             </h3>
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                                className="text-slate-400 hover:text-slate-600 cursor-pointer p-1"
                             >
                                 <X size={18} />
                             </button>
@@ -65,7 +65,7 @@ export function AddNodeModal({ open, nodes = [], onClose, onAdd }) {
                                     value={label}
                                     onChange={(e) => setLabel(e.target.value)}
                                     required
-                                    className={fieldCls}
+                                    className={`${fieldCls} text-base sm:text-sm`}
                                     placeholder="e.g. Check Blood Pressure q2h"
                                 />
                             </div>
@@ -76,14 +76,14 @@ export function AddNodeModal({ open, nodes = [], onClose, onAdd }) {
                                     value={details}
                                     onChange={(e) => setDetails(e.target.value)}
                                     required
-                                    className={fieldCls}
+                                    className={`${fieldCls} text-base sm:text-sm`}
                                     placeholder="Monitor for hypotension and dizziness..."
                                 />
                             </div>
-                            <div className="flex flex-row gap-4">
+                            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                                 <div className="flex-1 min-w-0">
                                     <label className={labelCls}>Category (Color Theme)</label>
-                                    <div className="max-h-56 overflow-y-auto pr-1 space-y-1.5 custom-scrollbar">
+                                    <div className="max-h-40 sm:max-h-56 overflow-y-auto pr-1 space-y-1.5 custom-scrollbar">
                                         {NODE_TYPE_CHIPS.map((chip) => {
                                             const isActive = category === chip.value;
                                             const chipStyle = CAT_STYLES[chip.value] || CAT_STYLES["Intervention"];
@@ -92,7 +92,7 @@ export function AddNodeModal({ open, nodes = [], onClose, onAdd }) {
                                                     key={chip.value}
                                                     type="button"
                                                     onClick={() => setCategory(chip.value)}
-                                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg border transition text-left cursor-pointer ${
+                                                    className={`w-full flex items-center gap-2.5 sm:gap-3 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg border transition text-left cursor-pointer ${
                                                         isActive
                                                             ? "border-sky-400 bg-sky-50 text-sky-700 ring-1 ring-sky-400/30 font-semibold"
                                                             : "bg-white border-slate-200 hover:border-slate-300 text-[#2C5F8D] font-medium"
@@ -102,7 +102,7 @@ export function AddNodeModal({ open, nodes = [], onClose, onAdd }) {
                                                         className="w-3.5 h-3.5 rounded shrink-0 border"
                                                         style={{ backgroundColor: chipStyle.dot, borderColor: chipStyle.border }}
                                                     />
-                                                    <span className="text-[13px] truncate">{chip.label}</span>
+                                                    <span className="text-xs sm:text-[13px] truncate">{chip.label}</span>
                                                 </button>
                                             );
                                         })}
@@ -110,18 +110,18 @@ export function AddNodeModal({ open, nodes = [], onClose, onAdd }) {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <label className={labelCls}>Connect To (Parent Node)</label>
-                                    <div className="max-h-56 overflow-y-auto pr-1 space-y-1.5 custom-scrollbar">
+                                    <div className="max-h-40 sm:max-h-56 overflow-y-auto pr-1 space-y-1.5 custom-scrollbar">
                                         <button
                                             type="button"
                                             onClick={() => setParentId("")}
-                                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg border transition text-left cursor-pointer ${
+                                            className={`w-full flex items-center gap-2.5 sm:gap-3 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg border transition text-left cursor-pointer ${
                                                 parentId === ""
                                                     ? "border-sky-400 bg-sky-50 text-sky-700 ring-1 ring-sky-400/30 font-semibold"
                                                     : "bg-white border-slate-200 hover:border-slate-300 text-slate-500 font-medium"
                                             }`}
                                         >
                                             <span className="w-3.5 h-3.5 rounded shrink-0 bg-slate-100 border border-slate-200" />
-                                            <span className="text-[13px] truncate">None (Standalone)</span>
+                                            <span className="text-xs sm:text-[13px] truncate">None (Standalone)</span>
                                         </button>
                                         {nodes.map((n) => {
                                             const isActive = parentId === n.id;
@@ -131,7 +131,7 @@ export function AddNodeModal({ open, nodes = [], onClose, onAdd }) {
                                                     key={n.id}
                                                     type="button"
                                                     onClick={() => setParentId(n.id)}
-                                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg border transition text-left cursor-pointer ${
+                                                    className={`w-full flex items-center gap-2.5 sm:gap-3 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg border transition text-left cursor-pointer ${
                                                         isActive
                                                             ? "border-sky-400 bg-sky-50 text-sky-700 ring-1 ring-sky-400/30 font-semibold"
                                                             : "bg-white border-slate-200 hover:border-slate-300 text-[#2C5F8D] font-medium"
@@ -141,7 +141,7 @@ export function AddNodeModal({ open, nodes = [], onClose, onAdd }) {
                                                         className="w-3.5 h-3.5 rounded shrink-0 border"
                                                         style={{ backgroundColor: nodeStyle.dot, borderColor: nodeStyle.border }}
                                                     />
-                                                    <span className="text-[13px] truncate">[{n.category}] {n.label}</span>
+                                                    <span className="text-xs sm:text-[13px] truncate">[{n.category}] {n.label}</span>
                                                 </button>
                                             );
                                         })}
@@ -153,13 +153,13 @@ export function AddNodeModal({ open, nodes = [], onClose, onAdd }) {
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
+                                    className="px-3.5 sm:px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 text-xs font-semibold bg-primary text-white hover:bg-sky-700 rounded-lg shadow-sm cursor-pointer"
+                                    className="px-3.5 sm:px-4 py-2 text-xs font-semibold bg-primary text-white hover:bg-sky-700 rounded-lg shadow-xs cursor-pointer"
                                 >
                                     Add Node
                                 </button>

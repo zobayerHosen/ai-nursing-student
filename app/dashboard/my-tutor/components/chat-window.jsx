@@ -221,7 +221,7 @@ export default function ChatWindow({
     );
   }
 
-  // CHAT MODE UI (existing)
+  // CHAT MODE UI
   return (
     <div className="flex-1 h-full overflow-y-auto p-4 md:p-6 space-y-6 min-h-0 bg-white">
       {/* Reconnecting banner */}
@@ -268,7 +268,7 @@ export default function ChatWindow({
           >
             <Image
               src={msg?.avatar}
-              alt={msg?.sender}
+              alt={msg?.sender ?? "New Message"}
               width={40}
               height={40}
               className="w-8 h-8 rounded-full object-cover shrink-0"
@@ -277,8 +277,8 @@ export default function ChatWindow({
             <div className="space-y-1 max-w-[85%]">
               <div
                 className={`rounded-xl p-4 text-sm leading-relaxed shadow-sm ${isUser
-                    ? 'bg-primary text-white rounded-tr-none'
-                    : 'bg-gray-50 text-gray-800 border border-gray-100 rounded-tl-none'
+                  ? 'bg-primary text-white rounded-tr-none'
+                  : 'bg-gray-50 text-gray-800 border border-gray-100 rounded-tl-none'
                   }`}
               >
                 {/* Image preview or file chip */}
@@ -302,8 +302,8 @@ export default function ChatWindow({
                 {msg?.file && (!isImageAttachment || !msg?.file?.previewUrl) && (
                   <div
                     className={`flex items-center gap-2 mb-2 px-2.5 py-1.5 rounded-lg border text-xs ${isUser
-                        ? 'bg-white/15 border-white/25 text-white'
-                        : 'bg-gray-100 border-gray-200 text-gray-700'
+                      ? 'bg-white/15 border-white/25 text-white'
+                      : 'bg-gray-100 border-gray-200 text-gray-700'
                       }`}
                   >
                     <span className="shrink-0">
@@ -334,7 +334,6 @@ export default function ChatWindow({
             alt="Cara"
             width={40}
             height={40}
-
             className="w-8 h-8 rounded-full object-cover shrink-0"
           />
           <div className="space-y-1 max-w-3xl">
@@ -368,4 +367,4 @@ export default function ChatWindow({
       <div ref={bottomRef} />
     </div>
   );
-}
+};

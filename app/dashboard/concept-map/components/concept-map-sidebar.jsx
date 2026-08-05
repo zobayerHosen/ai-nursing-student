@@ -89,7 +89,7 @@ export default function ConceptMapSidebar({ onClose, onSendPrompt, isGenerating 
             </div>
 
             {/* Scrollable content guide */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-5">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5">
                 {/* Welcome banner */}
                 <div className="text-xs text-slate-600 leading-relaxed space-y-3">
                     <p className="font-medium text-slate-800 text-sm">
@@ -115,12 +115,12 @@ export default function ConceptMapSidebar({ onClose, onSendPrompt, isGenerating 
                     </div>
 
                     {/* Quick start example box */}
-                    <div className="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                    <div className="mt-4 p-3 sm:p-3.5 bg-slate-50 rounded-xl border border-slate-200">
                         <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
                             Quick start example:
                         </span>
                         <p
-                            className="text-xs italic text-slate-600 cursor-pointer hover:text-sky-700 transition"
+                            className="text-xs italic text-slate-600 cursor-pointer hover:text-sky-700 transition break-words"
                             onClick={() => setMessage(QUICK_START_EXAMPLE)}
                         >
                             {QUICK_START_EXAMPLE}
@@ -140,33 +140,26 @@ export default function ConceptMapSidebar({ onClose, onSendPrompt, isGenerating 
             </div>
 
             {/* Chat prompt input bar */}
-            <div className="p-4 bg-white border-t border-slate-200 shrink-0">
+            <div className="p-3 sm:p-4 bg-white border-t border-slate-200 shrink-0">
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
                         handleSend();
                     }}
-                    className="relative flex items-center bg-slate-100 rounded-xl border border-primary/40 focus-within:border-primary/90  px-3 py-2 shadow-inner transition outline-0"
+                    className="relative flex items-center bg-slate-100 rounded-xl border border-primary/40 focus-within:border-primary/90 px-3 py-1.5 sm:py-2 shadow-inner transition outline-0"
                 >
                     <input
                         type="text"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Type patient clinical case..."
-                        className="w-full bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none pr-16 pl-2 py-1"
+                        className="w-full bg-transparent text-base sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none pr-12 sm:pr-16 pl-1 sm:pl-2 py-1"
                     />
                     {/* Action icons */}
                     <div className="absolute right-2 flex items-center gap-1.5">
-                        {/* <button
-                            type="button"
-                            className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 transition cursor-pointer"
-                            title="Attach file"
-                        >
-                            <Paperclip size={14} />
-                        </button> */}
                         <button
                             type="submit"
-                            className="w-8 h-8 rounded-full bg-sky-600 hover:bg-sky-700 text-white flex items-center justify-center transition shadow-sm disabled:opacity-50 cursor-pointer"
+                            className="w-8 h-8 rounded-full bg-sky-600 hover:bg-sky-700 text-white flex items-center justify-center transition shadow-xs disabled:opacity-50 cursor-pointer shrink-0"
                             disabled={!message.trim() || isGenerating}
                             title="Send"
                         >

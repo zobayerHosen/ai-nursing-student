@@ -150,20 +150,20 @@ export default function HistoryModal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-200 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-200 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4"
         >
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="bg-white rounded-2xl max-w-3xl w-full shadow-xl border border-slate-100 flex flex-col max-h-[85vh]"
+            className="bg-white rounded-2xl max-w-3xl w-full shadow-xl border border-slate-100 flex flex-col max-h-[90vh] sm:max-h-[85vh]"
           >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-100 shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-slate-100 shrink-0">
           <div>
-            <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-              <FolderOpen size={20} className="text-violet-600" />
+            <h3 className="font-bold text-base sm:text-lg text-slate-900 flex items-center gap-2">
+              <FolderOpen size={20} className="text-violet-600 shrink-0" />
               My Concept Maps
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -180,16 +180,16 @@ export default function HistoryModal({
         </div>
 
         {/* Toolbar */}
-        <div className="flex items-center gap-2 px-6 py-3 border-b border-slate-50 shrink-0 flex-wrap">
+        <div className="flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border-b border-slate-50 shrink-0 flex-wrap sm:flex-nowrap">
           {/* Search */}
-          <div className="relative flex-1 min-w-45">
+          <div className="relative flex-1 min-w-35 sm:min-w-45">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search maps..."
-              className="w-full pl-8 pr-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-sky-500 bg-white"
+              className="w-full pl-8 pr-3 py-1.5 sm:py-2 text-base sm:text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-sky-500 bg-white"
             />
           </div>
 
@@ -197,7 +197,7 @@ export default function HistoryModal({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="text-xs border border-slate-200 rounded-lg px-2.5 py-2 bg-white focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
+            className="text-xs border border-slate-200 rounded-lg px-2 sm:px-2.5 py-1.5 sm:py-2 bg-white focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
           >
             <option value="modified_desc">Newest first</option>
             <option value="modified_asc">Oldest first</option>
@@ -210,32 +210,15 @@ export default function HistoryModal({
             type="button"
             onClick={onCreateMap}
             disabled={isBusy}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-sky-600 text-white hover:bg-sky-700 rounded-lg shadow-sm cursor-pointer disabled:opacity-50 transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 text-xs font-semibold bg-sky-600 text-white hover:bg-sky-700 rounded-lg shadow-xs cursor-pointer disabled:opacity-50 transition shrink-0"
           >
             {isCreating ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
             New Map
           </button>
-
-          {/* <button
-            type="button"
-            onClick={() => importRef.current?.click()}
-            disabled={isBusy}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg cursor-pointer disabled:opacity-50 transition"
-          >
-            {isImporting ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
-            Import
-          </button>
-          <input
-            ref={importRef}
-            type="file"
-            accept=".json"
-            onChange={handleImportFile}
-            className="hidden"
-          /> */}
         </div>
 
         {/* Grid */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 min-h-0">
           {isLoading && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-6 h-6 text-sky-600 animate-spin" />
@@ -266,7 +249,7 @@ export default function HistoryModal({
                   <div
                     key={m.id}
                     onClick={() => onSelectMap?.(m.id)}
-                    className={`relative p-4 rounded-2xl border transition duration-200 bg-white shadow-2xs cursor-pointer group flex flex-col justify-between hover:shadow-md ${isCurrent
+                    className={`relative p-3.5 sm:p-4 rounded-2xl border transition duration-200 bg-white shadow-2xs cursor-pointer group flex flex-col justify-between hover:shadow-md ${isCurrent
                       ? "border-rose-300 bg-rose-50/20 ring-1 ring-rose-300"
                       : "border-slate-200 hover:border-slate-300"
                       }`}
@@ -279,7 +262,7 @@ export default function HistoryModal({
                         <button
                           type="button"
                           onClick={(e) => handleDeleteClick(e, m.id, m.title)}
-                          className="text-slate-400 hover:text-rose-600 p-1 rounded transition opacity-0 group-hover:opacity-100 duration-150 cursor-pointer shrink-0"
+                          className="text-slate-400 hover:text-rose-600 p-1 rounded transition opacity-100 sm:opacity-0 sm:group-hover:opacity-100 duration-150 cursor-pointer shrink-0"
                           title="Delete Map"
                         >
                           <Trash2 size={13} />
@@ -298,18 +281,18 @@ export default function HistoryModal({
                     </div>
 
                     <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                         <span className="font-semibold bg-sky-50 text-sky-700 px-2 py-0.5 rounded-lg border border-sky-100">
                           {m.nodes_count || 0} nodes
                         </span>
                         <span className="text-slate-400">
                           {m.edges_count || 0} links
                         </span>
-                        <span className="text-slate-300">•</span>
-                        <span>{getElapsedTimeText(m.updated_at)}</span>
+                        <span className="text-slate-300 hidden xs:inline">•</span>
+                        <span className="text-[10px] sm:text-[11px]">{getElapsedTimeText(m.updated_at)}</span>
                       </div>
                       {isCurrent && (
-                        <div className="flex items-center gap-1.5 text-xs text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100 shadow-2xs">
+                        <div className="flex items-center gap-1.5 text-xs text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100 shadow-2xs shrink-0">
                           <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-ping" />
                           <span>current</span>
                         </div>
@@ -322,7 +305,7 @@ export default function HistoryModal({
           )}
         </div>
 
-        <div className="w-full flex items-end justify-end px-6 py-2 border-t border-slate-200">
+        <div className="w-full flex items-end justify-end px-4 sm:px-6 py-2 border-t border-slate-200">
           {maps.length > 0 && (
             <button
               type="button"

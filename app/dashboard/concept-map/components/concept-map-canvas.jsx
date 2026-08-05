@@ -135,37 +135,55 @@ const ConceptMapCanvas = forwardRef(function ConceptMapCanvas(
     applyTransform();
   }, [applyTransform]);
 
-  /* ── makeDraggable (drag + click-to-edit) ── */
+  /* ── makeDraggable (drag + click-to-edit with touch support) ── */
   const makeDraggable = useCallback((card) => {
     let dragging = false, isMoved = false, startX = 0, startY = 0, origL = 0, origT = 0, frame = null;
 
     const onMove = (e) => {
       if (!dragging) return;
       isMoved = true;
-      const dx = (e.clientX - startX) / viewRef.current.scale;
-      const dy = (e.clientY - startY) / viewRef.current.scale;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const dx = (clientX - startX) / viewRef.current.scale;
+      const dy = (clientY - startY) / viewRef.current.scale;
       card.style.left = (origL + dx) + "px"; card.style.top = (origT + dy) + "px";
       if (!frame) { frame = requestAnimationFrame(() => { drawEdges(); frame = null; }); }
     };
+
     const onUp = () => {
       if (!dragging) return;
       dragging = false; card.classList.remove("cm-dragging");
       document.body.style.userSelect = "";
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend", onUp);
       manualPos.current[card.dataset.nodeId] = { x: parseFloat(card.style.left), y: parseFloat(card.style.top) };
       drawEdges();
     };
 
-    card.addEventListener("mousedown", (e) => {
-      e.stopPropagation(); e.preventDefault();
-      dragging = true; isMoved = false; startX = e.clientX; startY = e.clientY;
+    const onStart = (e) => {
+      if (e.touches && e.touches.length > 1) return;
+      e.stopPropagation();
+      if (!e.touches) e.preventDefault();
+      dragging = true; isMoved = false;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      startX = clientX; startY = clientY;
       origL = parseFloat(card.style.left) || 0; origT = parseFloat(card.style.top) || 0;
       card.classList.add("cm-dragging");
       document.body.style.userSelect = "none";
-      window.addEventListener("mousemove", onMove);
-      window.addEventListener("mouseup", onUp);
-    });
+      if (e.touches) {
+        window.addEventListener("touchmove", onMove, { passive: false });
+        window.addEventListener("touchend", onUp);
+      } else {
+        window.addEventListener("mousemove", onMove);
+        window.addEventListener("mouseup", onUp);
+      }
+    };
+
+    card.addEventListener("mousedown", onStart);
+    card.addEventListener("touchstart", onStart, { passive: false });
 
     card.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -439,33 +457,75 @@ const ConceptMapCanvas = forwardRef(function ConceptMapCanvas(
 
   useImperativeHandle(ref, () => ({ resetLayout, exportPDF }), [resetLayout, exportPDF]);
 
-  /* pan & zoom */
+  /* pan & zoom with touch support */
   useEffect(() => {
     const vp = viewportRef.current;
     if (!vp) return;
-    let dragging = false, lastX = 0, lastY = 0;
+    let dragging = false, lastX = 0, lastY = 0, initialPinchDist = null, initialScale = 1;
+
+    const getTouchDist = (e) => {
+      if (!e.touches || e.touches.length < 2) return 0;
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      return Math.hypot(dx, dy);
+    };
 
     const onDown = (e) => {
-      dragging = true; lastX = e.clientX; lastY = e.clientY; vp.classList.add("cm-panning");
+      if (e.target.closest(".cm-card")) return;
+      dragging = true;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      lastX = clientX; lastY = clientY;
+      if (e.touches && e.touches.length === 2) {
+        initialPinchDist = getTouchDist(e);
+        initialScale = viewRef.current.scale;
+      }
+      vp.classList.add("cm-panning");
     };
-    const onUp = () => { dragging = false; vp.classList.remove("cm-panning"); };
+
+    const onUp = (e) => {
+      if (e.touches && e.touches.length > 0) return;
+      dragging = false; initialPinchDist = null; vp.classList.remove("cm-panning");
+    };
+
     const onMove = (e) => {
       if (!dragging) return;
-      viewRef.current.x += e.clientX - lastX; viewRef.current.y += e.clientY - lastY;
-      lastX = e.clientX; lastY = e.clientY; applyTransform();
+      if (e.touches && e.touches.length === 2 && initialPinchDist) {
+        const dist = getTouchDist(e);
+        if (dist > 0) {
+          const newScale = Math.min(2.5, Math.max(0.2, initialScale * (dist / initialPinchDist)));
+          viewRef.current.scale = newScale;
+          applyTransform();
+        }
+        return;
+      }
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      viewRef.current.x += clientX - lastX;
+      viewRef.current.y += clientY - lastY;
+      lastX = clientX; lastY = clientY;
+      applyTransform();
     };
+
     const onWheel = (e) => { e.preventDefault(); zoomBy(e.deltaY < 0 ? 1.08 : 1 / 1.08); };
     const onResize = () => { drawEdges(); fitToView(); };
 
     vp.addEventListener("mousedown", onDown);
+    vp.addEventListener("touchstart", onDown, { passive: true });
     window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchend", onUp);
     window.addEventListener("mousemove", onMove);
+    window.addEventListener("touchmove", onMove, { passive: true });
     vp.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("resize", onResize);
+
     return () => {
       vp.removeEventListener("mousedown", onDown);
+      vp.removeEventListener("touchstart", onDown);
       window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchend", onUp);
       window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onMove);
       vp.removeEventListener("wheel", onWheel);
       window.removeEventListener("resize", onResize);
     };

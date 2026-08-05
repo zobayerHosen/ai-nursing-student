@@ -331,7 +331,7 @@ const ConceptMapShell = () => {
   }, [importMap]);
 
   return (
-    <div className="flex flex-col xl:flex-row h-full xl:min-h-[calc(100vh-80px)] relative w-full bg-[#EEF0F3]">
+    <div className="flex flex-col xl:flex-row h-dvh xl:h-full xl:min-h-[calc(100vh-80px)] relative w-full bg-[#EEF0F3] overflow-hidden">
       {/* Mobile overlay */}
       {isSidebarOpen && (
         <div
@@ -342,8 +342,8 @@ const ConceptMapShell = () => {
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 xl:relative xl:translate-x-0
-          ${isSidebarOpen ? "translate-x-0 z-999" : "-translate-x-full"} w-[85%] md:w-82.5 shrink-0 bg-white border-r border-[#E5E7EB] flex flex-col`}
+        className={`fixed inset-y-0 left-0 z-200 transform transition-transform duration-300 xl:relative xl:translate-x-0
+          ${isSidebarOpen ? "translate-x-0 z-50 shadow-2xl" : "-translate-x-full"} w-[88%] sm:w-80 md:w-88 xl:w-80 shrink-0 bg-white border-r border-[#E5E7EB] flex flex-col`}
       >
         <ConceptMapSidebar
           onClose={() => setIsSidebarOpen(false)}
@@ -353,20 +353,10 @@ const ConceptMapShell = () => {
       </div>
 
       {/* Main content */}
-      <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        {/* Mobile toggle */}
-        <div className="xl:hidden p-4 border-b border-black/10 flex items-center gap-3 bg-white sticky top-0 z-30">
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer"
-          >
-            <Menu size={20} className="text-[#2C5F8D]" />
-          </button>
-          <h2 className="font-semibold text-lg text-[#2C5F8D]">Concept Map</h2>
-        </div>
-
+      <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
         <ConceptMapHeader
           title={mapData?.title}
+          onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
           onRenameMap={handleRenameMap}
           onAddNode={() => setAddModalOpen(true)}
           onDownloadPDF={() => canvasRef.current?.exportPDF()}

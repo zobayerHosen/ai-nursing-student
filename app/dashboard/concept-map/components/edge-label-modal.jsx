@@ -15,17 +15,17 @@ export function EdgeLabelModal({ edge, defaultLabel = "leads to", onClose, onCon
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 space-y-4">
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+            <div className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-xl border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+                    <h3 className="font-bold text-base sm:text-lg text-slate-900 flex items-center gap-2">
                         <Link2 size={18} className="text-sky-600" />
                         New Connection
                     </h3>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                        className="text-slate-400 hover:text-slate-600 cursor-pointer p-1"
                     >
                         <X size={18} />
                     </button>
@@ -33,9 +33,9 @@ export function EdgeLabelModal({ edge, defaultLabel = "leads to", onClose, onCon
 
                 {/* Source → target preview */}
                 <div className="flex items-center gap-2 text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5">
-                    <span className="font-semibold text-slate-800 truncate">{edge.sourceLabel}</span>
+                    <span className="font-semibold text-slate-800 truncate flex-1 min-w-0">{edge.sourceLabel}</span>
                     <ArrowRight size={14} className="text-sky-500 shrink-0" />
-                    <span className="font-semibold text-slate-800 truncate">{edge.targetLabel}</span>
+                    <span className="font-semibold text-slate-800 truncate flex-1 min-w-0">{edge.targetLabel}</span>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-3">
@@ -46,7 +46,7 @@ export function EdgeLabelModal({ edge, defaultLabel = "leads to", onClose, onCon
                             value={label}
                             onChange={(e) => setLabel(e.target.value)}
                             autoFocus
-                            className={fieldCls}
+                            className={`${fieldCls} text-base sm:text-sm`}
                             placeholder="e.g. leads to, managed by"
                         />
                     </div>
@@ -59,7 +59,7 @@ export function EdgeLabelModal({ edge, defaultLabel = "leads to", onClose, onCon
                                 type="button"
                                 onClick={() => setLabel(s)}
                                 className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition cursor-pointer ${label === s
-                                        ? "bg-sky-50 border-sky-300 text-sky-700"
+                                        ? "bg-sky-50 border-sky-300 text-sky-700 font-semibold"
                                         : "bg-white border-slate-200 text-slate-500 hover:border-sky-200 hover:text-sky-600"
                                     }`}
                             >
@@ -72,13 +72,13 @@ export function EdgeLabelModal({ edge, defaultLabel = "leads to", onClose, onCon
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
+                            className="px-3.5 sm:px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 text-xs font-semibold bg-sky-600 text-white hover:bg-sky-700 rounded-lg shadow-sm cursor-pointer"
+                            className="px-3.5 sm:px-4 py-2 text-xs font-semibold bg-sky-600 text-white hover:bg-sky-700 rounded-lg shadow-xs cursor-pointer"
                         >
                             Add Connection
                         </button>
