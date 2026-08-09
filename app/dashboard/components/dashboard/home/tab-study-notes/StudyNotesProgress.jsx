@@ -75,7 +75,7 @@ const StudyNotesProgress = () => {
             <div className="flex flex-col xl:flex-row gap-6">
                 
                 {/* Left Card: Study Notes Chart */}
-                <div className="bg-white border border-[#E2E8F0] rounded-[24px] p-6 lg:p-8 flex-1 shadow-[0_1px_2px_0_rgba(0,0,0,0.02)]">
+                <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 lg:p-8 flex-1 shadow-[0_1px_2px_0_rgba(0,0,0,0.02)]">
                     <div>
                         <h2 className="text-[#1E293B] font-bold text-xl">Study Notes</h2>
                         <p className="text-[#64748B] text-[12px] font-medium mt-1.5">62 lessons total</p>
@@ -131,7 +131,7 @@ const StudyNotesProgress = () => {
                 {/* Right Cards: 4 Stats */}
                 <div className="xl:w-[45%] grid grid-cols-2 gap-4">
                     {/* Total Notes */}
-                    <div className="bg-white border border-[#E2E8F0] rounded-[16px] p-5 flex flex-col items-center justify-center text-center shadow-[0_1px_2px_rgba(0,0,0,0.02)] min-h-[140px]">
+                    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-[0_1px_2px_rgba(0,0,0,0.02)] min-h-35">
                         <div className="w-9 h-9 rounded-full mb-3 flex items-center justify-center bg-[#ECFDF5] text-[#10B981]">
                             <ClipboardList className="w-4 h-4" />
                         </div>
@@ -141,7 +141,7 @@ const StudyNotesProgress = () => {
                     </div>
 
                     {/* Completed */}
-                    <div className="bg-white border border-[#E2E8F0] rounded-[16px] p-5 flex flex-col items-center justify-center text-center shadow-[0_1px_2px_rgba(0,0,0,0.02)] min-h-[140px]">
+                    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-[0_1px_2px_rgba(0,0,0,0.02)] min-h-35">
                         <div className="w-9 h-9 rounded-full mb-3 flex items-center justify-center bg-[#F3E8FF] text-[#A855F7]">
                             <CheckCircle className="w-4 h-4" />
                         </div>
@@ -151,7 +151,7 @@ const StudyNotesProgress = () => {
                     </div>
 
                     {/* InProgress */}
-                    <div className="bg-white border border-[#E2E8F0] rounded-[16px] p-5 flex flex-col items-center justify-center text-center shadow-[0_1px_2px_rgba(0,0,0,0.02)] min-h-[140px]">
+                    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-[0_1px_2px_rgba(0,0,0,0.02)] min-h-35">
                         <div className="w-9 h-9 rounded-full mb-3 flex items-center justify-center bg-[#FFE4E6] text-[#F43F5E]">
                             <Clock className="w-4 h-4" />
                         </div>
@@ -164,7 +164,7 @@ const StudyNotesProgress = () => {
                     </div>
 
                     {/* bookmarked */}
-                    <div className="bg-white border border-[#E2E8F0] rounded-[16px] p-5 flex flex-col items-center justify-center text-center shadow-[0_1px_2px_rgba(0,0,0,0.02)] min-h-[140px]">
+                    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-[0_1px_2px_rgba(0,0,0,0.02)] min-h-35">
                         <div className="w-9 h-9 rounded-full mb-3 flex items-center justify-center bg-[#FEF3C7] text-[#F59E0B]">
                             <Bookmark className="w-4 h-4" />
                         </div>

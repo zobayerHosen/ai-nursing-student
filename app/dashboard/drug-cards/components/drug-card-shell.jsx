@@ -271,7 +271,7 @@ const DrugCardContent = () => {
   // 3. Generating loading state for first-time cards
   if (isGenerating) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[500px] w-full p-6 text-center">
+      <div className="flex flex-col items-center justify-center min-h-125 w-full p-6 text-center">
         {/* Shimmer layout preview */}
         <div className="w-full max-w-4xl bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm flex flex-col gap-6 animate-pulse mb-6 opacity-30 select-none pointer-events-none">
           <div className="h-8 bg-gray-200 rounded w-1/3"></div>

@@ -120,7 +120,7 @@ export default function ConceptMapSidebar({ onClose, onSendPrompt, isGenerating 
                             Quick start example:
                         </span>
                         <p
-                            className="text-xs italic text-slate-600 cursor-pointer hover:text-sky-700 transition break-words"
+                            className="text-xs italic text-slate-600 cursor-pointer hover:text-sky-700 transition wrap-break-word"
                             onClick={() => setMessage(QUICK_START_EXAMPLE)}
                         >
                             {QUICK_START_EXAMPLE}

@@ -1,26 +1,13 @@
 "use client";
 
-export const QUICK_SEARCH_DRUGS = [
-  "Metformin",
-  "Furosemide",
-  "Heparin",
-  "Insulin",
-  "Warfarin",
-  "Morphine",
-  "Lisinopril",
-  "Digoxin",
-  "Metoprolol",
-  "Aspirin",
-  "Amoxicillin",
-  "Atorvastatin",
-];
 
-export default function QuickSearchGrid({ currentDrug, onDrugSelect }) {
+
+export default function QuickSearchGrid({ currentDrug, onDrugSelect, quickActionsData }) {
   return (
     <div className="flex flex-col items-start gap-3 w-full">
       <h4 className="text-[#344054] text-sm font-semibold">Quick Search</h4>
       <div className="flex flex-wrap gap-2 w-full">
-        {QUICK_SEARCH_DRUGS.map((drug) => {
+        {quickActionsData?.map((drug) => {
           const isSelected = currentDrug.toLowerCase() === drug.toLowerCase();
           return (
             <button

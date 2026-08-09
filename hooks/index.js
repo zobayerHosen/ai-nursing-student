@@ -8,3 +8,5 @@ export * from "./interactive-tools";
 export * from "./procedure-lookup";
 export * from "./concept-map";
 export * from "./practice";
+export * from "./drug-card";
+export * from "./care-plan-builder";

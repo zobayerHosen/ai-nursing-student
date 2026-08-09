@@ -1,6 +1,6 @@
 import CarePlanBuilderDetails from "../components/care-plan-builder-details";
 
-export default function CarePlanBuilderDetailsPage({ params }) {
-    // In a real app, you would fetch data for params.id here.
-    return <CarePlanBuilderDetails id={params.id} />;
+export default async function CarePlanBuilderDetailsPage({ params }) {
+    const { id } = await params;
+    return <CarePlanBuilderDetails id={id} />;
 }

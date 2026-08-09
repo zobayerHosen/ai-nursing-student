@@ -2,16 +2,26 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     FileText,
     Clock,
     Zap,
-    ChevronDown
+    ChevronDown,
+    Loader2
 } from "lucide-react";
+import { useCarePlanHistory, useGenerateCarePlan } from "@/hooks";
+import { useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const CarePlanBuilderSidebar = ({ onClose }) => {
+    const router = useRouter();
+    const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState("builder");
+    const { historyData, isHistoryLoading } = useCarePlanHistory();
+    const { generateCarePlan, isGenerating } = useGenerateCarePlan();
+    const totalHistory = historyData?.data?.length || 0;
     const [formData, setFormData] = useState({
         age: "",
         gender: "",
@@ -30,7 +40,35 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const isFormValid = formData.chiefComplaint.trim() !== "";
+    const isFormValid = formData.chiefComplaint.trim() !== "" && !isGenerating;
+
+    const handleGenerate = () => {
+        if (!isFormValid) return;
+        const payload = {
+            patient: {
+                age: formData.age,
+                gender: formData.gender,
+                care_setting: formData.careSetting,
+                chief_complaint: formData.chiefComplaint,
+                past_medical_history: formData.pastMedicalHistory,
+                current_medications: formData.currentMedications,
+                allergies: formData.allergies,
+                key_vitals: formData.keyVitals,
+                relevant_labs: formData.labs,
+                additional_clinical_notes: formData.notes
+            }
+        };
+        generateCarePlan(payload, {
+            onSuccess: (data) => {
+                toast.success(data?.data?.message || "Care plan generated!");
+                queryClient.invalidateQueries({ queryKey: ["care-plan-history"] });
+                if (onClose) onClose();
+            },
+            onError: (error) => {
+                toast.error(error?.response?.data?.message || "Failed to generate care plan");
+            }
+        });
+    };
 
     return (
         <>
@@ -64,14 +102,16 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
                 >
                     <Clock size={14} />
                     <span>History</span>
-                    <span
-                        className={`ml-0.5 inline-flex items-center justify-center min-w-4.5 h-4.5 rounded-full px-1.5 text-[10px] font-bold leading-none ${activeTab === "history"
-                                ? "bg-[#2C5F8D] text-white"
-                                : "bg-[#E2E8F0] text-[#475569]"
-                            }`}
-                    >
-                        3
-                    </span>
+                    {totalHistory > 0 && (
+                        <span
+                            className={`ml-0.5 inline-flex items-center justify-center min-w-4.5 h-4.5 rounded-full px-1.5 text-[10px] font-bold leading-none ${activeTab === "history"
+                                    ? "bg-[#2C5F8D] text-white"
+                                    : "bg-[#E2E8F0] text-[#475569]"
+                                }`}
+                        >
+                            {totalHistory > 99 ? "99+" : totalHistory}
+                        </span>
+                    )}
                     {activeTab === "history" && (
                         <motion.div
                             layoutId="tab-indicator"
@@ -231,14 +271,24 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
                             </div>
 
                             <button
+                                onClick={handleGenerate}
                                 disabled={!isFormValid}
                                 className={`w-full font-semibold rounded-lg py-3 flex justify-center items-center gap-2 transition-colors ${isFormValid
                                         ? "bg-[#2C5F8D] hover:bg-[#1E4366] text-white cursor-pointer"
                                         : "bg-[#E2E8F0] text-[#94A3B8] cursor-not-allowed"
                                     }`}
                             >
-                                <Zap size={18} />
-                                Generate
+                                {isGenerating ? (
+                                    <>
+                                        <Loader2 size={18} className="animate-spin" />
+                                        Generating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Zap size={18} />
+                                        Generate
+                                    </>
+                                )}
                             </button>
                         </motion.div>
                     ) : (
@@ -250,22 +300,26 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
                             transition={{ duration: 0.2, ease: "easeOut" }}
                             className="p-5 flex flex-col gap-4 w-full"
                         >
-                            {/* Placeholder history list */}
-                            {[1, 2, 3].map((item) => (
-                                <Link
-                                    href={`/dashboard/care-plan-builders/${item}`}
-                                    key={item}
-                                    className="p-4 rounded-lg border border-[#E5E7EB] hover:border-[#2C5F8D] hover:bg-[#F0F7FC] cursor-pointer transition-colors bg-white group w-full block"
-                                >
-                                    <div className="flex justify-between items-start gap-2 mb-1">
-                                        <h4 className="text-sm font-semibold text-[#1D2939] group-hover:text-[#2C5F8D]">68yo M w/ Chest Pain</h4>
-                                        <span className="text-[10px] text-[#64748B] whitespace-nowrap">2h ago</span>
-                                    </div>
-                                    <p className="text-xs text-[#64748B] line-clamp-2 leading-relaxed">
-                                        HTN, DM2, CKD. Metformin, Lisinopril. NKDA. BP 88/54, HR 112.
-                                    </p>
-                                </Link>
-                            ))}
+                            {isHistoryLoading ? (
+                                <p className="text-[11px] text-[#697586] text-center mt-5">Loading history...</p>
+                            ) : totalHistory === 0 ? (
+                                <p className="text-[11px] text-[#697586] text-center mt-5">No search history yet.</p>
+                            ) : (
+                                historyData?.data?.map((item) => (
+                                    <Link
+                                        href={`/dashboard/care-plan-builders/${item.id}`}
+                                        key={item.id}
+                                        className="p-4 rounded-lg border border-[#E5E7EB] hover:border-[#2C5F8D] hover:bg-[#F0F7FC] cursor-pointer transition-colors bg-white group w-full block"
+                                    >
+                                        <div className="flex flex-col gap-1 mb-1">
+                                            <h4 className="text-sm font-semibold text-[#1D2939] group-hover:text-[#2C5F8D]">{item.title}</h4>
+                                        </div>
+                                        <p className="text-xs text-[#64748B] line-clamp-2 leading-relaxed mt-1">
+                                            {item.subtitle}
+                                        </p>
+                                    </Link>
+                                ))
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>

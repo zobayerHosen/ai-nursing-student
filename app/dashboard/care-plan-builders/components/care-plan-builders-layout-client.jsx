@@ -9,7 +9,7 @@ export default function CarePlanBuildersLayoutClient({ children }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     return (
-        <div className="flex flex-col xl:flex-row h-full xl:min-h-[calc(100vh-80px)] relative w-full bg-[#F8F9FA]">
+        <div className="flex flex-col xl:flex-row h-full xl:h-[calc(100vh-80px)] overflow-hidden relative w-full bg-[#F8F9FA]">
             {/* Mobile Sidebar Overlay */}
             {isSidebarOpen && (
                 <div
@@ -21,7 +21,7 @@ export default function CarePlanBuildersLayoutClient({ children }) {
             {/* Sidebar Wrapper */}
             <div
                 className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 xl:relative xl:translate-x-0
-        ${isSidebarOpen ? "translate-x-0 z-999" : "-translate-x-full"} w-[80%] sm:w-80 xl:w-82.5 shrink-0 bg-white border-r border-[#E5E7EB] flex flex-col`}
+        ${isSidebarOpen ? "translate-x-0 z-999" : "-translate-x-full"} w-[80%] sm:w-80 xl:w-82.5 shrink-0 bg-white border-r border-[#E5E7EB] flex flex-col h-full`}
             >
                 <CarePlanBuilderSidebar onClose={() => setIsSidebarOpen(false)} />
             </div>
@@ -39,7 +39,7 @@ export default function CarePlanBuildersLayoutClient({ children }) {
                     <h2 className="font-semibold text-lg text-[#2C5F8D]">Care Plan Builder</h2>
                 </div>
 
-                <div className="p-4 xl:p-6 w-full h-full">{children}</div>
+                <div className="p-4 xl:p-6 w-full">{children}</div>
             </main>
         </div>
     );

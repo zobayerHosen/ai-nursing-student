@@ -5,37 +5,42 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Clock } from "lucide-react";
 import DrugSearchForm from "./drug-search-form";
-import QuickSearchGrid, { QUICK_SEARCH_DRUGS } from "./quick-search-grid";
-import HistoryList, { HISTORY_STORAGE_KEY } from "./history-list";
+import QuickSearchGrid from "./quick-search-grid";
+import { useCardGenerator, useCardQuickList } from "@/hooks";
+import { useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const SidebarContent = ({ onClose }) => {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentDrug = searchParams.get("drug") || "";
   const [inputValue, setInputValue] = useState("");
-  const [history, setHistory] = useState([]);
   const [activeTab, setActiveTab] = useState("search");
+  const { quickActionsData } = useCardQuickList();
+  const { cardGenerator, isGeneratorPending } = useCardGenerator();
 
-  // Load history from localStorage
-  const loadHistory = () => {
-    try {
-      const stored = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || "[]");
-      setHistory(stored);
-    } catch {
-      setHistory([]);
-    }
+
+  // Card Generated handler function.
+  const handleGenerateCard = async (drugName) => {
+    cardGenerator(
+      { drug_name: drugName, force_refresh: false },
+      {
+        onSuccess: (data) => {
+          toast.success(data?.data?.message || "Card generated successfully");
+          queryClient.invalidateQueries({ queryKey: ["generated-card-lists"] })
+          navigateToDrug(drugName);
+        },
+        onError: (error) => {
+          toast.error(error?.response?.data?.message || "Failed to generate card");
+        }
+      }
+    );
   };
-
-  useEffect(() => {
-    loadHistory();
-    const handler = () => loadHistory();
-    window.addEventListener("drug-history-updated", handler);
-    return () => window.removeEventListener("drug-history-updated", handler);
-  }, []);
 
   // Keep input in sync with current query param
   useEffect(() => {
-    const isQuickSearch = QUICK_SEARCH_DRUGS.some(
+    const isQuickSearch = quickActionsData?.some(
       (d) => d.toLowerCase() === currentDrug.toLowerCase()
     );
     if (isQuickSearch) {
@@ -43,7 +48,7 @@ const SidebarContent = ({ onClose }) => {
     } else {
       setInputValue(currentDrug);
     }
-  }, [currentDrug]);
+  }, [currentDrug, quickActionsData]);
 
   const navigateToDrug = (drugName) => {
     const params = new URLSearchParams(searchParams);
@@ -55,39 +60,23 @@ const SidebarContent = ({ onClose }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
-    navigateToDrug(inputValue.trim());
+    handleGenerateCard(inputValue.trim());
   };
 
   const handleDrugSelect = (drugName) => {
-    navigateToDrug(drugName);
-  };
-
-  const handleRemoveHistoryItem = (e, drugName) => {
-    e.stopPropagation();
-    const updated = history.filter(
-      (item) => item.drugName.toLowerCase() !== drugName.toLowerCase()
-    );
-    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(updated));
-    setHistory(updated);
-  };
-
-  const handleClearAllHistory = () => {
-    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify([]));
-    setHistory([]);
+    setInputValue(drugName);
   };
 
   return (
     <aside className="w-full h-full border-r border-[#E5E7EB] bg-white overflow-y-auto flex flex-col">
-      {/* Tab headers with animated underline */}
       <div className="relative flex border-b border-[#E5E7EB]">
         <button
           type="button"
           onClick={() => setActiveTab("search")}
-          className={`relative flex flex-1 items-center justify-center gap-2 px-4 py-3 text-xs font-semibold transition ${
-            activeTab === "search"
-              ? "text-[#2C5F8D]"
-              : "text-[#697586] hover:text-[#2C5F8D]"
-          }`}
+          className={`relative flex flex-1 items-center justify-center gap-2 px-4 py-3 text-xs font-semibold transition ${activeTab === "search"
+            ? "text-[#2C5F8D]"
+            : "text-[#697586] hover:text-[#2C5F8D]"
+            }`}
         >
           <Search size={14} />
           Search Drug
@@ -102,25 +91,13 @@ const SidebarContent = ({ onClose }) => {
         <button
           type="button"
           onClick={() => setActiveTab("history")}
-          className={`relative flex flex-1 items-center justify-center gap-2 px-4 py-3 text-xs font-semibold transition ${
-            activeTab === "history"
-              ? "text-[#2C5F8D]"
-              : "text-[#697586] hover:text-[#2C5F8D]"
-          }`}
+          className={`relative flex flex-1 items-center justify-center gap-2 px-4 py-3 text-xs font-semibold transition ${activeTab === "history"
+            ? "text-[#2C5F8D]"
+            : "text-[#697586] hover:text-[#2C5F8D]"
+            }`}
         >
           <Clock size={14} />
           <span>History</span>
-          {history.length > 0 && (
-            <span
-              className={`ml-0.5 inline-flex items-center justify-center min-w-4.5 h-4.5 rounded-full px-1.5 text-[10px] font-bold leading-none ${
-                activeTab === "history"
-                  ? "bg-[#2C5F8D] text-white"
-                  : "bg-[#E2E8F0] text-[#475569]"
-              }`}
-            >
-              {history.length > 99 ? "99+" : history.length}
-            </span>
-          )}
           {activeTab === "history" && (
             <motion.div
               layoutId="tab-indicator"
@@ -131,7 +108,7 @@ const SidebarContent = ({ onClose }) => {
         </button>
       </div>
 
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden h-full flex flex-col">
         <AnimatePresence mode="wait">
           {activeTab === "search" ? (
             <motion.div
@@ -146,11 +123,16 @@ const SidebarContent = ({ onClose }) => {
                 inputValue={inputValue}
                 onInputChange={setInputValue}
                 onSubmit={handleSubmit}
+                loading={isGeneratorPending}
               />
 
               <hr className="border-black/5 w-full" />
 
-              <QuickSearchGrid currentDrug={currentDrug} onDrugSelect={handleDrugSelect} />
+              <QuickSearchGrid
+                currentDrug={currentDrug}
+                onDrugSelect={handleDrugSelect}
+                quickActionsData={quickActionsData}
+              />
             </motion.div>
           ) : (
             <motion.div
@@ -159,18 +141,10 @@ const SidebarContent = ({ onClose }) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="p-5"
+              className="p-5 flex flex-col items-center justify-center text-center mt-10"
             >
-              <HistoryList
-                history={history}
-                currentDrug={currentDrug}
-                onDrugSelect={handleDrugSelect}
-                onRemoveItem={handleRemoveHistoryItem}
-                onClearAll={handleClearAllHistory}
-              />
-              {history.length === 0 && (
-                <p className="text-[11px] text-[#697586]">No search history yet.</p>
-              )}
+              <p className="text-[12px] text-[#697586]">No search history yet.</p>
+              <p className="text-[10px] text-[#98A2B3] mt-1">History functionality is coming soon.</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -180,11 +154,11 @@ const SidebarContent = ({ onClose }) => {
 };
 
 const DrugCardsSidebar = ({ onClose }) => {
-    return (
-        <Suspense fallback={<div className="w-full h-full bg-white border-r border-[#E5E7EB] p-5"></div>}>
-            <SidebarContent onClose={onClose} />
-        </Suspense>
-    );
+  return (
+    <Suspense fallback={<div className="w-full h-full bg-white border-r border-[#E5E7EB] p-5"></div>}>
+      <SidebarContent onClose={onClose} />
+    </Suspense>
+  );
 };
 
 export default DrugCardsSidebar;

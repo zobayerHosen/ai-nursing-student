@@ -2,8 +2,8 @@
 
 import { Search } from "lucide-react";
 
-export default function DrugSearchForm({ inputValue, onInputChange, onSubmit }) {
-  const isEmpty = !inputValue.trim();
+export default function DrugSearchForm({ inputValue, onInputChange, onSubmit, loading }) {
+  const isEmpty = !inputValue.trim() || loading;
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col items-start gap-3 w-full">
@@ -30,7 +30,7 @@ export default function DrugSearchForm({ inputValue, onInputChange, onSubmit }) 
             : "bg-[#2C5F8D] hover:bg-[#1E4266] active:bg-[#15304C] text-white cursor-pointer"
         }`}
       >
-        Check Drug Card
+        {loading ? "Checking..." : "Check Drug Card"}
       </button>
     </form>
   );
