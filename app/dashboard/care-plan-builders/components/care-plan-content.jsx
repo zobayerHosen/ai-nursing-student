@@ -38,34 +38,33 @@ export default function CarePlanContent({ carePlan, title }) {
     if (!carePlan) return null;
 
     return (
-        <>
-            {/* Header Banner */}
-            <div className="bg-[#2C5F8D] rounded-2xl p-6 text-white mb-6 relative shadow-sm">
+        <div className="w-full">
+            <div className="bg-[#2C5F8D] rounded-2xl p-4 sm:p-6 text-white mb-6 relative shadow-sm">
                 <div className="flex justify-between items-start mb-2">
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-200">
+                    <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-blue-200">
                         {carePlan?.metadata?.title || "STEM RN CARE PLAN"}
                     </span>
                 </div>
-                <h1 className="text-[22px] font-bold mb-4">{title || carePlan?.metadata?.subtitle}</h1>
-                <div className="flex items-center gap-3 flex-wrap">
-                    <span className="bg-white/20 text-white text-[11px] font-medium px-3 py-1 rounded-full border border-white/10">
+                <h1 className="text-lg sm:text-[22px] font-bold mb-4 leading-snug">{title || carePlan?.metadata?.subtitle}</h1>
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    <span className="bg-white/20 text-white text-[10px] sm:text-[11px] font-medium px-2.5 sm:px-3 py-1 rounded-full border border-white/10">
                         {carePlan?.metadata?.nursing_diagnoses_count || carePlan?.diagnoses?.length || 0} Nursing Diagnoses
                     </span>
-                    <span className="bg-white/20 text-white text-[11px] font-medium px-3 py-1 rounded-full border border-white/10">
+                    <span className="bg-white/20 text-white text-[10px] sm:text-[11px] font-medium px-2.5 sm:px-3 py-1 rounded-full border border-white/10">
                         Generated {formatDate(carePlan?.metadata?.generated_at)}
                     </span>
                 </div>
             </div>
 
             {/* Tab Navigation */}
-            <div className="bg-white rounded-t-xl border-x border-t border-[#E5E7EB] flex overflow-x-auto no-scrollbar">
+            <div className="bg-white rounded-t-xl border-x border-t border-[#E5E7EB] grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 p-2 2xl:flex 2xl:overflow-x-auto lg:p-0 lg:gap-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {tabs.map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-5 py-4 text-[13px] font-semibold whitespace-nowrap border-b-2 transition-colors flex-1 text-center min-w-30 ${activeTab === tab
-                            ? "border-[#2C5F8D] text-[#2C5F8D]"
-                            : "border-transparent text-[#64748B] hover:text-[#344054] hover:bg-gray-50"
+                        className={`px-3 py-2.5 text-xs font-semibold whitespace-nowrap rounded-lg transition-colors text-center last:col-span-2 sm:last:col-span-3 md:last:col-span-2 lg:rounded-none lg:px-5 lg:py-4 lg:text-[13px] lg:flex-1 lg:border-b-2 lg:last:col-span-1 ${activeTab === tab
+                            ? "bg-[#2C5F8D] text-white shadow-sm lg:bg-transparent lg:shadow-none lg:text-[#2C5F8D] lg:border-[#2C5F8D]"
+                            : "bg-[#F8FAFC] text-[#64748B] hover:bg-gray-100 hover:text-[#2C5F8D] lg:bg-transparent lg:border-transparent lg:hover:bg-gray-50 lg:hover:text-[#344054]"
                             }`}
                     >
                         {tab}
@@ -74,28 +73,28 @@ export default function CarePlanContent({ carePlan, title }) {
             </div>
 
             {/* Content */}
-            <div className="bg-white rounded-b-xl border border-[#E5E7EB] border-t-0 p-5 md:p-8 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] mb-10">
+            <div className="bg-white rounded-b-xl border border-[#E5E7EB] border-t-0 p-4 sm:p-5 md:p-8 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] mb-10">
                 {activeTab === "Overview" && (
-                    <div className="flex flex-col gap-8">
+                    <div className="flex flex-col gap-6 sm:gap-8">
                         <div>
-                            <h3 className="flex items-center gap-2 text-[15px] font-bold text-[#1D2939] mb-3">
-                                <User size={18} className="text-[#2C5F8D]" /> Patient Overview
+                            <h3 className="flex items-center gap-2 text-sm sm:text-[15px] font-bold text-[#1D2939] mb-3">
+                                <User size={18} className="text-[#2C5F8D] shrink-0" /> Patient Overview
                             </h3>
                             <p className="text-sm text-[#344054] leading-[1.6]">{carePlan?.overview?.patient_overview}</p>
                         </div>
                         <div>
-                            <h3 className="flex items-center gap-2 text-[15px] font-bold text-[#1D2939] mb-3">
-                                <Building2 size={18} className="text-[#2C5F8D]" /> Disease Overview
+                            <h3 className="flex items-center gap-2 text-sm sm:text-[15px] font-bold text-[#1D2939] mb-3">
+                                <Building2 size={18} className="text-[#2C5F8D] shrink-0" /> Disease Overview
                             </h3>
                             <p className="text-sm text-[#344054] leading-[1.6]">{carePlan?.overview?.disease_overview}</p>
                         </div>
                         <div>
-                            <h3 className="flex items-center gap-2 text-[15px] font-bold text-[#1D2939] mb-4">
-                                <Stethoscope size={18} className="text-[#2C5F8D]" /> Priority Nursing Diagnoses Summary
+                            <h3 className="flex items-center gap-2 text-sm sm:text-[15px] font-bold text-[#1D2939] mb-4">
+                                <Stethoscope size={18} className="text-[#2C5F8D] shrink-0" /> Priority Nursing Diagnoses Summary
                             </h3>
                             <div className="flex flex-col gap-3">
                                 {carePlan?.overview?.priority_nursing_diagnoses_summary?.map((diag, idx) => (
-                                    <div key={idx} className="border border-[#E5E7EB] rounded-xl p-4 flex items-center gap-4 hover:border-[#2C5F8D]/40 transition-colors bg-white">
+                                    <div key={idx} className="border border-[#E5E7EB] rounded-xl p-3 sm:p-4 flex items-center gap-3 sm:gap-4 hover:border-[#2C5F8D]/40 transition-colors bg-white">
                                         <div className="w-9.5 h-9.5 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
                                             <span className="font-bold text-[13px]">#{diag.rank || idx + 1}</span>
                                         </div>
@@ -111,18 +110,18 @@ export default function CarePlanContent({ carePlan, title }) {
                 )}
 
                 {activeTab === "Assessment" && (
-                    <div className="flex flex-col gap-8">
+                    <div className="flex flex-col gap-6 sm:gap-8">
                         <div>
-                            <h3 className="flex items-center gap-2 text-[15px] font-bold text-[#1D2939] mb-4">
-                                <User size={18} className="text-[#2C5F8D]" /> Subjective Data
+                            <h3 className="flex items-center gap-2 text-sm sm:text-[15px] font-bold text-[#1D2939] mb-4">
+                                <User size={18} className="text-[#2C5F8D] shrink-0" /> Subjective Data
                             </h3>
                             <ul className="list-disc pl-5 space-y-2 text-sm text-[#344054]">
                                 {carePlan?.assessment?.subjective_data?.map((d, i) => <li key={i}>{d}</li>)}
                             </ul>
                         </div>
                         <div>
-                            <h3 className="flex items-center gap-2 text-[15px] font-bold text-[#1D2939] mb-4">
-                                <ListChecks size={18} className="text-[#2C5F8D]" /> Objective Data
+                            <h3 className="flex items-center gap-2 text-sm sm:text-[15px] font-bold text-[#1D2939] mb-4">
+                                <ListChecks size={18} className="text-[#2C5F8D] shrink-0" /> Objective Data
                             </h3>
                             <ul className="list-disc pl-5 space-y-2 text-sm text-[#344054]">
                                 {carePlan?.assessment?.objective_data?.map((d, i) => <li key={i}>{d}</li>)}
@@ -132,9 +131,9 @@ export default function CarePlanContent({ carePlan, title }) {
                 )}
 
                 {activeTab === "Diagnoses" && (
-                    <div className="flex flex-col gap-8">
+                    <div className="flex flex-col gap-6 sm:gap-8">
                         {carePlan?.diagnoses?.map((diag, idx) => (
-                            <div key={idx} className="border border-[#E5E7EB] rounded-xl p-4 md:p-6 bg-gray-50/50">
+                            <div key={idx} className="border border-[#E5E7EB] rounded-xl p-4 sm:p-5 md:p-6 bg-gray-50/50">
                                 <h3 className="text-[16px] font-bold text-[#1D2939] mb-2">{diag.diagnosis}</h3>
                                 <p className="text-sm text-[#64748B] mb-4"><strong>Related to:</strong> {diag.related_to}</p>
                                 <h4 className="text-[13px] font-semibold text-[#1D2939] mt-4 mb-2">As evidenced by:</h4>
@@ -168,9 +167,9 @@ export default function CarePlanContent({ carePlan, title }) {
                 )}
 
                 {activeTab === "Medications" && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
                         {carePlan?.medications?.map((med, idx) => (
-                            <div key={idx} className="border border-[#E5E7EB] rounded-xl p-5 bg-white shadow-sm flex flex-col gap-2">
+                            <div key={idx} className="border border-[#E5E7EB] rounded-xl p-4 sm:p-5 bg-white shadow-sm flex flex-col gap-2">
                                 <div className="flex items-center gap-2 text-[#2C5F8D] font-bold text-lg mb-1">
                                     <Pill size={18} /> {med.medication}
                                 </div>
@@ -185,14 +184,14 @@ export default function CarePlanContent({ carePlan, title }) {
                 {activeTab === "Lab Findings" && (
                     <div className="flex flex-col gap-4">
                         {carePlan?.lab_findings?.map((lab, idx) => (
-                            <div key={idx} className="border border-[#E5E7EB] rounded-xl p-5 bg-white shadow-sm flex flex-col md:flex-row gap-4 justify-between md:items-center">
+                            <div key={idx} className="border border-[#E5E7EB] rounded-xl p-4 sm:p-5 bg-white shadow-sm flex flex-col md:flex-row lg:flex-col xl:flex-row gap-4 justify-between md:items-center lg:items-start xl:items-center">
                                 <div className="flex flex-col gap-1">
                                     <div className="flex items-center gap-2 text-[#2C5F8D] font-bold text-md">
                                         <FlaskConical size={18} /> {lab.lab_value}
                                     </div>
                                     <p className="text-sm text-[#344054] mt-1"><strong>Patient Value:</strong> <span className="text-rose-600 font-semibold">{lab.patient_value}</span> (Normal: {lab.normal_range})</p>
                                 </div>
-                                <div className="md:w-1/2 bg-gray-50 p-3 rounded-lg text-sm text-[#64748B] italic">{lab.clinical_significance}</div>
+                                <div className="md:w-1/2 lg:w-full xl:w-1/2 bg-gray-50 p-3 rounded-lg text-sm text-[#64748B] italic">{lab.clinical_significance}</div>
                             </div>
                         ))}
                     </div>
@@ -201,7 +200,7 @@ export default function CarePlanContent({ carePlan, title }) {
                 {activeTab === "Patient Education" && (
                     <div className="flex flex-col gap-4">
                         {carePlan?.patient_education?.map((edu, idx) => (
-                            <div key={idx} className="flex items-start gap-4 border border-[#E5E7EB] rounded-xl p-4 bg-white hover:border-[#2C5F8D]/40 transition-colors">
+                            <div key={idx} className="flex items-start gap-3 sm:gap-4 border border-[#E5E7EB] rounded-xl p-3 sm:p-4 bg-white hover:border-[#2C5F8D]/40 transition-colors">
                                 <div className="w-8 h-8 rounded-full bg-[#E0F2FE] text-[#0284C7] flex items-center justify-center shrink-0 mt-0.5">
                                     <GraduationCap size={16} />
                                 </div>
@@ -214,7 +213,7 @@ export default function CarePlanContent({ carePlan, title }) {
                 {activeTab === "Expected Outcomes" && (
                     <div className="flex flex-col gap-4">
                         {carePlan?.expected_outcomes?.map((outcome, idx) => (
-                            <div key={idx} className="flex items-start gap-3 border border-[#E5E7EB] rounded-xl p-4 bg-[#F0FDF4] hover:border-[#22C55E]/40 transition-colors">
+                            <div key={idx} className="flex items-start gap-3 border border-[#E5E7EB] rounded-xl p-3 sm:p-4 bg-[#F0FDF4] hover:border-[#22C55E]/40 transition-colors">
                                 <CheckCircle2 size={20} className="text-[#22C55E] shrink-0 mt-0.5" />
                                 <p className="text-sm text-[#166534] font-medium leading-relaxed">{outcome}</p>
                             </div>
@@ -222,6 +221,6 @@ export default function CarePlanContent({ carePlan, title }) {
                     </div>
                 )}
             </div>
-        </>
+        </div>
     );
 }
