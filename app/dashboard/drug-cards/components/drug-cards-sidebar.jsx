@@ -28,6 +28,12 @@ const SidebarContent = ({ onClose }) => {
       {
         onSuccess: (data) => {
           toast.success(data?.data?.message || "Card generated successfully");
+
+          const drugData = data?.data?.data || data?.data;
+          if (drugData) {
+            localStorage.setItem("generatedDrugCard", JSON.stringify(drugData));
+          }
+
           queryClient.invalidateQueries({ queryKey: ["generated-card-lists"] })
           navigateToDrug(drugName);
         },
@@ -88,6 +94,7 @@ const SidebarContent = ({ onClose }) => {
             />
           )}
         </button>
+        {/* 
         <button
           type="button"
           onClick={() => setActiveTab("history")}
@@ -106,6 +113,7 @@ const SidebarContent = ({ onClose }) => {
             />
           )}
         </button>
+       */}
       </div>
 
       <div className="relative overflow-hidden h-full flex flex-col">

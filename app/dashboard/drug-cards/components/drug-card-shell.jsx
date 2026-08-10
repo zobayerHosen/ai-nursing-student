@@ -16,7 +16,6 @@ import {
   RefreshCw,
   AlertCircle
 } from "lucide-react";
-import { generateMockDrugCard } from "../data/drug-data";
 
 const LOADING_STEPS = [
   "Retrieving clinical monograph...",
@@ -109,46 +108,37 @@ const DrugCardContent = () => {
   const [progress, setProgress] = useState(0);
 
   // Get current drug profile
-  const drug = drugName ? generateMockDrugCard(drugName) : null;
+  const [drug, setDrug] = useState(null);
 
-  // Save to history when drug card finishes generating
   useEffect(() => {
-    if (!isGenerating && !showSkeleton && drugName && drug) {
-      try {
-        const history = JSON.parse(localStorage.getItem("stemrn-drug-card-history") || "[]");
-        // Avoid duplicates — if drug already exists in history, just update its timestamp
-        const filtered = history.filter((item) => item.drugName.toLowerCase() !== drugName.toLowerCase());
-        const updated = [
-          { drugName: drugName, timestamp: Date.now(), displayName: drug.genericName },
-          ...filtered,
-        ];
-        localStorage.setItem("stemrn-drug-card-history", JSON.stringify(updated));
-        // Dispatch custom event so the sidebar can refresh
-        window.dispatchEvent(new CustomEvent("drug-history-updated"));
-      } catch {
-        // localStorage unavailable — silently skip
+    if (drugName) {
+      const stored = localStorage.getItem("generatedDrugCard");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setDrug(parsed);
+        } catch (e) {
+          console.error(e);
+          setDrug(generateMockDrugCard(drugName));
+        }
+      } else {
+        setDrug(generateMockDrugCard(drugName));
       }
+    } else {
+      setDrug(null);
     }
-  }, [isGenerating, showSkeleton, drugName, drug]);
+  }, [drugName]);
 
   // Trigger generator animation only for first-time drug views
   useEffect(() => {
     if (!drugName) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsGenerating(false);
       setShowSkeleton(false);
       return;
     }
 
-    // Check if this drug has been viewed before (exists in history localStorage)
-    const isPreviouslyViewed = (() => {
-      try {
-        const history = JSON.parse(localStorage.getItem("stemrn-drug-card-history") || "[]");
-        return history.some((item) => item.drugName.toLowerCase() === drugName.toLowerCase());
-      } catch {
-        return false;
-      }
-    })();
+    const viewedDrugs = JSON.parse(sessionStorage.getItem("viewedDrugs") || "[]");
+    const isPreviouslyViewed = viewedDrugs.includes(drugName.toLowerCase());
 
     if (isPreviouslyViewed) {
       // Show skeleton briefly, then reveal the card
@@ -157,6 +147,8 @@ const DrugCardContent = () => {
       const timer = setTimeout(() => setShowSkeleton(false), 700);
       return () => clearTimeout(timer);
     }
+
+    sessionStorage.setItem("viewedDrugs", JSON.stringify([...viewedDrugs, drugName.toLowerCase()]));
 
     setIsGenerating(true);
     setShowSkeleton(false);
@@ -312,43 +304,115 @@ const DrugCardContent = () => {
     );
   }
 
+  if (!drug) return null;
+
+  // Map properties from either API response or Mock data
+  const title = drug.card?.drug_name || drug.drug_name || drug.genericName;
+  const brands = drug.card?.brand_names || drug.brand_names || drug.brandNames;
+  const drugClass = drug.card?.drug_class || drug.drug_class || drug.therapeuticClass;
+  const pharmClass = drug.pharmacologicClass || null; 
+  const route = drug.card?.route_of_administration || drug.route_of_administration || null;
+  const pregnancy = drug.card?.pregnancy_category || drug.pregnancy_category || null;
+  
+  const bbw = drug.card?.black_box_warning || drug.black_box_warning || null;
+  const isHighAlert = drug.isHighAlert || !!bbw;
+  
+  const moa = drug.card?.mechanism_of_action || drug.mechanism_of_action || drug.mechanismOfAction;
+  const indications = drug.card?.indications || drug.indications || [];
+  const contraindications = drug.card?.contraindications || drug.contraindications || [];
+  
+  // Side effects parsing
+  let commonSideEffects = [];
+  let severeSideEffects = drug.card?.serious_adverse_effects || drug.serious_adverse_effects || [];
+  const apiSideEffects = drug.card?.side_effects || drug.side_effects;
+  
+  if (apiSideEffects && Array.isArray(apiSideEffects)) {
+    commonSideEffects = apiSideEffects.map(se => `${se.system || 'System'}: ${se.effects}`);
+  } else if (drug.sideEffects) {
+    commonSideEffects = drug.sideEffects.common || [];
+    if (severeSideEffects.length === 0) severeSideEffects = drug.sideEffects.lifeThreatening || [];
+  }
+
+  const nursingCons = drug.card?.nursing_considerations || drug.nursing_considerations || drug.nursingConsiderations || [];
+  const patientEd = drug.card?.patient_education || drug.patient_education || drug.patientTeaching || [];
+  
+  // New specific fields
+  const assessment = drug.card?.assessment_before_administration || drug.assessment_before_administration || [];
+  const monitoring = drug.card?.monitoring_during_therapy || drug.monitoring_during_therapy || [];
+  const pearls = drug.card?.nclex_pearls || drug.nclex_pearls || [];
+  const trick = drug.card?.memory_trick || drug.memory_trick || null;
+  const clinicalTips = drug.card?.clinical_tips || drug.clinical_tips || [];
+  
+  // Old specific fields
+  const antidote = drug.antidote || null;
+  const keyLabs = drug.keyLabs || null;
+
   // 3. Final display state
   return (
     <div className="w-full flex flex-col gap-6" id="printable-drug-card">
       {/* Top Banner Card */}
-      <div className="bg-white border border-[#E4E7EC] rounded-2xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print-card">
-        <div className="flex flex-col gap-2">
-          {/* High Alert Warning */}
-          {drug.isHighAlert && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-[#FEE4E2] text-[#D92D20] rounded-full w-fit border border-[#FECDCA]">
-              <AlertCircle size={14} />
-              HIGH-ALERT MEDICATION
-            </span>
-          )}
+      <div className="bg-white border border-[#E4E7EC] rounded-2xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print-card relative overflow-hidden">
+        {/* Decorator */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-[#F0F7FC] to-transparent rounded-bl-full opacity-50 pointer-events-none" />
+        
+        <div className="flex flex-col gap-3 z-10 w-full">
+          {/* Warning / Alerts Row */}
+          <div className="flex flex-wrap items-center gap-2">
+            {isHighAlert && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-[#FEE4E2] text-[#D92D20] rounded-full w-fit border border-[#FECDCA]">
+                <AlertCircle size={14} />
+                HIGH-ALERT MEDICATION
+              </span>
+            )}
+            {pregnancy && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-[#F5F3FF] text-[#6D28D9] rounded-full w-fit border border-[#EDE9FE]">
+                Pregnancy: {pregnancy.split("—")[0].trim()}
+              </span>
+            )}
+            {route && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-[#F0FDF4] text-[#166534] rounded-full w-fit border border-[#DCFCE7]">
+                Route: {route}
+              </span>
+            )}
+          </div>
           
           <div className="flex items-baseline gap-3 flex-wrap">
-            <h1 className="text-3xl font-extrabold text-[#1D2939] tracking-tight">{drug.genericName}</h1>
-            {drug.brandNames && (
+            <h1 className="text-3xl font-extrabold text-[#1D2939] tracking-tight">{title}</h1>
+            {brands && (
               <span className="text-base font-semibold text-[#667085]">
-                ({drug.brandNames})
+                ({brands})
               </span>
             )}
           </div>
 
-          <div className="flex flex-wrap gap-2 mt-1">
-            <span className="px-3 py-1 bg-[#F0F7FC] text-[#2C5F8D] text-xs font-bold rounded-lg border border-[#D0E0EE]">
-              {drug.therapeuticClass}
-            </span>
-            <span className="px-3 py-1 bg-[#F2F4F7] text-[#475569] text-xs font-bold rounded-lg border border-[#E2E8F0]">
-              {drug.pharmacologicClass}
-            </span>
+          <div className="flex flex-wrap gap-2">
+            {drugClass && (
+              <span className="px-3 py-1.5 bg-[#F0F7FC] text-[#2C5F8D] text-xs font-bold rounded-lg border border-[#D0E0EE]">
+                {drugClass}
+              </span>
+            )}
+            {pharmClass && (
+              <span className="px-3 py-1.5 bg-[#F2F4F7] text-[#475569] text-xs font-bold rounded-lg border border-[#E2E8F0]">
+                {pharmClass}
+              </span>
+            )}
           </div>
+
+          {bbw && (
+            <div className="mt-2 p-3 bg-[#FFF1F0] border border-[#FCA5A5] rounded-xl flex gap-3 items-start">
+              <AlertTriangle size={16} className="text-[#D92D20] shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-xs font-bold text-[#D92D20] uppercase tracking-wider">Black Box Warning</h4>
+                <p className="text-xs font-medium text-[#B91C1C] mt-1 leading-relaxed">{bbw}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Action Button */}
         <button
           onClick={handleClear}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-red-50 active:bg-red-100 text-[#D92D20] border border-[#FECDCA] hover:border-[#FCA5A5] rounded-xl text-sm font-semibold transition-all shadow-sm cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-red-50 active:bg-red-100 text-[#D92D20] border border-[#FECDCA] hover:border-[#FCA5A5] rounded-xl text-sm font-semibold transition-all shadow-sm cursor-pointer shrink-0 z-10"
         >
           <XCircle size={16} />
           Clear Card
@@ -357,25 +421,15 @@ const DrugCardContent = () => {
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print-grid">
+        
         {/* Mechanism of Action */}
-        <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-3 print-card">
+        <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-3 print-card md:col-span-2">
           <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
             <Activity size={18} className="shrink-0" />
             Mechanism of Action
           </h3>
-          <p className="text-xs font-medium leading-relaxed text-[#475569]">
-            {drug.mechanismOfAction}
-          </p>
-        </div>
-
-        {/* Key Labs to Monitor */}
-        <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-3 print-card">
-          <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
-            <FlaskConical size={18} className="shrink-0" />
-            Key Labs to Monitor
-          </h3>
-          <p className="text-xs font-bold leading-relaxed text-[#1D2939] bg-[#F0F7FC] p-3 rounded-xl border border-[#D0E0EE]">
-            {drug.keyLabs}
+          <p className="text-sm font-medium leading-relaxed text-[#475569]">
+            {moa}
           </p>
         </div>
 
@@ -386,7 +440,7 @@ const DrugCardContent = () => {
             Indications
           </h3>
           <ul className="flex flex-col gap-2 pl-1">
-            {drug.indications.map((ind, i) => (
+            {indications.map((ind, i) => (
               <li key={i} className="text-xs font-medium text-[#475569] flex items-start gap-2">
                 <span className="text-[#2C5F8D] mt-0.5">•</span>
                 <span>{ind}</span>
@@ -402,7 +456,7 @@ const DrugCardContent = () => {
             Contraindications & Precautions
           </h3>
           <ul className="flex flex-col gap-2 pl-1">
-            {drug.contraindications.map((con, i) => (
+            {contraindications.map((con, i) => (
               <li key={i} className="text-xs font-medium text-[#475569] flex items-start gap-2">
                 <span className="text-[#D97706] mt-0.5">•</span>
                 <span>{con}</span>
@@ -419,11 +473,10 @@ const DrugCardContent = () => {
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Common Side Effects */}
             <div className="bg-[#F8FAFC] border border-[#E2E8F0] p-4 rounded-xl flex flex-col gap-2">
               <h4 className="text-xs font-bold text-[#475569] uppercase tracking-wider">Common Side Effects</h4>
               <ul className="flex flex-col gap-1.5">
-                {drug.sideEffects.common.map((se, i) => (
+                {commonSideEffects.map((se, i) => (
                   <li key={i} className="text-xs font-medium text-[#475569] flex items-start gap-1.5">
                     <span className="text-[#94A3B8]">•</span>
                     <span>{se}</span>
@@ -432,11 +485,10 @@ const DrugCardContent = () => {
               </ul>
             </div>
 
-            {/* Life-Threatening Reactions */}
             <div className="bg-[#FFF1F0] border border-[#FCA5A5] p-4 rounded-xl flex flex-col gap-2">
               <h4 className="text-xs font-bold text-[#D92D20] uppercase tracking-wider">Life-Threatening / Severe</h4>
               <ul className="flex flex-col gap-1.5">
-                {drug.sideEffects.lifeThreatening.map((lt, i) => (
+                {severeSideEffects.map((lt, i) => (
                   <li key={i} className="text-xs font-bold text-[#B91C1C] flex items-start gap-1.5">
                     <span className="text-[#EF4444]">•</span>
                     <span>{lt}</span>
@@ -447,14 +499,65 @@ const DrugCardContent = () => {
           </div>
         </div>
 
+        {/* Assessments & Monitoring */}
+        {(assessment.length > 0 || monitoring.length > 0) && (
+          <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-4 print-card md:col-span-2">
+            <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
+              <Activity size={18} className="shrink-0" />
+              Assessment & Monitoring
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {assessment.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <h4 className="text-xs font-bold text-[#344054] uppercase tracking-wider bg-[#F9FAFB] p-2 rounded-lg inline-block w-fit">Before Administration</h4>
+                  <ul className="flex flex-col gap-2 pl-1 mt-1">
+                    {assessment.map((item, i) => (
+                      <li key={i} className="text-xs font-medium text-[#475569] flex items-start gap-2">
+                        <span className="text-[#2C5F8D] mt-0.5">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {monitoring.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <h4 className="text-xs font-bold text-[#344054] uppercase tracking-wider bg-[#F9FAFB] p-2 rounded-lg inline-block w-fit">During Therapy</h4>
+                  <ul className="flex flex-col gap-2 pl-1 mt-1">
+                    {monitoring.map((item, i) => (
+                      <li key={i} className="text-xs font-medium text-[#475569] flex items-start gap-2">
+                        <span className="text-[#2C5F8D] mt-0.5">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Key Labs (Fallback for old data) */}
+        {keyLabs && (
+          <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-3 print-card">
+            <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
+              <FlaskConical size={18} className="shrink-0" />
+              Key Labs to Monitor
+            </h3>
+            <p className="text-xs font-bold leading-relaxed text-[#1D2939] bg-[#F0F7FC] p-3 rounded-xl border border-[#D0E0EE]">
+              {keyLabs}
+            </p>
+          </div>
+        )}
+
         {/* Nursing Considerations */}
         <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-3 print-card">
           <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
             <ClipboardCheck size={18} className="shrink-0" />
-            Nursing Considerations & Assessments
+            Nursing Considerations
           </h3>
           <ul className="flex flex-col gap-2.5 pl-1">
-            {drug.nursingConsiderations.map((consideration, i) => (
+            {nursingCons.map((consideration, i) => (
               <li key={i} className="text-xs font-medium text-[#344054] flex items-start gap-2">
                 <span className="text-[#2C5F8D] font-bold mt-0.5">✓</span>
                 <span>{consideration}</span>
@@ -470,7 +573,7 @@ const DrugCardContent = () => {
             Patient & Family Teaching
           </h3>
           <ul className="flex flex-col gap-2.5 pl-1">
-            {drug.patientTeaching.map((teach, i) => (
+            {patientEd.map((teach, i) => (
               <li key={i} className="text-xs font-medium text-[#344054] flex items-start gap-2">
                 <span className="text-[#2C5F8D] font-bold mt-0.5">▪</span>
                 <span>{teach}</span>
@@ -479,15 +582,68 @@ const DrugCardContent = () => {
           </ul>
         </div>
 
+        {/* Clinical Tips & NCLEX Pearls */}
+        {(clinicalTips.length > 0 || pearls.length > 0) && (
+          <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-4 print-card md:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {clinicalTips.length > 0 && (
+                <div className="flex flex-col gap-3">
+                  <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#166534]">
+                    <Shield size={18} className="shrink-0" />
+                    Clinical Tips
+                  </h3>
+                  <ul className="flex flex-col gap-2.5 pl-1">
+                    {clinicalTips.map((tip, i) => (
+                      <li key={i} className="text-xs font-medium text-[#344054] flex items-start gap-2">
+                        <span className="text-[#166534] font-bold mt-0.5">★</span>
+                        <span>{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {pearls.length > 0 && (
+                <div className="flex flex-col gap-3">
+                  <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#6D28D9]">
+                    <Sparkles size={18} className="shrink-0" />
+                    NCLEX Pearls
+                  </h3>
+                  <ul className="flex flex-col gap-2.5 pl-1">
+                    {pearls.map((pearl, i) => (
+                      <li key={i} className="text-xs font-medium text-[#344054] flex items-start gap-2">
+                        <span className="text-[#6D28D9] font-bold mt-0.5">►</span>
+                        <span>{pearl}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Memory Trick */}
+        {trick && (
+          <div className="bg-linear-to-r from-[#F0F7FC] to-white border border-[#D0E0EE] rounded-2xl p-5 shadow-sm flex flex-col gap-2 print-card md:col-span-2">
+            <h3 className="text-xs font-bold flex items-center gap-2 text-[#2C5F8D] uppercase tracking-wider">
+              <Sparkles size={14} className="shrink-0" />
+              Memory Trick
+            </h3>
+            <p className="text-sm font-medium leading-relaxed text-[#1D2939] italic">
+              "{trick}"
+            </p>
+          </div>
+        )}
+
         {/* Antidote */}
-        {drug.antidote && (
+        {antidote && (
           <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm flex flex-col gap-3 print-card md:col-span-2 print-full">
             <h3 className="text-sm font-bold flex items-center gap-2 border-b border-[#F2F4F7] pb-2.5 text-[#2C5F8D]">
               <Shield size={18} className="text-[#10B981] shrink-0" />
               Antidote & Reversal Agents
             </h3>
             <p className="text-xs font-bold text-[#065F46] bg-[#ECFDF5] p-3.5 rounded-xl border border-[#A7F3D0] inline-block">
-              {drug.antidote}
+              {antidote}
             </p>
           </div>
         )}
