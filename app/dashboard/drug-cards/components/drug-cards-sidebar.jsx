@@ -94,7 +94,6 @@ const SidebarContent = ({ onClose }) => {
             />
           )}
         </button>
-        {/* 
         <button
           type="button"
           onClick={() => setActiveTab("history")}
@@ -113,7 +112,6 @@ const SidebarContent = ({ onClose }) => {
             />
           )}
         </button>
-       */}
       </div>
 
       <div className="relative overflow-hidden h-full flex flex-col">
