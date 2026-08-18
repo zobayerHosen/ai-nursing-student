@@ -233,7 +233,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
               {score.correct} of {score.total} correct
             </div>
             <div
-              className={`inline-flex items-center px-5.5 py-2 rounded-full font-bold text-sm ${pass ? "bg-[#dcfce7] text-[#166534]" : "bg-[#fee2e2] text-[#991b1b]"
+              className={`inline-flex items-center px-5.5 py-2 rounded-full font-bold text-sm ${pass ? "bg-success-100 text-[#166534]" : "bg-error-100 text-[#991b1b]"
                 }`}
             >
               {pass ? "✓ Passing Score — Great work!" : "Keep Practicing — You're Getting There!"}
@@ -448,7 +448,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                       {flagged[i] && <span className="text-amber-500 text-base shrink-0">⚑</span>}
                     </div>
 
-                    <div className="ml-[46px]">
+                    <div className="ml-11.5">
                       <RationaleBlock question={qq} userAnswer={userAns} />
                       <QuestionStats question={qq} />
                     </div>
@@ -461,7 +461,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
           <div className="flex gap-2.5 mt-5 justify-center">
             <button
               onClick={attemptExit}
-              className="bg-transparent text-[#6b7280] border border-[#e5e7eb] rounded-lg px-3.5 py-2 font-sans text-xs font-medium cursor-pointer transition-all hover:bg-[#f9fafb] hover:text-[#111827] inline-flex items-center gap-1.5"
+              className="bg-transparent text-[#6b7280] border border-[#e5e7eb] rounded-lg px-3.5 py-2 font-sans text-xs font-medium cursor-pointer transition-all hover:bg-[#f9fafb] hover:text-text-primary inline-flex items-center gap-1.5"
             >
               ← Back to Practice
             </button>
@@ -601,7 +601,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
       <div className="w-full flex-1 flex overflow-hidden">
         {/* Left - Question */}
         <div className="flex-1 overflow-auto p-5 xl:p-6 min-w-0" style={{ borderRight: revealed ? "1px solid #e2e8f0" : "none" }}>
-          <div className="max-w-[920px]" style={{ animation: "fadeUp 0.25s ease" }}>
+          <div className="max-w-230" style={{ animation: "fadeUp 0.25s ease" }}>
             {/* Tags */}
             <div className="flex items-center gap-2 mb-4 flex-wrap">
               <span className="text-[13px] text-[#94a3b8] font-semibold">Q{current + 1}</span>
@@ -755,7 +755,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                             <div className="flex items-center">
                               <span className="flex-1">{row}</span>
                               {rowAnswered && (
-                                <span className="inline-flex items-center justify-center w-[18px] h-[18px] ml-1.5 shrink-0">
+                                <span className="inline-flex items-center justify-center w-w-4.5 h-4.5 ml-1.5 shrink-0">
                                   {rowGotItRight ? (
                                     <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                       <path d="M4 10.5l4 4 8-9" />
@@ -797,17 +797,17 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                             return (
                               <td key={ci} className="p-0 border-b border-[#f1f5f9]">
                                 <div
-                                  className={`flex items-center justify-center py-2.5 px-2 cursor-pointer transition-colors min-h-[46px] ${cellBg} ${rowAnswered ? "cursor-default" : "hover:bg-[#f3f6fa]"
+                                  className={`flex items-center justify-center py-2.5 px-2 cursor-pointer transition-colors min-h-11.5 ${cellBg} ${rowAnswered ? "cursor-default" : "hover:bg-[#f3f6fa]"
                                     }`}
                                   style={{ borderLeft: "1px solid #f1f5f9" }}
                                   onClick={() => !rowAnswered && handleMatrixSelect(ri, ci)}
                                 >
                                   <div
-                                    className="w-[18px] h-[18px] rounded-full border flex items-center justify-center shrink-0 transition-all bg-white"
+                                    className="w-4.5 h-4.5 rounded-full border flex items-center justify-center shrink-0 transition-all bg-white"
                                     style={{ borderColor: radioBg || "#cbd5e1" }}
                                   >
                                     <div
-                                      className={`w-[10px] h-[10px] rounded-full transition-opacity ${radioInner || "opacity-0"}`}
+                                      className={`w-2.5 h-2.5 rounded-full transition-opacity ${radioInner || "opacity-0"}`}
                                       style={{ background: wasCorrect || wasWrong ? "white" : "#2C5F8D" }}
                                     />
                                   </div>
@@ -848,7 +848,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                   return (
                     <div>
                       <div
-                        className="flex items-center gap-2.5 p-3.5 border rounded-xl transition-all max-w-[480px]"
+                        className="flex items-center gap-2.5 p-3.5 border rounded-xl transition-all max-w-120"
                         style={{ borderColor, background: bgColor }}
                       >
                         <input
@@ -947,7 +947,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                       style={{ borderColor: "transparent" }}
                     >
                       <div
-                        className={`shrink-0 w-[18px] h-[18px] flex items-center justify-center mt-0.5 border transition-all bg-white ${isCheckbox ? "rounded" : "rounded-full"
+                        className={`shrink-0 w-4.5 h-4.5 flex items-center justify-center mt-0.5 border transition-all bg-white ${isCheckbox ? "rounded" : "rounded-full"
                           }`}
                         style={{
                           borderColor:
@@ -976,7 +976,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                           )
                         ) : (
                           <div
-                            className="w-[10px] h-[10px] rounded-full transition-opacity"
+                            className="w-2.5 h-2.5 rounded-full transition-opacity"
                             style={{
                               background: isCorrectOpt && isAnsweredNow ? "white" : "#2C5F8D",
                               opacity:
@@ -1065,7 +1065,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
         {/* Right - Rationale panel */}
         {revealed && (
           <div
-            className="w-[440px] shrink-0 flex flex-col bg-white overflow-hidden animate-[slideInRight_0.25s_ease]"
+            className="w-110 shrink-0 flex flex-col bg-white overflow-hidden animate-[slideInRight_0.25s_ease]"
             style={{ borderLeft: "1px solid #e2e8f0" }}
           >
             <div className="flex-1 flex flex-col overflow-hidden">
@@ -1101,7 +1101,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                   >
                     <div className="flex items-center gap-2.5">
                       <div
-                        className="w-[34px] h-[34px] rounded-lg flex items-center justify-center text-base shrink-0"
+                        className="w-8.5 h-8.5 rounded-lg flex items-center justify-center text-base shrink-0"
                         style={{ background: iconBg }}
                       >
                         {icon}
@@ -1130,7 +1130,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
         {/* Navigator */}
         {showNav && (
           <div
-            className="w-[220px] bg-white border-l border-[#e2e8f0] p-4 overflow-auto shrink-0 animate-[slideInRight_0.2s_ease]"
+            className="w-55 bg-white border-l border-[#e2e8f0] p-4 overflow-auto shrink-0 animate-[slideInRight_0.2s_ease]"
           >
             <div className="text-xs font-bold text-[#0f172a] mb-3">Navigator</div>
             <div className="grid grid-cols-5 gap-1.5 mb-3.5">
@@ -1165,7 +1165,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                   >
                     {i + 1}
                     {isFlag && (
-                      <div className="absolute top-0 right-0 w-[6px] h-[6px] rounded-full bg-amber-500" style={{ transform: "translate(2px,-2px)" }} />
+                      <div className="absolute top-0 right-0 w-1.5 h-1.5 rounded-full bg-amber-500" style={{ transform: "translate(2px,-2px)" }} />
                     )}
                   </button>
                 );
@@ -1343,11 +1343,11 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
 
       {/* Calculator */}
       {showCalc && (
-        <div className="absolute z-200 top-[92px]" style={{ right: showNav ? 250 : 16, animation: "scaleIn 0.2s ease" }}>
+        <div className="absolute z-200 top-23" style={{ right: showNav ? 250 : 16, animation: "scaleIn 0.2s ease" }}>
           <div className="relative">
             <button
               onClick={() => setShowCalc(false)}
-              className="absolute -top-2 -right-2 w-[22px] h-[22px] rounded-full bg-red-500 border-2 border-white text-white text-[11px] cursor-pointer flex items-center justify-center font-bold z-201 shadow-[0_2px_6px_rgba(0,0,0,0.2)]"
+              className="absolute -top-2 -right-2 w-5.5 h-5.5 rounded-full bg-red-500 border-2 border-white text-white text-[11px] cursor-pointer flex items-center justify-center font-bold z-201 shadow-[0_2px_6px_rgba(0,0,0,0.2)]"
             >
               ✕
             </button>
@@ -1367,7 +1367,7 @@ function ExitConfirmOverlay({ onCancel, onConfirm }) {
         style={{ animation: "scaleIn 0.2s ease" }}
       >
         <div className="flex items-start gap-3.5 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-[#fee2e2] flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-error-100 flex items-center justify-center shrink-0">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
             </svg>
@@ -1378,7 +1378,7 @@ function ExitConfirmOverlay({ onCancel, onConfirm }) {
             </div>
             <div className="text-[13.5px] text-[#475569] leading-relaxed">
               This is a <strong>Next-Gen NCLEX RN Simulator</strong> exam. Once you exit, this exam will be{" "}
-              <strong className="text-[#dc2626]">permanently locked</strong> — you won't be able to retake it or review
+              <strong className="text-error">permanently locked</strong> — you won't be able to retake it or review
               your answers again.
             </div>
           </div>
@@ -1386,7 +1386,7 @@ function ExitConfirmOverlay({ onCancel, onConfirm }) {
         <div className="bg-[#fef3c7] border border-[#fde68a] rounded-lg px-3.5 py-2.5 mb-2.5 text-xs text-[#78350f] leading-relaxed">
           💡 If you'd like to spend more time reviewing your rationales, click Cancel — there's no time limit on the review screen.
         </div>
-        <div className="bg-[#fef2f2] border border-[#fecaca] rounded-lg px-3.5 py-2.5 mb-4.5 text-xs text-[#7f1d1d] leading-relaxed flex gap-2 items-start">
+        <div className="bg-error-50 border border-[#fecaca] rounded-lg px-3.5 py-2.5 mb-4.5 text-xs text-[#7f1d1d] leading-relaxed flex gap-2 items-start">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
             <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
@@ -1401,7 +1401,7 @@ function ExitConfirmOverlay({ onCancel, onConfirm }) {
           </button>
           <button
             onClick={onConfirm}
-            className="bg-[#dc2626] text-white border-none rounded-lg px-5 py-2.5 font-sans text-[13px] font-bold cursor-pointer transition-all hover:bg-[#991b1b]"
+            className="bg-error text-white border-none rounded-lg px-5 py-2.5 font-sans text-[13px] font-bold cursor-pointer transition-all hover:bg-[#991b1b]"
           >
             Lock exam &amp; exit
           </button>

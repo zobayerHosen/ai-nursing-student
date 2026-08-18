@@ -186,7 +186,7 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
                             <div className="flex flex-col items-center justify-center px-4 py-8 text-center bg-[#f8fafc]">
                               <span className="text-lg mb-2 opacity-80">📝</span>
                               <h5 className="text-[13px] font-bold text-[#1e293b] mb-1">No Subtopics Available</h5>
-                              <p className="text-[11px] text-[#64748b] font-medium max-w-[250px]">There are currently no subtopics to practice within this topic.</p>
+                              <p className="text-[11px] text-[#64748b] font-medium max-w-62.5">There are currently no subtopics to practice within this topic.</p>
                             </div>
                           ) : (
                             <>
