@@ -800,7 +800,7 @@ function ScoreOverviewScreen({
                 <span className="font-bold text-[#1E293B]">Question {qNum}</span>
                 <span
                   className={`flex items-center gap-1 font-semibold ${
-                    isCorrect ? "text-[#059669]" : "text-[#DC2626]"
+                    isCorrect ? "text-success" : "text-[#DC2626]"
                   }`}
                 >
                   {isCorrect ? <CheckCircle2 size={15} /> : <AlertCircle size={15} />}
@@ -816,7 +816,7 @@ function ScoreOverviewScreen({
                   {formatAnsDisplay(uAns) || "None"}
                 </p>
                 <p>
-                  <span className="font-semibold text-[#059669]">Correct Answer:</span>{" "}
+                  <span className="font-semibold text-success">Correct Answer:</span>{" "}
                   {formatAnsDisplay(cAns)}
                 </p>
                 {exp && (
