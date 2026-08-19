@@ -25,6 +25,7 @@ const SidebarContent = ({ onClose }) => {
   const [inputValue, setInputValue] = useState("");
   const [activeTab, setActiveTab] = useState("search");
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [itemToDeleteId, setItemToDeleteId] = useState(null);
 
   const { quickActionsData } = useCardQuickList();
   const { cardGenerator, isGeneratorPending } = useCardGenerator();
@@ -82,15 +83,22 @@ const SidebarContent = ({ onClose }) => {
     setInputValue(drugName);
   };
 
-  const handleDeleteHistory = async (e, id) => {
-    e.preventDefault();
-    e.stopPropagation();
-    await deleteHistory(id);
+  const handleConfirmDeleteAll = async () => {
+    try {
+      await deleteAllHistory();
+      setShowClearConfirm(false);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleConfirmDeleteAll = async () => {
-    await deleteAllHistory();
-    setShowClearConfirm(false);
+  const handleConfirmDeleteSingle = async (id) => {
+    try {
+      await deleteHistory(id);
+      setItemToDeleteId(null);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -256,54 +264,127 @@ const SidebarContent = ({ onClose }) => {
                   </AnimatePresence>
 
                   {/* History Items */}
-                  {historyData?.data?.map((item) => {
-                    const formattedTime = item.created_at
-                      ? new Date(item.created_at).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "";
+                  <div className="space-y-2">
+                    {historyData?.data?.map((item, index) => {
+                      const isDeletingThis = itemToDeleteId === item.id;
+                      const formattedTime = item.created_at
+                        ? new Date(item.created_at).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "";
 
-                    return (
-                      <Link
-                        href={`/dashboard/drug-cards/${item.id}`}
-                        key={item.id}
-                        onClick={() => { if (onClose) onClose(); }}
-                        className="group p-4 rounded-lg border border-[#E5E7EB] hover:border-[#2C5F8D] hover:bg-[#F0F7FC] cursor-pointer transition-colors bg-white w-full block relative"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex flex-col gap-1 min-w-0 flex-1">
-                            <h4 className="text-sm font-semibold text-[#1D2939] group-hover:text-[#2C5F8D] truncate">
-                              {item.drug_name || item.title || "Drug Card"}
-                            </h4>
-                            {item.drug_class && (
-                              <p className="text-xs text-[#64748B] truncate">
-                                {item.drug_class}
-                              </p>
-                            )}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={(e) => handleDeleteHistory(e, item.id)}
-                            disabled={isDeleting}
-                            className="shrink-0 p-1.5 rounded-md text-[#98A2B3] hover:bg-red-50 hover:text-[#D92D20] transition-colors cursor-pointer inline-flex items-center justify-center"
-                            title="Delete"
+                      return (
+                        <div
+                          key={item?.id ?? index}
+                          className="group relative w-full rounded-lg border border-[#E5E7EB] hover:border-[#2C5F8D] hover:bg-[#F0F7FC] transition-colors bg-white p-4"
+                        >
+                          <Link
+                            href={`/dashboard/drug-cards/${item.id}`}
+                            onClick={() => {
+                              if (onClose) onClose();
+                            }}
+                            className="block pr-7"
                           >
-                            <Trash2 size={14} />
-                          </button>
+                            <div className="flex flex-col gap-1 min-w-0 flex-1">
+                              <h4 className="text-sm font-semibold text-[#1D2939] group-hover:text-[#2C5F8D] truncate">
+                                {item.drug_name || item.title || "Drug Card"}
+                              </h4>
+                              {item.drug_class && (
+                                <p className="text-xs text-[#64748B] truncate">
+                                  {item.drug_class}
+                                </p>
+                              )}
+                            </div>
+                            {formattedTime && (
+                              <div className="flex justify-start mt-2">
+                                <span className="text-[10px] font-medium text-[#98A2B3]">
+                                  {formattedTime}
+                                </span>
+                              </div>
+                            )}
+                          </Link>
+
+                          {/* Delete button at bottom right side */}
+                          {!isDeletingThis && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setItemToDeleteId(item.id);
+                              }}
+                              disabled={isDeleting}
+                              className="absolute bottom-2.5 right-2.5 p-1.5 rounded-md text-[#98A2B3] hover:bg-red-50 hover:text-[#D92D20] transition-colors cursor-pointer"
+                              title="Delete item"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+
+                          {/* Single Item Delete Confirmation Box */}
+                          <AnimatePresence>
+                            {isDeletingThis && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.15 }}
+                                className="overflow-hidden mt-2 pt-2 border-t border-red-100"
+                              >
+                                <div className="p-2.5 rounded-lg bg-[#FEF2F2] border border-[#FEE2E2] flex flex-col gap-2">
+                                  <div className="flex items-center gap-1.5 text-[#D92D20]">
+                                    <AlertTriangle
+                                      size={14}
+                                      className="shrink-0"
+                                    />
+                                    <p className="text-[11px] font-bold">
+                                      Delete this item?
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center justify-end gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setItemToDeleteId(null);
+                                      }}
+                                      disabled={isDeleting}
+                                      className="px-2 py-0.5 rounded text-[10px] font-semibold text-[#344054] bg-white border border-[#D0D5DD] hover:bg-gray-50 cursor-pointer"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleConfirmDeleteSingle(item.id);
+                                      }}
+                                      disabled={isDeleting}
+                                      className="px-2 py-0.5 rounded text-[10px] font-semibold text-white bg-[#D92D20] hover:bg-red-700 cursor-pointer inline-flex items-center gap-1"
+                                    >
+                                      {isDeleting ? (
+                                        <Loader2
+                                          size={10}
+                                          className="animate-spin"
+                                        />
+                                      ) : (
+                                        "Delete"
+                                      )}
+                                    </button>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
-                        {formattedTime && (
-                          <div className="flex justify-end mt-2">
-                            <span className="text-[10px] font-medium text-[#98A2B3]">
-                              {formattedTime}
-                            </span>
-                          </div>
-                        )}
-                      </Link>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </>
               )}
             </motion.div>
