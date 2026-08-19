@@ -502,7 +502,7 @@ function QuizPlayerInterface({
                   type="button"
                   disabled={!isAllAnswered}
                   onClick={onEndQuiz}
-                  className="flex h-9 items-center gap-1.5 rounded-md bg-[#059669] px-5 text-xs font-semibold text-white transition hover:bg-[#047857] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#059669] cursor-pointer"
+                  className="flex h-9 items-center gap-1.5 rounded-md bg-success px-5 text-xs font-semibold text-white transition hover:bg-[#047857] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-success cursor-pointer"
                   title={
                     !isAllAnswered
                       ? `Please answer all ${totalQuestions} questions to finish (${answeredCount}/${totalQuestions} answered)`
@@ -519,7 +519,7 @@ function QuizPlayerInterface({
               type="button"
               disabled={!isAllAnswered}
               onClick={onEndQuiz}
-              className="flex h-9 items-center gap-1.5 rounded-md bg-[#059669] px-5 text-xs font-semibold text-white transition hover:bg-[#047857] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#059669] cursor-pointer"
+              className="flex h-9 items-center gap-1.5 rounded-md bg-success px-5 text-xs font-semibold text-white transition hover:bg-[#047857] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-success cursor-pointer"
               title={
                 !isAllAnswered
                   ? `Please answer all ${totalQuestions} questions to submit (${answeredCount}/${totalQuestions} answered)`
