@@ -3,47 +3,80 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { 
-    HelpCircle, 
-    Wrench, 
-    UserCheck, 
-    MessageSquare, 
-    Paperclip, 
-    X, 
-    Send, 
-    Sparkles, 
-    AlertCircle,
-    CheckCircle2
+import {
+    Paperclip,
+    X,
+    Send,
+    AlertCircle
 } from "lucide-react";
 import { HELP_CATEGORIES } from "../data/initial-tickets";
 import { useGetUser } from "@/hooks/user/getuser.hook";
 
-export default function TicketSubmitForm({ onSubmitTicket, onCategorySelect }) {
+// Section Components
+import CategorySelector from "./form-sections/category-selector";
+import QuestionFields from "./form-sections/question-fields";
+import TechnicalFields from "./form-sections/technical-fields";
+import AccountFields from "./form-sections/account-fields";
+import FeedbackFields from "./form-sections/feedback-fields";
+import CustomSelect from "./custom-select";
+
+const PRIORITY_OPTIONS = [
+    { value: "Low", label: "Low - General Inquiry" },
+    { value: "Medium", label: "Medium - Normal Issue" },
+    { value: "High", label: "High - Important / Blocking" },
+    { value: "Urgent", label: "Urgent - Critical Outage" }
+];
+
+export default function TicketSubmitForm({ initialCategory = "question", onSubmitTicket, onCategorySelect }) {
     const { user } = useGetUser();
-    const [selectedCategory, setSelectedCategory] = useState("question");
+    const [selectedCategory, setSelectedCategory] = useState(initialCategory);
     const [selectedPriority, setSelectedPriority] = useState("Medium");
     const [attachedFile, setAttachedFile] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Feedback rating state
+    const [feedbackRating, setFeedbackRating] = useState(5);
 
     const {
         register,
         handleSubmit,
         reset,
         setValue,
+        watch,
         formState: { errors }
     } = useForm({
         defaultValues: {
-            name: "",
+            full_name: "",
             email: "",
             subject: "",
-            description: ""
+            description: "",
+            // Question fields
+            nursingSubject: "Pharmacology & Therapeutics",
+            questionFocus: "Concept Explanation",
+            // Technical fields
+            deviceType: "Windows PC",
+            browserType: "Google Chrome",
+            issueComponent: "Video & Lesson Streaming",
+            errorCode: "",
+            // Account fields
+            accountTopic: "Subscription Upgrade / Cancellation",
+            subscriptionTier: "Annual NCLEX Pass Bundle",
+            altEmail: "",
+            // Feedback fields
+            feedbackType: "Feature Request / New Tool Idea"
         }
     });
 
     useEffect(() => {
+        if (initialCategory) {
+            setSelectedCategory(initialCategory);
+        }
+    }, [initialCategory]);
+
+    useEffect(() => {
         if (user) {
-            const fullName = user.name || `${user.firstName || ""} ${user.lastName || ""}`.trim();
-            if (fullName) setValue("name", fullName);
+            const fullName = user.full_name || user.name || `${user.firstName || ""} ${user.lastName || ""}`.trim();
+            if (fullName) setValue("full_name", fullName);
             if (user.email) setValue("email", user.email);
         }
     }, [user, setValue]);
@@ -73,6 +106,20 @@ export default function TicketSubmitForm({ onSubmitTicket, onCategorySelect }) {
         setIsSubmitting(true);
         const activeCatObj = HELP_CATEGORIES.find(c => c.id === selectedCategory);
 
+        // Build composite details based on category
+        let categoryMetaData = "";
+        if (selectedCategory === "question") {
+            categoryMetaData = `[Module: ${data.nursingSubject} | Focus: ${data.questionFocus}]`;
+        } else if (selectedCategory === "technical") {
+            categoryMetaData = `[Device: ${data.deviceType} | Browser: ${data.browserType} | Issue: ${data.issueComponent}${data.errorCode ? ` | Code: ${data.errorCode}` : ""}]`;
+        } else if (selectedCategory === "account") {
+            categoryMetaData = `[Topic: ${data.accountTopic} | Plan: ${data.subscriptionTier}${data.altEmail ? ` | Alt Email: ${data.altEmail}` : ""}]`;
+        } else if (selectedCategory === "feedback") {
+            categoryMetaData = `[Feedback Type: ${data.feedbackType} | Rating: ${feedbackRating}/5 Stars]`;
+        }
+
+        const fullDescription = `${categoryMetaData}\n\n${data.description}`;
+
         setTimeout(() => {
             const ticketId = `TKT-${Math.floor(1000 + Math.random() * 9000)}`;
             const newTicket = {
@@ -82,19 +129,19 @@ export default function TicketSubmitForm({ onSubmitTicket, onCategorySelect }) {
                 categoryLabel: activeCatObj?.label || "General Support",
                 priority: selectedPriority,
                 status: "Open",
-                userName: data.name,
+                userName: data.full_name,
                 userEmail: data.email,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 assignedAgent: "Unassigned (Support Queue)",
-                description: data.description,
+                description: fullDescription,
                 attachment: attachedFile ? attachedFile.name : null,
                 messages: [
                     {
                         id: `msg-${Date.now()}`,
                         sender: "user",
-                        senderName: data.name,
-                        text: data.description,
+                        senderName: data.full_name,
+                        text: fullDescription,
                         timestamp: new Date().toISOString()
                     }
                 ]
@@ -114,69 +161,29 @@ export default function TicketSubmitForm({ onSubmitTicket, onCategorySelect }) {
             <div className="mb-6 pb-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-sky-600" />
-                        Submit a Help Request
+                        Submit a Support Request
                     </h2>
                     <p className="text-xs md:text-sm text-slate-500 mt-0.5">
-                        Please choose a category below and describe your issue. Our support team will assist you shortly.
+                        Please choose a category below. The request details form will adapt automatically to your selection.
                     </p>
                 </div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 text-sky-700 rounded-full text-xs font-semibold self-start md:self-center">
-                    <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
-                    24/7 Support Available
-                </div>
             </div>
 
-            {/* Category Selection Grid */}
-            <div className="mb-6">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2.5">
-                    1. Select Request Type <span className="text-rose-500">*</span>
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {HELP_CATEGORIES.map((cat) => {
-                        const isSelected = selectedCategory === cat.id;
-                        return (
-                            <button
-                                key={cat.id}
-                                type="button"
-                                onClick={() => handleCategoryClick(cat.id)}
-                                className={`p-4 rounded-xl border text-left transition-all relative cursor-pointer flex flex-col justify-between ${
-                                    isSelected
-                                        ? "border-sky-600 bg-sky-50/50 shadow-sm ring-2 ring-sky-500/20"
-                                        : "border-slate-200 bg-slate-50/40 hover:bg-slate-50 hover:border-slate-300"
-                                }`}
-                            >
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div 
-                                            className="w-9 h-9 rounded-lg flex items-center justify-center text-white shadow-sm"
-                                            style={{ backgroundColor: cat.accentColor }}
-                                        >
-                                            {cat.id === "question" && <HelpCircle className="w-5 h-5" />}
-                                            {cat.id === "technical" && <Wrench className="w-5 h-5" />}
-                                            {cat.id === "account" && <UserCheck className="w-5 h-5" />}
-                                            {cat.id === "feedback" && <MessageSquare className="w-5 h-5" />}
-                                        </div>
-                                        {isSelected && (
-                                            <CheckCircle2 className="w-5 h-5 text-sky-600" />
-                                        )}
-                                    </div>
-                                    <h3 className="text-sm font-bold text-slate-800 mb-1">{cat.label}</h3>
-                                    <p className="text-[11px] text-slate-500 leading-snug line-clamp-2">{cat.description}</p>
-                                </div>
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
+            {/* Section 1: Category Selection Grid */}
+            <CategorySelector
+                selectedCategory={selectedCategory}
+                onSelectCategory={handleCategoryClick}
+            />
 
             {/* Form */}
-            <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-5">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider -mb-2">
-                    2. Request Details
-                </label>
+            <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                        2. Request Details Form ({HELP_CATEGORIES.find(c => c.id === selectedCategory)?.label})
+                    </label>
+                </div>
 
-                {/* Name & Email */}
+                {/* Common Name & Email */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-xs font-semibold text-slate-700 mb-1.5">
@@ -184,14 +191,14 @@ export default function TicketSubmitForm({ onSubmitTicket, onCategorySelect }) {
                         </label>
                         <input
                             type="text"
-                            {...register("name", { required: "Please enter your name" })}
+                            {...register("full_name", { required: "Please enter your name" })}
                             placeholder="e.g. Jane Doe"
-                            className={`w-full px-3.5 py-2.5 text-sm rounded-lg border ${
-                                errors.name ? "border-rose-500 focus:ring-rose-500" : "border-slate-200 focus:border-sky-600"
+                            className={`w-full px-3.5 py-2.5 text-xs md:text-sm rounded-lg border ${
+                                errors.full_name ? "border-rose-500 focus:ring-rose-500" : "border-slate-200 focus:border-sky-600"
                             } bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all text-slate-800 font-medium`}
                         />
-                        {errors.name && (
-                            <p className="text-rose-500 text-xs mt-1 font-medium">{errors.name.message}</p>
+                        {errors.full_name && (
+                            <p className="text-rose-500 text-xs mt-1 font-medium">{errors.full_name.message}</p>
                         )}
                     </div>
 
@@ -209,7 +216,7 @@ export default function TicketSubmitForm({ onSubmitTicket, onCategorySelect }) {
                                 }
                             })}
                             placeholder="e.g. jane.doe@example.com"
-                            className={`w-full px-3.5 py-2.5 text-sm rounded-lg border ${
+                            className={`w-full px-3.5 py-2.5 text-xs md:text-sm rounded-lg border ${
                                 errors.email ? "border-rose-500 focus:ring-rose-500" : "border-slate-200 focus:border-sky-600"
                             } bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all text-slate-800 font-medium`}
                         />
@@ -219,22 +226,37 @@ export default function TicketSubmitForm({ onSubmitTicket, onCategorySelect }) {
                     </div>
                 </div>
 
+                {/* Section 2 Dynamic Fields */}
+                {selectedCategory === "question" && (
+                    <QuestionFields watch={watch} setValue={setValue} />
+                )}
+
+                {selectedCategory === "technical" && (
+                    <TechnicalFields watch={watch} setValue={setValue} register={register} />
+                )}
+
+                {selectedCategory === "account" && (
+                    <AccountFields watch={watch} setValue={setValue} register={register} />
+                )}
+
+                {selectedCategory === "feedback" && (
+                    <FeedbackFields 
+                        watch={watch} 
+                        setValue={setValue} 
+                        feedbackRating={feedbackRating} 
+                        setFeedbackRating={setFeedbackRating} 
+                    />
+                )}
+
                 {/* Priority & Subject */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                            Priority Level
-                        </label>
-                        <select
+                        <CustomSelect
+                            label="Priority Level"
                             value={selectedPriority}
-                            onChange={(e) => setSelectedPriority(e.target.value)}
-                            className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all text-slate-800 font-medium cursor-pointer"
-                        >
-                            <option value="Low">Low - General Inquiry</option>
-                            <option value="Medium">Medium - Normal Issue</option>
-                            <option value="High">High - Important / Blocking</option>
-                            <option value="Urgent">Urgent - Critical Outage</option>
-                        </select>
+                            onChange={(val) => setSelectedPriority(val)}
+                            options={PRIORITY_OPTIONS}
+                        />
                     </div>
 
                     <div className="md:col-span-2">
@@ -244,8 +266,13 @@ export default function TicketSubmitForm({ onSubmitTicket, onCategorySelect }) {
                         <input
                             type="text"
                             {...register("subject", { required: "Please enter a subject summary" })}
-                            placeholder="Briefly state your question or problem..."
-                            className={`w-full px-3.5 py-2.5 text-sm rounded-lg border ${
+                            placeholder={
+                                selectedCategory === "question" ? "e.g. Clarification on Propranolol Mechanism..." :
+                                selectedCategory === "technical" ? "e.g. Video buffering error on Safari..." :
+                                selectedCategory === "account" ? "e.g. Need annual invoice copy..." :
+                                "e.g. Suggestion for dark mode in Concept Map..."
+                            }
+                            className={`w-full px-3.5 py-2.5 text-xs md:text-sm rounded-lg border ${
                                 errors.subject ? "border-rose-500 focus:ring-rose-500" : "border-slate-200 focus:border-sky-600"
                             } bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all text-slate-800 font-medium`}
                         />
@@ -263,8 +290,13 @@ export default function TicketSubmitForm({ onSubmitTicket, onCategorySelect }) {
                     <textarea
                         {...register("description", { required: "Please provide a detailed description" })}
                         rows={5}
-                        placeholder="Include relevant details, error messages, course names, or specific steps to help us assist you quickly..."
-                        className={`w-full px-3.5 py-2.5 text-sm rounded-lg border ${
+                        placeholder={
+                            selectedCategory === "question" ? "Provide context on the nursing concept, topic, or question ID you need help with..." :
+                            selectedCategory === "technical" ? "Describe what happened when the issue occurred, error codes shown, or steps to reproduce..." :
+                            selectedCategory === "account" ? "Include relevant order IDs, account details, or specific billing questions..." :
+                            "Share your detailed ideas, suggestions, or thoughts on how we can improve STEMRN..."
+                        }
+                        className={`w-full px-3.5 py-2.5 text-xs md:text-sm rounded-lg border ${
                             errors.description ? "border-rose-500 focus:ring-rose-500" : "border-slate-200 focus:border-sky-600"
                         } bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all text-slate-800 font-medium resize-y`}
                     ></textarea>
@@ -315,7 +347,7 @@ export default function TicketSubmitForm({ onSubmitTicket, onCategorySelect }) {
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100">
                     <p className="text-xs text-slate-400 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5 text-slate-400" />
-                        Submissions go directly into our Administrator / Support queue.
+                        Submissions go directly into our Support Team.
                     </p>
                     <button
                         type="submit"

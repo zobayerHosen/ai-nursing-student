@@ -18,6 +18,7 @@ const HelpCenterShell = () => {
     const { user } = useGetUser();
     const [tickets, setTickets] = useState([]);
     const [activeTab, setActiveTab] = useState("submit"); // "submit" | "my-tickets"
+    const [prefilledCategory, setPrefilledCategory] = useState("question");
 
     // Load tickets from localStorage or initial seed
     useEffect(() => {
@@ -53,6 +54,7 @@ const HelpCenterShell = () => {
     };
 
     const openCategoryInForm = (catId) => {
+        setPrefilledCategory(catId);
         setActiveTab("submit");
     };
 
@@ -145,8 +147,9 @@ const HelpCenterShell = () => {
                 {/* Active Tab View */}
                 {activeTab === "submit" && (
                     <TicketSubmitForm 
+                        initialCategory={prefilledCategory}
                         onSubmitTicket={handleNewTicketSubmit} 
-                        onCategorySelect={(catId) => openCategoryInForm(catId)}
+                        onCategorySelect={(catId) => setPrefilledCategory(catId)}
                     />
                 )}
 
