@@ -1,131 +1,162 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { 
+    Inbox, 
+    PlusCircle,
+    Headphones,
+    LifeBuoy
+} from "lucide-react";
+import TicketSubmitForm from "./ticket-submit-form";
+import UserTicketsList from "./user-tickets-list";
+import { INITIAL_TICKETS, HELP_CATEGORIES } from "../data/initial-tickets";
+import { useGetUser } from "@/hooks/user/getuser.hook";
+
+const LOCAL_STORAGE_KEY = "stemrn_help_desk_tickets_v1";
 
 const HelpCenterShell = () => {
-    const { register, handleSubmit, reset, formState: { errors } } = useForm();
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { user } = useGetUser();
+    const [tickets, setTickets] = useState([]);
+    const [activeTab, setActiveTab] = useState("submit"); // "submit" | "my-tickets"
 
-    const onSubmit = (data) => {
-        setIsSubmitting(true);
-        console.log("Help Request Submitted:", data);
-        // Simulate API call
-        setTimeout(() => {
-            alert("Your request has been submitted successfully! The admin will be notified.");
-            reset();
-            setIsSubmitting(false);
-        }, 1000);
+    // Load tickets from localStorage or initial seed
+    useEffect(() => {
+        try {
+            const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (stored) {
+                setTickets(JSON.parse(stored));
+            } else {
+                setTickets(INITIAL_TICKETS);
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(INITIAL_TICKETS));
+            }
+        } catch (e) {
+            console.error("Failed to load help center tickets from localStorage", e);
+            setTickets(INITIAL_TICKETS);
+        }
+    }, []);
+
+    // Helper to persist tickets
+    const saveTickets = (updatedTickets) => {
+        setTickets(updatedTickets);
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedTickets));
+        } catch (e) {
+            console.error("Failed to save tickets to localStorage", e);
+        }
     };
 
+    // Form Submit Handler
+    const handleNewTicketSubmit = (newTicket) => {
+        const updated = [newTicket, ...tickets];
+        saveTickets(updated);
+        setActiveTab("my-tickets");
+    };
+
+    const openCategoryInForm = (catId) => {
+        setActiveTab("submit");
+    };
+
+    const openCount = tickets.filter(t => t.status === "Open" || t.status === "In Progress").length;
+
     return (
-        <div className="w-full p-6 md:p-8 bg-[#f4f6f9] min-h-screen">
-            <div className="mb-8 animate-[fadeUp_0.3s_ease] max-w-4xl mx-auto">
-                <h1 className="text-[26px] font-extrabold text-[#0f172a] mb-2">
-                    Help Center
-                </h1>
-                <p className="text-[14px] text-[#64748b]">
-                    Need assistance? Notify the admin about your issue by filling out the form below.
-                </p>
-            </div>
-
-            <div className="w-full max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-6 md:p-8 animate-[fadeUp_0.4s_ease]">
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        {/* Name Field */}
-                        <div>
-                            <label className="block text-[11px] font-bold text-[#64748b] mb-2 uppercase tracking-wide">
-                                Full Name <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                {...register("name", { required: "Name is required" })}
-                                placeholder="John Doe"
-                                className={`w-full px-4 py-2.5 text-[14px] rounded-lg border ${errors.name ? 'border-red-500' : 'border-[#e2e8f0]'} focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] transition-all bg-[#f8fafc] focus:bg-white`}
-                            />
-                            {errors.name && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.name.message}</p>}
+        <div className="w-full min-h-screen bg-[#f8fafc] p-4 md:p-8">
+            <div className="max-w-6xl mx-auto space-y-6">
+                
+                {/* Main Hero Header */}
+                <div className="bg-linear-to-r from-[#0F172A] via-[#1E3A5F] to-[#2C5F8D] rounded-2xl p-6 md:p-8 text-white shadow-lg relative overflow-hidden">
+                    <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-white/5 skew-x-12 pointer-events-none"></div>
+                    
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="space-y-2 max-w-2xl">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-sky-200 text-xs font-semibold backdrop-blur-md">
+                                <LifeBuoy className="w-3.5 h-3.5" />
+                                <span>STEMRN Help Desk & Support Desk</span>
+                            </div>
+                            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+                                How can we assist your nursing journey today?
+                            </h1>
+                            <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
+                                Submit technical issues, academic questions, account support requests, or general feedback directly to our team.
+                            </p>
                         </div>
 
-                        {/* Email Field */}
-                        <div>
-                            <label className="block text-[11px] font-bold text-[#64748b] mb-2 uppercase tracking-wide">
-                                Email Address <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="email"
-                                {...register("email", { 
-                                    required: "Email is required",
-                                    pattern: {
-                                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                        message: "Invalid email address"
-                                    }
-                                })}
-                                placeholder="john@example.com"
-                                className={`w-full px-4 py-2.5 text-[14px] rounded-lg border ${errors.email ? 'border-red-500' : 'border-[#e2e8f0]'} focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] transition-all bg-[#f8fafc] focus:bg-white`}
-                            />
-                            {errors.email && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.email.message}</p>}
+                        {/* Quick Category Badges Summary */}
+                        <div className="grid grid-cols-2 gap-2 shrink-0">
+                            {HELP_CATEGORIES.map(cat => (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => openCategoryInForm(cat.id)}
+                                    className="p-2.5 bg-white/10 hover:bg-white/20 rounded-xl backdrop-blur-md text-left transition-all border border-white/10 cursor-pointer group"
+                                >
+                                    <div className="text-[10px] font-bold text-sky-200 uppercase tracking-wider group-hover:text-white transition-colors">
+                                        {cat.shortLabel}
+                                    </div>
+                                    <div className="text-xs font-bold text-white mt-0.5 flex items-center justify-between gap-1">
+                                        <span>Submit</span>
+                                        <span className="text-sky-300 group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+                                    </div>
+                                </button>
+                            ))}
                         </div>
                     </div>
+                </div>
 
-                    {/* Help Type Field */}
-                    <div>
-                        <label className="block text-[11px] font-bold text-[#64748b] mb-2 uppercase tracking-wide">
-                            Type of Help Needed <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                            {...register("helpType", { required: "Please select a help type" })}
-                            className={`w-full px-4 py-2.5 text-[14px] rounded-lg border ${errors.helpType ? 'border-red-500' : 'border-[#e2e8f0]'} focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] transition-all bg-[#f8fafc] focus:bg-white text-[#1e293b] cursor-pointer`}
-                        >
-                            <option value="">Select a category...</option>
-                            <option value="technical">Technical Support</option>
-                            <option value="billing">Billing & Subscription</option>
-                            <option value="content">Question/Content Issue</option>
-                            <option value="account">Account Management</option>
-                            <option value="other">Other</option>
-                        </select>
-                        {errors.helpType && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.helpType.message}</p>}
-                    </div>
-
-                    {/* Subject Field */}
-                    <div>
-                        <label className="block text-[11px] font-bold text-[#64748b] mb-2 uppercase tracking-wide">
-                            Subject <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            {...register("subject", { required: "Subject is required" })}
-                            placeholder="Briefly describe your issue"
-                            className={`w-full px-4 py-2.5 text-[14px] rounded-lg border ${errors.subject ? 'border-red-500' : 'border-[#e2e8f0]'} focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] transition-all bg-[#f8fafc] focus:bg-white`}
-                        />
-                        {errors.subject && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.subject.message}</p>}
-                    </div>
-
-                    {/* Description Field */}
-                    <div>
-                        <label className="block text-[11px] font-bold text-[#64748b] mb-2 uppercase tracking-wide">
-                            Description / Message <span className="text-red-500">*</span>
-                        </label>
-                        <textarea
-                            {...register("description", { required: "Please provide details about your issue" })}
-                            rows="5"
-                            placeholder="Please provide as much detail as possible so we can best assist you..."
-                            className={`w-full px-4 py-2.5 text-[14px] rounded-lg border ${errors.description ? 'border-red-500' : 'border-[#e2e8f0]'} focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] transition-all bg-[#f8fafc] focus:bg-white resize-y`}
-                        ></textarea>
-                        {errors.description && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.description.message}</p>}
-                    </div>
-
-                    {/* Submit Button */}
-                    <div className="pt-3">
+                {/* Main Navigation Tabs */}
+                <div className="bg-white p-1.5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5">
                         <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className={`w-full sm:w-auto px-7 py-3 bg-[#1E3A5F] text-white text-[14px] font-bold rounded-lg transition-colors flex items-center justify-center gap-2 border-none cursor-pointer hover:bg-[#162d4a] ${isSubmitting ? 'opacity-70 cursor-wait' : ''}`}
+                            onClick={() => setActiveTab("submit")}
+                            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all cursor-pointer ${
+                                activeTab === "submit"
+                                    ? "bg-[#1E3A5F] text-white shadow-sm"
+                                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                            }`}
                         >
-                            <span>{isSubmitting ? 'Submitting...' : 'Submit Request'}</span>
-                            {!isSubmitting && <span className="text-lg leading-none">→</span>}
+                            <PlusCircle className="w-4 h-4" />
+                            <span>Submit Request</span>
+                        </button>
+
+                        <button
+                            onClick={() => setActiveTab("my-tickets")}
+                            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all cursor-pointer ${
+                                activeTab === "my-tickets"
+                                    ? "bg-[#1E3A5F] text-white shadow-sm"
+                                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                            }`}
+                        >
+                            <Inbox className="w-4 h-4" />
+                            <span>My Requests</span>
+                            {openCount > 0 && (
+                                <span className={`px-2 py-0.5 text-[10px] font-extrabold rounded-full ${
+                                    activeTab === "my-tickets" ? "bg-sky-400 text-slate-900" : "bg-amber-100 text-amber-800"
+                                }`}>
+                                    {openCount} active
+                                </span>
+                            )}
                         </button>
                     </div>
-                </form>
+
+                    <div className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hidden lg:flex items-center gap-2">
+                        <Headphones className="w-3.5 h-3.5 text-sky-600" />
+                        <span>Logged in as: <strong className="text-slate-800">{user?.name || user?.email || "Student Account"}</strong></span>
+                    </div>
+                </div>
+
+                {/* Active Tab View */}
+                {activeTab === "submit" && (
+                    <TicketSubmitForm 
+                        onSubmitTicket={handleNewTicketSubmit} 
+                        onCategorySelect={(catId) => openCategoryInForm(catId)}
+                    />
+                )}
+
+                {activeTab === "my-tickets" && (
+                    <UserTicketsList
+                        tickets={tickets}
+                        onCreateNew={() => setActiveTab("submit")}
+                    />
+                )}
+
             </div>
         </div>
     );
