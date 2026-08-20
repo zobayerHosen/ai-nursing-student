@@ -167,12 +167,17 @@ const CheckIcon = () => (
   </svg>
 );
 
-export function RationaleBlock({ question, userAnswer }) {
+export function RationaleBlock({ question, userAnswer, isQBank, backendFeedback }) {
   const q = question;
 
   const getCredit = (question, userAns) => {
     if (userAns === undefined || userAns === null) {
       return { percent: 0, points: 0, max: 1, isFullCorrect: false, answered: false };
+    }
+    if (isQBank) {
+      const fb = backendFeedback?.[question.id];
+      const isCorr = fb ? !!fb.is_correct : false;
+      return { percent: isCorr ? 100 : 0, points: isCorr ? 1 : 0, max: 1, isFullCorrect: isCorr, answered: true };
     }
     const correctAns = question.correct;
 
@@ -198,7 +203,7 @@ export function RationaleBlock({ question, userAnswer }) {
       return { percent, points, max, isFullCorrect: points === max, answered: true };
     }
 
-    if (question.type === "fill-blank") {
+    if (question.type === "fill-blank" || question.type === "input") {
       const cfg = question.blankInput || {};
       let ok = false;
       if (cfg.kind === "numeric") {
@@ -273,7 +278,7 @@ export function RationaleBlock({ question, userAnswer }) {
             </div>
           </div>
           <div className="text-[13.5px] text-[#1e293b] leading-relaxed px-0.5">
-            {q.rationale}
+            {isQBank ? (backendFeedback?.[q.id]?.explanation || q.rationale || q.note || "") : q.rationale}
           </div>
         </div>
 
@@ -352,21 +357,29 @@ export function RationaleBlock({ question, userAnswer }) {
                     </div>
                   );
                 })
-              : q.type === "fill-blank"
+              : (q.type === "fill-blank" || q.type === "input")
               ? (() => {
-                  const cfg = q.blankInput || {};
                   let isUserCorrect = false;
-                  if (cfg.kind === "numeric") {
-                    const u = parseFloat(userAnswer);
-                    const c = parseFloat(cfg.correct);
-                    const t = cfg.tolerance != null ? parseFloat(cfg.tolerance) : 0;
-                    isUserCorrect = !isNaN(u) && !isNaN(c) && Math.abs(u - c) <= t;
+                  let correctText = "";
+                  if (isQBank) {
+                    const fb = backendFeedback?.[q.id];
+                    isUserCorrect = fb ? !!fb.is_correct : false;
+                    const ca = fb?.correct_answer;
+                    correctText = typeof ca === "object" ? (ca.answer || "") : String(ca || "");
                   } else {
-                    const acc = Array.isArray(cfg.correct) ? cfg.correct : [cfg.correct];
-                    const norm = (s) => cfg.caseSensitive ? String(s).trim() : String(s).trim().toLowerCase();
-                    isUserCorrect = userAnswer != null && acc.some((a) => norm(a) === norm(userAnswer));
+                    const cfg = q.blankInput || {};
+                    if (cfg.kind === "numeric") {
+                      const u = parseFloat(userAnswer);
+                      const c = parseFloat(cfg.correct);
+                      const t = cfg.tolerance != null ? parseFloat(cfg.tolerance) : 0;
+                      isUserCorrect = !isNaN(u) && !isNaN(c) && Math.abs(u - c) <= t;
+                    } else {
+                      const acc = Array.isArray(cfg.correct) ? cfg.correct : [cfg.correct];
+                      const norm = (s) => cfg.caseSensitive ? String(s).trim() : String(s).trim().toLowerCase();
+                      isUserCorrect = userAnswer != null && acc.some((a) => norm(a) === norm(userAnswer));
+                    }
+                    correctText = Array.isArray(cfg.correct) ? cfg.correct[0] : cfg.correct;
                   }
-                  const correctText = Array.isArray(cfg.correct) ? cfg.correct[0] : cfg.correct;
                   const userText =
                     userAnswer != null && String(userAnswer).trim() !== ""
                       ? String(userAnswer)
@@ -391,14 +404,12 @@ export function RationaleBlock({ question, userAnswer }) {
                             className={`font-semibold ${isUserCorrect ? "text-[#15803d]" : "text-[#b91c1c]"}`}
                           >
                             {userText}
-                            {cfg.unit && userAnswer != null ? ` ${cfg.unit}` : ""}
                           </span>
                           {!isUserCorrect && (
                             <>
                               {" "}· Correct:{" "}
                               <span className="font-semibold text-[#15803d]">
                                 {correctText}
-                                {cfg.unit ? ` ${cfg.unit}` : ""}
                               </span>
                             </>
                           )}
@@ -443,8 +454,84 @@ export function RationaleBlock({ question, userAnswer }) {
                     </div>
                   );
                 })
+              : q.type === "order"
+              ? (() => {
+                  let correctOrderList = [];
+                  if (isQBank) {
+                    const ca = backendFeedback?.[q.id]?.correct_answer;
+                    if (Array.isArray(ca)) {
+                      const sortedCa = [...ca].sort((a, b) => (a.order || 0) - (b.order || 0));
+                      correctOrderList = sortedCa.map(item => item.text || item.option_text || item.title || "");
+                    }
+                  } else {
+                    const correctIndices = Array.isArray(q.correct) ? q.correct : [];
+                    correctOrderList = correctIndices.map(idx => q.options[idx]);
+                  }
+
+                  return (
+                    <div className="flex flex-col gap-2.5">
+                      <div className="text-xs font-semibold text-[#475569] mb-1">
+                        Correct Sequence:
+                      </div>
+                      {correctOrderList.map((text, oi) => (
+                        <div
+                          key={oi}
+                          className="flex items-center gap-3 p-3 border border-[#bbf7d0] rounded-lg bg-[#f0fdf4]"
+                        >
+                          <div className="w-6.5 h-6.5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-extrabold font-mono bg-[#dcfce7] text-[#16a34a]">
+                            {oi + 1}
+                          </div>
+                          <div className="flex-1 text-[13px] text-[#15803d] font-semibold">
+                            {text}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()
+              : q.type === "highlight"
+              ? (() => {
+                  let correctTexts = [];
+                  if (isQBank) {
+                    const ca = backendFeedback?.[q.id]?.correct_answer;
+                    if (Array.isArray(ca)) {
+                      correctTexts = ca.map(item => item.text || item.option_text || item.title || "");
+                    }
+                  } else {
+                    const correctIndices = Array.isArray(q.correct) ? q.correct : [];
+                    correctTexts = correctIndices.map(idx => q.options[idx]);
+                  }
+                  
+                  return (
+                    <div className="flex flex-col gap-2">
+                      <div className="text-xs font-semibold text-[#475569] mb-1">
+                        Correct Highlighted Finding(s):
+                      </div>
+                      {correctTexts.map((text, oi) => (
+                        <div
+                          key={oi}
+                          className="flex items-center gap-3 p-3 border border-[#bbf7d0] rounded-lg bg-[#f0fdf4]"
+                        >
+                          <div className="w-6.5 h-6.5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-extrabold font-mono bg-[#dcfce7] text-[#16a34a]">
+                            ✓
+                          </div>
+                          <div className="flex-1 text-[13px] text-[#15803d] font-semibold">
+                            &ldquo;{text}&rdquo;
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()
               : q.options.map((opt, oi) => {
-                  const isCorrect = Array.isArray(q.correct) ? q.correct.includes(oi) : oi === q.correct;
+                  let isCorrect = false;
+                  if (isQBank) {
+                    const ca = backendFeedback?.[q.id]?.correct_answer;
+                    const caList = Array.isArray(ca) ? ca : ca ? [ca] : [];
+                    isCorrect = caList.some(item => q.originalOptions?.[oi]?.id === item.id);
+                  } else {
+                    isCorrect = Array.isArray(q.correct) ? q.correct.includes(oi) : oi === q.correct;
+                  }
                   const letter = LETTERS[oi];
                   const explanation = q.optionExplanations ? q.optionExplanations[oi] : "";
                   return (

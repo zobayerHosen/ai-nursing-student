@@ -7,6 +7,6 @@ export * from "./library";
 export * from "./interactive-tools";
 export * from "./procedure-lookup";
 export * from "./concept-map";
-export * from "./practice";
+export * from "./qbank";
 export * from "./drug-card";
 export * from "./care-plan-builder";

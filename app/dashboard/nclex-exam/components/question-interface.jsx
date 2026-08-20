@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { PARTIAL_CREDIT_TYPES, LETTERS } from "./data";
 import { RationaleBlock, QuestionStats, Calculator } from "./sub-components";
 
@@ -14,9 +14,14 @@ const fmtTime = (s) => {
   return h > 0 ? `${pad(h)}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
 };
 
-const getCredit = (question, userAns) => {
+const getCredit = (question, userAns, isQBank, backendFeedback) => {
   if (userAns === undefined || userAns === null) {
     return { percent: 0, points: 0, max: 1, isFullCorrect: false, answered: false };
+  }
+  if (isQBank) {
+    const fb = backendFeedback?.[question.id];
+    const isCorr = fb ? !!fb.is_correct : false;
+    return { percent: isCorr ? 100 : 0, points: isCorr ? 1 : 0, max: 1, isFullCorrect: isCorr, answered: true };
   }
   const correctAns = question.correct;
 
@@ -42,7 +47,7 @@ const getCredit = (question, userAns) => {
     return { percent, points, max, isFullCorrect: points === max, answered: true };
   }
 
-  if (question.type === "fill-blank") {
+  if (question.type === "fill-blank" || question.type === "input") {
     const cfg = question.blankInput || {};
     let ok = false;
     if (cfg.kind === "numeric") {
@@ -88,12 +93,15 @@ const getCredit = (question, userAns) => {
   return { percent, points, max, isFullCorrect: percent === 100, answered: true };
 };
 
-const isAnswerScored = (question, userAns) => {
+const isAnswerScored = (question, userAns, isQBank, backendFeedback) => {
   if (userAns === undefined || userAns === null) return false;
-  return getCredit(question, userAns).percent >= 80;
+  if (isQBank) {
+    return !!backendFeedback?.[question.id]?.is_correct;
+  }
+  return getCredit(question, userAns, isQBank, backendFeedback).percent >= 80;
 };
 
-export default function QuestionInterface({ questions, mode, title, examMeta, onSessionEnd, onFinish }) {
+export default function QuestionInterface({ questions, mode, title, examMeta, onSessionEnd, onFinish, isQBank, onSubmitAnswer, onFinishExam }) {
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState(null);
   const [revealed, setRevealed] = useState(false);
@@ -106,8 +114,42 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
   const [paused, setPaused] = useState(false);
   const [reviewFilter, setReviewFilter] = useState("all");
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [backendFeedback, setBackendFeedback] = useState({});
+  const [backendResult, setBackendResult] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFinishing, setIsFinishing] = useState(false);
 
   const q = questions[current];
+  const isTutorial = mode === "practice" || mode === "tutorial";
+
+  const localIsAnswerScored = useCallback((question, userAns) => {
+    return isAnswerScored(question, userAns, isQBank, backendFeedback);
+  }, [isQBank, backendFeedback]);
+
+  const localGetCredit = useCallback((question, userAns) => {
+    return getCredit(question, userAns, isQBank, backendFeedback);
+  }, [isQBank, backendFeedback]);
+
+  const getQbankCorrectIndices = (question) => {
+    const ca = backendFeedback[question.id]?.correct_answer;
+    if (!ca) return [];
+    const caList = Array.isArray(ca) ? ca : [ca];
+    const indices = [];
+    const opts = question.originalOptions || question.options || [];
+    caList.forEach(item => {
+      const targetId = typeof item === "object" && item !== null ? (item.id ?? item.option_id) : item;
+      const idx = opts.findIndex(opt => {
+        if (typeof opt === "object" && opt !== null) {
+          return opt.id === targetId || (item.text && opt.text === item.text);
+        }
+        return opt === item || opt === item?.text;
+      });
+      if (idx !== -1 && idx !== undefined) {
+        indices.push(idx);
+      }
+    });
+    return indices;
+  };
 
   const attemptExit = () => {
     const isFullExamInReview = examMeta && examMeta.isFullExam && finished;
@@ -120,28 +162,90 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
 
   const confirmExit = () => {
     if (onSessionEnd) {
-      onSessionEnd({ answers, flagged, isAnswerScored, examId: examMeta ? examMeta.examId : null, isFullExam: examMeta ? examMeta.isFullExam : false });
+      onSessionEnd({ answers, flagged, isAnswerScored: localIsAnswerScored, examId: examMeta ? examMeta.examId : null, isFullExam: examMeta ? examMeta.isFullExam : false });
     }
     onFinish();
   };
+
+  const submitCurrentAnswer = async (ansVal) => {
+    if (isQBank && onSubmitAnswer) {
+      setIsSubmitting(true);
+      try {
+        const feedback = await onSubmitAnswer(q.id, ansVal);
+        if (feedback) {
+          setBackendFeedback((prev) => ({ ...prev, [q.id]: feedback }));
+        }
+      } catch (err) {
+        console.error("Error submitting answer:", err);
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  };
+
+  const handleFinish = useCallback(async () => {
+    setIsFinishing(true);
+    if (isQBank && onFinishExam) {
+      try {
+        const resultSummary = await onFinishExam();
+        if (resultSummary) {
+          setBackendResult(resultSummary);
+          const feedbackMap = {};
+          const resultsList = resultSummary.result?.results || resultSummary.results || [];
+          resultsList.forEach((res) => {
+            feedbackMap[res.question_id] = {
+              is_correct: res.is_correct,
+              correct_answer: res.correct_answer,
+              explanation: res.explanation || null
+            };
+          });
+          setBackendFeedback((prev) => ({ ...prev, ...feedbackMap }));
+        }
+      } catch (err) {
+        console.error("Error finishing exam:", err);
+      } finally {
+        setIsFinishing(false);
+      }
+    } else {
+      setIsFinishing(false);
+    }
+    if (isTutorial) setFinished(true);
+    else {
+      setRevealed(true);
+      setFinished(true);
+    }
+  }, [isQBank, onFinishExam, isTutorial]);
 
   useEffect(() => {
     if (mode === "test" && timeLeft > 0 && !finished && !paused) {
       const t = setTimeout(() => setTimeLeft((s) => s - 1), 1000);
       return () => clearTimeout(t);
     }
-    if (timeLeft === 0) handleFinish();
-  }, [timeLeft, finished, paused]);
+    if (timeLeft === 0) {
+      const t = setTimeout(() => {
+        handleFinish();
+      }, 0);
+      return () => clearTimeout(t);
+    }
+  }, [timeLeft, finished, paused, handleFinish, mode]);
 
   useEffect(() => {
-    if (answers[current] !== undefined) {
-      setSelected(answers[current]);
-      if (mode === "practice") setRevealed(true);
-    } else {
-      setSelected(null);
-      setRevealed(false);
-    }
-  }, [current]);
+    const timer = setTimeout(() => {
+      if (answers[current] !== undefined) {
+        setSelected(answers[current]);
+        if (isTutorial) setRevealed(true);
+      } else {
+        const curQ = questions[current];
+        if (curQ && curQ.type === "order" && curQ.options) {
+          setSelected(Array.from({ length: curQ.options.length }, (_, i) => i));
+        } else {
+          setSelected(null);
+        }
+        setRevealed(false);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [current, answers, isTutorial, questions]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -157,18 +261,14 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
     }
   }, []);
 
-  const handleSelect = (i) => {
+  const handleSelect = async (i) => {
     if (answers[current] !== undefined) return;
-    if (q.multiSelect || q.type === "extended-multi") {
+    if (q.multiSelect || q.type === "extended-multi" || q.type === "multiple" || q.type === "highlight") {
       const cur = Array.isArray(selected) ? selected : [];
       const next = cur.includes(i) ? cur.filter((x) => x !== i) : [...cur, i].sort((a, b) => a - b);
       setSelected(next);
     } else {
       setSelected(i);
-      if (mode === "practice") {
-        setRevealed(true);
-        setAnswers((a) => ({ ...a, [current]: i }));
-      }
     }
   };
 
@@ -186,31 +286,37 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
     setSelected(cur);
   };
 
-  const lockTestAnswer = (targetIdx) => {
+  const lockTestAnswer = async (targetIdx) => {
     if (mode === "test" && selected !== null && answers[current] === undefined) {
       const hasAnswer = Array.isArray(selected) ? selected.length > 0 : true;
-      if (hasAnswer) setAnswers((a) => ({ ...a, [current]: selected }));
+      if (hasAnswer) {
+        if (isQBank) {
+          await submitCurrentAnswer(selected);
+        }
+        setAnswers((a) => ({ ...a, [current]: selected }));
+      }
     }
     setCurrent(targetIdx);
   };
 
-  const handleFinish = () => {
-    if (mode === "practice") setFinished(true);
-    else {
-      setRevealed(true);
-      setFinished(true);
-    }
-  };
-
   const score = useMemo(() => {
+    if (isQBank && backendResult) {
+      const r = backendResult.result || {};
+      return {
+        answered: (r.total_question ?? 0) - (r.total_skipped_answer ?? 0),
+        correct: r.total_correct_answer ?? 0,
+        total: r.total_question ?? 0,
+        pct: r.total_percentage ?? 0
+      };
+    }
     const answered = Object.keys(answers).length;
-    const correct = Object.entries(answers).filter(([idx, ans]) => isAnswerScored(questions[+idx], ans)).length;
+    const correct = Object.entries(answers).filter(([idx, ans]) => localIsAnswerScored(questions[+idx], ans)).length;
     return { answered, correct, total: questions.length, pct: answered > 0 ? Math.round((correct / answered) * 100) : 0 };
-  }, [answers, questions]);
+  }, [answers, questions, isQBank, backendResult, localIsAnswerScored]);
 
   const isAnswered = answers[current] !== undefined;
   const userAnswer = answers[current];
-  const isCorrectAns = q ? isAnswerScored(q, userAnswer) : false;
+  const isCorrectAns = q ? localIsAnswerScored(q, userAnswer) : false;
 
   // Results screen
   if (finished) {
@@ -315,8 +421,8 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                     const userAns = answers[i];
                     const unans = userAns === undefined;
                     if (reviewFilter === "all") return true;
-                    if (reviewFilter === "correct") return !unans && isAnswerScored(qq, userAns);
-                    if (reviewFilter === "incorrect") return !unans && !isAnswerScored(qq, userAns);
+                    if (reviewFilter === "correct") return !unans && localIsAnswerScored(qq, userAns);
+                    if (reviewFilter === "incorrect") return !unans && !localIsAnswerScored(qq, userAns);
                     if (reviewFilter === "flagged") return !!flagged[i];
                     if (reviewFilter === "skipped") return unans;
                     return true;
@@ -332,8 +438,8 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                   const userAns = answers[i];
                   const unans = userAns === undefined;
                   if (reviewFilter === "all") return true;
-                  if (reviewFilter === "correct") return !unans && isAnswerScored(qq, userAns);
-                  if (reviewFilter === "incorrect") return !unans && !isAnswerScored(qq, userAns);
+                  if (reviewFilter === "correct") return !unans && localIsAnswerScored(qq, userAns);
+                  if (reviewFilter === "incorrect") return !unans && !localIsAnswerScored(qq, userAns);
                   if (reviewFilter === "flagged") return !!flagged[i];
                   if (reviewFilter === "skipped") return unans;
                   return true;
@@ -358,8 +464,8 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
 
               return visibleEntries.map(({ qq, i }, idx) => {
                 const userAns = answers[i];
-                const isCorrect = isAnswerScored(qq, userAns);
-                const credit = getCredit(qq, userAns);
+                const isCorrect = localIsAnswerScored(qq, userAns);
+                const credit = localGetCredit(qq, userAns);
                 const unans = userAns === undefined;
                 return (
                   <div
@@ -416,7 +522,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                                 ? `${credit.points} of ${credit.max} rows correct`
                                 : qq.type === "cloze"
                                   ? `${credit.points} of ${credit.max} blanks correct`
-                                  : qq.type === "fill-blank"
+                                  : (qq.type === "fill-blank" || qq.type === "input")
                                     ? String(userAns).trim() || "(empty)"
                                     : Array.isArray(userAns)
                                       ? userAns.map((ai) => LETTERS[ai]).join(", ")
@@ -426,15 +532,26 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                             <>
                               <span className="text-[#94a3b8]">Correct:</span>
                               <span className="font-semibold text-[#16a34a]">
-                                {qq.type === "fill-blank"
+                                {isQBank
                                   ? (() => {
-                                    const cfg = qq.blankInput || {};
-                                    const c = Array.isArray(cfg.correct) ? cfg.correct[0] : cfg.correct;
-                                    return `${c}${cfg.unit ? ` ${cfg.unit}` : ""}`;
-                                  })()
-                                  : Array.isArray(qq.correct)
-                                    ? qq.correct.map((ci) => LETTERS[ci]).join(", ")
-                                    : qq.options[qq.correct]}
+                                      const indices = getQbankCorrectIndices(qq);
+                                      if (qq.type === "fill-blank" || qq.type === "input") {
+                                        const caVal = backendFeedback[qq.id]?.correct_answer;
+                                        return typeof caVal === "object" ? (caVal.answer || "") : String(caVal || "");
+                                      }
+                                      return qq.type === "radio" || qq.type === "multiple" || qq.type === "highlight" || qq.type === "order"
+                                        ? indices.map((ci) => LETTERS[ci]).join(", ")
+                                        : "";
+                                    })()
+                                  : (qq.type === "fill-blank" || qq.type === "input")
+                                    ? (() => {
+                                      const cfg = qq.blankInput || {};
+                                      const c = Array.isArray(cfg.correct) ? cfg.correct[0] : cfg.correct;
+                                      return `${c}${cfg.unit ? ` ${cfg.unit}` : ""}`;
+                                    })()
+                                    : Array.isArray(qq.correct)
+                                      ? qq.correct.map((ci) => LETTERS[ci]).join(", ")
+                                      : qq.options[qq.correct]}
                               </span>
                             </>
                           )}
@@ -449,7 +566,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                     </div>
 
                     <div className="ml-11.5">
-                      <RationaleBlock question={qq} userAnswer={userAns} />
+                      <RationaleBlock question={qq} userAnswer={userAns} isQBank={isQBank} backendFeedback={backendFeedback} />
                       <QuestionStats question={qq} />
                     </div>
                   </div>
@@ -520,7 +637,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
             {examMeta && examMeta.isFullExam ? title : mode === "test" ? "Timed Tutorial" : "Tutorial Mode"}
           </div>
           <div className="text-[10px] opacity-65 whitespace-nowrap">
-            QID: {q?.id?.replace(/^q/, "") || "—"}
+            QID: {String(q?.id || "").replace(/^q/, "") || "—"}
           </div>
         </div>
 
@@ -620,11 +737,12 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
               </span>
               {(() => {
                 let typeLabel = null;
-                if (q.type === "extended-multi") typeLabel = "Extended MR";
+                if (q.type === "extended-multi" || q.type === "multiple" || q.multiSelect) typeLabel = "SATA";
                 else if (q.type === "matrix") typeLabel = "Matrix";
                 else if (q.type === "cloze") typeLabel = "Drop-Down";
-                else if (q.type === "fill-blank") typeLabel = "Fill-in-the-Blank";
-                else if (q.multiSelect) typeLabel = "SATA";
+                else if (q.type === "fill-blank" || q.type === "input") typeLabel = "Fill-in-the-Blank";
+                else if (q.type === "order") typeLabel = "Ordering";
+                else if (q.type === "highlight") typeLabel = "Highlighting";
                 if (!typeLabel) return null;
                 const isPartialCredit = PARTIAL_CREDIT_TYPES.includes(q.type);
                 return (
@@ -645,9 +763,27 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
             </div>
 
             {/* Question stem */}
-            <div className="text-[15.5px] font-medium text-[#0f172a] leading-relaxed mb-5 tracking-tight">
+            <div className="text-[15.5px] font-medium text-[#0f172a] leading-relaxed mb-4 tracking-tight">
               {q.question}
             </div>
+
+            {/* Instruction bar for special types */}
+            {(() => {
+              let instructionText = null;
+              if (q.type === "order") {
+                instructionText = `Drag each step into the correct sequence (1 = first, ${q.options?.length || "last"} = last).`;
+              } else if (q.type === "highlight") {
+                instructionText = "Click to highlight each finding that is of immediate concern to the nurse.";
+              } else if (q.type === "multiple" || q.type === "extended-multi" || q.multiSelect) {
+                instructionText = "Select all that apply. Each correct selection earns 1 point; incorrect selections deduct 1 point (minimum 0).";
+              }
+              if (!instructionText) return null;
+              return (
+                <div className="mb-4 py-2.5 px-3.5 bg-[#f1f5f9] border-l-3 border-[#2C5F8D] rounded-r-lg text-[13px] text-[#475569] font-medium font-sans leading-relaxed">
+                  {instructionText}
+                </div>
+              );
+            })()}
 
             {/* CLOZE type */}
             {q.type === "cloze" ? (
@@ -717,6 +853,293 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                       </span>
                     );
                   });
+                })()}
+              </div>
+            ) : q.type === "order" ? (
+              /* ORDER/SEQUENCING type — drag-only, no arrow buttons */
+              <div className="flex flex-col gap-2.5 mb-5 select-none font-sans">
+                {(() => {
+                  const isAnsweredNow = isAnswered;
+                  const currentOrder = isAnsweredNow
+                    ? (Array.isArray(userAnswer) ? userAnswer : [])
+                    : (Array.isArray(selected) ? selected : Array.from({ length: q.options.length }, (_, i) => i));
+
+                  return (
+                    <div className="flex flex-col gap-2">
+                      {currentOrder.map((optIdx, displayIdx) => {
+                        const optText = q.options[optIdx];
+                        if (optText === undefined) return null;
+                        
+                        const correctIndices = isQBank ? getQbankCorrectIndices(q) : (Array.isArray(q.correct) ? q.correct : []);
+                        const isCorrectlyPlaced = correctIndices[displayIdx] === optIdx;
+                        
+                        let cardBg = "bg-white";
+                        let cardBorder = "border-[#e2e8f0]";
+                        let badgeBg = "bg-[#2C5F8D] text-white";
+                        
+                        if (isAnsweredNow) {
+                          if (isCorrectlyPlaced) {
+                            cardBg = "bg-[#f0fdf4]";
+                            cardBorder = "border-[#bbf7d0]";
+                            badgeBg = "bg-[#16a34a] text-white";
+                          } else {
+                            cardBg = "bg-[#fef2f2]";
+                            cardBorder = "border-[#fecaca]";
+                            badgeBg = "bg-[#FE5E7E] text-white";
+                          }
+                        }
+
+                        const handleDragStart = (e) => {
+                          if (isAnsweredNow) return;
+                          e.dataTransfer.effectAllowed = "move";
+                          e.dataTransfer.setData("text/plain", String(displayIdx));
+                          e.currentTarget.style.opacity = "0.5";
+                        };
+
+                        const handleDragEnd = (e) => {
+                          e.currentTarget.style.opacity = "1";
+                        };
+
+                        const handleDragOver = (e) => {
+                          e.preventDefault();
+                          e.dataTransfer.dropEffect = "move";
+                        };
+
+                        const handleDrop = (e) => {
+                          if (isAnsweredNow) return;
+                          e.preventDefault();
+                          const dragIdxStr = e.dataTransfer.getData("text/plain");
+                          if (!dragIdxStr) return;
+                          const dragIdx = parseInt(dragIdxStr, 10);
+                          if (isNaN(dragIdx) || dragIdx === displayIdx) return;
+                          
+                          const newOrder = [...currentOrder];
+                          const [removed] = newOrder.splice(dragIdx, 1);
+                          newOrder.splice(displayIdx, 0, removed);
+                          setSelected(newOrder);
+                        };
+
+                        return (
+                          <div
+                            key={optIdx}
+                            draggable={!isAnsweredNow}
+                            onDragStart={handleDragStart}
+                            onDragEnd={handleDragEnd}
+                            onDragOver={handleDragOver}
+                            onDrop={handleDrop}
+                            className={`flex items-center gap-3.5 px-4 py-3.5 border rounded-lg transition-all duration-150 ${cardBg} ${cardBorder} ${
+                              !isAnsweredNow ? "hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-grab active:cursor-grabbing" : ""
+                            }`}
+                          >
+                            {/* Drag handle */}
+                            <div className={`shrink-0 flex items-center justify-center w-5 ${isAnsweredNow ? "opacity-40" : "text-[#94a3b8]"}`}>
+                              <svg width="14" height="18" viewBox="0 0 14 18" fill="currentColor">
+                                <circle cx="4" cy="2" r="1.5" />
+                                <circle cx="10" cy="2" r="1.5" />
+                                <circle cx="4" cy="9" r="1.5" />
+                                <circle cx="10" cy="9" r="1.5" />
+                                <circle cx="4" cy="16" r="1.5" />
+                                <circle cx="10" cy="16" r="1.5" />
+                              </svg>
+                            </div>
+
+                            {/* Number badge */}
+                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-sans font-bold text-[13px] shrink-0 ${badgeBg}`}>
+                              {displayIdx + 1}
+                            </div>
+
+                            {/* Option text */}
+                            <div className="flex-1 font-sans text-[14px] text-[#1e293b] font-medium leading-relaxed">
+                              {optText}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : q.type === "highlight" ? (
+              /* HIGHLIGHT type — passage with clickable inline highlights */
+              <div className="select-none mb-5 font-sans">
+                {(() => {
+                  const passage = q.passage || q.question || q.title || "";
+                  const isAnsweredNow = isAnswered;
+                  const userPicks = Array.isArray(userAnswer)
+                    ? userAnswer
+                    : Array.isArray(selected)
+                      ? selected
+                      : [];
+                  const correctIndices = isQBank
+                    ? getQbankCorrectIndices(q)
+                    : (Array.isArray(q.correct) ? q.correct : []);
+
+                  const hasBrackets = passage.includes("[") && passage.includes("]");
+                  if (hasBrackets) {
+                    const parts = passage.split(/(\[[^\]]+\])/g);
+                    let optionCounter = 0;
+                    return (
+                      <div className="text-[15.5px] leading-[2.2] text-[#0f172a] p-4.5 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl font-sans font-normal">
+                        {parts.map((part, pi) => {
+                          if (part.startsWith("[") && part.endsWith("]")) {
+                            const optIdx = optionCounter++;
+                            const optText = part.slice(1, -1);
+                            
+                            const isPicked = userPicks.includes(optIdx);
+                            const isCorrect = correctIndices.includes(optIdx);
+                            const wasCorrect = isAnsweredNow && isPicked && isCorrect;
+                            const wasWrong = isAnsweredNow && isPicked && !isCorrect;
+                            const wasCorrectUnpicked = isAnsweredNow && !isPicked && isCorrect;
+                            
+                            let highlightClass = "px-1.5 py-0.5 mx-0.5 rounded transition-all duration-150 cursor-pointer font-semibold border border-dashed border-[#cbd5e1] bg-[#f1f5f9] text-[#1e293b] hover:bg-[#cbd5e1] hover:border-[#94a3b8]";
+                            
+                            if (isAnsweredNow) {
+                              if (wasCorrect) {
+                                highlightClass = "px-1.5 py-0.5 mx-0.5 rounded font-semibold bg-[#ecfdf3] text-[#15803d] border border-solid border-[#16a34a] cursor-default";
+                              } else if (wasWrong) {
+                                highlightClass = "px-1.5 py-0.5 mx-0.5 rounded font-semibold bg-[#fdecef] text-[#b91c1c] border border-solid border-[#FE5E7E] cursor-default";
+                              } else if (wasCorrectUnpicked) {
+                                highlightClass = "px-1.5 py-0.5 mx-0.5 rounded font-semibold bg-transparent text-[#16a34a] border border-dashed border-[#16a34a] cursor-default";
+                              } else {
+                                highlightClass = "px-1.5 py-0.5 mx-0.5 rounded text-[#94a3b8] opacity-60 cursor-default";
+                              }
+                            } else if (isPicked) {
+                              highlightClass = "px-1.5 py-0.5 mx-0.5 rounded font-semibold bg-[#fef08a] text-[#854d0e] border border-solid border-[#eab308] cursor-pointer";
+                            }
+                            
+                            const handleHighlightClick = () => {
+                              if (isAnsweredNow) return;
+                              const next = userPicks.includes(optIdx)
+                                ? userPicks.filter(x => x !== optIdx)
+                                : [...userPicks, optIdx].sort((a, b) => a - b);
+                              setSelected(next);
+                            };
+                            
+                            return (
+                              <span
+                                key={pi}
+                                onClick={handleHighlightClick}
+                                className={highlightClass}
+                              >
+                                {optText}
+                              </span>
+                            );
+                          }
+                          return <span key={pi}>{part}</span>;
+                        })}
+                      </div>
+                    );
+                  }
+
+                  const foundOptions = q.options.filter(opt => passage.toLowerCase().includes(opt.toLowerCase()));
+                  const showInline = foundOptions.length > 0;
+                  
+                  if (showInline) {
+                    const sortedOpts = [...q.options]
+                      .map((text, index) => ({ text, index }))
+                      .sort((a, b) => b.text.length - a.text.length);
+                      
+                    const escapedOptions = sortedOpts.map(o => o.text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
+                    const regex = new RegExp(`(${escapedOptions.join('|')})`, 'gi');
+                    const parts = passage.split(regex);
+                    
+                    return (
+                      <div className="text-[15.5px] leading-[2.2] text-[#0f172a] p-4.5 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl font-sans font-normal">
+                        {parts.map((part, pi) => {
+                          const matchingOpt = sortedOpts.find(o => o.text.toLowerCase() === part.toLowerCase());
+                          if (matchingOpt) {
+                            const optIdx = matchingOpt.index;
+                            const isPicked = userPicks.includes(optIdx);
+                            const isCorrect = correctIndices.includes(optIdx);
+                            const wasCorrect = isAnsweredNow && isPicked && isCorrect;
+                            const wasWrong = isAnsweredNow && isPicked && !isCorrect;
+                            const wasCorrectUnpicked = isAnsweredNow && !isPicked && isCorrect;
+                            
+                            let highlightClass = "px-1.5 py-0.5 mx-0.5 rounded transition-all duration-150 cursor-pointer font-semibold border border-dashed border-[#cbd5e1] bg-[#f1f5f9] text-[#1e293b] hover:bg-[#cbd5e1] hover:border-[#94a3b8]";
+                            
+                            if (isAnsweredNow) {
+                              if (wasCorrect) {
+                                highlightClass = "px-1.5 py-0.5 mx-0.5 rounded font-semibold bg-[#ecfdf3] text-[#15803d] border border-solid border-[#16a34a] cursor-default";
+                              } else if (wasWrong) {
+                                highlightClass = "px-1.5 py-0.5 mx-0.5 rounded font-semibold bg-[#fdecef] text-[#b91c1c] border border-solid border-[#FE5E7E] cursor-default";
+                              } else if (wasCorrectUnpicked) {
+                                highlightClass = "px-1.5 py-0.5 mx-0.5 rounded font-semibold bg-transparent text-[#16a34a] border border-dashed border-[#16a34a] cursor-default";
+                              } else {
+                                highlightClass = "px-1.5 py-0.5 mx-0.5 rounded text-[#94a3b8] opacity-60 cursor-default";
+                              }
+                            } else if (isPicked) {
+                              highlightClass = "px-1.5 py-0.5 mx-0.5 rounded font-semibold bg-[#fef08a] text-[#854d0e] border border-solid border-[#eab308] cursor-pointer";
+                            }
+                            
+                            const handleHighlightClick = () => {
+                              if (isAnsweredNow) return;
+                              const next = userPicks.includes(optIdx)
+                                ? userPicks.filter(x => x !== optIdx)
+                                : [...userPicks, optIdx].sort((a, b) => a - b);
+                              setSelected(next);
+                            };
+                            
+                            return (
+                              <span
+                                key={pi}
+                                onClick={handleHighlightClick}
+                                className={highlightClass}
+                              >
+                                {part}
+                              </span>
+                            );
+                          }
+                          return <span key={pi}>{part}</span>;
+                        })}
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <div className="flex flex-col gap-2">
+                      {q.options.map((optText, optIdx) => {
+                        const isPicked = userPicks.includes(optIdx);
+                        const isCorrect = correctIndices.includes(optIdx);
+                        const wasCorrect = isAnsweredNow && isPicked && isCorrect;
+                        const wasWrong = isAnsweredNow && isPicked && !isCorrect;
+                        const wasCorrectUnpicked = isAnsweredNow && !isPicked && isCorrect;
+                        
+                        let highlightClass = "p-3.5 border border-dashed border-[#cbd5e1] bg-[#f8fafc] text-[#1e293b] hover:bg-[#f1f5f9] rounded-xl cursor-pointer transition-all duration-150 font-medium text-[14px]";
+                        
+                        if (isAnsweredNow) {
+                          if (wasCorrect) {
+                            highlightClass = "p-3.5 border border-solid border-[#16a34a] bg-[#ecfdf3] text-[#15803d] rounded-xl font-medium text-[14px]";
+                          } else if (wasWrong) {
+                            highlightClass = "p-3.5 border border-solid border-[#FE5E7E] bg-[#fdecef] text-[#b91c1c] rounded-xl font-medium text-[14px]";
+                          } else if (wasCorrectUnpicked) {
+                            highlightClass = "p-3.5 border border-dashed border-[#16a34a] bg-transparent text-[#16a34a] rounded-xl font-medium text-[14px]";
+                          } else {
+                            highlightClass = "p-3.5 border border-solid border-transparent bg-transparent text-[#94a3b8] opacity-60 rounded-xl text-[14px]";
+                          }
+                        } else if (isPicked) {
+                          highlightClass = "p-3.5 border border-solid border-[#eab308] bg-[#fef08a] text-[#854d0e] rounded-xl font-medium text-[14px] shadow-sm";
+                        }
+                        
+                        const handleHighlightClick = () => {
+                          if (isAnsweredNow) return;
+                          const next = userPicks.includes(optIdx)
+                            ? userPicks.filter(x => x !== optIdx)
+                            : [...userPicks, optIdx].sort((a, b) => a - b);
+                          setSelected(next);
+                        };
+                        
+                        return (
+                          <div
+                            key={optIdx}
+                            onClick={handleHighlightClick}
+                            className={highlightClass}
+                          >
+                            {optText}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
                 })()}
               </div>
             ) : q.type === "matrix" ? (
@@ -821,7 +1244,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                   </tbody>
                 </table>
               </div>
-            ) : q.type === "fill-blank" ? (
+            ) : (q.type === "fill-blank" || q.type === "input") ? (
               /* FILL-BLANK type */
               <div className="mb-5">
                 {(() => {
@@ -830,7 +1253,9 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                   const userVal = userAnswer !== undefined ? userAnswer : selected !== null ? selected : "";
                   let isUserCorrect = false;
                   if (isAnsweredNow) {
-                    if (cfg.kind === "numeric") {
+                    if (isQBank) {
+                      isUserCorrect = !!backendFeedback[q.id]?.is_correct;
+                    } else if (cfg.kind === "numeric") {
                       const u = parseFloat(userAnswer);
                       const c = parseFloat(cfg.correct);
                       const tol = cfg.tolerance != null ? parseFloat(cfg.tolerance) : 0;
@@ -841,7 +1266,13 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                       isUserCorrect = acceptable.some((a) => norm(a) === norm(userAnswer));
                     }
                   }
-                  const correctDisplay = Array.isArray(cfg.correct) ? cfg.correct[0] : cfg.correct;
+                  let correctDisplay = "";
+                  if (isQBank) {
+                    const caVal = backendFeedback[q.id]?.correct_answer;
+                    correctDisplay = typeof caVal === "object" ? (caVal?.answer || "") : String(caVal || "");
+                  } else {
+                    correctDisplay = Array.isArray(cfg.correct) ? cfg.correct[0] : cfg.correct;
+                  }
                   const borderColor = isAnsweredNow ? (isUserCorrect ? "#16a34a" : "#FE5E7E") : "#cbd5e1";
                   const bgColor = isAnsweredNow ? (isUserCorrect ? "#ecfdf3" : "#fdecef") : "white";
 
@@ -858,14 +1289,15 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                           disabled={isAnsweredNow}
                           placeholder={cfg.placeholder || (cfg.kind === "numeric" ? "Enter a number" : "Type your answer")}
                           onChange={(e) => setSelected(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && !isAnsweredNow && String(selected).trim().length > 0) {
-                              if (mode === "practice") {
-                                setRevealed(true);
-                                setAnswers((a) => ({ ...a, [current]: selected }));
-                              }
-                            }
-                          }}
+                          onKeyDown={async (e) => {
+                             if (e.key === "Enter" && !isAnsweredNow && String(selected).trim().length > 0) {
+                               if (isQBank) {
+                                 await submitCurrentAnswer(selected);
+                               }
+                               setRevealed(true);
+                               setAnswers((a) => ({ ...a, [current]: selected }));
+                             }
+                           }}
                           className="flex-1 min-w-0 border-none outline-none bg-transparent font-sans text-[15px] font-semibold text-[#0f172a] p-0"
                         />
                         {cfg.unit && (
@@ -912,7 +1344,9 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
               <div className="flex flex-col gap-px mb-5">
                 {q.options.map((opt, i) => {
                   const userAnsArr = Array.isArray(userAnswer) ? userAnswer : userAnswer !== undefined ? [userAnswer] : [];
-                  const correctArr = Array.isArray(q.correct) ? q.correct : [q.correct];
+                  const correctArr = isQBank
+                    ? getQbankCorrectIndices(q)
+                    : (Array.isArray(q.correct) ? q.correct : [q.correct]);
                   const selectedArr = Array.isArray(selected) ? selected : selected !== null ? [selected] : [];
                   const isSelectedNow = selectedArr.includes(i);
                   const isAnsweredNow = isAnswered;
@@ -935,7 +1369,10 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                     optBg = "bg-transparent";
                   }
 
-                  const isCheckbox = q.multiSelect || q.type === "extended-multi";
+                  const isCheckbox = q.multiSelect || q.type === "extended-multi" || q.type === "multiple" || q.type === "highlight";
+                  const optionText = opt.startsWith("A) ") || opt.startsWith("B) ") || opt.startsWith("C) ") || opt.startsWith("D) ") || /^[A-Z]\)\s/.test(opt)
+                    ? opt.slice(3)
+                    : opt;
 
                   return (
                     <button
@@ -990,7 +1427,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                           <span className="font-semibold text-[#475569]">
                             {LETTERS[i]}.
                           </span>{" "}
-                          {opt.slice(3)}
+                          {optionText}
                         </span>
                         {isAnsweredNow && isCorrectOpt && (
                           <span className="shrink-0 text-[#16a34a] mt-0.5">
@@ -1014,11 +1451,11 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
             )}
 
             {/* Stats */}
-            {mode === "practice" && isAnswered && <QuestionStats question={q} />}
+            {isTutorial && isAnswered && <QuestionStats question={q} />}
 
             {/* Submit button */}
             {(() => {
-              if (mode !== "practice" || isAnswered) return null;
+              if (finished || isAnswered) return null;
               let canSubmit = false;
               let needsAll = false;
               let needLabel = "";
@@ -1032,11 +1469,11 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                 canSubmit = filled === q.clozeBlanks.length;
                 needsAll = !canSubmit && filled > 0;
                 needLabel = `Fill in all ${q.clozeBlanks.length} blanks to submit`;
-              } else if (q.type === "fill-blank") {
+              } else if (q.type === "fill-blank" || q.type === "input") {
                 canSubmit = typeof selected === "string" && selected.trim().length > 0;
               } else if (Array.isArray(selected) && selected.length > 0) {
                 canSubmit = true;
-              } else if (typeof selected === "number") {
+              } else if (typeof selected === "number" && selected !== null) {
                 canSubmit = true;
               }
               if (!canSubmit && !needsAll) return null;
@@ -1047,13 +1484,37 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                   )}
                   {canSubmit && (
                     <button
-                      onClick={() => {
-                        setRevealed(true);
-                        setAnswers((a) => ({ ...a, [current]: selected }));
+                      disabled={isSubmitting}
+                      onClick={async () => {
+                        if (isSubmitting) return;
+                        setIsSubmitting(true);
+                        try {
+                          if (isQBank) {
+                            await submitCurrentAnswer(selected);
+                          }
+                          setRevealed(true);
+                          setAnswers((a) => ({ ...a, [current]: selected }));
+                        } finally {
+                          setIsSubmitting(false);
+                        }
                       }}
-                      className="bg-[#2C5F8D] text-white border-none rounded-lg px-7 py-2.5 font-sans text-[13px] font-bold cursor-pointer inline-flex items-center gap-1.5 tracking-wide hover:bg-[#1e4773]"
+                      className={`bg-[#2C5F8D] text-white border-none rounded-lg px-7 py-2.5 font-sans text-[13px] font-bold inline-flex items-center gap-2 tracking-wide transition-all ${
+                        isSubmitting ? "opacity-75 cursor-not-allowed" : "cursor-pointer hover:bg-[#1e4773]"
+                      }`}
                     >
-                      Submit Answer ✓
+                      {isSubmitting ? (
+                        <>
+                          <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0"></span>
+                          <span>Submitting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Submit Answer</span>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        </>
+                      )}
                     </button>
                   )}
                 </div>
@@ -1063,7 +1524,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
         </div>
 
         {/* Right - Rationale panel */}
-        {revealed && (
+        {revealed && isTutorial && (
           <div
             className="w-110 shrink-0 flex flex-col bg-white overflow-hidden animate-[slideInRight_0.25s_ease]"
             style={{ borderLeft: "1px solid #e2e8f0" }}
@@ -1071,7 +1532,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
             <div className="flex-1 flex flex-col overflow-hidden">
               {/* Result banner */}
               {(() => {
-                const credit = getCredit(q, userAnswer);
+                const credit = localGetCredit(q, userAnswer);
                 const isPartial = !isCorrectAns && credit.points > 0;
                 const bannerBg = isCorrectAns ? "#f0fdf4" : isPartial ? "#fffbeb" : "#fff5f5";
                 const iconBg = isCorrectAns ? "#dcfce7" : isPartial ? "#fef3c7" : "#fee2e2";
@@ -1082,17 +1543,23 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                 let sub;
                 if (isCorrectAns) sub = "Well done — see the breakdown below";
                 else if (isPartial) sub = `${credit.points} of ${credit.max} correct selections — see breakdown`;
-                else if (q.type === "fill-blank") {
-                  const cfg = q.blankInput || {};
-                  const correctDisplay = Array.isArray(cfg.correct) ? cfg.correct[0] : cfg.correct;
-                  sub = `Correct answer: ${correctDisplay}${cfg.unit ? ` ${cfg.unit}` : ""}`;
+                else if (q.type === "fill-blank" || q.type === "input") {
+                  if (isQBank) {
+                    const caVal = backendFeedback[q.id]?.correct_answer;
+                    const correctDisplay = typeof caVal === "object" ? (caVal.answer || "") : String(caVal || "");
+                    sub = `Correct answer: ${correctDisplay}`;
+                  } else {
+                    const cfg = q.blankInput || {};
+                    const correctDisplay = Array.isArray(cfg.correct) ? cfg.correct[0] : cfg.correct;
+                    sub = `Correct answer: ${correctDisplay}${cfg.unit ? ` ${cfg.unit}` : ""}`;
+                  }
                 } else if (q.type === "matrix" || q.type === "cloze") {
                   sub = "See the breakdown below";
                 } else {
-                  const correctLetters = (Array.isArray(q.correct) ? q.correct : [q.correct])
-                    .map((ci) => LETTERS[ci])
-                    .join(", ");
-                  sub = `Correct answer${Array.isArray(q.correct) ? "" : ""}: ${correctLetters}`;
+                  const correctLetters = isQBank
+                    ? getQbankCorrectIndices(q).map((ci) => LETTERS[ci]).join(", ")
+                    : (Array.isArray(q.correct) ? q.correct : [q.correct]).map((ci) => LETTERS[ci]).join(", ");
+                  sub = `Correct answer: ${correctLetters}`;
                 }
                 return (
                   <div
@@ -1121,7 +1588,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
 
               {/* Rationale */}
               <div className="flex-1 overflow-auto p-4">
-                <RationaleBlock question={q} userAnswer={userAnswer} />
+                <RationaleBlock question={q} userAnswer={userAnswer} isQBank={isQBank} backendFeedback={backendFeedback} />
               </div>
             </div>
           </div>
@@ -1137,7 +1604,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
               {questions.map((_, i) => {
                 const isAns = answers[i] !== undefined;
                 const isCur = i === current;
-                const isCorr = isAns && isAnswerScored(questions[i], answers[i]);
+                const isCorr = isAns && localIsAnswerScored(questions[i], answers[i]);
                 const isFlag = flagged[i];
                 return (
                   <button
@@ -1150,17 +1617,17 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                       background: isCur
                         ? "#eef4fb"
                         : isAns
-                          ? isCorr
-                            ? "#f0fdf4"
-                            : "#fff5f5"
-                          : "white",
+                           ? isCorr
+                             ? "#f0fdf4"
+                             : "#fff5f5"
+                           : "white",
                       color: isCur
                         ? "#2C5F8D"
                         : isAns
-                          ? isCorr
-                            ? "#16a34a"
-                            : "#dc2626"
-                          : "#94a3b8",
+                           ? isCorr
+                             ? "#16a34a"
+                             : "#dc2626"
+                           : "#94a3b8",
                     }}
                   >
                     {i + 1}
@@ -1191,7 +1658,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
               <div className="text-[10px] text-[#94a3b8] mb-1.5 uppercase tracking-wide">Session Stats</div>
               {[
                 ["Answered", Object.keys(answers).length],
-                ["Correct", Object.values(answers).filter((a, i) => isAnswerScored(questions[i], a)).length],
+                ["Correct", Object.values(answers).filter((a, i) => localIsAnswerScored(questions[i], a)).length],
                 ["Flagged", Object.values(flagged).filter(Boolean).length],
               ].map(([l, v]) => (
                 <div key={l} className="flex justify-between text-xs mb-1">
@@ -1280,7 +1747,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
                   } else if (q.type === "cloze") {
                     const filled = Array.isArray(selected) ? selected.filter((v) => v !== undefined).length : 0;
                     hasSelection = filled === q.clozeBlanks.length;
-                  } else if (q.type === "fill-blank") {
+                  } else if (q.type === "fill-blank" || q.type === "input") {
                     hasSelection = typeof selected === "string" && selected.trim().length > 0;
                   } else if (Array.isArray(selected) && selected.length > 0) {
                     hasSelection = true;
@@ -1327,7 +1794,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
           <div className="text-center" style={{ animation: "scaleIn 0.2s ease" }}>
             <div className="text-[64px] mb-3.5">⏸</div>
             <div className="text-2xl font-extrabold text-white mb-1.5 font-serif">Exam Paused</div>
-            <div className="text-sm text-[#cbd5e1] mb-6">The timer is frozen. Click Resume when you're ready.</div>
+            <div className="text-sm text-[#cbd5e1] mb-6">The timer is frozen. Click Resume when you&apos;re ready.</div>
             <button
               onClick={() => setPaused(false)}
               className="bg-[#FE5E7E] text-white border-none rounded-lg px-8 py-3 font-sans text-sm font-bold cursor-pointer inline-flex items-center gap-2 tracking-wide"
@@ -1355,6 +1822,19 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
           </div>
         </div>
       )}
+
+      {/* Finishing session overlay loader */}
+      {isFinishing && (
+        <div className="fixed inset-0 bg-[#0f172a]/70 z-[500] flex flex-col items-center justify-center text-white font-sans backdrop-blur-xs animate-[fadeIn_0.2s_ease]">
+          <div className="bg-white text-slate-800 rounded-2xl p-7 shadow-2xl flex flex-col items-center max-w-sm w-full text-center border border-slate-100 mx-4">
+            <div className="w-11 h-11 border-4 border-[#2C5F8D] border-t-transparent rounded-full animate-spin mb-3.5"></div>
+            <h3 className="text-base font-bold text-[#0f172a] mb-1">Finishing Practice Session...</h3>
+            <p className="text-xs text-slate-500 font-medium leading-relaxed">
+              Generating score report and performance summary. Please wait...
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1378,13 +1858,13 @@ function ExitConfirmOverlay({ onCancel, onConfirm }) {
             </div>
             <div className="text-[13.5px] text-[#475569] leading-relaxed">
               This is a <strong>Next-Gen NCLEX RN Simulator</strong> exam. Once you exit, this exam will be{" "}
-              <strong className="text-error">permanently locked</strong> — you won't be able to retake it or review
+              <strong className="text-error">permanently locked</strong> — you won&apos;t be able to retake it or review
               your answers again.
             </div>
           </div>
         </div>
         <div className="bg-[#fef3c7] border border-[#fde68a] rounded-lg px-3.5 py-2.5 mb-2.5 text-xs text-[#78350f] leading-relaxed">
-          💡 If you'd like to spend more time reviewing your rationales, click Cancel — there's no time limit on the review screen.
+          💡 If you&apos;d like to spend more time reviewing your rationales, click Cancel — there&apos;s no time limit on the review screen.
         </div>
         <div className="bg-error-50 border border-[#fecaca] rounded-lg px-3.5 py-2.5 mb-4.5 text-xs text-[#7f1d1d] leading-relaxed flex gap-2 items-start">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">

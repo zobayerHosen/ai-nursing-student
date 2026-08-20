@@ -877,5 +877,5 @@ export const scoreBg = (s) => s >= 80 ? "#dcfce7" : s >= 70 ? "#fef3c7" : "#fee2
 
 export const LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
 
-export const NGN_TYPES = new Set(["extended-multi", "matrix", "cloze", "bowtie", "trend", "highlight", "rank"]);
+export const NGN_TYPES = new Set(["extended-multi", "matrix", "cloze", "bowtie", "trend", "highlight", "rank", "multiple", "order", "input", "fill-blank"]);
 export const PARTIAL_CREDIT_TYPES = ["extended-multi", "matrix", "bowtie", "cloze"];

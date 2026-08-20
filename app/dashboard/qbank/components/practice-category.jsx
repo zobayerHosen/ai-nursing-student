@@ -59,194 +59,198 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
             <p className="text-[13px] text-[#64748b]">Check back later for new practice materials.</p>
           </div>
         ) : (
-          category?.map((sec, si) => (
-          <div key={sec?.category?.id} className="mb-4" style={{ animation: `fadeUp 0.3s ease ${si * 0.05}s both` }}>
-            {/* Section header */}
-            <button
-              onClick={() => toggleSec(sec?.category?.id)}
-              className="w-full flex items-center gap-2.5 px-4 py-2.5 bg-[#f8fafc] border border-[#e2e8f0] rounded-md cursor-pointer mb-2.5 transition-all font-sans"
-            >
-              <p>{CATEGORY_EXAM_ICONS}</p>
-              <span className="text-[13px] font-extrabold text-[#475569] flex-1 text-left">{sec?.category?.title}</span>
-              <span className="text-xs text-[#94a3b8] font-medium">
-                {sec?.total_topic} topics ·{" "}
-                {sec?.total_category_question} questions
-              </span>
-              <span
-                className={`text-[11px] text-[#475569] font-bold inline-block transition-transform duration-200 ${expandedSec[sec?.category?.id] ? "rotate-180" : ""
-                  }`}
-              >
-                <IoMdArrowDropdown className="text-2xl" />
-              </span>
-            </button>
+          category?.map((sec, si) => {
+            const categoryId = sec?.category;
+            return (
+              <div key={categoryId} className="mb-4" style={{ animation: `fadeUp 0.3s ease ${si * 0.05}s both` }}>
+                {/* Section header */}
+                <button
+                  onClick={() => toggleSec(categoryId)}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 bg-[#f8fafc] border border-[#e2e8f0] rounded-md cursor-pointer mb-2.5 transition-all font-sans"
+                >
+                  <p>{CATEGORY_EXAM_ICONS}</p>
+                  <span className="text-[13px] font-extrabold text-[#475569] flex-1 text-left">{sec?.category}</span>
+                  <span className="text-xs text-[#94a3b8] font-medium">
+                    {sec?.total_topic} topics ·{" "}
+                    {sec?.total_question} questions
+                  </span>
+                  <span
+                    className={`text-[11px] text-[#475569] font-bold inline-block transition-transform duration-200 ${expandedSec[categoryId] ? "rotate-180" : ""
+                      }`}
+                  >
+                    <IoMdArrowDropdown className="text-2xl" />
+                  </span>
+                </button>
 
-            {expandedSec[sec?.category?.id] && (
-              <div className="flex flex-col gap-2">
-                {(!sec?.category?.topic || sec?.category?.topic.length === 0) && (
-                  <div className="flex flex-col items-center justify-center p-6 bg-white border border-[#e2e8f0] rounded-md shadow-sm text-center">
-                    <span className="text-xl mb-2 opacity-80">🗂️</span>
-                    <h4 className="text-[14px] font-bold text-[#1e293b] mb-1">No Topics Found</h4>
-                    <p className="text-[12px] text-[#64748b] font-medium">Topics for this category are currently unavailable. Please check back later.</p>
-                  </div>
-                )}
-                {sec?.category?.topic?.length > 0 && sec.category.topic.map((cat) => {
-                  const isOpen = expanded[cat.id];
-                  const catTotal = cat?.subtopics?.reduce((a, s) => a + (s.total_question || 0), 0) || 0;
-                  const secColor = "#2C5F8D";
-                  const secBg = "#eef4fb";
-
-                  return (
-                    <div
-                      key={cat.id}
-                      className="bg-white border border-[#e2e8f0] rounded-md overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
-                    >
-                      {/* Category header */}
-                      <div className="flex items-center gap-3 px-4.5 py-3.5">
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-bold text-[#0f172a]">{cat.title}</div>
-                          <div className="text-xs text-[#94a3b8] mt-0.5">
-                            {cat?.subtopics?.length} subtopics ·{" "}
-                            <span className="font-semibold" style={{ color: secColor }}>
-                              {catTotal} questions
-                            </span>
-                          </div>
-                        </div>
+                {expandedSec[categoryId] && (
+                  <div className="flex flex-col gap-2">
+                    {(!sec?.topics || sec?.topics.length === 0) && (
+                      <div className="flex flex-col items-center justify-center p-6 bg-white border border-[#e2e8f0] rounded-md shadow-sm text-center">
+                        <span className="text-xl mb-2 opacity-80">🗂️</span>
+                        <h4 className="text-[14px] font-bold text-[#1e293b] mb-1">No Topics Found</h4>
+                        <p className="text-[12px] text-[#64748b] font-medium">Topics for this category are currently unavailable. Please check back later.</p>
                       </div>
+                    )}
+                    {sec?.topics?.length > 0 && sec.topics.map((cat) => {
+                      const isOpen = expanded[cat.id];
+                      const catTotal = cat?.subtopic?.reduce((a, s) => a + (s.total_question || 0), 0) || 0;
+                      const secColor = "#2C5F8D";
+                      const secBg = "#eef4fb";
 
-                      {/* Practice all and practice by subtopic action buttons */}
-                      <div
-                        className="grid grid-cols-2 gap-px border-t"
-                        style={{ borderColor: `${secColor}18` }}
-                      >
-                        <button
-                          disabled={catTotal === 0}
-                          onClick={() => { if (catTotal > 0) launch(cat, null); }}
-                          className={`flex items-center justify-center gap-2 py-2.5 px-3.5 border-none font-sans transition-all duration-150 ${catTotal === 0 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-                          style={{ background: secBg, borderRight: `1px solid ${secColor}18` }}
-                          onMouseEnter={(e) => { if (catTotal > 0) e.currentTarget.style.background = `${secColor}22`; }}
-                          onMouseLeave={(e) => { if (catTotal > 0) e.currentTarget.style.background = secBg; }}
-                        >
-                          <span className="text-[15px]">▶</span>
-                          <div className="text-left">
-                            <div className="text-xs font-bold" style={{ color: secColor }}>
-                              Practice All
-                            </div>
-                            <div className="text-[10px] text-[#94a3b8] mt-0.5">
-                              {catTotal} questions · full category
-                            </div>
-                          </div>
-                        </button>
-
-                        <button
-                          onClick={() => toggle(cat.id)}
-                          className="flex items-center justify-center gap-2 py-2.5 px-3.5 border-none cursor-pointer font-sans transition-all duration-150"
-                          style={{ background: isOpen ? `${secColor}15` : "white" }}
-                          onMouseEnter={(e) => {
-                            if (!isOpen) e.currentTarget.style.background = "#f8fafc";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isOpen) e.currentTarget.style.background = "white";
-                          }}
-                        >
-                          <span
-                            className={`text-[15px] inline-block transition-transform duration-200 ${isOpen ? "rotate-90" : ""
-                              }`}
-                            style={{ color: isOpen ? secColor : "#94a3b8" }}
-                          >
-                            ☰
-                          </span>
-                          <div className="text-left">
-                            <h5
-                              className="text-xs font-bold"
-                              style={{ color: isOpen ? secColor : "#475569" }}
-                            >
-                              Practice by Subtopic
-                            </h5>
-                            <p className="text-[10px] text-[#94a3b8] mt-0.5">
-                              {cat?.subtopics?.length || 0} topics to choose from
-                            </p>
-                          </div>
-                          <div
-                            className={`ml-auto text-[10px] font-bold inline-block transition-transform duration-200 ${isOpen ? "rotate-180" : ""
-                              }`}
-                            style={{ color: isOpen ? secColor : "#94a3b8" }}
-                          >
-                            <IoMdArrowDropdown className="text-2xl" />
-                          </div>
-                        </button>
-                      </div>
-
-                      {/* Subtopics list */}
-                      {isOpen && (
+                      return (
                         <div
-                          className="animate-[fadeIn_0.2s_ease]"
-                          style={{ borderTop: `1px solid ${secColor}18` }}
+                          key={cat.id}
+                          className="bg-white border border-[#e2e8f0] rounded-md overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
                         >
-                          {(!cat?.subtopics || cat.subtopics.length === 0) ? (
-                            <div className="flex flex-col items-center justify-center px-4 py-8 text-center bg-[#f8fafc]">
-                              <span className="text-lg mb-2 opacity-80">📝</span>
-                              <h5 className="text-[13px] font-bold text-[#1e293b] mb-1">No Subtopics Available</h5>
-                              <p className="text-[11px] text-[#64748b] font-medium max-w-62.5">There are currently no subtopics to practice within this topic.</p>
-                            </div>
-                          ) : (
-                            <>
-                              <div
-                                className="grid grid-cols-[1fr_64px_110px] px-4 py-1.5 bg-[#f8fafc] border-b border-[#f1f5f9] text-[10px] font-bold text-[#94a3b8] tracking-wide uppercase gap-2"
-                              >
-                                <span>Subtopic</span>
-                                <span className="text-right">Questions</span>
+                          {/* Category header */}
+                          <div className="flex items-center gap-3 px-4.5 py-3.5">
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-bold text-[#0f172a]">{cat.topic_name}</div>
+                              <div className="text-xs text-[#94a3b8] mt-0.5">
+                                {cat?.subtopic?.length} subtopics ·{" "}
+                                <span className="font-semibold" style={{ color: secColor }}>
+                                  {catTotal} questions
+                                </span>
                               </div>
-                              {cat.subtopics.map((sub, si) => (
-                                <div
-                                  key={sub?.id || sub?.title}
-                                  className="grid grid-cols-[1fr_64px_110px] px-4 py-2.5 items-center gap-2 transition-colors cursor-pointer hover:bg-[#f8fbff] "
-                                  style={{
-                                    borderBottom:
-                                      si < cat?.subtopics?.length - 1 ? "1px solid #f8fafc" : "none",
-                                  }}
-                                  onClick={() => { if ((sub?.total_question ?? 0) > 0) launch(cat, sub); }}
-                                >
-                                  <div>
-                                    <h6 className="text-[13px] font-semibold text-[#1e293b] mb-0.5">
-                                      {sub?.title ?? ""}
-                                    </h6>
-                                  </div>
-                                  <div className="text-right">
-                                    <span className="text-[13px] font-bold" style={{ color: secColor }}>
-                                      {sub?.total_question ?? 0}
-                                    </span>
-                                    <span className="text-[10px] text-[#94a3b8] ml-0.5">Qs</span>
-                                  </div>
-                                  <div className="text-right">
-                                    <button
-                                      disabled={(sub?.total_question ?? 0) === 0}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        if ((sub?.total_question ?? 0) > 0) launch(cat, sub);
-                                      }}
-                                      className={`px-3 py-1 rounded-md border text-[11px] font-bold font-sans transition-all whitespace-nowrap ${(sub?.total_question ?? 0) === 0 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-                                      style={{
-                                        borderColor: `${secColor}44`,
-                                        background: secBg,
-                                        color: secColor,
-                                      }}
-                                    >
-                                      Practice →
-                                    </button>
-                                  </div>
+                            </div>
+                          </div>
+
+                          {/* Practice all and practice by subtopic action buttons */}
+                          <div
+                            className="grid grid-cols-2 gap-px border-t"
+                            style={{ borderColor: `${secColor}18` }}
+                          >
+                            <button
+                              disabled={catTotal === 0}
+                              onClick={() => { if (catTotal > 0) launch(cat, null); }}
+                              className={`flex items-center justify-center gap-2 py-2.5 px-3.5 border-none font-sans transition-all duration-150 ${catTotal === 0 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                              style={{ background: secBg, borderRight: `1px solid ${secColor}18` }}
+                              onMouseEnter={(e) => { if (catTotal > 0) e.currentTarget.style.background = `${secColor}22`; }}
+                              onMouseLeave={(e) => { if (catTotal > 0) e.currentTarget.style.background = secBg; }}
+                            >
+                              <span className="text-[15px]">▶</span>
+                              <div className="text-left">
+                                <div className="text-xs font-bold" style={{ color: secColor }}>
+                                  Practice All
                                 </div>
-                              ))}
-                            </>
+                                <div className="text-[10px] text-[#94a3b8] mt-0.5">
+                                  {catTotal} questions · full category
+                                </div>
+                              </div>
+                            </button>
+
+                            <button
+                              onClick={() => toggle(cat.id)}
+                              className="flex items-center justify-center gap-2 py-2.5 px-3.5 border-none cursor-pointer font-sans transition-all duration-150"
+                              style={{ background: isOpen ? `${secColor}15` : "white" }}
+                              onMouseEnter={(e) => {
+                                if (!isOpen) e.currentTarget.style.background = "#f8fafc";
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!isOpen) e.currentTarget.style.background = "white";
+                              }}
+                            >
+                              <span
+                                className={`text-[15px] inline-block transition-transform duration-200 ${isOpen ? "rotate-90" : ""
+                                  }`}
+                                style={{ color: isOpen ? secColor : "#94a3b8" }}
+                              >
+                                ☰
+                              </span>
+                              <div className="text-left">
+                                <h5
+                                  className="text-xs font-bold"
+                                  style={{ color: isOpen ? secColor : "#475569" }}
+                                >
+                                  Practice by Subtopic
+                                </h5>
+                                <p className="text-[10px] text-[#94a3b8] mt-0.5">
+                                  {cat?.subtopic?.length || 0} topics to choose from
+                                </p>
+                              </div>
+                              <div
+                                className={`ml-auto text-[10px] font-bold inline-block transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                                  }`}
+                                style={{ color: isOpen ? secColor : "#94a3b8" }}
+                              >
+                                <IoMdArrowDropdown className="text-2xl" />
+                              </div>
+                            </button>
+                          </div>
+
+                          {/* Subtopics list */}
+                          {isOpen && (
+                            <div
+                              className="animate-[fadeIn_0.2s_ease]"
+                              style={{ borderTop: `1px solid ${secColor}18` }}
+                            >
+                              {(!cat?.subtopic || cat.subtopic.length === 0) ? (
+                                <div className="flex flex-col items-center justify-center px-4 py-8 text-center bg-[#f8fafc]">
+                                  <span className="text-lg mb-2 opacity-80">📝</span>
+                                  <h5 className="text-[13px] font-bold text-[#1e293b] mb-1">No Subtopics Available</h5>
+                                  <p className="text-[11px] text-[#64748b] font-medium max-w-62.5">There are currently no subtopics to practice within this topic.</p>
+                                </div>
+                              ) : (
+                                <>
+                                  <div
+                                    className="grid grid-cols-[1fr_64px_110px] px-4 py-1.5 bg-[#f8fafc] border-b border-[#f1f5f9] text-[10px] font-bold text-[#94a3b8] tracking-wide uppercase gap-2"
+                                  >
+                                    <span>Subtopic</span>
+                                    <span className="text-right">Questions</span>
+                                  </div>
+                                  {cat.subtopic.map((sub, si) => (
+                                    <div
+                                      key={sub?.id || sub?.title}
+                                      className="grid grid-cols-[1fr_64px_110px] px-4 py-2.5 items-center gap-2 transition-colors cursor-pointer hover:bg-[#f8fbff] "
+                                      style={{
+                                        borderBottom:
+                                          si < cat?.subtopic?.length - 1 ? "1px solid #f8fafc" : "none",
+                                      }}
+                                      onClick={() => { if ((sub?.total_question ?? 0) > 0) launch(cat, sub); }}
+                                    >
+                                      <div>
+                                        <h6 className="text-[13px] font-semibold text-[#1e293b] mb-0.5">
+                                          {sub?.title ?? ""}
+                                        </h6>
+                                      </div>
+                                      <div className="text-right">
+                                        <span className="text-[13px] font-bold" style={{ color: secColor }}>
+                                          {sub?.total_question ?? 0}
+                                        </span>
+                                        <span className="text-[10px] text-[#94a3b8] ml-0.5">Qs</span>
+                                      </div>
+                                      <div className="text-right">
+                                        <button
+                                          disabled={(sub?.total_question ?? 0) === 0}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if ((sub?.total_question ?? 0) > 0) launch(cat, sub);
+                                          }}
+                                          className={`px-3 py-1 rounded-md border text-[11px] font-bold font-sans transition-all whitespace-nowrap ${(sub?.total_question ?? 0) === 0 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                                          style={{
+                                            borderColor: `${secColor}44`,
+                                            background: secBg,
+                                            color: secColor,
+                                          }}
+                                        >
+                                          Practice →
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </>
+                              )}
+                            </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        )))}
+            );
+          })
+        )}
       </div>
 
       {/* Configure Modal */}
@@ -257,22 +261,16 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
           totalQuestions={
             configuring.subtopic 
               ? configuring.subtopic.total_question 
-              : (configuring.category?.subtopics?.reduce((a, s) => a + (s.total_question || 0), 0) || 0)
+              : (configuring.category?.subtopic?.reduce((a, s) => a + (s.total_question || 0), 0) || 0)
           }
-          // questionStats={(() => {
-          //   const traditionalPool = SAMPLE_QUESTIONS;
-          //   return computeStats ? computeStats(traditionalPool) : null;
-          // })()}
           onClose={() => setConfiguring(null)}
           onStart={(cfg) => {
             const subName = configuring.subtopic?.title;
             const label = subName
-              ? `${configuring.category.title} — ${subName}`
-              : configuring.category.title;
-            const pool = applyFilter ? applyFilter(SAMPLE_QUESTIONS, cfg.filter) : SAMPLE_QUESTIONS;
-            const finalPool = pool.length > 0 ? pool : SAMPLE_QUESTIONS;
+              ? `${configuring.category.topic_name} — ${subName}`
+              : configuring.category.topic_name;
             setConfiguring(null);
-            onStartExam(finalPool, cfg.mode, label);
+            onStartExam(configuring.category, configuring.subtopic, cfg, label);
           }}
         />
       )}
