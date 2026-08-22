@@ -24,10 +24,14 @@ export const getConceptMap = async (axiosInstance) => {
 };
 
 // ---------------------------------------------------------------------------
-// 2. POST /concept-map/generate/  — AI-generate from prompt
+// 2. POST /concept-map/generate/  — AI-generate from prompt (supports file attachments)
 // ---------------------------------------------------------------------------
 export const generateConceptMap = async (axiosInstance, data) => {
-  const response = await axiosInstance.post("/concept-map/generate/", data);
+  // When data is FormData (file attached), let axios set the multipart boundary
+  const config = data instanceof FormData
+    ? { headers: { "Content-Type": "multipart/form-data" } }
+    : {};
+  const response = await axiosInstance.post("/concept-map/generate/", data, config);
   return response?.data;
 };
 

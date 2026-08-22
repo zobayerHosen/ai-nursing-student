@@ -173,10 +173,21 @@ const ConceptMapShell = () => {
   }, [save, mapData]);
 
   /* ─── API: Generate map from prompt (POST /api/concept-map/generate/) ─── */
-  const handleSendPrompt = useCallback(async (promptText) => {
-    if (!promptText?.trim()) return;
+  const handleSendPrompt = useCallback(async (promptText, file) => {
+    if (!promptText?.trim() && !file) return;
+
+    let payload;
+    if (file) {
+      // Build FormData when a file is attached
+      payload = new FormData();
+      if (promptText?.trim()) payload.append("prompt", promptText.trim());
+      payload.append("file", file);
+    } else {
+      payload = { prompt: promptText };
+    }
+
     try {
-      const result = await generate({ prompt: promptText });
+      const result = await generate(payload);
       if (result) {
         const data = result?.data ?? result;
         let normalized;

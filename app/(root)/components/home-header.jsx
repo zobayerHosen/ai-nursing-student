@@ -57,7 +57,7 @@ const HomeHeader = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
-    <header className="w-full bg-[#4f7393] text-white border-b border-[#dddddd5e] sticky top-0 z-50">
+    <header className="w-full bg-[#1C2534] text-white border-b border-[#dddddd5e] sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3 md:py-5 lg:py-6">
         {/* Top Bar */}
         <div className="flex items-center justify-between">
@@ -256,7 +256,7 @@ const HomeHeader = () => {
             </div>
 
             {/* Title */}
-            <h2 className="text-xl font-semibold text-[#111827] mb-2">
+            <h2 className="text-xl font-semibold text-text-primary mb-2">
               Logout
             </h2>
 

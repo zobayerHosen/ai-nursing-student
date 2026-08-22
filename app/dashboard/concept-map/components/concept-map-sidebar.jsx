@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
     User,
     Stethoscope,
@@ -13,6 +13,9 @@ import {
     X,
     Loader2,
 } from "lucide-react";
+
+/* Accepted file types for clinical documents */
+const ACCEPTED_FILE_TYPES = ".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp";
 
 /* Category requirements checklist */
 const CHECKLIST = [
@@ -57,17 +60,47 @@ const STATUS_STYLES = {
     error: "bg-rose-50 text-rose-700",
 };
 
+/* Helper: format file size to human readable */
+function formatFileSize(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export default function ConceptMapSidebar({ onClose, onSendPrompt, isGenerating = false }) {
     const [message, setMessage] = useState("");
+    const [attachedFile, setAttachedFile] = useState(null);
     const [status, setStatus] = useState(null);
+    const fileInputRef = useRef(null);
+
+    /* Trigger hidden file input */
+    const handleAttachClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    /* Handle file selection */
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setAttachedFile(file);
+        }
+        // Reset input so the same file can be re-selected
+        e.target.value = "";
+    };
+
+    /* Remove attached file */
+    const handleRemoveFile = () => {
+        setAttachedFile(null);
+    };
 
     const handleSend = async () => {
         const text = message.trim();
-        if (!text) return;
+        if (!text && !attachedFile) return;
         setStatus({ type: "info", text: "CARA AI is building your concept map..." });
         try {
-            await onSendPrompt?.(text);
+            await onSendPrompt?.(text, attachedFile);
             setMessage("");
+            setAttachedFile(null);
             setStatus({ type: "success", text: "Concept map generated successfully!" });
         } catch {
             setStatus({ type: "error", text: "Failed to generate. Please try again." });
@@ -141,6 +174,27 @@ export default function ConceptMapSidebar({ onClose, onSendPrompt, isGenerating 
 
             {/* Chat prompt input bar */}
             <div className="p-3 sm:p-4 bg-white border-t border-slate-200 shrink-0">
+                {/* Attached file preview chip */}
+                {attachedFile && (
+                    <div className="flex items-center gap-2 mb-2 px-2.5 py-1.5 bg-sky-50 border border-sky-200 rounded-lg">
+                        <FileText size={14} className="text-sky-600 shrink-0" />
+                        <span className="text-xs text-sky-800 font-medium truncate flex-1 min-w-0">
+                            {attachedFile.name}
+                        </span>
+                        <span className="text-[10px] text-sky-500 shrink-0">
+                            {formatFileSize(attachedFile.size)}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={handleRemoveFile}
+                            className="w-5 h-5 rounded-full flex items-center justify-center text-sky-400 hover:text-rose-500 hover:bg-rose-50 transition cursor-pointer shrink-0"
+                            title="Remove file"
+                        >
+                            <X size={12} />
+                        </button>
+                    </div>
+                )}
+
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
@@ -148,19 +202,36 @@ export default function ConceptMapSidebar({ onClose, onSendPrompt, isGenerating 
                     }}
                     className="relative flex items-center bg-slate-100 rounded-xl border border-primary/40 focus-within:border-primary/90 px-3 py-1.5 sm:py-2 shadow-inner transition outline-0"
                 >
+                    {/* Hidden file input */}
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept={ACCEPTED_FILE_TYPES}
+                        onChange={handleFileChange}
+                        className="hidden"
+                    />
+
                     <input
                         type="text"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Type patient clinical case..."
-                        className="w-full bg-transparent text-base sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none pr-12 sm:pr-16 pl-1 sm:pl-2 py-1"
+                        className="w-full bg-transparent text-base sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none pr-20 sm:pr-24 pl-1 sm:pl-2 py-1"
                     />
                     {/* Action icons */}
                     <div className="absolute right-2 flex items-center gap-1.5">
                         <button
+                            type="button"
+                            onClick={handleAttachClick}
+                            className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 transition cursor-pointer"
+                            title="Attach file"
+                        >
+                            <Paperclip size={15} />
+                        </button>
+                        <button
                             type="submit"
                             className="w-8 h-8 rounded-full bg-sky-600 hover:bg-sky-700 text-white flex items-center justify-center transition shadow-xs disabled:opacity-50 cursor-pointer shrink-0"
-                            disabled={!message.trim() || isGenerating}
+                            disabled={(!message.trim() && !attachedFile) || isGenerating}
                             title="Send"
                         >
                             <Send size={14} />
