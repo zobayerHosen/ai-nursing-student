@@ -40,7 +40,7 @@ const Hero = () => {
                         <h1 className="text-2xl sm:text-3xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-extrabold leading-[1.18] tracking-tight text-white">
                             NCLEX-RN & NCLEX-PN Prep Platform.{" "}
                             <span className="block mt-1 text-transparent bg-clip-text bg-linear-to-r from-[#E879F9] via-[#F472B6] to-[#C084FC]">
-                                Pass With Confidence — The First Time
+                                Pass With Confidence The First Time
                             </span>
                         </h1>
 

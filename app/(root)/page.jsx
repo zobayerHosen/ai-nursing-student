@@ -1,13 +1,15 @@
 import React from 'react';
 import HomeHeader from './components/home-header';
 import Hero from './components/hero';
-import StatsSection from './components/stats-section';
+import NewStatsSection from './components/new-home-design/new-stats-section';
+import NewAiTutorSection from './components/new-home-design/new-ai-tutor-section';
+import NewSucceedSection from './components/new-home-design/new-succeed-section';
+import NewAiToolsSection from './components/new-home-design/new-ai-tools-section';
 import RootsSection from './components/roots-section';
 import VisualNotes from './components/visual-notes';
 import StemrnFeatureSection from './components/stemrn-feature-section/stemrn-feature-section';
 import Pricing from './components/pricing/pricing';
 import FAQ from './components/faq';
-import AIToolsSection from './components/ai-tool-section';
 import HomeCheatSheets from './components/home-cheat-sheet';
 import HomeNCLEXQuestions from './components/home-nclex-exam/home-nclex-exam';
 import GoogleOneTap from './components/google-one-tap';
@@ -18,15 +20,17 @@ const HomePage = () => {
             <GoogleOneTap />
             <HomeHeader />
             <Hero />
-            <StatsSection />
+            <NewStatsSection />
+            <NewAiTutorSection />
+            <NewSucceedSection />
             <RootsSection />
-            <StemrnFeatureSection />
-            <VisualNotes />
-            <AIToolsSection />
-            <HomeNCLEXQuestions />
-            <HomeCheatSheets />
+            <NewAiToolsSection />
+            {/* <StemrnFeatureSection /> */}
+            {/* <VisualNotes /> */}
+            {/* <HomeNCLEXQuestions /> */}
+            {/* <HomeCheatSheets /> */}
             <Pricing />
-            <FAQ />
+            {/* <FAQ /> */}
         </div>
     );
 };
