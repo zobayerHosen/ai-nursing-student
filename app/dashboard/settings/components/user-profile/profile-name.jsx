@@ -1,9 +1,7 @@
 "use client";
 import Button from "@/components/common-button";
 import CommonFieldsetInput from "@/components/common-fieldset-input";
-import LoadingIcon from "@/components/loading-icon";
-import { useGetUser } from "@/hooks";
-import { useUpdateInfo } from "@/hooks/user/update-info.hook";
+import { useGetUser, useUpdateInfo } from "@/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";

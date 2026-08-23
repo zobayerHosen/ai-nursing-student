@@ -19,7 +19,7 @@ export default function AskAtlas() {
       {/* Left Box: Talk with Lumi */}
       <Link
         href="/dashboard/my-tutor"
-        className="flex-1 min-h-[220px] bg-[#326798] rounded-[24px] flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-[#2C5F8D] transition-colors relative overflow-hidden group shadow-sm"
+        className="flex-1 min-h-55 bg-[#326798] rounded-3xl flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-[#2C5F8D] transition-colors relative overflow-hidden group shadow-sm"
       >
         <style>{`
                     @keyframes blink-fade {
@@ -29,11 +29,11 @@ export default function AskAtlas() {
                 `}</style>
 
         {/* Waveform */}
-        <div className="flex items-center gap-[3px] justify-center h-16 mb-3">
+        <div className="flex items-center gap-0.75 justify-center h-16 mb-3">
           {fullWave.map((h, i) => (
             <div
               key={i}
-              className="w-[2px] bg-white rounded-full"
+              className="w-0.5 bg-white rounded-full"
               style={{
                 height: `${h}px`,
                 animation: `blink-fade 1.2s infinite ease-in-out ${(i % 5) * 0.15}s`
@@ -57,10 +57,10 @@ export default function AskAtlas() {
       </Link>
 
       {/* Right Box: Suggested things to ask */}
-      <div className="w-full lg:w-[45%] xl:w-[40%] bg-white rounded-[24px] border border-[#E2E8F0] p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] flex flex-col">
+      <div className="w-full lg:w-[45%] xl:w-[40%] bg-white rounded-3xl border border-[#E2E8F0] p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] flex flex-col">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-[15px] font-bold text-[#1e293b]">Suggested things to ask</h2>
-          <Lightbulb className="w-[18px] h-[18px] text-[#9333EA] fill-[#9333EA]/10" />
+          <Lightbulb className="w-4.5 h-4.5 text-[#9333EA] fill-[#9333EA]/10" />
         </div>
 
         <div className="flex flex-col gap-3 flex-1 justify-center">
@@ -71,7 +71,7 @@ export default function AskAtlas() {
               className="w-full flex items-center justify-between bg-[#FAFAF9] border border-[#F3E8FF] hover:bg-[#F3E8FF] hover:border-[#E9D5FF] transition-all rounded-xl px-4 py-3 cursor-pointer group shadow-sm"
             >
               <span className="text-[12.5px] font-semibold text-[#8B5CF6] pr-4 leading-tight">{q}</span>
-              <ArrowRight className="w-[15px] h-[15px] text-[#8B5CF6] shrink-0 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4.5 h-4.5 text-[#8B5CF6] shrink-0 group-hover:translate-x-1 transition-transform" />
             </Link>
           ))}
         </div>

@@ -59,7 +59,7 @@ export default function SubscriptionPlanChoose() {
           <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mb-2">
             <LogOut size={20} className="text-red-500" />
           </div>
-          <h2 className="text-xl font-semibold text-[#111827] mb-2">Logout</h2>
+          <h2 className="text-xl font-semibold text-text-primary mb-2">Logout</h2>
           <p className="text-[13px] text-[#6B7280] leading-5 max-w-75 mb-7">
             Are you sure you want to logout from your account?
           </p>

@@ -8,7 +8,7 @@ const OtherClasses = () => {
     return (
         <section className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Card 1: Classes */}
-            <div className="bg-white border border-[#E2E8F0] rounded-[24px] p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.02)] flex flex-col min-h-[170px]">
+            <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.02)] flex flex-col min-h-40">
                 <div className="flex items-center gap-3 mb-5">
                     <div className="w-10 h-10 rounded-[14px] flex items-center justify-center bg-[#EEF2FF] text-[#6366F1]">
                         <BookOpen className="w-5 h-5" />
@@ -29,7 +29,7 @@ const OtherClasses = () => {
             </div>
 
             {/* Card 2: Assignments */}
-            <div className="bg-white border border-[#E2E8F0] rounded-[24px] p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.02)] flex flex-col min-h-[170px]">
+            <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.02)] flex flex-col min-h-40">
                 <div className="flex items-center gap-3 mb-5">
                     <div className="w-10 h-10 rounded-[14px] flex items-center justify-center bg-[#FFF7ED] text-[#F97316]">
                         <ClipboardList className="w-5 h-5" />
@@ -50,7 +50,7 @@ const OtherClasses = () => {
             </div>
 
             {/* Card 3: GPA */}
-            <div className="bg-white border border-[#E2E8F0] rounded-[24px] p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.02)] flex flex-col min-h-[170px]">
+            <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.02)] flex flex-col min-h-40">
                 <div className="flex items-center gap-3 mb-5">
                     <div className="w-10 h-10 rounded-[14px] flex items-center justify-center bg-[#ECFDF5] text-[#10B981]">
                         <PieChart className="w-5 h-5" />
@@ -71,7 +71,7 @@ const OtherClasses = () => {
             </div>
 
             {/* Card 4: My Library */}
-            <div className="bg-white border border-[#E2E8F0] rounded-[24px] p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.02)] flex flex-col min-h-[170px]">
+            <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.02)] flex flex-col min-h-40">
                 <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-[14px] flex items-center justify-center bg-[#FFF1F2] text-[#F43F5E]">

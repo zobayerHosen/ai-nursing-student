@@ -4,12 +4,12 @@ import { Mic, Clock, Search, User } from "lucide-react";
 import { motion } from "framer-motion";
 
 const languages = [
-    { flag: "🇺🇸", name: "English" },
-    { flag: "🇪🇸", name: "Spanish" },
-    { flag: "🇩🇪", name: "German" },
-    { flag: "🇫🇷", name: "French" },
-    { flag: "🇨🇳", name: "Chinese" },
-    { flag: "🇮🇳", name: "Hindi" },
+    { name: "English", flagUrl: "https://flagcdn.com/w40/us.png" },
+    { name: "Spanish", flagUrl: "https://flagcdn.com/w40/es.png" },
+    { name: "German", flagUrl: "https://flagcdn.com/w40/de.png" },
+    { name: "French", flagUrl: "https://flagcdn.com/w40/fr.png" },
+    { name: "Chinese", flagUrl: "https://flagcdn.com/w40/cn.png" },
+    { name: "Hindi", flagUrl: "https://flagcdn.com/w40/in.png" },
 ];
 
 const features = [
@@ -35,11 +35,11 @@ const NewAiTutorSection = () => {
         <section className="w-full bg-white py-12 sm:py-16 md:py-20 text-slate-800">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-                    
+
                     {/* Left Column: Lumi Voice AI Visualizer Card */}
                     <div className="lg:col-span-5 w-full">
-                        <div className="w-full bg-[#2A5C8A] rounded-3xl p-8 sm:p-12 flex flex-col items-center justify-center min-h-[380px] sm:min-h-[440px] relative overflow-hidden shadow-xl border border-sky-900/20">
-                            
+                        <div className="w-full bg-[#2A5C8A] rounded-3xl p-8 sm:p-12 flex flex-col items-center justify-center min-h-95 sm:min-h-110 relative overflow-hidden shadow-xl border border-sky-900/20">
+
                             {/* Ambient Glow background */}
                             <motion.div
                                 animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.3, 0.15] }}
@@ -49,7 +49,7 @@ const NewAiTutorSection = () => {
 
                             {/* Soundwave Orb Graphic */}
                             <div className="relative flex items-center justify-center mb-8">
-                                
+
                                 {/* Outer Wave Pulse Ring 3 */}
                                 <motion.div
                                     animate={{ scale: [1, 1.45, 1], opacity: [0.1, 0.3, 0.1] }}
@@ -72,7 +72,7 @@ const NewAiTutorSection = () => {
                                 >
                                     {/* Inner Dark Core */}
                                     <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-full bg-[#162E48] border border-cyan-400/40 flex items-center justify-center shadow-inner overflow-hidden relative">
-                                        
+
                                         {/* Animated Wave Equalizer Bars */}
                                         <div className="flex items-center gap-1.5 h-20 px-4 relative z-10">
                                             {[35, 75, 50, 95, 65, 85, 45, 80, 40].map((height, i) => (
@@ -168,10 +168,14 @@ const NewAiTutorSection = () => {
                         </p>
 
                         {/* Languages Row */}
-                        <div className="flex flex-wrap items-center gap-3 sm:gap-5 mb-8">
+                        <div className="flex flex-wrap items-center gap-3.5 sm:gap-5 mb-8">
                             {languages.map((lang, idx) => (
-                                <div key={idx} className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-700">
-                                    <span className="text-base sm:text-lg">{lang.flag}</span>
+                                <div key={idx} className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-700">
+                                    <img
+                                        src={lang.flagUrl}
+                                        alt={`${lang.name} flag`}
+                                        className="w-5 sm:w-6 h-3.5 sm:h-4 object-cover rounded-xs border border-slate-200/80 shadow-2xs"
+                                    />
                                     <span>{lang.name}</span>
                                 </div>
                             ))}

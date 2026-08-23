@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import DashboardHeader from "./dashboard-header";
-import { useGetUser } from "@/hooks";
 import { useRouter } from "next/navigation";
 import { ROUTE_PATH } from "@/constants/route-naming";
+import { useGetUser } from "@/hooks";
 
 const DashboardShell = ({ children }) => {
     const { user } = useGetUser()

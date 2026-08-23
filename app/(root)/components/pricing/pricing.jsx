@@ -255,7 +255,7 @@ const PricingPage = () => {
                                                 <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
                                                     isFeatured ? "bg-rose-400/20 text-[#FF6B6B]" : "bg-rose-100/70 text-[#FF6B6B]"
                                                 }`}>
-                                                    <Check className="w-3 h-3 stroke-[3]" />
+                                                    <Check className="w-3 h-3 stroke-3" />
                                                 </div>
                                                 <span className={isFeatured ? "text-slate-100" : "text-slate-700"}>
                                                     {feat}

@@ -4,7 +4,6 @@ export * from "./cms";
 export * from "./video-lesson";
 export * from "./library";
 export * from "./interactive-tool";
-export * from "./procedure-lookup";
 export * from "./qbank";
 export * from "./concept-map";
 export * from "./drug-card";

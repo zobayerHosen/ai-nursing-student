@@ -1,11 +1,10 @@
-
 import { Providers } from "@/providers";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 import { getServerToken } from "@/utils/getServerToken";
-import { getUser } from "@/services";
+import { userService } from "@/services";
 import { axiosPrivateServer } from "@/lib/axios.private.server";
 
 const inter = Inter({
@@ -37,7 +36,7 @@ export default async function RootLayout({ children }) {
       await queryClient.prefetchQuery({
         queryKey: ['user'],
         queryFn: async () => {
-          const userData = await getUser(axiosInstance);
+          const userData = await userService.getUser(axiosInstance);
           return userData;
         },
       });

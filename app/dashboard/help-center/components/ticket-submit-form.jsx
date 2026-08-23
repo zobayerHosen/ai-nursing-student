@@ -10,7 +10,7 @@ import {
     AlertCircle
 } from "lucide-react";
 import { HELP_CATEGORIES } from "../data/initial-tickets";
-import { useGetUser } from "@/hooks/user/getuser.hook";
+import { useGetUser } from "@/hooks";
 
 // Section Components
 import CategorySelector from "./form-sections/category-selector";

@@ -128,7 +128,7 @@ const TracYourProgress = () => {
                     >
                         {trackProgressData.map((data, index) => (
                             <SwiperSlide key={index} className="h-auto w-fit!">
-                                <div className="bg-[#FBFBFB] border border-[#E2E8F0] rounded-3xl p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] h-full flex flex-col min-h-[260px] w-[350px]">
+                                <div className="bg-[#FBFBFB] border border-[#E2E8F0] rounded-3xl p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] h-full flex flex-col min-h-65 w-87.5">
                                     {/* Card Header */}
                                     <div className="flex justify-between items-start mb-4">
                                         <div>
@@ -186,7 +186,7 @@ const TracYourProgress = () => {
                                             </div>
                                             <div className="flex flex-col items-center pl-2 border-l border-gray-100">
                                                 <MultiDonut percentage={data.chart.percentage} segments={data.chart.segments} />
-                                                <p className="text-[9px] text-gray-500 font-medium text-center mt-3 max-w-[90px] leading-tight">Keep going! You're making excellent progress</p>
+                                                <p className="text-[9px] text-gray-500 font-medium text-center mt-3 max-w-22.5 leading-tight">Keep going! You're making excellent progress</p>
                                             </div>
                                         </div>
                                     )}
@@ -215,7 +215,7 @@ const TracYourProgress = () => {
             <div className="w-full xl:w-[32%] xl:min-w-[320px] rounded-3xl border border-[#E2E8F0] bg-white shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] p-6 flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-2">
-                        <Calendar className="w-[18px] h-[18px] text-[#2C5F8D]" />
+                        <Calendar className="w-4.5 h-4.5 text-[#2C5F8D]" />
                         <h2 className="text-[15px] font-bold text-[#2C5F8D]">Upcoming Tasks</h2>
                     </div>
                     <Link href="/dashboard/calendars-tool" className="text-[11px] font-bold text-[#2C5F8D] hover:underline flex items-center">

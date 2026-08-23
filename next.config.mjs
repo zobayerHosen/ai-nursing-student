@@ -64,6 +64,12 @@ const baseRemotePatterns = [
     port: "",
     pathname: "/**",
   },
+  {
+    protocol: "https",
+    hostname: "flagcdn.com",
+    port: "",
+    pathname: "/**",
+  },
 ];
 
 // Dynamic backend pattern
