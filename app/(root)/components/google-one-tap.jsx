@@ -12,20 +12,23 @@ import { useEffect, useState } from "react";
 const GoogleOneTap = () => {
     const { sociallogin } = useSocialLogin();
     const router = useRouter();
-    const [isAuthenticated, setIsAuthenticated] = useState(null);
+
+    // Default to true (disabled) so Google One Tap is not triggered on initial render before auth is verified
+    const [isAuthenticated, setIsAuthenticated] = useState(() => {
+        if (typeof window !== "undefined") {
+            return !!getClientToken();
+        }
+        return true;
+    });
 
     useEffect(() => {
         const token = getClientToken();
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsAuthenticated(!!token);
     }, []);
 
-
-    console.log("One Tap Disabled:", isAuthenticated);
-
     useGoogleOneTapLogin({
         onSuccess: (credentialResponse) => {
-            console.log("One tap login:--->", credentialResponse)
+            console.log("One tap login:--->", credentialResponse);
             sociallogin(
                 {
                     id_token: credentialResponse.credential,
@@ -54,7 +57,7 @@ const GoogleOneTap = () => {
         onError: (error) => {
             console.log("One Tap Login Failed", error);
         },
-        disabled: isAuthenticated,
+        disabled: Boolean(isAuthenticated),
     });
 
     return null;

@@ -57,7 +57,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
             >
                 {/* Logo & Close Button */}
                 <div className={`py-6.5 px-4.5 flex items-center justify-between ${collapsed && !isSidebarOpen ? "lg:p-0 lg:justify-center" : ""}`}>
-                    <Link href="/dashboard">
+                    <Link href="/">
                         {collapsed && !isSidebarOpen ? (
                             <Image
                                 src={min_logo}
