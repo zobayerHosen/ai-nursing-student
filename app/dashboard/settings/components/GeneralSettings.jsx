@@ -2,8 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Upload, ZoomIn } from "lucide-react";
-import { useGetUser } from "@/hooks";
-import { useUpdateAvatar } from "@/hooks/user/update-avatar.hook";
+import { useGetUser, useUpdateAvatar } from "@/hooks";
 import ProfileName from "./user-profile/profile-name";
 import DeleteAccount from "./user-profile/delete-account";
 import Image from "next/image";
@@ -13,7 +12,7 @@ import DeleteProfile from "./user-profile/delete-profile";
 import LoadingIcon from "@/components/loading-icon";
 import Button from "@/components/common-button";
 
-export default function GeneralSettings({ showToast }) {
+export default function GeneralSettings() {
   const { user } = useGetUser();
   const queryClient = useQueryClient();
   const { updateAvatar, isPending: avatarPending } = useUpdateAvatar();

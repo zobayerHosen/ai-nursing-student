@@ -5,7 +5,7 @@ import { FaCheck } from "react-icons/fa";
 import { Crown, Sparkles, ArrowRight, Home } from "lucide-react";
 import { Modal } from "antd";
 import AuthCommonTitle from "./auth-common-title";
-import { useStepProfileSetup } from "@/hooks/auth/step-profile-setup/step-profile-setup";
+import { useStepProfileSetup } from "@/hooks";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";

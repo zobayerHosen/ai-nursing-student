@@ -81,7 +81,7 @@ const SuccessTools = () => {
                     return (
                         <div
                             key={index}
-                            className="bg-[#FBFBFB] border border-[#E2E8F0] rounded-3xl p-6 flex flex-col items-center justify-center text-center hover:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:border-gray-300 transition-all cursor-pointer min-h-[160px]"
+                            className="bg-[#FBFBFB] border border-[#E2E8F0] rounded-3xl p-6 flex flex-col items-center justify-center text-center hover:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:border-gray-300 transition-all cursor-pointer min-h-40"
                         >
                             <div
                                 className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
@@ -90,7 +90,7 @@ const SuccessTools = () => {
                                 {tool.icon}
                             </div>
                             <h3 className="text-[13px] font-bold text-gray-800 mb-1.5">{tool.name}</h3>
-                            <p className="text-[10px] text-gray-400 leading-relaxed max-w-[140px]">{tool.desc}</p>
+                            <p className="text-[10px] text-gray-400 leading-relaxed max-w-35">{tool.desc}</p>
                         </div>
                     );
                 })}

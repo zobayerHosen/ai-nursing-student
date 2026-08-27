@@ -14,21 +14,6 @@ import { settingsIcon } from "@/dummydata";
 
 // Social Icons Data
 const socialIcons = [
-    // {
-    //     id: 1,
-    //     icon: BsInstagram,
-    //     color: "text-pink-500",
-    // },
-    // {
-    //     id: 2,
-    //     icon: TbBrandTiktok,
-    //     color: "text-black",
-    // },
-    // {
-    //     id: 3,
-    //     icon: FaFacebookF,
-    //     color: "text-blue-600",
-    // },
     {
         id: 4,
         icon: GoBellFill,

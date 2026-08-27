@@ -10,7 +10,7 @@ import {
 import TicketSubmitForm from "./ticket-submit-form";
 import UserTicketsList from "./user-tickets-list";
 import { INITIAL_TICKETS, HELP_CATEGORIES } from "../data/initial-tickets";
-import { useGetUser } from "@/hooks/user/getuser.hook";
+import { useGetUser } from "@/hooks";
 
 const LOCAL_STORAGE_KEY = "stemrn_help_desk_tickets_v1";
 

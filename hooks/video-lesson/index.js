@@ -1,5 +1,1 @@
-export * from "./get-modules.hook";
-export * from "./get-module-by-id.hook";
-export * from "./get-video-details.hook";
-export * from "./video-progress.hook";
-export * from "./get-video-lessons-progress.hook";
+export * from "./video-lesson.hook";

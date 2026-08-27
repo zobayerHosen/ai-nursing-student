@@ -5,7 +5,6 @@ export * from "./core-learning";
 export * from "./video-lesson";
 export * from "./library";
 export * from "./interactive-tools";
-export * from "./procedure-lookup";
 export * from "./concept-map";
 export * from "./qbank";
 export * from "./drug-card";

@@ -1,5 +1,5 @@
 import LoadingIcon from "@/components/loading-icon";
-import { useDeleteUserImage } from "@/hooks/user/delete-user-image.hook";
+import { useDeleteUserImage } from "@/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 

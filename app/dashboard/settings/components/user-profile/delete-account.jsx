@@ -1,6 +1,6 @@
 "use client";
 import LoadingIcon from '@/components/loading-icon';
-import { useDeleteUser } from '@/hooks/user/delete-user.hook';
+import { useDeleteUser } from '@/hooks';
 import { Modal } from 'antd';
 import { AlertTriangle, ShieldAlert, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
