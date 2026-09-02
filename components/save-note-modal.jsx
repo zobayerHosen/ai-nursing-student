@@ -1,8 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Modal } from "antd";
-import { useGetLibrary } from "@/hooks";
-import { useSaveNote } from "@/hooks/core-learning/save-note.hook";
+import { useGetLibrary, useSaveNote } from "@/hooks";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import FolderCreateModal from "@/app/dashboard/library/components/folder-create-modal";
@@ -74,7 +73,7 @@ const SaveNoteModal = ({ isModalOpen, setIsModalOpen, noteId, onSaveSuccess }) =
                 <div className="w-full bg-gray-50 rounded-2xl p-4 mb-6 border border-gray-100">
                     <div className="flex justify-between items-center mb-3 px-1">
                         <p className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Your Folders</p>
-                        <button 
+                        <button
                             onClick={() => setIsCreateFolderModalOpen(true)}
                             className="text-xs flex items-center gap-1.5 bg-white border border-gray-200 px-3 py-1.5 rounded-full text-primary hover:bg-primary hover:text-white hover:border-primary transition-all font-semibold cursor-pointer shadow-sm"
                         >
@@ -93,15 +92,13 @@ const SaveNoteModal = ({ isModalOpen, setIsModalOpen, noteId, onSaveSuccess }) =
                                 <div
                                     key={folder.id}
                                     onClick={() => setSelectedFolderId(folder.id)}
-                                    className={`flex items-center gap-4 p-3.5 rounded-xl cursor-pointer transition-all duration-200 group ${
-                                        selectedFolderId === folder.id
+                                    className={`flex items-center gap-4 p-3.5 rounded-xl cursor-pointer transition-all duration-200 group ${selectedFolderId === folder.id
                                             ? "bg-primary shadow-md shadow-primary/20"
                                             : "bg-white hover:bg-gray-100"
                                         }`}
                                 >
-                                    <div className={`w-9 h-9 rounded-md flex items-center justify-center transition-colors ${
-                                        selectedFolderId === folder.id ? "bg-white/20" : "bg-gray-100 group-hover:bg-white"
-                                    }`}>
+                                    <div className={`w-9 h-9 rounded-md flex items-center justify-center transition-colors ${selectedFolderId === folder.id ? "bg-white/20" : "bg-gray-100 group-hover:bg-white"
+                                        }`}>
                                         {folder?.icon?.icon ? (
                                             <Image
                                                 src={folder.icon.icon.startsWith("http") ? folder.icon.icon : `${BASEURL}/${folder.icon.icon.replace(/^\//, '')}`}
@@ -115,14 +112,12 @@ const SaveNoteModal = ({ isModalOpen, setIsModalOpen, noteId, onSaveSuccess }) =
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h4 className={`font-bold text-base truncate transition-colors ${
-                                            selectedFolderId === folder.id ? "text-white" : "text-gray-800"
-                                        }`}>
+                                        <h4 className={`font-bold text-base truncate transition-colors ${selectedFolderId === folder.id ? "text-white" : "text-gray-800"
+                                            }`}>
                                             {folder?.name}
                                         </h4>
-                                        <p className={`text-xs font-medium mt-0.5 transition-colors ${
-                                            selectedFolderId === folder.id ? "text-white/80" : "text-gray-500"
-                                        }`}>
+                                        <p className={`text-xs font-medium mt-0.5 transition-colors ${selectedFolderId === folder.id ? "text-white/80" : "text-gray-500"
+                                            }`}>
                                             {folder?.total_notes || 0} {(folder?.total_notes === 1) ? 'note' : 'notes'}
                                         </p>
                                     </div>
@@ -134,7 +129,7 @@ const SaveNoteModal = ({ isModalOpen, setIsModalOpen, noteId, onSaveSuccess }) =
                             <p className="text-gray-500 text-sm font-medium mb-3">
                                 You don't have any folders yet.
                             </p>
-                            <button 
+                            <button
                                 onClick={() => setIsCreateFolderModalOpen(true)}
                                 className="text-sm bg-primary text-white px-5 py-2 rounded-lg font-semibold hover:bg-primary/90 transition-colors shadow-sm"
                             >
@@ -164,9 +159,9 @@ const SaveNoteModal = ({ isModalOpen, setIsModalOpen, noteId, onSaveSuccess }) =
                 </div>
             </div>
 
-            <FolderCreateModal 
-                isModalOpen={isCreateFolderModalOpen} 
-                setIsModalOpen={setIsCreateFolderModalOpen} 
+            <FolderCreateModal
+                isModalOpen={isCreateFolderModalOpen}
+                setIsModalOpen={setIsCreateFolderModalOpen}
             />
         </Modal>
     );
