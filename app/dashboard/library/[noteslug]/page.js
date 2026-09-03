@@ -24,7 +24,7 @@ export default function NoteDetails({ params }) {
 
   if (isError || !topicDetailsData) return <NoteNotFound />;
 
-  const targetFolder = Array.isArray(libraryData) 
+  const targetFolder = Array.isArray(libraryData)
     ? libraryData.find(folder => Array.isArray(folder?.notes) && folder.notes.some(n => Number(n.content_id) === Number(noteslug)))
     : null;
 
@@ -33,10 +33,16 @@ export default function NoteDetails({ params }) {
     slug: noteslug,
     id: topicDetailsData.id,
     is_saved: topicDetailsData.is_saved,
-    folderName: targetFolder?.name || "Library Notes",
+    is_completed: topicDetailsData.is_completed || topicDetailsData.completed,
+    folderName: targetFolder?.name || topicDetailsData?.category_name || "Library Notes",
     folderId: targetFolder?.id || null,
+    folderIcon: targetFolder?.icon || "",
+    date: new Date().toLocaleDateString(),
+    folderContent: targetFolder?.notes?.length || 0,
+    folderIndex: targetFolder?.index ?? 0,
+    folderColor: targetFolder?.color ?? "",
+
   };
-  console.log("noteData", noteData)
 
   return (
     <div className="flex flex-col h-full">
@@ -59,7 +65,7 @@ export default function NoteDetails({ params }) {
         </div>
 
         <div className="space-y-6">
-          <div className="w-full h-[calc(100vh-250px)] min-h-[500px] relative">
+          <div className="w-full h-[calc(100vh-250px)] min-h-125 relative">
             {topicDetailsData.content_file_url && (
               <>
                 {isIframeLoading && (

@@ -64,7 +64,7 @@ const SaveNoteModal = ({ isModalOpen, setIsModalOpen, noteId, onSaveSuccess }) =
                         <Bookmark className="w-8 h-8 text-blue-600 fill-blue-600/20" />
                     </div>
                     <h3 className="text-2xl font-bold text-gray-800 mb-1">Save to Library</h3>
-                    <p className="text-center text-sm text-gray-500 max-w-[300px]">
+                    <p className="text-center text-sm text-gray-500 max-w-75">
                         Choose a folder to organize this study material.
                     </p>
                 </div>
@@ -87,7 +87,7 @@ const SaveNoteModal = ({ isModalOpen, setIsModalOpen, noteId, onSaveSuccess }) =
                             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                         </div>
                     ) : libraryData && libraryData.length > 0 ? (
-                        <div className="space-y-2.5 max-h-[260px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div className="space-y-2.5 max-h-65 overflow-y-auto pr-2 custom-scrollbar">
                             {libraryData?.map((folder) => (
                                 <div
                                     key={folder.id}
