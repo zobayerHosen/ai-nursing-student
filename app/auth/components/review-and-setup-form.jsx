@@ -157,7 +157,7 @@ const ReviewAndSetupForm = () => {
                     <input
                         type="checkbox"
                         id="educational"
-                        className="w-4.5 h-4.5 accent-primary"
+                        className="w-4.5 h-4.5 accent-primary border-gray-300 rounded cursor-pointer shrink-0 mt-1"
                         {...register("educational", {
                             required: "Please agree to the Educational Purpose Disclaimer",
                         })}

@@ -13,7 +13,7 @@ const FolderCreateModal = ({ isModalOpen, setIsModalOpen, folderData }) => {
     const { createLibrary, isPending: isCreatePending } = useCreateLibrary();
     const { renameLibrary, isPending: isRenamePending } = useRenameLibrary();
     const { folderColorData, isLoading: isColorLoading } = useGetFolderColor();
-    const isPending = isCreatePending || isRenamePending;
+    const isPending = isCreatePending || isRenamePending;   
     const [folderName, setFolderName] = useState("");
     const [selectedColor, setSelectedColor] = useState("");
 

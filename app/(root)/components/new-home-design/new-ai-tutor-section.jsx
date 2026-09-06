@@ -136,7 +136,7 @@ const NewAiTutorSection = () => {
                                 Ask me anything medical
                             </span>
                             <h3 className="text-white text-2xl sm:text-3xl font-bold tracking-tight mb-2">
-                                Talk to Lumi...
+                                Talk to CARA...
                             </h3>
 
                             {/* Animated Mic Button */}
