@@ -449,11 +449,86 @@ export const CURRICULUM = [
 ];
 
 export const FULL_EXAMS = [
-  { id: 1, title: "NCLEX Practice Exam 1", subtitle: "Diagnostic Assessment", questions: 85, minutes: 150, status: "completed", score: 78, completedDate: "Jan 4, 2026", difficulty: "Foundational", tag: "Start here" },
-  { id: 2, title: "NCLEX Practice Exam 2", subtitle: "Targeted Review", questions: 85, minutes: 150, status: "completed", score: 82, completedDate: "Jan 6, 2026", difficulty: "Progressive", tag: "" },
-  { id: 3, title: "NCLEX Practice Exam 3", subtitle: "Advanced Application", questions: 85, minutes: 150, status: "available", score: null, completedDate: null, difficulty: "Progressive", tag: "Up next" },
-  { id: 4, title: "NCLEX Practice Exam 4", subtitle: "Comprehensive", questions: 85, minutes: 150, status: "locked", score: null, completedDate: null, difficulty: "Advanced", tag: "" },
-  { id: 5, title: "NCLEX Practice Exam 5", subtitle: "Final Simulation", questions: 85, minutes: 150, status: "locked", score: null, completedDate: null, difficulty: "Expert", tag: "Pass Predictor" },
+  { id: 1, title: "Diagnostic Assessment", order: 1, questions: 85, duration: "2hr 30 min", minutes: 150, status: "completed", score: 78, completedDate: "jan 4, 2026", difficulty: "Foundational", tag: "Start Here" },
+  { id: 2, title: "Targeted Review", order: 2, questions: 85, duration: "2hr 30 min", minutes: 150, status: "completed", score: 78, completedDate: "jan 4, 2026", difficulty: "Progressive", tag: "" },
+  { id: 3, title: "Advanced Application", order: 3, questions: 85, duration: "2hr 30 min", minutes: 150, status: "available", score: null, completedDate: null, difficulty: "Progressive", tag: "Up Next" },
+  { id: 4, title: "Comprehensive Assessment", order: 4, questions: 85, duration: "2hr 30 min", minutes: 150, status: "locked", unlockAfter: "Exam 3", score: null, completedDate: null, difficulty: "Advanced", tag: "" },
+  { id: 5, title: "Final Readiness Assessment", order: 5, questions: 85, duration: "2hr 30 min", minutes: 150, status: "locked", unlockAfter: "Exam 4", score: null, completedDate: null, difficulty: "Expert", tag: "" },
+];
+
+export const NCSBN_CLIENT_NEEDS = [
+  {
+    name: "Management of Care",
+    weight: "17-23% of exam weight",
+    score: 82,
+    status: "ABOVE TARGET",
+    statusType: "above", // green
+    peer: 76,
+    target: 75,
+  },
+  {
+    name: "Psychosocial Integrity",
+    weight: "17-23% of exam weight",
+    score: 82,
+    status: "ABOVE TARGET",
+    statusType: "above", // green
+    peer: 76,
+    target: 75,
+  },
+  {
+    name: "Safety and Infection Prevention and Control",
+    weight: "9-15% of exam weight",
+    score: 85,
+    status: "MASTERY",
+    statusType: "mastery", // teal/emerald
+    peer: 78,
+    target: 75,
+  },
+  {
+    name: "Basic Care & Comfort",
+    weight: "9-15% of exam weight",
+    score: 85,
+    status: "MASTERY",
+    statusType: "mastery", // teal/emerald
+    peer: 78,
+    target: 75,
+  },
+  {
+    name: "Health Promotion & Maintainance",
+    weight: "9-15% of exam weight",
+    score: 85,
+    status: "MASTERY",
+    statusType: "mastery", // teal/emerald
+    peer: 78,
+    target: 75,
+  },
+  {
+    name: "Pharmacological & Parenteral Therapies",
+    weight: "13-19% of exam weight",
+    score: 64,
+    status: "CRITICAL GAP",
+    statusType: "gap", // red/pink
+    peer: 70,
+    target: 75,
+  },
+  {
+    name: "Reduction of Risk Potential",
+    weight: "9-15% of exam weight",
+    score: 71,
+    status: "NEED FOCUS",
+    statusType: "focus", // orange
+    peer: 78,
+    target: 75,
+  },
+  {
+    name: "Physiological Adoption",
+    weight: "9-15% of exam weight",
+    score: 71,
+    status: "NEED FOCUS",
+    statusType: "focus", // orange
+    peer: 78,
+    target: 75,
+  },
 ];
 
 export const PERF_DATA = [
