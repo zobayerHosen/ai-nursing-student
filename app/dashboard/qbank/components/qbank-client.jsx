@@ -3,10 +3,21 @@
 import { useMemo, useState } from "react";
 import { NGN_TYPES } from "../../nclex-exam/components/data";
 import PracticeByCategorySection from "./practice-category";
+import PerformanceSection from "./performance-section";
 import QuestionInterface from "../../nclex-exam/components/question-interface";
-import { useCategoryList, useExamQuestion, useStartExam, useSubmitAnswer, useFinishExam } from "@/hooks/qbank";
+import {
+  useCategoryList,
+  useExamQuestion,
+  useStartExam,
+  useSubmitAnswer,
+  useFinishExam,
+} from "@/hooks/qbank";
+import { Plus } from "lucide-react";
+import Link from "next/link";
 
 export default function QbankClient() {
+  const [activeTab, setActiveTab] = useState("qbank"); // "qbank" | "performance"
+
   const { category, isLoading } = useCategoryList();
   const { startExam, isPending: isStarting } = useStartExam();
   const { submitAnswer } = useSubmitAnswer();
@@ -14,8 +25,6 @@ export default function QbankClient() {
 
   const [sessionId, setSessionId] = useState(null);
   const { sessionData, examQuestion, isLoading: examQuestionLoading } = useExamQuestion(sessionId);
-
-  console.log("examQuestion", examQuestion);
 
   const [examState, setExamState] = useState(null);
   const [qHistory, setQHistory] = useState({});
@@ -34,7 +43,9 @@ export default function QbankClient() {
       if (Array.isArray(clozeBlanks)) {
         clozeBlanks = clozeBlanks.map((blank) => {
           const rawOpts = blank.options || [];
-          const opts = rawOpts.map((o) => (typeof o === "string" ? o : o?.text || o?.option_text || o?.title || ""));
+          const opts = rawOpts.map((o) =>
+            typeof o === "string" ? o : o?.text || o?.option_text || o?.title || ""
+          );
           return {
             ...blank,
             options: opts,
@@ -45,8 +56,12 @@ export default function QbankClient() {
 
       let matrixRows = q.matrixRows || q.matrix_rows || [];
       let matrixCols = q.matrixCols || q.matrix_cols || [];
-      matrixRows = matrixRows.map((r) => (typeof r === "string" ? r : r?.text || r?.option_text || r?.title || ""));
-      matrixCols = matrixCols.map((c) => (typeof c === "string" ? c : c?.text || c?.option_text || c?.title || ""));
+      matrixRows = matrixRows.map((r) =>
+        typeof r === "string" ? r : r?.text || r?.option_text || r?.title || ""
+      );
+      matrixCols = matrixCols.map((c) =>
+        typeof c === "string" ? c : c?.text || c?.option_text || c?.title || ""
+      );
 
       // Build blankInput config for input/fill-blank types
       let blankInput = q.blankInput || q.blank_input || {};
@@ -95,8 +110,8 @@ export default function QbankClient() {
   const handleStartExam = async (topic, subtopic, config, label) => {
     const payload = {
       mode: config.mode,
-      total_question: config.count,
-      topic_id: subtopic ? null : topic.id,
+      total_question: config.count || config.questionCount || 25,
+      topic_id: subtopic ? null : topic?.id || null,
       subtopic_id: subtopic ? subtopic.id : null,
     };
     try {
@@ -117,7 +132,9 @@ export default function QbankClient() {
 
   const handleSubmitAnswer = async (questionId, ansVal) => {
     if (!sessionId) return null;
-    const qObj = formattedQuestions.find((q) => q.id === questionId) || examQuestion.find((q) => q.id === questionId);
+    const qObj =
+      formattedQuestions.find((q) => q.id === questionId) ||
+      examQuestion.find((q) => q.id === questionId);
     if (!qObj) return null;
 
     let answer = null;
@@ -224,6 +241,7 @@ export default function QbankClient() {
     setSessionId(null);
   };
 
+  // When active exam session is in progress
   if (examState) {
     if (isExamLoading) {
       return (
@@ -253,28 +271,93 @@ export default function QbankClient() {
   }
 
   return (
-    <div className="w-full flex flex-col h-full xl:min-h-[calc(100vh-80px)] relative bg-[#f4f6f9]">
-      {/* Top bar - larger screens */}
-      <div className="hidden xl:flex bg-white border-b border-[#e2e8f0] px-7 h-13.5 items-center justify-between shrink-0">
-        <span className="text-[15px] font-bold text-[#0f172a]">
-          Tutorial QBank
-        </span>
-        <div className="flex items-center gap-3">
-          <div className="text-xs text-[#64748b] flex items-center gap-1.5">
-            <span className="text-amber-500">⭐</span>
-            <span className="font-semibold">69%</span> overall
+    <div className="w-full min-h-screen bg-[#f8fafc] flex flex-col overflow-x-hidden">
+      {/* ─── TOP HEADER SECTION (MATCHING DESIGN) ──────────────── */}
+      <div className="w-full bg-white border-b border-[#e2e8f0] px-3 sm:px-5 lg:px-6 xl:px-8 pt-3.5 sm:pt-4 lg:pt-5 xl:pt-6">
+        <div className="w-full">
+          {/* Header Row: Title & AI Action Button */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-3.5 sm:pb-4">
+            {/* Title & Badge */}
+            <div className="flex items-start gap-2.5 sm:gap-3">
+              {/* Question Bank Badge Icon */}
+              <div className="w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 xl:w-12 xl:h-12 rounded-xl bg-[#1e3a5f] text-white flex items-center justify-center shrink-0 shadow-sm">
+                <svg
+                  className="w-5 h-5 xl:w-6 xl:h-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  <circle cx="9" cy="10" r="1" />
+                  <circle cx="15" cy="10" r="1" />
+                  <path d="M9.5 13a3.5 3.5 0 0 0 5 0" />
+                </svg>
+              </div>
+
+              <div>
+                <h1 className="text-lg sm:text-xl xl:text-2xl font-extrabold text-[#0f172a] tracking-tight leading-tight">
+                  Nursing Question Bank
+                </h1>
+                <p className="text-xs sm:text-[13px] text-[#64748b] mt-0.5">
+                  Master every nursing topic with targeted, NCLEX-style practice.
+                </p>
+              </div>
+            </div>
+
+            {/* AI Custom Quiz Button */}
+            <div className="flex items-center gap-3 w-full sm:w-auto shrink-0">
+              <Link
+                href="/dashboard/notes-to-quize"
+                className="w-full sm:w-auto px-4 py-2 lg:px-5 bg-[#1e3a5f] hover:bg-[#162d4a] text-white rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 whitespace-nowrap shadow-sm transition-all duration-150 cursor-pointer active:scale-98"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Create Custom Quiz With AI</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Navigation Tabs (QBank | Performance) */}
+          <div className="flex items-center gap-5 sm:gap-7 lg:gap-9 -mb-px overflow-x-auto">
+            <button
+              onClick={() => setActiveTab("qbank")}
+              className={`pb-2.5 sm:pb-3 xl:pb-3.5 text-xs sm:text-sm xl:text-[15px] font-bold transition-all cursor-pointer relative whitespace-nowrap ${
+                activeTab === "qbank"
+                  ? "text-[#1e3a5f] border-b-2 border-[#1e3a5f]"
+                  : "text-[#64748b] hover:text-[#1e3a5f]"
+              }`}
+            >
+              QBank
+            </button>
+
+            <button
+              onClick={() => setActiveTab("performance")}
+              className={`pb-2.5 sm:pb-3 xl:pb-3.5 text-xs sm:text-sm xl:text-[15px] font-bold transition-all cursor-pointer relative whitespace-nowrap ${
+                activeTab === "performance"
+                  ? "text-[#1e3a5f] border-b-2 border-[#1e3a5f]"
+                  : "text-[#64748b] hover:text-[#1e3a5f]"
+              }`}
+            >
+              Performance
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Content area */}
-      <div className="w-full flex-1 overflow-hidden flex flex-col">
-        <PracticeByCategorySection
-          onStartExam={handleStartExam}
-          computeStats={computeStats}
-          category={category}
-          isLoading={isLoading}
-        />
+      {/* ─── MAIN CONTENT AREA ─────────────────────────────────── */}
+      <div className="flex-1 w-full px-3 sm:px-5 lg:px-6 xl:px-8 py-4 sm:py-5 lg:py-6 xl:py-7">
+        {activeTab === "qbank" ? (
+          <PracticeByCategorySection
+            onStartExam={handleStartExam}
+            computeStats={computeStats}
+            category={category}
+            isLoading={isLoading}
+          />
+        ) : (
+          <PerformanceSection />
+        )}
       </div>
     </div>
   );
