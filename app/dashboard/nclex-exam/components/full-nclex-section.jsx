@@ -25,7 +25,7 @@ export default function FullNCLEXSection({ onStartExam, consumedExams }) {
             >
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="16" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12.01" y2="8" />
+              <line x1="12" y1="8" x2="12.01" y2="8" /> 
             </svg>
           </div>
         </div>
@@ -47,26 +47,24 @@ export default function FullNCLEXSection({ onStartExam, consumedExams }) {
                 <div className="flex items-center gap-3 sm:gap-4 flex-1">
                   {/* Number Badge */}
                   <div
-                    className={`w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                      completed
-                        ? "bg-[#ecfdf5] text-[#059669]"
+                    className={`w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${completed
+                        ? "bg-[#ecfdf5] text-success"
                         : available
-                        ? "bg-[#f1f5f9] text-[#64748b]"
-                        : "bg-[#f8fafc] text-[#94a3b8]"
-                    }`}
+                          ? "bg-[#f1f5f9] text-[#64748b]"
+                          : "bg-[#f8fafc] text-[#94a3b8]"
+                      }`}
                   >
                     {exam.order || i + 1}
                   </div>
 
                   {/* Status Icon Box */}
                   <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                      completed
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${completed
                         ? "bg-[#dcfce7] text-[#16a34a]"
                         : available
-                        ? "bg-[#e0f2fe] text-[#0284c7]"
-                        : "bg-[#fff7ed] text-[#ea580c]"
-                    }`}
+                          ? "bg-info-100 text-info"
+                          : "bg-[#fff7ed] text-[#ea580c]"
+                      }`}
                   >
                     {completed ? (
                       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -96,7 +94,7 @@ export default function FullNCLEXSection({ onStartExam, consumedExams }) {
                         </span>
                       )}
                       {isConsumed && (
-                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#fee2e2] text-[#991b1b]">
+                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-error-100 text-[#991b1b]">
                           Locked
                         </span>
                       )}
@@ -122,7 +120,7 @@ export default function FullNCLEXSection({ onStartExam, consumedExams }) {
                         </svg>
                         <span>Completed</span>
                       </div>
-                      <div className="text-right min-w-[54px]">
+                      <div className="text-right min-w-13.5">
                         <div className="text-2xl font-extrabold text-[#0f172a] leading-none">
                           {exam.score}%
                         </div>
@@ -159,4 +157,4 @@ export default function FullNCLEXSection({ onStartExam, consumedExams }) {
       </div>
     </div>
   );
-}
+};

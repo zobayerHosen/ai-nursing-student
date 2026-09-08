@@ -1,4 +1,4 @@
-import image1 from "@/public/assets/flashcards/answer-image.png";
+const image1 = null;
 
 export const subTopicsData = {
   "fundamentals-of-nursing": [

@@ -328,12 +328,12 @@ export default function PerformanceSection() {
                   <div className="text-[11px] font-bold text-[#64748b] tracking-wider uppercase">
                     ACCURACY
                   </div>
-                  <div className="text-3xl sm:text-4xl font-extrabold text-[#0284c7] mt-2 mb-1">
+                  <div className="text-3xl sm:text-4xl font-extrabold text-info mt-2 mb-1">
                     79%
                   </div>
                 </div>
                 {/* Blue sparkline SVG icon */}
-                <div className="w-10 h-10 rounded-xl bg-sky-100/70 text-[#0284c7] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-sky-100/70 text-info flex items-center justify-center">
                   <svg
                     className="w-6 h-6"
                     viewBox="0 0 24 24"
@@ -347,7 +347,7 @@ export default function PerformanceSection() {
                   </svg>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#0284c7] mt-3">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-info mt-3">
                 <span className="text-xs">▲</span>
                 <span>6%</span>
                 <span className="text-[#64748b] font-normal">
@@ -382,7 +382,7 @@ export default function PerformanceSection() {
                   </svg>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#0284c7] mt-3">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-info mt-3">
                 <span className="text-xs">▲</span>
                 <span>18%</span>
                 <span className="text-[#64748b] font-normal">
@@ -448,7 +448,7 @@ export default function PerformanceSection() {
               <span>Strength</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#0284c7]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-info" />
               <span>On Track</span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -577,7 +577,7 @@ export default function PerformanceSection() {
               {focusAreas.map((item, idx) => (
                 <div
                   key={idx}
-                  className="bg-[#fef2f2] border border-[#fee2e2] rounded-xl px-4 py-3 flex items-center justify-between hover:border-[#fecaca] transition-colors"
+                  className="bg-error-50 border border-error-100 rounded-xl px-4 py-3 flex items-center justify-between hover:border-[#fecaca] transition-colors"
                 >
                   <div className="min-w-0 flex-1 pr-3">
                     <div className="flex flex-wrap items-baseline gap-1.5">
