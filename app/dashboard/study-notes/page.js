@@ -10,7 +10,7 @@ export default function StudyNotesIndexPage() {
         </div>
 
         {/* Heading */}
-        <h1 className="text-2xl sm:text-[28px] font-bold text-[#111827] mb-3 tracking-tight">
+        <h1 className="text-2xl sm:text-[28px] font-bold text-text-primary mb-3 tracking-tight">
           Clinical Study Notes
         </h1>
 
@@ -28,4 +28,4 @@ export default function StudyNotesIndexPage() {
       </div>
     </div>
   );
-}
+}

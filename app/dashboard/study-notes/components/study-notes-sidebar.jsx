@@ -23,7 +23,7 @@ const SidebarContent = ({ onClose }) => {
             <aside className="w-full h-full border-r border-[#E2E8F0] bg-[#FAFAFA] overflow-y-auto overflow-x-hidden flex flex-col">
                 {/* header content */}
                 <div className="p-4 border-b border-[#E2E8F0] shrink-0 bg-white">
-                    <h2 className="text-base font-bold text-[#111827] mb-3">
+                    <h2 className="text-base font-bold text-text-primary mb-3">
                         Study Notes
                     </h2>
 
@@ -58,7 +58,7 @@ const SidebarContent = ({ onClose }) => {
                         return (
                             <div
                                 key={category?.id}
-                                className="bg-white border border-[#E2E8F0] rounded-[12px] overflow-hidden shadow-[0_1px_2px_0_rgba(0,0,0,0.02)]"
+                                className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden shadow-[0_1px_2px_0_rgba(0,0,0,0.02)]"
                             >
                                 {/* Category Header */}
                                 <button
@@ -76,7 +76,7 @@ const SidebarContent = ({ onClose }) => {
                                         </div>
 
                                         {/* Icon */}
-                                        <div className="w-7 h-7 shrink-0 rounded-[8px] bg-[#F1F5F9] flex items-center justify-center overflow-hidden border border-[#E2E8F0]">
+                                        <div className="w-7 h-7 shrink-0 rounded-lg bg-[#F1F5F9] flex items-center justify-center overflow-hidden border border-[#E2E8F0]">
                                             {category?.cover ? (
                                                 <Image
                                                     src={category.cover.startsWith('http') ? category.cover : `${process.env.NEXT_PUBLIC_BASE_URL || ''}${category.cover}`}
@@ -134,7 +134,7 @@ const SidebarContent = ({ onClose }) => {
                                                         onClick={() => {
                                                             if (onClose) onClose();
                                                         }}
-                                                        className="w-full bg-white border border-[#E2E8F0] rounded-[8px] px-2.5 py-1.5 flex items-center justify-between hover:bg-[#F8FAFC] transition shadow-[0_1px_2px_0_rgba(0,0,0,0.02)]"
+                                                        className="w-full bg-white border border-[#E2E8F0] rounded-lg px-2.5 py-1.5 flex items-center justify-between hover:bg-[#F8FAFC] transition shadow-[0_1px_2px_0_rgba(0,0,0,0.02)]"
                                                     >
                                                         <span className="text-[11px] text-[#4A4A4A] font-semibold truncate pr-2">
                                                             {subcategory?.content_name ?? ""}

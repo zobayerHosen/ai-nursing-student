@@ -29,7 +29,7 @@ export default function StudyNoteClient() {
       <div className="w-full">
         <div className="bg-white rounded-2xl p-10 border border-[#EEEEEE] shadow-sm text-center">
           <div className="max-w-md mx-auto">
-            <h2 className="text-2xl font-bold text-[#111827] mb-3">
+            <h2 className="text-2xl font-bold text-text-primary mb-3">
               Note Not Found
             </h2>
             <p className="text-[#7A7A7A] mb-6">
@@ -61,7 +61,7 @@ export default function StudyNoteClient() {
 
       {/* Content Card */}
       <div className="bg-white rounded-2xl p-5 sm:p-8 border border-[#EEEEEE] shadow-sm relative overflow-hidden flex flex-col">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#111827] mb-6 shrink-0">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary mb-6 shrink-0">
           {currentNote?.content_name ?? "Not Found"}
         </h1>
 
