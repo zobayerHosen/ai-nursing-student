@@ -216,7 +216,7 @@ export default function VideoLessonDetails({ videoId }) {
               </div>
 
               {/* Bottom Custom Controls Bar */}
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3 sm:p-4.5 flex flex-col gap-2 opacity-95 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/90 via-black/50 to-transparent p-3 sm:p-4.5 flex flex-col gap-2 opacity-95 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                 {/* Scrubber Progress Bar */}
                 <div
                   onClick={(e) => {
@@ -323,7 +323,7 @@ export default function VideoLessonDetails({ videoId }) {
                     isFavorite ? "Removed from favorites" : "Added to favorites!"
                   );
                 }}
-                className="inline-flex items-center gap-2 hover:text-[#0284c7] transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 hover:text-info transition-colors cursor-pointer"
               >
                 {isFavorite ? (
                   <Heart className="w-4 h-4 text-red-500 fill-red-500" />
@@ -335,7 +335,7 @@ export default function VideoLessonDetails({ videoId }) {
 
               <button
                 onClick={() => toast.success("Download started for offline viewing")}
-                className="inline-flex items-center gap-2 hover:text-[#0284c7] transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 hover:text-info transition-colors cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>Download</span>
@@ -418,7 +418,7 @@ export default function VideoLessonDetails({ videoId }) {
                     <div className="space-y-2.5">
                       {LESSON_DETAIL_DATA.whatYouLearn.map((outcome, idx) => (
                         <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-[#334155]">
-                          <CheckCircle2 className="w-4 h-4 text-[#0284c7] shrink-0 mt-0.5" />
+                          <CheckCircle2 className="w-4 h-4 text-info shrink-0 mt-0.5" />
                           <span className="leading-snug">{outcome}</span>
                         </div>
                       ))}
@@ -439,7 +439,7 @@ export default function VideoLessonDetails({ videoId }) {
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="w-9 h-9 rounded-lg bg-blue-50 text-[#1e3a5f] flex items-center justify-center shrink-0">
-                            <FileText className="w-5 h-5 text-[#0284c7]" />
+                            <FileText className="w-5 h-5 text-info" />
                           </div>
                           <div className="min-w-0">
                             <h4 className="text-xs sm:text-sm font-semibold text-[#0f172a] truncate">

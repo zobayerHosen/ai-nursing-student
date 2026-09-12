@@ -2,18 +2,42 @@
 import Image from "next/image";
 import heroImage from "@/public/assets/heroImg.webp";
 import Link from "next/link";
+import hImg01 from "@/public/assets/hImg01.png"
+import hImg02 from "@/public/assets/hImg02.png"
+import hImg03 from "@/public/assets/hImg03.png"
+import hImg04 from "@/public/assets/hImg04.png"
+
 import { 
     Play, 
     X, 
-    ArrowRight, 
-    Bot, 
-    Stethoscope, 
-    GraduationCap, 
-    Users
+    ArrowRight
 } from "lucide-react";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useGetUser } from "@/hooks";
+
+const FEATURE_BADGES = [
+    {
+        id: "ai-tools",
+        title: "AI-Powered Study Tools",
+        image: hImg01,
+    },
+    {
+        id: "nursing-students",
+        title: "Built for Nursing Students",
+        image: hImg02,
+    },
+    {
+        id: "nclex-ready",
+        title: "NCLEX Next Gen Ready",
+        image: hImg03,
+    },
+    {
+        id: "trusted-students",
+        title: "Trusted by 10,000+ Students",
+        image: hImg04,
+    },
+];
 
 const Hero = () => {
     const { user } = useGetUser();
@@ -51,41 +75,22 @@ const Hero = () => {
 
                         {/* 4 Feature Badges - Compact spacing for 1024px laptops */}
                         <div className="mt-6 lg:mt-6 xl:mt-8 grid grid-cols-4 gap-2 lg:gap-2 xl:gap-4 max-w-lg">
-                            <div className="flex flex-col items-center text-center">
-                                <div className="w-8 h-8 lg:w-8 lg:h-8 xl:w-10 xl:h-10 rounded-xl bg-sky-500/15 border border-sky-400/20 text-sky-400 flex items-center justify-center mb-1.5">
-                                    <Bot className="w-4 h-4 xl:w-5 xl:h-5" />
+                            {FEATURE_BADGES.map((badge) => (
+                                <div key={badge.id} className="flex flex-col items-center text-center">
+                                    <div className="w-8 h-8 lg:w-8 lg:h-8 xl:w-10 xl:h-10 relative flex items-center justify-center mb-1.5">
+                                        <Image
+                                            src={badge.image}
+                                            alt={badge.title}
+                                            width={40}
+                                            height={40}
+                                            className="w-full h-full object-contain"
+                                        />
+                                    </div>
+                                    <span className="text-[10px] lg:text-[10px] xl:text-[11px] font-medium text-slate-300 leading-tight">
+                                        {badge.title}
+                                    </span>
                                 </div>
-                                <span className="text-[10px] lg:text-[10px] xl:text-[11px] font-medium text-slate-300 leading-tight">
-                                    AI-Powered Study Tools
-                                </span>
-                            </div>
-
-                            <div className="flex flex-col items-center text-center">
-                                <div className="w-8 h-8 lg:w-8 lg:h-8 xl:w-10 xl:h-10 rounded-xl bg-teal-500/15 border border-teal-400/20 text-teal-400 flex items-center justify-center mb-1.5">
-                                    <Stethoscope className="w-4 h-4 xl:w-5 xl:h-5" />
-                                </div>
-                                <span className="text-[10px] lg:text-[10px] xl:text-[11px] font-medium text-slate-300 leading-tight">
-                                    Built for Nursing Students
-                                </span>
-                            </div>
-
-                            <div className="flex flex-col items-center text-center">
-                                <div className="w-8 h-8 lg:w-8 lg:h-8 xl:w-10 xl:h-10 rounded-xl bg-purple-500/15 border border-purple-400/20 text-purple-400 flex items-center justify-center mb-1.5">
-                                    <GraduationCap className="w-4 h-4 xl:w-5 xl:h-5" />
-                                </div>
-                                <span className="text-[10px] lg:text-[10px] xl:text-[11px] font-medium text-slate-300 leading-tight">
-                                    NCLEX Next Gen Ready
-                                </span>
-                            </div>
-
-                            <div className="flex flex-col items-center text-center">
-                                <div className="w-8 h-8 lg:w-8 lg:h-8 xl:w-10 xl:h-10 rounded-xl bg-orange-500/15 border border-orange-400/20 text-orange-400 flex items-center justify-center mb-1.5">
-                                    <Users className="w-4 h-4 xl:w-5 xl:h-5" />
-                                </div>
-                                <span className="text-[10px] lg:text-[10px] xl:text-[11px] font-medium text-slate-300 leading-tight">
-                                    Trusted by 10,000+ Students
-                                </span>
-                            </div>
+                            ))}
                         </div>
 
                         {/* CTA Buttons */}
@@ -108,11 +113,6 @@ const Hero = () => {
                                 <span>See How It Works</span>
                             </button>
                         </div>
-
-                        {/* Footer Subtext */}
-                        <p className="mt-2.5 text-[11px] xl:text-xs text-slate-400">
-                            No credit card required • Cancel anytime
-                        </p>
                     </motion.div>
 
                     {/* Right Column Content - Extra Large Monitor Display */}
@@ -120,7 +120,7 @@ const Hero = () => {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.8, delay: 0.2 }}
-                        className="w-full lg:w-7/12 xl:w-7/12 relative flex items-center justify-center min-h-95 sm:min-h-120 lg:min-h-140 xl:min-h-160"
+                        className="w-full lg:w-8/12 relative flex items-center justify-center min-h-95 sm:min-h-120 lg:min-h-160"
                     >
                         {/* Central Monitor Image Container */}
                         <div className="relative w-full max-w-175 lg:max-w-185 xl:max-w-250 aspect-16/10 drop-shadow-2xl">
@@ -129,7 +129,7 @@ const Hero = () => {
                                 alt="STEMRN Dashboard Interface"
                                 fill
                                 priority
-                                className="object-contain"
+                                className="object-cover w-full h-full"
                                 sizes="(max-width: 1024px) 100vw, 65vw"
                             />
 

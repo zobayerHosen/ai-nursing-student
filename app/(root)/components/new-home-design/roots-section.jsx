@@ -17,12 +17,12 @@ const RootsSection = () => {
                             THE STEMRN METHOD
                         </span>
 
-                        <h2 className="mt-4 text-3xl font-bold text-[#285680] lg:text-5xl xl:text-6xl">
+                        <h2 className="mt-4 text-3xl font-semibold text-[#285680] lg:text-4xl">
                             4 Roots of Success
                         </h2>
 
-                        <p className="mt-4 max-w-2xl text-sm md:leading-6 lg:leading-7 text-[#6D6D6D] sm:text-base lg:text-lg">
-                            Our framework isn't about memorization — it's about
+                        <p className="mt-4 max-w-2xl text-sm md:leading-6 lg:leading-7 text-[#64748B] sm:text-base">
+                            Our framework isn&apos;t about memorization — it&apos;s about
                             building the clinical reasoning NCLEX demands from
                             day one of your career.
                         </p>

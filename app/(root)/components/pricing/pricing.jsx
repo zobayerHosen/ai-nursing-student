@@ -163,6 +163,20 @@ const PricingPage = () => {
 
                         const sub = user?.subscription;
 
+                        const rawFeatures =
+                            plan?.features && plan.features.length > 0
+                                ? plan.features
+                                : fallbackPlans[idx % 3].features;
+                        const featuresList = (
+                            Array.isArray(rawFeatures)
+                                ? rawFeatures
+                                : typeof rawFeatures === "string"
+                                ? rawFeatures.split("\n")
+                                : []
+                        )
+                            .map((feat) => (typeof feat === "string" ? feat.trim() : feat))
+                            .filter((feat) => (typeof feat === "string" ? feat.length > 0 : Boolean(feat)));
+
                         return (
                             <div
                                 key={idx}
@@ -250,7 +264,7 @@ const PricingPage = () => {
 
                                     {/* Checklist */}
                                     <ul className="space-y-2.5 text-xs font-medium">
-                                        {(plan?.features && plan.features.length > 0 ? plan.features : fallbackPlans[idx % 3].features).map((feat, fIdx) => (
+                                        {featuresList.map((feat, fIdx) => (
                                             <li key={fIdx} className="flex items-start gap-2.5">
                                                 <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
                                                     isFeatured ? "bg-rose-400/20 text-[#FF6B6B]" : "bg-rose-100/70 text-[#FF6B6B]"
