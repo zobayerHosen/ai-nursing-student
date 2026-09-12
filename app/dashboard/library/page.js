@@ -123,10 +123,10 @@ const LibraryMainContent = () => {
             <BookOpen className="w-5 h-5 text-[#1B4B66]" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#1B4B66] tracking-tight">
+            <h1 className="text-2xl font-bold text-[#044E79] tracking-tight">
               My Library
             </h1>
-            <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+            <p className="text-[11px] sm:text-xs lg:text-sm text-[#64748b] mt-0.5">
               Save, organize and revisit the nursing notes you need most.
             </p>
           </div>

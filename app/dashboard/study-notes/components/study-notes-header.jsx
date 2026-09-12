@@ -13,12 +13,12 @@ export default function StudyNotesHeader() {
           <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1B4B66] flex items-center justify-center shrink-0">
             <BookOpen className="w-6 h-6 text-[#1B4B66]" strokeWidth={2} />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1B4B66] tracking-tight">
+          <h1 className="text-2xl font-bold text-[#044E79] tracking-tight">
             Nursing Study Notes
           </h1>
         </div>
 
-        <p className="text-xs sm:text-sm text-gray-500 mt-2 max-w-2xl font-normal leading-relaxed">
+        <p className="text-[11px] sm:text-xs lg:text-sm text-[#64748b] mt-0.5">
           Concise, visual, high-yield notes built for nursing school and NCLEX review.
         </p>
       </div>

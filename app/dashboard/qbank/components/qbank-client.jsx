@@ -298,10 +298,10 @@ export default function QbankClient() {
               </div>
 
               <div>
-                <h1 className="text-lg sm:text-xl xl:text-2xl font-extrabold text-[#0f172a] tracking-tight leading-tight">
+                <h1 className="text-2xl font-bold text-[#044E79] tracking-tight">
                   Nursing Question Bank
                 </h1>
-                <p className="text-xs sm:text-[13px] text-[#64748b] mt-0.5">
+                <p className="text-[11px] sm:text-xs lg:text-sm text-[#64748b] mt-0.5">
                   Master every nursing topic with targeted, NCLEX-style practice.
                 </p>
               </div>

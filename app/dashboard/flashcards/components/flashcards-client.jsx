@@ -44,10 +44,10 @@ function FlashCardsContent() {
               <div className="p-1">{FLASHCARD_ICON}</div>
 
               <div>
-                <h1 className="text-xl sm:text-2xl lg:text-[26px] font-extrabold text-[#1B4B66] tracking-tight leading-tight">
+                <h1 className="text-2xl font-bold text-[#044E79] tracking-tight">
                   Nursing Flashcards
                 </h1>
-                <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                <p className="text-[11px] sm:text-xs lg:text-sm text-[#64748b] mt-0.5">
                   Review high-yield concepts, master difficult cards, and retain more.
                 </p>
               </div>

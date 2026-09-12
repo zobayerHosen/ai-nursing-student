@@ -39,7 +39,7 @@ export default function NclexClient() {
     <div className="w-full min-h-screen bg-[#f8fafc] flex flex-col overflow-x-hidden">
       {/* Top Header Section */}
       <div className="w-full bg-white border-b border-[#e2e8f0] px-4 sm:px-6 lg:px-8 xl:px-10 pt-4 sm:pt-5 lg:pt-6">
-        <div className="max-w-350 mx-auto">
+        <div className="w-full">
           {/* Title & Branding */}
           <div className="flex items-start gap-2.5 sm:gap-3.5 mb-4 sm:mb-5 lg:mb-6">
             {/* Logo / Icon */}
@@ -61,7 +61,7 @@ export default function NclexClient() {
 
             {/* Title & Subtitle */}
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-[#1E3A5F] leading-tight">
+              <h1 className="text-2xl font-bold text-[#044E79] tracking-tight">
                 NCLEX RN Simulator
               </h1>
               <p className="text-[11px] sm:text-xs lg:text-sm text-[#64748b] mt-0.5">
@@ -99,7 +99,7 @@ export default function NclexClient() {
 
       {/* Main Content Area */}
       <div className="w-full flex-1 px-4 sm:px-6 lg:px-8 xl:px-10 py-4 sm:py-6 lg:py-8">
-        <div className="max-w-350 mx-auto">
+        <div className="w-full">
           {activeTab === "simulation" ? (
             <FullNCLEXSection
               onStartExam={handleStartExam}
