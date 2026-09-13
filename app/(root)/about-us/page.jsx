@@ -136,7 +136,7 @@ export default function AboutUsPage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#2C5F8D]/40 border border-[#4d92c0]/30 text-xs sm:text-sm font-semibold tracking-wide text-sky-200 mb-6"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#2C5F8D]/40 border border-primary-400/30text-xs sm:text-sm font-semibold tracking-wide text-sky-200 mb-6"
             >
               <Image
                 src={miniLogo}
@@ -156,7 +156,7 @@ export default function AboutUsPage() {
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.15] text-white"
             >
               Transforming NCLEX Prep Through{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-teal-300 to-emerald-400">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-sky-400 via-teal-300 to-emerald-400">
                 Deep Reasoning & AI
               </span>
             </motion.h1>
@@ -181,7 +181,7 @@ export default function AboutUsPage() {
             >
               <Link
                 href="/#pricing"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#2C5F8D] to-[#234d73] hover:from-[#3571a8] hover:to-[#2c5f8d] text-white font-semibold text-base shadow-lg shadow-blue-900/30 transition-all duration-200 transform hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl not-only:bg-linear-to-r from-[#2C5F8D] to-primary-600 hover:from-[#3571a8] hover:to-[#2c5f8d] text-white font-semibold text-base shadow-lg shadow-blue-900/30 transition-all duration-200 transform hover:-translate-y-0.5"
               >
                 Explore Prep Plans
                 <ArrowRight className="w-4 h-4" />
@@ -269,7 +269,7 @@ export default function AboutUsPage() {
 
             {/* Right Visual Image */}
             <div className="lg:col-span-6 relative">
-              <div className="relative mx-auto max-w-lg lg:max-w-none rounded-3xl overflow-hidden shadow-2xl border border-slate-200 bg-gradient-to-b from-slate-100 to-slate-200 p-3 sm:p-4">
+              <div className="relative mx-auto max-w-lg lg:max-w-none rounded-3xl overflow-hidden shadow-2xl border border-slate-200 bg-linear-to-b from-slate-100 to-slate-200 p-3 sm:p-4">
                 <Image
                   src={succeedImg}
                   alt="STEMRN Platform Illustration"
@@ -369,7 +369,7 @@ export default function AboutUsPage() {
                   className="rounded-2xl p-6 sm:p-8 bg-slate-50 border border-slate-200/80 hover:border-blue-300 transition-all duration-300 shadow-sm hover:shadow-md"
                 >
                   <div
-                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${value.color} flex items-center justify-center mb-6`}
+                    className={`w-12 h-12 rounded-xl bg-linear-to-br ${value.color} flex items-center justify-center mb-6`}
                   >
                     <IconC className={`w-6 h-6 ${value.iconColor}`} />
                   </div>
@@ -436,7 +436,7 @@ export default function AboutUsPage() {
 
       {/* Call To Action */}
       <section className="py-16 sm:py-20 bg-[#1C2534] text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#1C2534] via-[#2C5F8D]/40 to-[#1C2534]" />
+        <div className="absolute inset-0 bg-linear-to-r from-[#1C2534] via-[#2C5F8D]/40 to-[#1C2534]" />
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl relative z-10 text-center">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight">
