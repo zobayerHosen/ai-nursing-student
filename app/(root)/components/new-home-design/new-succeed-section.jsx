@@ -68,7 +68,7 @@ const FeatureItem = ({ children }) => (
 
 const NewSucceedSection = () => {
     return (
-        <section className="w-full bg-[#F8FAFC] py-14 text-slate-800 sm:py-18 md:py-24">
+        <section className="w-full bg-[#F8FAFC] py-14 text-slate-800 sm:py-18 md:py-24" id="HomeNCLEXExam">
             <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
                 {/* Main Heading */}

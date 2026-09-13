@@ -14,7 +14,7 @@ const navItems = [
   { label: "Features", href: "#features" },
   { label: "NCLEX Prep", href: "#HomeNCLEXExam" },
   { label: "Pricing", href: "#pricing" },
-  { label: "Terms", href: "#faq" },
+  { label: "Terms", href: "#roots" },
   { label: "Contact", href: "#contact" },
 ];
 

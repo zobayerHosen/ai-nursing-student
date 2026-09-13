@@ -278,174 +278,6 @@ export const faqSections = [
       },
     ],
   },
-
-  // {
-  //   id: "cara-ai",
-  //   title: "CARA AI Tutor",
-  //   description: "Meet your 24/7 Clinical Adaptive Response Assistant.",
-  //   icon: <MessageSquare />,
-  //   faqs: [
-  //     {
-  //       question: "What is CARA?",
-  //       answer: `CARA stands for Clinical Adaptive Response Assistant. She is STEMRN’s AI tutor trained specifically on NCLEX content, clinical judgment, pharmacology, pathophysiology, and patient care scenarios.`,
-  //     },
-  //     {
-  //       question: "Is CARA really unlimited?",
-  //       answer: `Yes. All paid plans include unlimited text conversations with CARA AI.`,
-  //     },
-  //     {
-  //       question: "Can CARA replace a human tutor?",
-  //       answer: `For most NCLEX prep situations, yes. CARA is available 24/7 and explains concepts conversationally.`,
-  //     },
-  //   ],
-  // },
-
-  // {
-  //   id: "content-features",
-  //   title: "Content & Features",
-  //   description: "What's inside the platform?",
-  //   icon: <Book />,
-  //   faqs: [
-  //     {
-  //       question: "How many NCLEX questions are in the bank?",
-  //       answer: `STEMRN includes more than 10,000 NCLEX-style questions including NGN formats, prioritization, pharmacology, and case studies.`,
-  //     },
-  //     {
-  //       question: "What are the 13 AI-powered clinical tools?",
-  //       answer: `STEMRN includes tools like My Tutor, Lecture Notes, Notes to Flashcards, Notes to Quiz, Drug Cards, Concept Maps, Labs Interpretation, and more.`,
-  //     },
-  //     {
-  //       question: "Can I create custom quizzes?",
-  //       answer: `Yes. You can build quizzes by topic, difficulty, question type, or weak areas identified by CARA.`,
-  //     },
-  //   ],
-  // },
-
-  // {
-  //   id: "lecture-recording",
-  //   title: "Lecture Recording",
-  //   description: "Turn your class lectures into study notes automatically.",
-  //   icon: <Mic />,
-  //   faqs: [
-  //     {
-  //       question: "How does the lecture recording feature work?",
-  //       answer: `Record lectures directly inside STEMRN and instantly receive transcripts and organized study notes.`,
-  //     },
-  //     {
-  //       question: "How long can lectures be?",
-  //       answer: `Individual lectures can be up to 3 hours long depending on your subscription plan.`,
-  //     },
-  //     {
-  //       question: "Can I upload pre-recorded lectures?",
-  //       answer: `Yes. STEMRN supports MP3, WAV, M4A, and MP4 uploads for transcription and note generation.`,
-  //     },
-  //   ],
-  // },
-
-  // {
-  //   id: "nclex-success",
-  //   title: "NCLEX Success",
-  //   description: "Will STEMRN actually help me pass?",
-  //   icon: <Award />,
-  //   faqs: [
-  //     {
-  //       question: "Is STEMRN aligned with NGN?",
-  //       answer: `Yes. STEMRN was built specifically for the Next Generation NCLEX with all NGN question formats included.`,
-  //     },
-  //     {
-  //       question: "Can repeat test-takers use STEMRN?",
-  //       answer: `Absolutely. STEMRN is especially useful for students struggling with clinical judgment and test-taking strategies.`,
-  //     },
-  //     {
-  //       question: "Can I use STEMRN with UWorld or Archer?",
-  //       answer: `Yes. Many students combine STEMRN with additional question banks closer to their exam date.`,
-  //     },
-  //   ],
-  // },
-
-  // {
-  //   id: "technical",
-  //   title: "Technical",
-  //   description: "Browser support, offline access, and device questions.",
-  //   icon: <Globe />,
-  //   faqs: [
-  //     {
-  //       question: "What browsers does STEMRN support?",
-  //       answer: `STEMRN supports Chrome, Safari, Firefox, and Edge on all modern devices.`,
-  //     },
-  //     {
-  //       question: "Can I use STEMRN offline?",
-  //       answer: `Currently, STEMRN requires an internet connection because AI tools use live APIs.`,
-  //     },
-  //     {
-  //       question: "Is there a mobile app?",
-  //       answer: `Native iOS and Android apps are currently in development for late 2026.`,
-  //     },
-  //   ],
-  // },
-
-  // {
-  //   id: "privacy-security",
-  //   title: "Privacy & Security",
-  //   description: "How we handle your data.",
-  //   icon: <Shield />,
-  //   faqs: [
-  //     {
-  //       question: "Is my data safe?",
-  //       answer: `Yes. STEMRN uses encryption at rest, TLS encryption in transit, and secure database infrastructure.`,
-  //     },
-  //     {
-  //       question: "Do you sell my data?",
-  //       answer: `No. STEMRN never sells user data or study information.`,
-  //     },
-  //     {
-  //       question: "Can I delete my account?",
-  //       answer: `Yes. Accounts and data can be permanently deleted from the settings page.`,
-  //     },
-  //   ],
-  // },
-
-  // {
-  //   id: "billing-refunds",
-  //   title: "Billing & Refunds",
-  //   description: "Subscription questions and our refund policy.",
-  //   icon: <PanelTop />,
-  //   faqs: [
-  //     {
-  //       question: "How do I cancel my subscription?",
-  //       answer: `Go to Settings → Billing → Cancel Subscription. Access remains active until the billing period ends.`,
-  //     },
-  //     {
-  //       question: "What's your refund policy?",
-  //       answer: `Annual plans include a refund window and all paid plans include a free trial period.`,
-  //     },
-  //     {
-  //       question: "Can I switch plans later?",
-  //       answer: `Yes. Upgrades are prorated and downgrades take effect at the end of the current billing period.`,
-  //     },
-  //   ],
-  // },
-
-  // {
-  //   id: "about-stemrn",
-  //   title: "About STEMRN",
-  //   description: "The story behind the platform.",
-  //   icon: <User />,
-  //   faqs: [
-  //     {
-  //       question: "Who built STEMRN?",
-  //       answer: `STEMRN was founded by Captain Tonny P, a Public Health Nurse and US Army Captain.`,
-  //     },
-  //     {
-  //       question: "What does STEMRN mean?",
-  //       answer: `STEMRN combines STEM + RN while also symbolizing stem cells and foundational nursing knowledge.`,
-  //     },
-  //     {
-  //       question: "How can I contact the team?",
-  //       answer: `You can contact STEMRN through hello@stemrn.com or Instagram @stemrn_nclex.`,
-  //     },
-  //   ],
-  // },
 ];
 // Note: FAQ DATA END HERE
 
@@ -453,34 +285,34 @@ export const faqSections = [
 export const platformLinks = [
   {
     title: "NCLEX Prep",
-    href: "#",
+    href: "/dashboard/nclex-exam",
   },
   {
     title: "Flashcards",
-    href: "#",
+    href: "/dashboard/flashcards",
   },
   {
     title: "CARA AI Tutor",
-    href: "#",
+    href: "/dashboard/my-tutor",
   },
   {
     title: "Study Notes",
-    href: "#",
+    href: "/dashboard/study-notes",
   },
 ];
 
 export const companyLinks = [
   {
     title: "About Us",
-    href: "#",
+    href: "/about-us",
   },
-  {
-    title: "Blog",
-    href: "#",
-  },
+  // {
+  //   title: "Blog",
+  //   href: "/blog-page",
+  // },
   {
     title: "Pricing",
-    href: "#",
+    href: "#pricing",
   },
 ];
 
@@ -493,14 +325,14 @@ export const legalLinks = [
     title: "Privacy Policy",
     href: "/privacy-policy",
   },
-  {
-    title: "CA Residents",
-    href: "#",
-  },
-  {
-    title: "HIPAA Notice",
-    href: "#",
-  },
+  // {
+  //   title: "CA Residents",
+  //   href: "#",
+  // },
+  // {
+  //   title: "HIPAA Notice",
+  //   href: "#",
+  // },
 ];
 
 export const socialLinks = [
@@ -508,10 +340,10 @@ export const socialLinks = [
     icon: <FaFacebookF />,
     href: "#",
   },
-  {
-    icon: <FaLinkedinIn />,
-    href: "#",
-  },
+  // {
+  //   icon: <FaLinkedinIn />,
+  //   href: "#",
+  // },
   {
     icon: <FaTwitter />,
     href: "#",

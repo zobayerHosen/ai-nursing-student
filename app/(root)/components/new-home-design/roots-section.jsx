@@ -4,7 +4,7 @@ import Image from "next/image";
 
 const RootsSection = () => {
     return (
-        <section className="bg-[rgba(158,181,203,0.33)] py-12 sm:py-16 md:py-20 xl:py-24">
+        <section className="bg-[rgba(158,181,203,0.33)] py-12 sm:py-16 md:py-20 xl:py-24" id="roots">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Header */}
