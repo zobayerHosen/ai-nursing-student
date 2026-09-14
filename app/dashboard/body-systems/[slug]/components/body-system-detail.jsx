@@ -4,6 +4,8 @@ import Image from 'next/image';
 import { Maximize2, Plus, Minus, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { getSecureUrl } from "@/utils";
+
 
 const BodySystemDetail = ({ systemData }) => {
   console.log("Body system: ", systemData)
@@ -228,7 +230,7 @@ const BodySystemDetail = ({ systemData }) => {
               )}
               <iframe 
                 key={contentFileUrl}
-                src={contentFileUrl?.startsWith("http") ? contentFileUrl : `https://${contentFileUrl}`}
+                src={getSecureUrl(contentFileUrl)}
                 className={`w-full h-full border-0 transition-opacity duration-300 ${isIframeLoading ? 'opacity-0' : 'opacity-100'}`}
                 title={currentContent?.subtitle || currentContent?.content_name || currentContent?.title || "Note Content"}
                 sandbox="allow-same-origin allow-scripts"

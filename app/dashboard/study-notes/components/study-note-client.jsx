@@ -27,6 +27,8 @@ import {
   useMarkComplete,
 } from "@/hooks";
 import SaveNoteModal from "@/components/save-note-modal";
+import { getSecureUrl } from "@/utils";
+
 
 export default function StudyNoteClient() {
   const { studyslug } = useParams();
@@ -293,11 +295,7 @@ export default function StudyNoteClient() {
                   </div>
                 )}
                 <iframe
-                  src={
-                    currentNote.content_file_url.startsWith("http")
-                      ? currentNote.content_file_url
-                      : `https://${currentNote.content_file_url}`
-                  }
+                  src={getSecureUrl(currentNote.content_file_url)}
                   className={`w-full h-full border-0 rounded-lg transition-opacity duration-300 ${
                     isIframeLoading ? "opacity-0" : "opacity-100"
                   }`}

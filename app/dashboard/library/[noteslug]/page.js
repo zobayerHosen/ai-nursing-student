@@ -7,6 +7,8 @@ import NoteNotFound from "./components/note-not-found";
 import { useGetLibrary, useGetCoreLearningContentDetails } from "@/hooks";
 import LoadingIcon from "@/components/loading-icon";
 import NoteHeader from "./components/note-header";
+import { getSecureUrl } from "@/utils";
+
 
 export default function NoteDetails({ params }) {
   const { noteslug } = use(params);
@@ -70,7 +72,7 @@ export default function NoteDetails({ params }) {
                   </div>
                 )}
                 <iframe
-                  src={topicDetailsData.content_file_url.startsWith("http") ? topicDetailsData.content_file_url : `https://${topicDetailsData.content_file_url}`}
+                  src={getSecureUrl(topicDetailsData.content_file_url)}
                   className={`w-full h-full border-0 rounded-xl transition-opacity duration-300 ${isIframeLoading ? 'opacity-0' : 'opacity-100'}`}
                   title={topicDetailsData.content_name || "Note Content"}
                   sandbox="allow-same-origin allow-scripts"
