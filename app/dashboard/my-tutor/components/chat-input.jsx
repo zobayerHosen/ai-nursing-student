@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   SendHorizontal,
   Paperclip,
@@ -16,6 +17,7 @@ import Image from 'next/image';
 const ALLOWED_EXTENSIONS = ['pdf', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'webp'];
 
 export default function ChatInput({
+  initialPrompt = '',
   onSendMessage,
   activeMode,
   setActiveMode,
@@ -24,10 +26,34 @@ export default function ChatInput({
   onToggleVoiceChat,
   connectionStatus,
 }) {
-  const [text, setText] = useState('');
+  const searchParams = useSearchParams();
+  const promptFromUrl =
+    searchParams.get('prompt') ||
+    searchParams.get('q') ||
+    searchParams.get('question') ||
+    '';
+
+  const [text, setText] = useState(initialPrompt || promptFromUrl || '');
   const [attachedFile, setAttachedFile] = useState(null); // File object
   const [previewUrl, setPreviewUrl] = useState(''); // object URL for images
   const fileInputRef = useRef(null);
+  const textInputRef = useRef(null);
+  const lastAppliedPromptRef = useRef(initialPrompt || promptFromUrl || '');
+
+  // Populate input when arriving with a prompt query param
+  useEffect(() => {
+    const prompt = initialPrompt || promptFromUrl;
+    if (prompt && prompt !== lastAppliedPromptRef.current) {
+      setText(prompt);
+      lastAppliedPromptRef.current = prompt;
+      if (activeMode !== 'chat' && setActiveMode) {
+        setActiveMode('chat');
+      }
+      setTimeout(() => {
+        textInputRef.current?.focus();
+      }, 50);
+    }
+  }, [initialPrompt, promptFromUrl, activeMode, setActiveMode]);
 
   const isImageFile = attachedFile?.type?.startsWith('image/');
 
@@ -37,10 +63,6 @@ export default function ChatInput({
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
-
-
-
-
 
   const clearAttachedFile = () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -244,6 +266,7 @@ export default function ChatInput({
         {/* ─── CHAT MODE: text input  */}
         {activeMode === 'chat' && (
           <input
+            ref={textInputRef}
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}

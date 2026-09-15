@@ -5,10 +5,10 @@ import { ArrowRight, Lightbulb, Mic } from "lucide-react";
 
 export default function AskAtlas() {
   const suggestedQuestions = [
-    "Explain oxidative phosphorylation",
-    "How does mitochondria make ATP?",
-    "Difference between mitochondria and chloroplast?",
-    "Give me a quiz on this topic"
+    "Understand difficult concepts",
+    "Practice Clinical Judgment",
+    "Prepare for exams",
+    "Explain oxidative Phosphorylation",
   ];
 
   const wavePattern = [6, 10, 8, 14, 12, 18, 24, 20, 28, 22, 16, 12, 8, 6];
@@ -52,22 +52,22 @@ export default function AskAtlas() {
 
         {/* Text */}
         <p className="text-base text-white tracking-wide">
-          Talk with Cara
+          Talk with CARA
         </p>
       </Link>
 
       {/* Right Box: Suggested things to ask */}
       <div className="w-full lg:w-[45%] xl:w-[40%] bg-white rounded-3xl border border-[#E2E8F0] p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] flex flex-col">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-[15px] font-bold text-[#1e293b]">Suggested things to ask</h2>
-          <Lightbulb className="w-4.5 h-4.5 text-[#9333EA] fill-[#9333EA]/10" />
+          <h2 className="text-[15px] font-bold text-[#1B4B66]">Learn with CARA in multiple languages</h2>
+          <Lightbulb className="w-4.5 h-4.5 text-[#1B4B66] fill-[#1B4B66]/10" />
         </div>
 
         <div className="flex flex-col gap-3 flex-1 justify-center">
           {suggestedQuestions.map((q, idx) => (
             <Link
               key={idx}
-              href="/dashboard/my-tutor"
+              href={`/dashboard/my-tutor?prompt=${encodeURIComponent(q)}`}
               className="w-full flex items-center justify-between bg-[#FAFAF9] border border-[#F3E8FF] hover:bg-[#F3E8FF] hover:border-[#E9D5FF] transition-all rounded-xl px-4 py-3 cursor-pointer group shadow-sm"
             >
               <span className="text-[12.5px] font-semibold text-[#8B5CF6] pr-4 leading-tight">{q}</span>
