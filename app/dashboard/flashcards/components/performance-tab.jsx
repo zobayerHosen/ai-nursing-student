@@ -7,37 +7,75 @@ import {
   Crown,
   TrendingUp,
   Stethoscope,
+  Loader2,
+  BarChart3,
 } from "lucide-react";
 import { useGetFlashcardProgress } from "@/hooks/flashcards";
-import { TOPIC_MASTERY_LIST, DEFAULT_MASTERY_STATS } from "./dummy-data";
+
+const PALETTES = [
+  { iconBg: "bg-sky-50", iconColor: "text-sky-600", progressColor: "bg-sky-600" },
+  { iconBg: "bg-emerald-50", iconColor: "text-emerald-600", progressColor: "bg-emerald-600" },
+  { iconBg: "bg-purple-50", iconColor: "text-purple-600", progressColor: "bg-purple-600" },
+  { iconBg: "bg-amber-50", iconColor: "text-amber-600", progressColor: "bg-amber-600" },
+  { iconBg: "bg-rose-50", iconColor: "text-rose-600", progressColor: "bg-rose-600" },
+];
 
 export default function PerformanceTab() {
-
   const { categories, overall, isLoading } = useGetFlashcardProgress();
 
-  // Stats matching Screenshot 3
+  if (isLoading) {
+    return (
+      <div className="w-full min-h-72 flex flex-col items-center justify-center gap-3 py-16">
+        <Loader2 className="w-8 h-8 text-[#1B4B66] animate-spin" />
+        <p className="text-xs font-semibold text-gray-500">Loading performance stats...</p>
+      </div>
+    );
+  }
+
+  // Calculate Overall Values from API
+  const totalCards = overall?.total_cards ?? 0;
+  const cardsStudied = overall?.cards_studied ?? overall?.reviewed_cards ?? 0;
+  const easyCount = overall?.easy ?? 0;
+  const hardCount = overall?.hard ?? 0;
+  const notAttemptedCount =
+    overall?.not_attempted ?? Math.max(0, totalCards - cardsStudied);
+  const avgRecall = Math.round(overall?.avg_recall ?? overall?.percentage ?? 0);
+  const masteredCards = overall?.mastered_cards ?? easyCount;
+
+  // Donut chart segment percentages
+  const easyPct = totalCards > 0 ? Math.round((easyCount / totalCards) * 100) : 0;
+  const hardPct = totalCards > 0 ? Math.round((hardCount / totalCards) * 100) : 0;
+  const notAttemptedPct =
+    totalCards > 0 ? Math.max(0, 100 - easyPct - hardPct) : 0;
+
+  const masteryPercent = Math.round(
+    overall?.percentage ??
+      overall?.avg_recall ??
+      (totalCards > 0 ? (easyCount / totalCards) * 100 : 0)
+  );
+
   const masteryData = {
-    percent: DEFAULT_MASTERY_STATS.percent,
+    percent: masteryPercent,
     breakdown: [
       {
         label: "Easy",
         sub: "Got it right",
-        count: overall?.easy || DEFAULT_MASTERY_STATS.breakdown[0].count,
-        pct: 52,
+        count: easyCount,
+        pct: easyPct,
         color: "#1B4B66",
       },
       {
         label: "Hard",
         sub: "Worth a re-attempt",
-        count: overall?.hard || DEFAULT_MASTERY_STATS.breakdown[1].count,
-        pct: 25,
+        count: hardCount,
+        pct: hardPct,
         color: "#F43F5E",
       },
       {
         label: "Not Attempted",
         sub: "Still to attempt",
-        count: overall?.total_cards ? Math.max(0, overall.total_cards - (overall.reviewed_cards || 0)) : DEFAULT_MASTERY_STATS.breakdown[2].count,
-        pct: 22,
+        count: notAttemptedCount,
+        pct: notAttemptedPct,
         color: "#BAE6FD",
       },
     ],
@@ -45,7 +83,7 @@ export default function PerformanceTab() {
 
   // SVG Donut calculation
   const radius = 52;
-  const circumference = 2 * Math.PI * radius; // ~326.7
+  const circumference = 2 * Math.PI * radius;
   let accumulatedPct = 0;
 
   return (
@@ -104,7 +142,7 @@ export default function PerformanceTab() {
                   {masteryData.percent}%
                 </span>
                 <span className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider">
-                  CARDS
+                  MASTERY
                 </span>
               </div>
             </div>
@@ -150,13 +188,14 @@ export default function PerformanceTab() {
             <div className="mt-4">
               <p className="text-xs font-semibold text-gray-500">Cards Studied</p>
               <h3 className="text-2xl sm:text-3xl font-extrabold text-[#1B4B66] tracking-tight mt-0.5">
-                {overall?.reviewed_cards || 665}
+                {cardsStudied}
               </h3>
 
-              <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 mt-1">
-                <TrendingUp size={13} />
-                <span>18% vs last 7 days</span>
-              </div>
+              <p className="text-xs text-emerald-600 font-bold mt-1">
+                {totalCards > 0
+                  ? `${Math.round((cardsStudied / totalCards) * 100)}% of library completed`
+                  : "0% completed"}
+              </p>
             </div>
           </div>
 
@@ -169,11 +208,11 @@ export default function PerformanceTab() {
             <div className="mt-4">
               <p className="text-xs font-semibold text-gray-500">Total Cards</p>
               <h3 className="text-2xl sm:text-3xl font-extrabold text-[#1B4B66] tracking-tight mt-0.5">
-                {overall?.total_cards ? overall.total_cards.toLocaleString() : "1,402"}
+                {totalCards.toLocaleString()}
               </h3>
 
               <p className="text-xs text-gray-400 font-medium mt-1">
-                Across all topics
+                Across all categories
               </p>
             </div>
           </div>
@@ -187,12 +226,18 @@ export default function PerformanceTab() {
             <div className="mt-4">
               <p className="text-xs font-semibold text-gray-500">Avg. Recall</p>
               <h3 className="text-2xl sm:text-3xl font-extrabold text-[#1B4B66] tracking-tight mt-0.5">
-                {overall?.percentage ? `${overall.percentage}%` : "78%"}
+                {avgRecall}%
               </h3>
 
               <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 mt-1">
                 <TrendingUp size={13} />
-                <span>6% vs last 7 days</span>
+                <span>
+                  {avgRecall >= 80
+                    ? "High retention"
+                    : avgRecall >= 50
+                    ? "Moderate retention"
+                    : "Needs practice"}
+                </span>
               </div>
             </div>
           </div>
@@ -206,74 +251,109 @@ export default function PerformanceTab() {
             <div className="mt-4">
               <p className="text-xs font-semibold text-gray-500">Mastered Cards</p>
               <h3 className="text-2xl sm:text-3xl font-extrabold text-[#1B4B66] tracking-tight mt-0.5">
-                {overall?.easy || 312}
+                {masteredCards}
               </h3>
 
               <p className="text-xs text-gray-400 font-medium mt-1">
-                22% of total
+                {totalCards > 0
+                  ? `${Math.round((masteredCards / totalCards) * 100)}% of total`
+                  : "0% of total"}
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ─── ROW 2: TOPIC MASTERY (4 COLUMNS GRID) ──────────────────── */}
+      {/* ─── ROW 2: TOPIC / CATEGORY MASTERY (GRID) ──────────────────── */}
       <div className="space-y-4">
         <h2 className="text-xl sm:text-2xl font-extrabold text-[#1B4B66] tracking-tight">
           Topic Mastery
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {TOPIC_MASTERY_LIST.map((topic, index) => {
-            const Icon = topic.icon || Stethoscope;
+        {categories?.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {categories.map((cat, index) => {
+              const palette = PALETTES[index % PALETTES.length];
+              const Icon = Stethoscope;
 
-            return (
-              <div
-                key={`${topic.id}-${index}`}
-                className="bg-white rounded-2xl border border-gray-100 shadow-2xs hover:shadow-md transition-all duration-200 p-4 flex flex-col justify-between space-y-3.5 group cursor-pointer hover:-translate-y-0.5"
-              >
-                {/* Top Row: Icon, Title, Due Badge */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${topic.iconBg}`}
-                    >
-                      <Icon size={16} className={topic.iconColor} strokeWidth={2.2} />
+              const catTotal = cat.total_cards ?? 0;
+              const catStudied = cat.cards_studied ?? 0;
+              const catEasy = cat.easy_count ?? cat.easy ?? 0;
+              const catHard = cat.hard_count ?? cat.hard ?? 0;
+              const catNotAttempted =
+                cat.not_attempted ?? Math.max(0, catTotal - catStudied);
+              const catRecall = Math.round(
+                cat.recall_percent ?? (catTotal > 0 ? (catEasy / catTotal) * 100 : 0)
+              );
+
+              return (
+                <div
+                  key={cat.category_name || index}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-2xs hover:shadow-md transition-all duration-200 p-4 flex flex-col justify-between space-y-3.5 group cursor-pointer hover:-translate-y-0.5"
+                >
+                  {/* Top Row: Icon, Title, Status Badge */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${palette.iconBg}`}
+                      >
+                        <Icon size={16} className={palette.iconColor} strokeWidth={2.2} />
+                      </div>
+
+                      <h3 className="text-xs sm:text-sm font-bold text-gray-800 truncate">
+                        {cat.category_name}
+                      </h3>
                     </div>
 
-                    <h3 className="text-xs sm:text-sm font-bold text-gray-800 truncate">
-                      {topic.name}
-                    </h3>
+                    {catHard > 0 ? (
+                      <span className="bg-rose-100 text-rose-600 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                        {catHard} Need Review
+                      </span>
+                    ) : catNotAttempted > 0 ? (
+                      <span className="bg-amber-100 text-amber-700 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                        {catNotAttempted} Due
+                      </span>
+                    ) : (
+                      <span className="bg-emerald-100 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                        Mastered
+                      </span>
+                    )}
                   </div>
 
-                  <span className="bg-pink-100 text-rose-500 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0">
-                    {topic.dueCount} Due
-                  </span>
-                </div>
+                  {/* Middle: Progress Bar */}
+                  <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${palette.progressColor}`}
+                      style={{ width: `${catRecall}%` }}
+                    />
+                  </div>
 
-                {/* Middle: Progress Bar */}
-                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${topic.progressColor}`}
-                    style={{ width: `${topic.progressPct}%` }}
-                  />
-                </div>
+                  {/* Bottom Row: Stats & Easy count */}
+                  <div className="flex items-center justify-between text-xs pt-0.5">
+                    <span className="text-gray-500 font-medium">
+                      {catTotal} cards •{" "}
+                      <span className="font-bold text-gray-700">{catRecall}%</span> recall
+                    </span>
 
-                {/* Bottom Row: Stats & Easy count */}
-                <div className="flex items-center justify-between text-xs pt-0.5">
-                  <span className="text-gray-500 font-medium">
-                    {topic.cardsCount} cards •{" "}
-                    <span className="font-bold text-gray-700">{topic.recallRate}</span> recall
-                  </span>
-
-                  <span className={`font-bold ${topic.easyColor}`}>
-                    {topic.easyCount}
-                  </span>
+                    <span className="font-bold text-emerald-600">
+                      {catEasy} Easy
+                    </span>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="bg-white border border-gray-100 rounded-2xl p-10 flex flex-col items-center justify-center text-center">
+            <BarChart3 className="w-10 h-10 text-gray-300 mb-3" />
+            <h3 className="text-base font-bold text-gray-800 mb-1">
+              No performance data yet
+            </h3>
+            <p className="text-xs text-gray-400 max-w-sm">
+              Start studying flashcards to track your mastery progress across categories.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

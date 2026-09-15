@@ -30,9 +30,13 @@ export const useGetFlashcardProgress = () => {
     retry: false,
   });
 
+  const progressData = data?.data?.data ?? data?.data ?? data ?? {};
+  const categories = progressData?.categories ?? [];
+  const overall = progressData?.overall ?? null;
+
   return {
-    categories: data?.data?.data?.categories ?? [],
-    overall: data?.data?.data?.overall ?? null,
+    categories,
+    overall,
     isLoading,
     isError,
     isFetching,

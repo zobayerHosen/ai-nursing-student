@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CiBookmark } from "react-icons/ci";
 import {
   Stethoscope,
   BookOpen,
@@ -14,7 +15,7 @@ import { DEFAULT_CATEGORIES, getCategoryIcon } from "./dummy-data";
 
 export default function BrowseDecksTab() {
 
-  const { flashcardData, isLoading } = useGetFlashcardCategory();
+  const { flashcardData, isLoading } = useGetFlashcardCategory();  
   const [selectedCategoryId, setSelectedCategoryId] = useState("fundamentals-of-nursing");
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -42,7 +43,7 @@ export default function BrowseDecksTab() {
       return {
         id: cat.id?.toString() || `cat-${idx}`,
         name: cat.name,
-        deckCount: totalCatDecks || 120 + idx * 15,
+        deckCount: totalCatDecks || 0,
         icon: getCategoryIcon(cat.name),
         topics: subtopics.length > 0 ? subtopics : DEFAULT_CATEGORIES[idx % DEFAULT_CATEGORIES.length]?.topics || [],
       };
@@ -90,44 +91,40 @@ export default function BrowseDecksTab() {
                 setSelectedCategoryId(cat.id);
                 if (onItemClick) onItemClick();
               }}
-              className={`w-full text-left p-3 sm:p-3.5 rounded-xl transition-all duration-200 flex items-center justify-between group cursor-pointer ${
-                isSelected
+              className={`w-full text-left p-3 sm:p-3.5 rounded-xl transition-all duration-200 flex items-center justify-between group cursor-pointer ${isSelected
                   ? "bg-[#EDF5F9] border border-[#B3D6E8] text-[#1B4B66] shadow-xs"
                   : "bg-white hover:bg-gray-50/80 border border-transparent text-gray-700"
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-                    isSelected
+                  className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${isSelected
                       ? "bg-[#D5EBF5] text-[#1B4B66]"
                       : "bg-gray-100 text-gray-500 group-hover:bg-[#EDF5F9] group-hover:text-[#1B4B66]"
-                  }`}
+                    }`}
                 >
                   <Icon size={18} strokeWidth={2.2} />
                 </div>
 
                 <div className="min-w-0">
                   <h3
-                    className={`text-sm font-semibold truncate ${
-                      isSelected ? "text-[#1B4B66]" : "text-gray-800"
-                    }`}
+                    className={`text-sm font-semibold truncate ${isSelected ? "text-[#1B4B66]" : "text-gray-800"
+                      }`}
                   >
                     {cat.name}
                   </h3>
                   <p className="text-xs text-gray-400 font-medium mt-0.5">
-                    {cat.deckCount || cat.topics?.length || 15} Decks
+                    {cat.deckCount || cat.topics?.length || 0} Decks
                   </p>
                 </div>
               </div>
 
               <ChevronRight
                 size={16}
-                className={`transition-transform duration-200 shrink-0 ${
-                  isSelected
+                className={`transition-transform duration-200 shrink-0 ${isSelected
                     ? "text-[#1B4B66] translate-x-0.5"
                     : "text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5"
-                }`}
+                  }`}
               />
             </button>
           );
@@ -140,25 +137,22 @@ export default function BrowseDecksTab() {
     <div className="w-full animate-[fadeIn_0.3s_ease] relative">
       {/* ─── MOBILE DRAWER SIDEBAR (SMOOTH SLIDE FROM LEFT) ───────── */}
       <div
-        className={`fixed inset-0 z-50 lg:hidden transition-all duration-300 ${
-          isMobileSidebarOpen
+        className={`fixed inset-0 z-50 lg:hidden transition-all duration-300 ${isMobileSidebarOpen
             ? "visible opacity-100"
             : "invisible opacity-0 pointer-events-none"
-        }`}
+          }`}
       >
         {/* Backdrop */}
         <div
-          className={`fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity duration-300 ${
-            isMobileSidebarOpen ? "opacity-100" : "opacity-0"
-          }`}
+          className={`fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity duration-300 ${isMobileSidebarOpen ? "opacity-100" : "opacity-0"
+            }`}
           onClick={() => setIsMobileSidebarOpen(false)}
         />
 
         {/* Drawer Sliding Panel */}
         <aside
-          className={`fixed inset-y-0 left-0 z-50 w-[85%] sm:w-80 max-w-sm bg-white shadow-2xl flex flex-col h-full transform transition-transform duration-300 ease-in-out ${
-            isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          className={`fixed inset-y-0 left-0 z-50 w-[85%] sm:w-80 max-w-sm bg-white shadow-2xl flex flex-col h-full transform transition-transform duration-300 ease-in-out ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
         >
           {/* Drawer Header */}
           <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
@@ -251,7 +245,7 @@ export default function BrowseDecksTab() {
           {/* Topics Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
             {activeCategory?.topics?.map((topic, index) => {
-              const cardCount = topic.questions?.length || 15;
+              const cardCount = topic.questions?.length || 0;
 
               return (
                 <div
@@ -260,8 +254,18 @@ export default function BrowseDecksTab() {
                   className="group bg-white rounded-2xl border border-gray-100 hover:border-[#1B4B66]/30 p-5 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-4 hover:-translate-y-0.5"
                 >
                   <div className="space-y-3">
-                    <div className="w-9 h-9 rounded-xl bg-[#EDF5F9] text-[#1B4B66] flex items-center justify-center group-hover:bg-[#1B4B66] group-hover:text-white transition-colors duration-200">
-                      <BookOpen size={18} strokeWidth={2.2} />
+                    <div className="w-full flex justify-between items-center">
+                      <p className="w-9 h-9 rounded-xl bg-[#EDF5F9] text-[#1B4B66] flex items-center justify-center group-hover:bg-[#1B4B66] group-hover:text-white transition-colors duration-200">
+                        <BookOpen size={18} strokeWidth={2.2} />
+                      </p>
+
+                      <button className="cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log("Bookmark clicked");
+                      }}>
+                        <CiBookmark className="text-2xl"/>
+                      </button>
                     </div>
 
                     <div>

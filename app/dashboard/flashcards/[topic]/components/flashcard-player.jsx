@@ -10,6 +10,14 @@ import toast from "react-hot-toast";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
+const formatImageUrl = (imgPath) => {
+    if (!imgPath) return "";
+    if (imgPath.startsWith("http://") || imgPath.startsWith("https://")) {
+        return imgPath;
+    }
+    return `${BASE_URL || ""}${imgPath.startsWith("/") ? "" : "/"}${imgPath}`;
+};
+
 const FlashcardPlayer = ({ topic, onBack, categoryId, subcategoryId }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
@@ -199,10 +207,11 @@ const FlashcardPlayer = ({ topic, onBack, categoryId, subcategoryId }) => {
                             {currentCard?.image && (
                                 <div className="relative w-full aspect-video max-h-45 mb-6 overflow-hidden">
                                     <Image
-                                        src={`${BASE_URL}${currentCard.image}`}
+                                        src={formatImageUrl(currentCard.image)}
                                         alt="Study question image"
                                         fill
                                         className="object-contain"
+                                        unoptimized
                                     />
                                 </div>
                             )}
@@ -230,10 +239,11 @@ const FlashcardPlayer = ({ topic, onBack, categoryId, subcategoryId }) => {
                             {currentCard?.ans_image && (
                                 <div className="relative w-full aspect-video max-h-45 mb-6 overflow-hidden">
                                     <Image
-                                        src={`${BASE_URL}${currentCard.ans_image}`}
+                                        src={formatImageUrl(currentCard.ans_image)}
                                         alt="Study aid answer"
                                         fill
                                         className="object-contain"
+                                        unoptimized
                                     />
                                 </div>
                             )}
