@@ -80,7 +80,10 @@ const FolderList = ({
     },
   ];
 
-  const folderColor = folder?.color || "#9ca3af";
+  const folderColor =
+    folder?.color?.color ||
+    (typeof folder?.color === "string" ? folder.color : null) ||
+    "#9ca3af";
   const notesCount =
     folder?.total_notes ??
     (Array.isArray(folder?.notes) ? folder.notes.length : 0);

@@ -66,6 +66,24 @@ const baseRemotePatterns = [
   },
   {
     protocol: "https",
+    hostname: "genclex-bucket.s3.amazonaws.com",
+    port: "",
+    pathname: "/**",
+  },
+  {
+    protocol: "https",
+    hostname: "*.s3.amazonaws.com",
+    port: "",
+    pathname: "/**",
+  },
+  {
+    protocol: "https",
+    hostname: "*.s3.*.amazonaws.com",
+    port: "",
+    pathname: "/**",
+  },
+  {
+    protocol: "https",
     hostname: "flagcdn.com",
     port: "",
     pathname: "/**",
@@ -75,13 +93,13 @@ const baseRemotePatterns = [
 // Dynamic backend pattern
 const dynamicBackendPattern = process.env.NEXT_PUBLIC_BASE_URL
   ? [
-      {
-        protocol: "https",
-        hostname: new URL(process.env.NEXT_PUBLIC_BASE_URL).hostname,
-        port: "",
-        pathname: "/**",
-      },
-    ]
+    {
+      protocol: "https",
+      hostname: new URL(process.env.NEXT_PUBLIC_BASE_URL).hostname,
+      port: "",
+      pathname: "/**",
+    },
+  ]
   : [];
 
 const nextConfig = {

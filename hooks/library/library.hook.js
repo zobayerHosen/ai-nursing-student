@@ -13,8 +13,16 @@ export const useGetLibrary = () => {
     retry: false,
   });
 
+  const libraryData = Array.isArray(data?.data?.data)
+    ? data?.data?.data
+    : Array.isArray(data?.data)
+    ? data?.data
+    : Array.isArray(data)
+    ? data
+    : [];
+
   return {
-    libraryData: data?.data?.data,
+    libraryData,
     isLoading,
     isError,
     isFetching,
@@ -115,8 +123,16 @@ export const useGetFolderColor = () => {
     retry: false,
   });
 
+  const folderColorData = Array.isArray(data?.data?.data)
+    ? data?.data?.data
+    : Array.isArray(data?.data)
+    ? data?.data
+    : Array.isArray(data)
+    ? data
+    : [];
+
   return {
-    folderColorData: data?.data?.data,
+    folderColorData,
     isLoading,
     isError,
     isFetching,

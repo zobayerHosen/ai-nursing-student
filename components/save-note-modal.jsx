@@ -108,7 +108,26 @@ const SaveNoteModal = ({ isModalOpen, setIsModalOpen, noteId, onSaveSuccess }) =
                                                 className="shrink-0"
                                             />
                                         ) : (
-                                            <span className="text-lg">📁</span>
+                                            <svg
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="shrink-0"
+                                                style={{
+                                                    color:
+                                                        selectedFolderId === folder.id
+                                                            ? "#ffffff"
+                                                            : folder?.color?.color ||
+                                                              (typeof folder?.color === "string" ? folder.color : "#1B4B66"),
+                                                }}
+                                            >
+                                                <path
+                                                    d="M2 4C2 3.44772 2.44772 3 3 3H7.58579C7.851 3 8.10536 3.10536 8.29289 3.29289L10 5H17C17.5523 5 18 5.44772 18 6V16C18 16.5523 17.5523 17 17 17H3C2.44772 17 2 16.5523 2 16V4Z"
+                                                    fill="currentColor"
+                                                />
+                                            </svg>
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">

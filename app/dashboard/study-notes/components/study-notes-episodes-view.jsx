@@ -201,10 +201,11 @@ export default function StudyNotesEpisodesView({ onSelectCategory }) {
                           ? episode.cover
                           : `${process.env.NEXT_PUBLIC_BASE_URL || ""}${episode.cover}`
                       }
-                      alt={episode.title}
+                      alt={episode.title || "Category cover"}
                       width={56}
                       height={56}
                       className="w-full h-full object-cover"
+                      unoptimized
                     />
                   ) : (
                     <IconComponent
