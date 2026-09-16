@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Menu,
   X,
+  GraduationCap,
 } from "lucide-react";
 import { useGetFlashcardCategory } from "@/hooks/flashcards";
 import FlashcardPlayer from "../[topic]/components/flashcard-player";
@@ -15,7 +16,8 @@ import { DEFAULT_CATEGORIES, getCategoryIcon } from "./dummy-data";
 
 export default function BrowseDecksTab() {
 
-  const { flashcardData, isLoading } = useGetFlashcardCategory();  
+  const { flashcardData, isLoading } = useGetFlashcardCategory();
+
   const [selectedCategoryId, setSelectedCategoryId] = useState("fundamentals-of-nursing");
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -25,27 +27,38 @@ export default function BrowseDecksTab() {
 
   if (flashcardData && flashcardData.length > 0) {
     categoriesList = flashcardData.map((cat, idx) => {
-      let totalCatDecks = 0;
-      const subtopics = [];
+      const decks = cat.decks;
+      let topicsList = [];
 
-      cat.subcategories?.forEach((sub) => {
-        totalCatDecks += sub.cards?.length || 0;
-        sub.cards?.forEach((card) => {
-          subtopics.push({
+      if (Array.isArray(decks)) {
+        topicsList = decks.map((deck) => ({
+          id: deck.id,
+          name: deck.name,
+          description: deck.description || "",
+          cardCount: deck.card_count ?? 0,
+          isFavorite: deck.is_favorite || false,
+          categoryId: cat.id,
+        }));
+      } else if (Array.isArray(cat.subcategories)) {
+        topicsList = cat.subcategories.flatMap((sub) =>
+          (sub.cards || []).map((card) => ({
             id: card.id,
             name: card.name || sub.name,
-            questions: card.questions || [],
+            description: card.description || "",
+            cardCount: card.questions?.length || 0,
+            isFavorite: card.is_favorite || false,
             categoryId: cat.id,
             subcategoryId: sub.id,
-          });
-        });
-      });
+          }))
+        );
+      }
+
       return {
         id: cat.id?.toString() || `cat-${idx}`,
         name: cat.name,
-        deckCount: totalCatDecks || 0,
+        deckCount: topicsList.length,
         icon: getCategoryIcon(cat.name),
-        topics: subtopics.length > 0 ? subtopics : DEFAULT_CATEGORIES[idx % DEFAULT_CATEGORIES.length]?.topics || [],
+        topics: topicsList,
       };
     });
   } else {
@@ -54,7 +67,7 @@ export default function BrowseDecksTab() {
 
   // Active category
   const activeCategory =
-    categoriesList.find((c) => c.id.toString() === selectedCategoryId.toString()) ||
+    categoriesList.find((c) => c.id.toString() === selectedCategoryId?.toString()) ||
     categoriesList[0] ||
     DEFAULT_CATEGORIES[0];
 
@@ -64,6 +77,7 @@ export default function BrowseDecksTab() {
       <div className="w-full">
         <FlashcardPlayer
           topic={selectedTopic}
+          deckId={selectedTopic.id}
           onBack={() => setSelectedTopic(null)}
           categoryId={selectedTopic.categoryId || activeCategory?.id}
           subcategoryId={selectedTopic.subcategoryId || 1}
@@ -242,56 +256,72 @@ export default function BrowseDecksTab() {
             </div>
           </div>
 
-          {/* Topics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
-            {activeCategory?.topics?.map((topic, index) => {
-              const cardCount = topic.questions?.length || 0;
+          {/* Topics Grid or Empty State */}
+          {activeCategory?.topics && activeCategory.topics.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+              {activeCategory.topics.map((topic, index) => {
+                const cardCount = topic.cardCount ?? topic.card_count ?? topic.questions?.length ?? 0;
 
-              return (
-                <div
-                  key={topic.id || index}
-                  onClick={() => setSelectedTopic(topic)}
-                  className="group bg-white rounded-2xl border border-gray-100 hover:border-[#1B4B66]/30 p-5 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-4 hover:-translate-y-0.5"
-                >
-                  <div className="space-y-3">
-                    <div className="w-full flex justify-between items-center">
-                      <p className="w-9 h-9 rounded-xl bg-[#EDF5F9] text-[#1B4B66] flex items-center justify-center group-hover:bg-[#1B4B66] group-hover:text-white transition-colors duration-200">
-                        <BookOpen size={18} strokeWidth={2.2} />
-                      </p>
+                return (
+                  <div
+                    key={topic.id || index}
+                    onClick={() => setSelectedTopic(topic)}
+                    className="group bg-white rounded-2xl border border-gray-100 hover:border-[#1B4B66]/30 p-5 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-4 hover:-translate-y-0.5"
+                  >
+                    <div className="space-y-3">
+                      <div className="w-full flex justify-between items-center">
+                        <p className="w-9 h-9 rounded-xl bg-[#EDF5F9] text-[#1B4B66] flex items-center justify-center group-hover:bg-[#1B4B66] group-hover:text-white transition-colors duration-200">
+                          <BookOpen size={18} strokeWidth={2.2} />
+                        </p>
 
-                      <button className="cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log("Bookmark clicked");
-                      }}>
-                        <CiBookmark className="text-2xl"/>
-                      </button>
+                        <button
+                          className="cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log("Bookmark clicked");
+                          }}
+                        >
+                          <CiBookmark className="text-2xl" />
+                        </button>
+                      </div>
+
+                      <div>
+                        <h3 className="text-base font-bold text-[#1E293B] group-hover:text-[#1B4B66] transition-colors line-clamp-2">
+                          {topic.name}
+                        </h3>
+                        <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+                          {topic.description}
+                        </p>
+                      </div>
                     </div>
 
-                    <div>
-                      <h3 className="text-base font-bold text-[#1E293B] group-hover:text-[#1B4B66] transition-colors line-clamp-2">
-                        {topic.name}
-                      </h3>
-                      <p className="text-xs text-gray-400 mt-1 line-clamp-2">
-                        Master key NCLEX principles, diagnostics, and clinical interventions.
-                      </p>
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-50">
+                      <span className="text-xs font-bold text-[#1B4B66] bg-[#EDF5F9] px-2.5 py-1 rounded-md">
+                        {cardCount} Cards
+                      </span>
+
+                      <div className="flex items-center gap-1 text-xs font-bold text-[#1B4B66] group-hover:translate-x-1 transition-transform">
+                        <span>Start</span>
+                        <ChevronRight size={14} />
+                      </div>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-50">
-                    <span className="text-xs font-bold text-[#1B4B66] bg-[#EDF5F9] px-2.5 py-1 rounded-md">
-                      {cardCount} Cards
-                    </span>
-
-                    <div className="flex items-center gap-1 text-xs font-bold text-[#1B4B66] group-hover:translate-x-1 transition-transform">
-                      <span>Start</span>
-                      <ChevronRight size={14} />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-gray-100 p-12 sm:p-16 text-center shadow-xs">
+              <div className="h-20 w-20 bg-[#EDF5F9] rounded-full flex items-center justify-center mx-auto mb-5 text-[#1B4B66]">
+                <GraduationCap size={38} strokeWidth={2} />
+              </div>
+              <h2 className="text-lg sm:text-xl font-bold text-[#1E293B] mb-2">
+                No decks found
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto leading-relaxed">
+                There are currently no flashcard decks available for this category. Check back soon for new content!
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

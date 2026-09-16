@@ -83,6 +83,7 @@ export const DEFAULT_CATEGORIES = [
       {
         id: "vital-signs",
         name: "Vital Signs & Assessment",
+        is_favorite: true,
         questions: [
           { id: 1, front: "What is the normal adult body temperature range in Celsius?", back: "36.5°C to 37.5°C" },
           { id: 2, front: "Where is the apical pulse located?", back: "At the 5th intercostal space, left midclavicular line." },
@@ -93,45 +94,13 @@ export const DEFAULT_CATEGORIES = [
       {
         id: "infection-control",
         name: "Infection Control & PPE",
+        is_favorite: false,
         questions: [
           { id: 1, front: "What is the most effective way to prevent the spread of infection?", back: "Hand hygiene." },
           { id: 2, front: "Name the sequence for donning PPE.", back: "Gown, Mask/Respirator, Goggles/Face Shield, Gloves." },
           { id: 3, front: "Name the sequence for doffing PPE.", back: "Gloves, Goggles/Face Shield, Gown, Mask/Respirator." },
         ],
-      },
-      {
-        id: "patient-safety",
-        name: "Patient Safety & Restraints",
-        questions: [
-          { id: 1, front: "What does the acronym RACE stand for in fire safety?", back: "Rescue, Alarm, Confine, Extinguish." },
-          { id: 2, front: "What does PASS stand for for fire extinguishers?", back: "Pull, Aim, Squeeze, Sweep." },
-        ],
-      },
-      {
-        id: "nursing-process",
-        name: "Nursing Process (ADPIE)",
-        questions: [
-          { id: 1, front: "What is the first step of the nursing process?", back: "Assessment (collecting subjective and objective data)." },
-          { id: 2, front: "What are SMART goals in nursing planning?", back: "Specific, Measurable, Achievable, Relevant, Time-bound." },
-        ],
-      },
-      {
-        id: "fluid-electrolytes",
-        name: "Fluid & Electrolyte Balance",
-        questions: [
-          { id: 1, front: "Normal serum potassium range?", back: "3.5 to 5.0 mEq/L." },
-          { id: 2, front: "Normal serum sodium range?", back: "135 to 145 mEq/L." },
-          { id: 3, front: "Key sign of hypocalcemia?", back: "Positive Chvostek's or Trousseau's sign." },
-        ],
-      },
-      {
-        id: "medication-administration",
-        name: "Medication Administration & Rights",
-        questions: [
-          { id: 1, front: "What are the 6 rights of medication administration?", back: "Right Patient, Right Drug, Right Dose, Right Route, Right Time, Right Documentation." },
-          { id: 2, front: "Angle of injection for subcutaneous needle?", back: "45 or 90 degrees depending on adipose tissue." },
-        ],
-      },
+      }
     ],
   },
   {
@@ -143,6 +112,7 @@ export const DEFAULT_CATEGORIES = [
       {
         id: "heart-failure",
         name: "Heart Failure & Diagnostics",
+        is_favorite: true,
         questions: [
           { id: 1, front: "What is the primary diagnostic lab for heart failure?", back: "BNP (B-type Natriuretic Peptide) > 100 pg/mL." },
           { id: 2, front: "Symptoms of Left-sided Heart Failure?", back: "Crackles, dyspnea, orthopnea, cough (pulmonary symptoms)." },
@@ -152,6 +122,7 @@ export const DEFAULT_CATEGORIES = [
       {
         id: "ecg-dysrhythmias",
         name: "ECG Interpretation & Dysrhythmias",
+        is_favorite: false,
         questions: [
           { id: 1, front: "Priority nursing action for Ventricular Fibrillation (V-Fib)?", back: "Defibrillate immediately and initiate CPR." },
           { id: 2, front: "First-line drug for symptomatic sinus bradycardia?", back: "Atropine IV." },
@@ -160,114 +131,9 @@ export const DEFAULT_CATEGORIES = [
       {
         id: "hypertension-angina",
         name: "Hypertension & Acute Coronary Syndrome",
+        is_favorite: false,
         questions: [
           { id: 1, front: "MONA acronym for suspected Myocardial Infarction?", back: "Morphine, Oxygen, Nitroglycerin, Aspirin." },
-        ],
-      },
-    ],
-  },
-  {
-    id: "pharmacology",
-    name: "Pharmacology",
-    deckCount: 165,
-    icon: Pill,
-    topics: [
-      {
-        id: "cardiac-meds",
-        name: "Cardiovascular Medications",
-        questions: [
-          { id: 1, front: "Therapeutic range for Digoxin?", back: "0.5 to 2.0 ng/mL." },
-          { id: 2, front: "Early sign of digoxin toxicity?", back: "Anorexia, nausea, vomiting, yellow-green halos." },
-        ],
-      },
-      {
-        id: "antibiotics",
-        name: "Antibiotics & Antimicrobials",
-        questions: [
-          { id: 1, front: "What is the red man syndrome associated with?", back: "Rapid infusion of Vancomycin." },
-        ],
-      },
-      {
-        id: "endocrine-meds",
-        name: "Insulin & Endocrine Agents",
-        questions: [
-          { id: 1, front: "Onset of rapid-acting insulin (Lispro/Aspart)?", back: "10 to 15 minutes." },
-        ],
-      },
-    ],
-  },
-  {
-    id: "respiratory",
-    name: "Respiratory",
-    deckCount: 98,
-    icon: Wind,
-    topics: [
-      {
-        id: "copd-asthma",
-        name: "COPD & Asthma Management",
-        questions: [
-          { id: 1, front: "Priority rescue inhaler for acute bronchospasm?", back: "Albuterol (Short-acting Beta-2 Agonist)." },
-        ],
-      },
-      {
-        id: "abg-interpretation",
-        name: "Arterial Blood Gas (ABG) Mastery",
-        questions: [
-          { id: 1, front: "Normal arterial blood pH range?", back: "7.35 to 7.45." },
-          { id: 2, front: "Normal PaCO2 range?", back: "35 to 45 mmHg." },
-          { id: 3, front: "Normal HCO3 range?", back: "22 to 26 mEq/L." },
-        ],
-      },
-    ],
-  },
-  {
-    id: "maternal-newborn",
-    name: "Maternal Newborn",
-    deckCount: 112,
-    icon: Baby,
-    topics: [
-      {
-        id: "labor-delivery",
-        name: "Stages of Labor & Delivery",
-        questions: [
-          { id: 1, front: "What characterizes the transition phase of labor?", back: "Cervix dilated 8 to 10 cm, intense frequent contractions." },
-        ],
-      },
-      {
-        id: "postpartum-apgar",
-        name: "Postpartum Care & APGAR Scoring",
-        questions: [
-          { id: 1, front: "What are the 5 components of the APGAR score?", back: "Appearance, Pulse, Grimace, Activity, Respiration." },
-        ],
-      },
-    ],
-  },
-  {
-    id: "mental-health",
-    name: "Mental Health",
-    deckCount: 84,
-    icon: Brain,
-    topics: [
-      {
-        id: "therapeutic-comm",
-        name: "Therapeutic Communication",
-        questions: [
-          { id: 1, front: "Effective nursing response to hallucinations?", back: "Acknowledge feelings, do not reinforce hallucination, state reality." },
-        ],
-      },
-    ],
-  },
-  {
-    id: "safety-infection",
-    name: "Safety & Infection Control",
-    deckCount: 75,
-    icon: ShieldAlert,
-    topics: [
-      {
-        id: "isolation-precautions",
-        name: "Airborne, Droplet & Contact Precautions",
-        questions: [
-          { id: 1, front: "Precaution required for active Pulmonary TB?", back: "Airborne precautions (N95 respirator, negative pressure room)." },
         ],
       },
     ],

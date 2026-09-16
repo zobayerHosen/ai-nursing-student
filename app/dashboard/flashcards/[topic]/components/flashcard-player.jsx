@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, RotateCcw, ArrowLeft, Check, X, RefreshCcw, ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSubmitFlashcardAnswer } from "@/hooks/flashcards";
+import { useSubmitFlashcardAnswer, useGetDeckDetails } from "@/hooks/flashcards";
 import toast from "react-hot-toast";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
@@ -18,14 +18,33 @@ const formatImageUrl = (imgPath) => {
     return `${BASE_URL || ""}${imgPath.startsWith("/") ? "" : "/"}${imgPath}`;
 };
 
-const FlashcardPlayer = ({ topic, onBack, categoryId, subcategoryId }) => {
+const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack, categoryId, subcategoryId }) => {
+    const targetDeckId = propDeckId || (typeof topic === "object" ? topic?.id : topic);
+
+    // Fetch deck details when deck ID is available
+    const { deckData, isLoading: isDeckLoading } = useGetDeckDetails(
+        targetDeckId && (typeof targetDeckId === "number" || !isNaN(Number(targetDeckId)))
+            ? targetDeckId
+            : null
+    );
+
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
     const queryClient = useQueryClient();
     const { submitAnswer } = useSubmitFlashcardAnswer();
     const [ratings, setRatings] = useState({});
     const [isFinished, setIsFinished] = useState(false);
-    const [activeCards, setActiveCards] = useState(topic?.questions || topic?.flashcards || []);
+
+    const initialCards = deckData?.cards || topic?.cards || topic?.questions || topic?.flashcards || [];
+    const [activeCards, setActiveCards] = useState(initialCards);
+
+    useEffect(() => {
+        if (deckData?.cards) {
+            setActiveCards(deckData.cards);
+        } else if (topic?.cards || topic?.questions || topic?.flashcards) {
+            setActiveCards(topic.cards || topic.questions || topic.flashcards);
+        }
+    }, [deckData, topic]);
 
     const cards = activeCards;
     const currentCard = cards[currentIndex];
@@ -55,34 +74,36 @@ const FlashcardPlayer = ({ topic, onBack, categoryId, subcategoryId }) => {
     };
 
     const handleRating = useCallback((rating) => {
-        // Build the answer submit payload
+        if (!currentCard) return;
+
+        const resolvedDeckId = Number(targetDeckId || deckData?.id || (typeof topic === "object" ? topic?.id : topic));
+
+        // Build the answer submit payload based on API requirements
         const payload = {
-            category_id: categoryId,
-            subcategory_id: Number(subcategoryId),
-            card_id: topic.id,
+            deck_id: resolvedDeckId,
             answers: [
                 {
-                    question_id: currentCard.id,
+                    card_id: Number(currentCard.id),
                     is_easy: rating === 'easy',
                 },
             ],
         };
 
-        // Submit answer to API (fire-and-forget for UX – don't block navigation)
+        // Submit answer to API
         submitAnswer(payload)
             .then(() => {
                 queryClient.invalidateQueries({ queryKey: ["flashcard-progress"] });
-                toast.success("Answer is Submitted")
+                toast.success("Answer is Submitted");
             })
-            .catch(() => {
-                // Silently handle errors – ratings still saved locally
-                toast.error("Something went wrong!");
+            .catch((err) => {
+                const errMsg = err?.response?.data?.message || "Something went wrong!";
+                toast.error(errMsg);
             });
 
         setRatings(prev => ({ ...prev, [currentCard.id]: rating }));
         handleNext();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentCard, categoryId, subcategoryId, submitAnswer]);
+    }, [currentCard, targetDeckId, deckData, topic, submitAnswer, queryClient]);
 
     const handleRepeatDifficult = () => {
         const difficultCards = cards.filter(card => ratings[card.id] === 'hard');
@@ -96,19 +117,28 @@ const FlashcardPlayer = ({ topic, onBack, categoryId, subcategoryId }) => {
     };
 
     const handleRestart = () => {
-        setActiveCards(topic?.questions || topic?.flashcards || []);
+        setActiveCards(deckData?.cards || topic?.questions || topic?.cards || topic?.flashcards || []);
         setCurrentIndex(0);
         setIsFlipped(false);
         setIsFinished(false);
         setRatings({});
     };
 
+    if (isDeckLoading && cards.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center p-16 bg-white rounded-2xl border border-gray-100 shadow-sm min-h-[300px]">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#1B4B66] mb-4"></div>
+                <p className="text-gray-500 font-medium">Loading deck cards...</p>
+            </div>
+        );
+    }
+
     if (cards.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center p-10 bg-white rounded-2xl border border-gray-100 shadow-sm">
                 <p className="text-gray-500">No flashcards available for this topic yet.</p>
                 <button onClick={onBack} className="mt-4 text-primary font-medium flex items-center gap-2">
-                    <ArrowLeft size={18} /> Back to Topics
+                    <ArrowLeft size={18} /> Back to Decks
                 </button>
             </div>
         );
@@ -150,7 +180,7 @@ const FlashcardPlayer = ({ topic, onBack, categoryId, subcategoryId }) => {
                             className="cursor-pointer w-full sm:w-auto px-8 py-3.5 rounded-xl border-2 border-[#CBD5E1] text-[#64748B] font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
                         >
                             <ArrowLeft size={20} />
-                            Back to Topics
+                            Back to Decks
                         </button>
                         {hardCount > 0 && (
                             <button
@@ -183,7 +213,7 @@ const FlashcardPlayer = ({ topic, onBack, categoryId, subcategoryId }) => {
                     className="cursor-pointer flex items-center gap-2 text-gray-600 hover:text-primary transition-all rounded font-medium"
                 >
                     <ArrowLeft size={20} />
-                    <span className="hidden sm:inline">Back to {topic?.name ?? topic?.title ?? ""} Topics</span>
+                    <span className="hidden sm:inline">Back to {deckData?.name || topic?.name || topic?.title || "Decks"}</span>
                     <span className="sm:hidden">Back</span>
                 </button>
                 <div className="text-sm font-semibold bg-primary/10 text-primary px-4 py-1.5 rounded-full shadow-sm">

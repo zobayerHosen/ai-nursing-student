@@ -3,6 +3,10 @@ export const flashcardsService = {
     const response = await axiosInstance.get("/category-content/");
     return response?.data;
   },
+  getDeckDetails: async (axiosInstance, deckId) => {
+    const response = await axiosInstance.get(`/deck/${deckId}/`);
+    return response?.data;
+  },
   getProgress: async (axiosInstance) => {
     const response = await axiosInstance.get("/falscard-progress/");
     return response?.data;

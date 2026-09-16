@@ -12,11 +12,41 @@ export const useGetFlashcardCategory = () => {
     retry: false,
   });
 
+  const flashcardData = Array.isArray(data?.data)
+    ? data.data
+    : Array.isArray(data?.data?.data)
+    ? data.data.data
+    : Array.isArray(data)
+    ? data
+    : [];
+
   return {
-    flashcardData: data?.data,
+    flashcardData,
     isLoading,
     isError,
     isFetching,
+  };
+};
+
+export const useGetDeckDetails = (deckId) => {
+  const axiosInstance = axiosPrivateClient();
+
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
+    queryKey: ["deck-details", deckId],
+    queryFn: () => flashcardsService.getDeckDetails(axiosInstance, deckId),
+    enabled: !!deckId,
+    staleTime: 2 * 60 * 1000,
+    retry: false,
+  });
+
+  const deckData = data?.data ?? data ?? null;
+
+  return {
+    deckData,
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
   };
 };
 
