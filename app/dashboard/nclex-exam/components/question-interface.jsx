@@ -1825,7 +1825,7 @@ export default function QuestionInterface({ questions, mode, title, examMeta, on
 
       {/* Finishing session overlay loader */}
       {isFinishing && (
-        <div className="fixed inset-0 bg-[#0f172a]/70 z-[500] flex flex-col items-center justify-center text-white font-sans backdrop-blur-xs animate-[fadeIn_0.2s_ease]">
+        <div className="fixed inset-0 bg-[#0f172a]/70 z-500 flex flex-col items-center justify-center text-white font-sans backdrop-blur-xs animate-[fadeIn_0.2s_ease]">
           <div className="bg-white text-slate-800 rounded-2xl p-7 shadow-2xl flex flex-col items-center max-w-sm w-full text-center border border-slate-100 mx-4">
             <div className="w-11 h-11 border-4 border-[#2C5F8D] border-t-transparent rounded-full animate-spin mb-3.5"></div>
             <h3 className="text-base font-bold text-[#0f172a] mb-1">Finishing Practice Session...</h3>

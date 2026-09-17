@@ -24,7 +24,7 @@ import { AREA_FILTERS } from "./constants";
 export default function StudyNotesProgressView({ onSelectArea }) {
   const { coreLearningData, isLoading: isCoreLoading } = useCoreLearning(
     "study_notes",
-    { limit: 50 }
+    { limit: 100 }
   );
   const { content_summary, isLoading: isProgressLoading } = useStudyNotesProgress();
 
