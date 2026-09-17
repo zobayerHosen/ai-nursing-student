@@ -1,6 +1,6 @@
 import axiosPrivateClient from "@/lib/axios.private.client";
 import { flashcardsService } from "@/services/flashcards";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const useGetFlashcardCategory = () => {
   const axiosInstance = axiosPrivateClient();
@@ -47,6 +47,60 @@ export const useGetDeckDetails = (deckId) => {
     isError,
     isFetching,
     refetch,
+  };
+};
+
+export const useGetFavoriteDecks = () => {
+  const axiosInstance = axiosPrivateClient();
+
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
+    queryKey: ["favorite-decks"],
+    queryFn: () => flashcardsService.getFavoriteDecks(axiosInstance),
+    staleTime: 2 * 60 * 1000,
+    retry: false,
+  });
+
+  const favoriteDecks = Array.isArray(data?.data)
+    ? data.data
+    : Array.isArray(data?.data?.data)
+    ? data.data.data
+    : Array.isArray(data)
+    ? data
+    : [];
+
+  return {
+    favoriteDecks,
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
+  };
+};
+
+export const useToggleFavoriteDeck = () => {
+  const axiosInstance = axiosPrivateClient();
+  const queryClient = useQueryClient();
+
+  const {
+    mutateAsync: toggleFavorite,
+    isPending,
+    isError,
+    error,
+  } = useMutation({
+    mutationFn: (deckId) =>
+      flashcardsService.toggleFavoriteDeck(axiosInstance, deckId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["favorite-decks"] });
+      queryClient.invalidateQueries({ queryKey: ["flashcard-get"] });
+      queryClient.invalidateQueries({ queryKey: ["deck-details"] });
+    },
+  });
+
+  return {
+    toggleFavorite,
+    isPending,
+    isError,
+    error,
   };
 };
 

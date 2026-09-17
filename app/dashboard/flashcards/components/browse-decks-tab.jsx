@@ -9,18 +9,34 @@ import {
   Menu,
   X,
   GraduationCap,
+  Bookmark,
 } from "lucide-react";
-import { useGetFlashcardCategory } from "@/hooks/flashcards";
+import { useGetFlashcardCategory, useToggleFavoriteDeck } from "@/hooks/flashcards";
 import FlashcardPlayer from "../[topic]/components/flashcard-player";
 import { DEFAULT_CATEGORIES, getCategoryIcon } from "./dummy-data";
+import toast from "react-hot-toast";
 
 export default function BrowseDecksTab() {
 
   const { flashcardData, isLoading } = useGetFlashcardCategory();
+  const { toggleFavorite } = useToggleFavoriteDeck();
 
   const [selectedCategoryId, setSelectedCategoryId] = useState("fundamentals-of-nursing");
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  const handleToggleBookmark = (e, topic) => {
+    e.stopPropagation();
+    if (!topic?.id) return;
+
+    toggleFavorite(topic.id)
+      .then(() => {
+        toast.success(topic.isFavorite ? "Removed from favorites" : "Added to favorites");
+      })
+      .catch(() => {
+        toast.error("Failed to update favorite status");
+      });
+  };
 
   // Combine API categories with defaults so UI is always comprehensive
   let categoriesList = [];
@@ -275,13 +291,19 @@ export default function BrowseDecksTab() {
                         </p>
 
                         <button
-                          className="cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            console.log("Bookmark clicked");
-                          }}
+                          type="button"
+                          className="cursor-pointer p-1 rounded-lg hover:bg-gray-100 text-[#1B4B66] transition-all"
+                          onClick={(e) => handleToggleBookmark(e, topic)}
+                          title={topic.isFavorite ? "Remove from favorites" : "Add to favorites"}
                         >
-                          <CiBookmark className="text-2xl" />
+                          <Bookmark
+                            size={20}
+                            className={
+                              topic.isFavorite
+                                ? "fill-[#1B4B66] text-[#1B4B66]"
+                                : "text-gray-300 hover:text-[#1B4B66]"
+                            }
+                          />
                         </button>
                       </div>
 
