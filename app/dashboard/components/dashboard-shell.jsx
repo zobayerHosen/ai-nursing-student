@@ -42,7 +42,7 @@ const DashboardShell = ({ children }) => {
 
     // Note: Main part
     return (
-        <div className="flex min-h-screen">
+        <div className="flex min-h-screen w-full max-w-full overflow-x-hidden">
             {/* Sidebar */}
             <Sidebar
                 collapsed={collapsed}
@@ -52,7 +52,7 @@ const DashboardShell = ({ children }) => {
 
             {/* Content */}
             <div
-                className={`flex-1 transition-all duration-300 ml-0 ${collapsed ? "lg:ml-16" : "lg:ml-64"}`}
+                className={`flex-1 min-w-0 max-w-full transition-all duration-300 ml-0 ${collapsed ? "lg:ml-16 lg:max-w-[calc(100%-4rem)]" : "lg:ml-64 lg:max-w-[calc(100%-16rem)]"}`}
             >
                 <DashboardHeader
                     collapsed={collapsed}
@@ -60,10 +60,9 @@ const DashboardShell = ({ children }) => {
                     isSidebarOpen={isSidebarOpen}
                     setIsSidebarOpen={setIsSidebarOpen}
                 />
-                <main className="flex-1 w-full overflow-x-hidden">{children}</main>
+                <main className="flex-1 w-full max-w-full min-w-0 overflow-x-hidden">{children}</main>
             </div>
         </div>
     );
 };
-
 export default DashboardShell; 

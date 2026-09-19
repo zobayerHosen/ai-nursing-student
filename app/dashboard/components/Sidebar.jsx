@@ -174,7 +174,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                                                                         ? `${isActive ? "text-primary" : "text-[#7B7B7B]"} [&_svg_path]:fill-current ${collapsed ? "mb-0" : "mb-1"} font-semibold`
                                                                         : isActive
                                                                             ? "text-primary [&_svg_path]:fill-current"
-                                                                            : "text-[#7B7B7B] [&_svg_path]:fill-current"
+                                                                            : "text-[#64748B] [&_svg_path]:fill-current"
                                                                         } [&_svg]:w-5 [&_svg]:h-5`}
                                                                 >
                                                                     {item.icon}

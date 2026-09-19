@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Accessibility, Activity, FlaskConical, Calculator } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 const successToolsData = [
@@ -68,7 +68,7 @@ const successToolsData = [
 
 const SuccessTools = () => {
     return (
-        <section className="w-full bg-white rounded-3xl border border-[#E2E8F0] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] p-6">
+        <section className="w-full bg-white rounded-3xl border border-[#E2E8F0] p-6">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-[15px] font-bold text-gray-800">Success Tools</h2>
                 <Link href="/dashboard/study-notes" className="text-[11px] font-bold text-[#2C5F8D] hover:underline flex items-center">

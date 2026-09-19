@@ -32,7 +32,7 @@ const bodySystemData = [
 
 const BodySystemReview = () => {
     return (
-        <section className="w-full bg-white rounded-3xl border border-[#E2E8F0] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] p-6">
+        <section className="w-full bg-white rounded-3xl border border-[#E2E8F0] p-6">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-[15px] font-bold text-gray-800">Body System Review</h2>
                 <Link href="/dashboard/body-systems" className="text-[11px] font-bold text-[#2C5F8D] hover:underline flex items-center">
@@ -44,7 +44,7 @@ const BodySystemReview = () => {
                 {bodySystemData.map((system, index) => {
                     const Icon = system.icon;
                     return (
-                        <div 
+                        <div
                             key={system.id || index} 
                             className="bg-[#FBFBFB] border border-[#E2E8F0] rounded-3xl p-6 flex flex-col sm:flex-row items-center sm:items-start gap-6 relative overflow-hidden hover:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:border-gray-300 transition-all cursor-pointer min-h-40"
                         >
