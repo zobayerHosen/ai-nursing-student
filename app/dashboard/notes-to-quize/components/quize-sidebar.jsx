@@ -9,6 +9,7 @@ import {
   Loader2,
   FileText,
   RefreshCw,
+  CircleHelp,
 } from "lucide-react";
 
 const formatFileSize = (bytes) => {
@@ -31,6 +32,13 @@ const questionFormatOptions = [
   { label: "Mix and match all types", value: "MIX" },
 ];
 
+const difficultyOptions = [
+  { label: "All Levels", value: "all" },
+  { label: "Easy", value: "easy" },
+  { label: "Medium", value: "medium" },
+  { label: "Hard", value: "hard" },
+];
+
 export default function QuizeSidebar({
   selectedQuestionCount = 10,
   setSelectedQuestionCount,
@@ -38,6 +46,8 @@ export default function QuizeSidebar({
   setSelectedProgram: propSetProgram,
   selectedQuizType: propQuizType,
   setSelectedQuizType: propSetQuizType,
+  selectedDifficulty: propDifficulty,
+  setSelectedDifficulty: propSetDifficulty,
   selectedFile,
   setSelectedFile,
   contentSource,
@@ -56,6 +66,7 @@ export default function QuizeSidebar({
 }) {
   const [internalProgram, setInternalProgram] = useState("RN");
   const [internalQuizType, setInternalQuizType] = useState("MCQ");
+  const [internalDifficulty, setInternalDifficulty] = useState("all");
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [itemToDeleteId, setItemToDeleteId] = useState(null);
 
@@ -64,6 +75,9 @@ export default function QuizeSidebar({
 
   const selectedQuizType = propQuizType !== undefined ? propQuizType : internalQuizType;
   const setSelectedQuizType = propSetQuizType || setInternalQuizType;
+
+  const selectedDifficulty = propDifficulty !== undefined ? propDifficulty : internalDifficulty;
+  const setSelectedDifficulty = propSetDifficulty || setInternalDifficulty;
 
   const handleQuestionCountChange = (event) => {
     const value = Number(event.target.value);
@@ -355,6 +369,38 @@ export default function QuizeSidebar({
                     <p className="text-[10px] font-medium text-[#697586]">
                       Maximum 30 questions
                     </p>
+                  </div>
+
+                  {/* Difficulty Level */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs font-semibold text-[#222427]">
+                        Difficulty Level
+                      </p>
+                      <CircleHelp size={14} className="text-[#94A3B8]" />
+                    </div>
+                    <div className="flex items-center rounded-xl bg-[#F1F5F9] p-1 border border-[#E2E8F0]">
+                      {difficultyOptions.map((option) => {
+                        const isSelected =
+                          selectedDifficulty === option.value ||
+                          selectedDifficulty === option.label;
+
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setSelectedDifficulty?.(option.value)}
+                            className={`flex-1 rounded-lg py-1.5 text-center text-xs transition cursor-pointer ${
+                              isSelected
+                                ? "bg-white font-semibold text-[#2C5F8D] shadow-xs"
+                                : "text-[#64748B] hover:text-[#1E293B] font-medium"
+                            }`}
+                          >
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* Generate Button */}

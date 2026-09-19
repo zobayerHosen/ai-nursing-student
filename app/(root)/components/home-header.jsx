@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
-import logo from "@/public/assets/logo.png"
+import logo from "@/public/assets/new_logo.png"
 import Image from "next/image";
 import { useGetUser, useLogout } from "@/hooks";
 import LoadingIcon from "@/components/loading-icon";

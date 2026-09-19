@@ -1,77 +1,98 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Lightbulb, Mic } from "lucide-react";
+import { CheckCircle2, Lightbulb, MessageSquare, Radio, Sparkles } from "lucide-react";
 
 export default function AskAtlas() {
   const suggestedQuestions = [
     "Understand difficult concepts",
     "Practice Clinical Judgment",
     "Prepare for exams",
-    "Explain oxidative Phosphorylation",
+    "Explain oxidate Phospohorylation",
   ];
 
-  const wavePattern = [6, 10, 8, 14, 12, 18, 24, 20, 28, 22, 16, 12, 8, 6];
-  const fullWave = [...wavePattern, 32, ...[...wavePattern].reverse()];
+  const features = [
+    "Get answers & explain concepts",
+    "Create study notes, flashcards & care plans",
+    "Quiz you, help you learn, and more",
+  ];
 
   return (
-    <div className="w-full flex flex-col lg:flex-row items-stretch gap-6">
-      {/* Left Box: Talk with Lumi */}
-      <Link
-        href="/dashboard/my-tutor"
-        className="flex-1 min-h-55 bg-[#326798] rounded-3xl flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-[#2C5F8D] transition-colors relative overflow-hidden group shadow-sm"
-      >
-        <style>{`
-                    @keyframes blink-fade {
-                        0%, 100% { opacity: 0.3; }
-                        50% { opacity: 1; }
-                    }
-                `}</style>
+    <div className="w-full flex flex-col lg:flex-row items-stretch gap-5">
+      {/* Left Card: CARA AI Assistant */}
+      <div className="flex-1 bg-linear-to-r from-[#123659] via-[#75345d] to-[#ef476f] rounded-3xl p-6 sm:p-7 text-white flex flex-col justify-between  relative overflow-hidden min-h-55">
+        {/* Top Info Section */}
+        <div className="flex items-start gap-4 mb-6">
+          {/* Avatar / Placeholder Box */}
+          <div className="w-20 h-20 sm:w-22 sm:h-22 bg-[#395e7e]/60 backdrop-blur-sm rounded-2xl shrink-0 border border-white/10 shadow-inner flex items-center justify-center">
+          </div>
 
-        {/* Waveform */}
-        <div className="flex items-center gap-0.75 justify-center h-16 mb-3">
-          {fullWave.map((h, i) => (
-            <div
-              key={i}
-              className="w-0.5 bg-white rounded-full"
-              style={{
-                height: `${h}px`,
-                animation: `blink-fade 1.2s infinite ease-in-out ${(i % 5) * 0.15}s`
-              }}
-            />
-          ))}
+          {/* Text Content */}
+          <div className="flex-1">
+            <div className="flex items-center gap-1.5">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">CARA</h2>
+              <span className="text-amber-300 text-lg sm:text-xl">✨</span>
+            </div>
+            <p className="text-xs sm:text-sm text-white/80 font-medium mb-3">
+              Your AI nursing assistant
+            </p>
+
+            {/* Bulleted Feature List */}
+            <ul className="space-y-1.5">
+              {features.map((feature, idx) => (
+                <li key={idx} className="flex items-center gap-2 text-xs sm:text-[13px] text-white/95 leading-tight">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-white/80 shrink-0" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
-        {/* Microphone Icon */}
-        <div className="w-12 h-12 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
-          <svg width="41" height="41" viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path opacity="0.4" d="M38.5228 15.6777C37.2378 15.6777 36.195 16.5345 36.195 17.5944C36.195 24.7529 29.1208 30.5775 20.4265 30.5775C11.7298 30.5775 4.6556 24.7529 4.6556 17.5944C4.6556 16.5345 3.61275 15.6777 2.3278 15.6777C1.04285 15.6777 0 16.5345 0 17.5944C0 26.2192 7.92849 33.3394 18.0987 34.2958V38.152C18.0987 39.21 19.1392 40.0687 20.4265 40.0687C21.7114 40.0687 22.7543 39.21 22.7543 38.152V34.2958C32.9221 33.3394 40.8506 26.2192 40.8506 17.5944C40.8506 16.5345 39.8077 15.6777 38.5228 15.6777Z" fill="#ffff" />
-            <path d="M20.0034 26.48H20.846C26.619 26.48 31.3025 22.6257 31.3025 17.8725V8.60946C31.3025 3.85241 26.619 0 20.846 0H20.0034C14.2304 0 9.54688 3.85241 9.54688 8.60946V17.8725C9.54688 22.6257 14.2304 26.48 20.0034 26.48Z" fill="#fff" />
-          </svg>
+        {/* Bottom Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+          {/* Chat with CARA Button */}
+          <Link
+            href="/dashboard/my-tutor"
+            className="w-full sm:flex-1 py-3 px-5 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/25 transition-all text-white font-medium text-sm flex items-center justify-center gap-2.5 shadow-sm group"
+          >
+            <MessageSquare className="w-4.5 h-4.5 text-white shrink-0 group-hover:scale-105 transition-transform" />
+            <span>Chat with CARA</span>
+          </Link>
+
+          {/* Go Live with CARA Button */}
+          <Link
+            href="/dashboard/my-tutor"
+            className="w-full sm:w-auto py-3 px-5 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/25 transition-all text-white font-medium text-sm flex items-center justify-center gap-2.5 shadow-sm group"
+          >
+            <Radio className="w-4.5 h-4.5 text-white shrink-0 group-hover:scale-105 transition-transform" />
+            <span>Go Live with CARA</span>
+            <span className="px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-white bg-white/30 rounded uppercase leading-none ml-0.5">
+              LIVE
+            </span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Right Card: Learn with LUMI */}
+      <div className="w-full lg:w-[42%] xl:w-[38%] bg-white rounded-3xl border border-slate-200/70 p-6  flex flex-col justify-between">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-semibold text-[#1c5375]">
+            Learn with LUMI in multiple languages
+          </h3>
+          <div className="w-8 h-8 rounded-full bg-sky-50 flex items-center justify-center text-[#1c5375]">
+            <Lightbulb className="w-4.5 h-4.5 text-[#1c5375]" />
+          </div>
         </div>
 
-        {/* Text */}
-        <p className="text-base text-white tracking-wide">
-          Talk with CARA
-        </p>
-      </Link>
-
-      {/* Right Box: Suggested things to ask */}
-      <div className="w-full lg:w-[45%] xl:w-[40%] bg-white rounded-3xl border border-[#E2E8F0] p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] flex flex-col">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-[15px] font-bold text-[#1B4B66]">Learn with CARA in multiple languages</h2>
-          <Lightbulb className="w-4.5 h-4.5 text-[#1B4B66] fill-[#1B4B66]/10" />
-        </div>
-
-        <div className="flex flex-col gap-3 flex-1 justify-center">
+        <div className="flex flex-col gap-2.5 flex-1 justify-center">
           {suggestedQuestions.map((q, idx) => (
             <Link
               key={idx}
               href={`/dashboard/my-tutor?prompt=${encodeURIComponent(q)}`}
-              className="w-full flex items-center justify-between bg-[#FAFAF9] border border-[#F3E8FF] hover:bg-[#F3E8FF] hover:border-[#E9D5FF] transition-all rounded-xl px-4 py-3 cursor-pointer group shadow-sm"
+              className="w-full text-left px-4 py-3 bg-[#f8fafc] hover:bg-[#f1f5f9] border border-slate-200/80 rounded-2xl text-[13px] sm:text-[13.5px] font-medium text-[#2b5278] transition-colors cursor-pointer block leading-snug"
             >
-              <span className="text-[12.5px] font-semibold text-[#8B5CF6] pr-4 leading-tight">{q}</span>
-              <ArrowRight className="w-4.5 h-4.5 text-[#8B5CF6] shrink-0 group-hover:translate-x-1 transition-transform" />
+              {q}
             </Link>
           ))}
         </div>

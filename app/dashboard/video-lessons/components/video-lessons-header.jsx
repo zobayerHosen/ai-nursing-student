@@ -94,7 +94,7 @@ export default function VideoLessonsHeader({
               onClick={() => onTabChange("explore")}
               className={`pb-3 sm:pb-3.5 text-xs sm:text-sm lg:text-[15px] font-bold transition-colors cursor-pointer relative whitespace-nowrap ${
                 activeTab === "explore"
-                  ? "text-[#1e3a5f] border-b-2 border-[#1e3a5f]"
+                  ? "text-[#1e3a5f] border-b-2 border-[#fe5e7e]"
                   : "text-[#64748b] hover:text-[#1e3a5f]"
               }`}
             >
@@ -105,7 +105,7 @@ export default function VideoLessonsHeader({
               onClick={() => onTabChange("favorites")}
               className={`pb-3 sm:pb-3.5 text-xs sm:text-sm lg:text-[15px] font-bold transition-colors cursor-pointer relative whitespace-nowrap ${
                 activeTab === "favorites"
-                  ? "text-[#1e3a5f] border-b-2 border-[#1e3a5f]"
+                  ? "text-[#1e3a5f] border-b-2 border-[#fe5e7e]"
                   : "text-[#64748b] hover:text-[#1e3a5f]"
               }`}
             >
@@ -116,7 +116,7 @@ export default function VideoLessonsHeader({
               onClick={() => onTabChange("progress")}
               className={`pb-3 sm:pb-3.5 text-xs sm:text-sm lg:text-[15px] font-bold transition-colors cursor-pointer relative whitespace-nowrap ${
                 activeTab === "progress"
-                  ? "text-[#1e3a5f] border-b-2 border-[#1e3a5f]"
+                  ? "text-[#1e3a5f] border-b-2 border-[#fe5e7e]"
                   : "text-[#64748b] hover:text-[#1e3a5f]"
               }`}
             >

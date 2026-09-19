@@ -48,9 +48,7 @@ export default function VideoLessonsClient() {
 
   return (
     <div className="w-full min-h-screen bg-[#f8fafc] flex flex-col overflow-x-hidden">
-      {/* ─────────────────────────────────────────────────────────── */}
-      {/* 1. TOP HEADER COMPONENT                                     */}
-      {/* ─────────────────────────────────────────────────────────── */}
+      {/* TOP HEADER COMPONENT */}
       <VideoLessonsHeader
         activeTab={activeTab}
         onTabChange={handleTabChange}
@@ -59,9 +57,7 @@ export default function VideoLessonsClient() {
         onBack={handleBackToExplore}
       />
 
-      {/* ─────────────────────────────────────────────────────────── */}
-      {/* 2. BODY SECTION ACCORDING TO ACTIVE TAB & SUBVIEW           */}
-      {/* ─────────────────────────────────────────────────────────── */}
+      {/* BODY SECTION ACCORDING TO ACTIVE TAB & SUBVIEW */}
       <div className="flex-1 w-full px-3.5 sm:px-6 lg:px-8 xl:px-10 py-4 sm:py-6 lg:py-8">
         {/* EXPLORE TAB */}
         {activeTab === "explore" && subView === "main" && (

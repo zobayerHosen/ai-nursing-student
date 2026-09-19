@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import logo from "@/public/assets/dash_logo.png";
+import logo from "@/public/assets/new_logo.png";
 import min_logo from "@/public/assets/mini_logo.png";
 
 import { usePathname } from "next/navigation";
@@ -26,7 +26,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
         sidebarData?.forEach((section) => {
             section.items?.forEach((item) => {
                 if (item.subItems) {
-                    const isSubActive = item.subItems.some(sub => 
+                    const isSubActive = item.subItems.some(sub =>
                         pathname === sub.href || (sub.href !== "/dashboard" && pathname.startsWith(sub.href + "/"))
                     );
                     const isParentActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href + "/"));
@@ -65,11 +65,11 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                                 className="object-contain hidden lg:block lg:p-3"
                             />
                         ) : (
-                            <div className="w-35 h-7.5">
+                            <div className="">
                                 <Image
                                     src={logo}
                                     alt="logo"
-                                    className="w-fit h-full object-contain"
+                                    className="w-fit h-full object-contain "
                                 />
                             </div>
                         )}
@@ -162,7 +162,7 @@ export default function Sidebar({ collapsed, isSidebarOpen, setIsSidebarOpen, })
                                                                 section.title === "AI TOOLS"
                                                                     ? `flex flex-col items-center justify-center text-center border border-[#E5E7EB] hover:border-[#2C5F8D] hover:shadow-sm transition-all duration-200 ${collapsed ? "gap-0 h-10 border-0" : "h-22 px-2 rounded-2xl"} ${isActive ? "bg-[rgba(44,95,141,0.10)] text-primary" : ""}`
                                                                     : `flex items-center transition-all duration-200 ${collapsed ? "p-3 h-10 justify-center gap-0" : "p-3 gap-3 justify-between"} ${isActive
-                                                                        ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-primary"
+                                                                        ? "bg-[rgba(44,95,141,0.05)] text-primary border-r-2 border-[#fe5e7e]"
                                                                         : "hover:bg-gray-100 text-[#64748B]"
                                                                     }`
                                                             }

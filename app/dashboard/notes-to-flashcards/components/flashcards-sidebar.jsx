@@ -27,6 +27,8 @@ export default function FlashcardsSidebar({
   setSelectedCardCount,
   selectedProgram = "LPN",
   setSelectedProgram,
+  selectedCardType = "qa",
+  setSelectedCardType,
   useOnlyCourseMaterials = false,
   setUseOnlyCourseMaterials,
   selectedFile,
@@ -52,6 +54,24 @@ export default function FlashcardsSidebar({
   const programOptions = [
     { label: "LPN/LVN", value: "LPN" },
     { label: "RN", value: "RN" },
+  ];
+
+  const cardTypeOptions = [
+    {
+      label: "Q & A",
+      value: "qa",
+      description: "Question on front answer on back.",
+    },
+    {
+      label: "Defination",
+      value: "definition",
+      description: "Term on front, defination on back.",
+    },
+    {
+      label: "Concept",
+      value: "concept",
+      description: "Key Idea with explanation.",
+    },
   ];
 
   const handleCardCountChange = (event) => {
@@ -278,10 +298,11 @@ export default function FlashcardsSidebar({
                             key={option.value}
                             type="button"
                             onClick={() => setSelectedProgram?.(option.value)}
-                            className={`rounded-full px-5 py-2 text-xs font-semibold transition border ${isSelected
+                            className={`rounded-full px-5 py-2 text-xs font-semibold transition border ${
+                              isSelected
                                 ? "border-[#2C5F8D] bg-[#E8F2FC] text-[#2C5F8D]"
                                 : "border-[#DCE5EF] bg-white text-[#53606D] hover:bg-[#F8FAFC]"
-                              }`}
+                            }`}
                           >
                             {option.label}
                           </button>
@@ -290,36 +311,60 @@ export default function FlashcardsSidebar({
                     </div>
                   </div>
 
-                  {/* Learning Mode (Only visible when a file is uploaded) */}
-                  {selectedFile ? (
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-[#222427]">
-                        Learning Mode
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setUseOnlyCourseMaterials?.(!useOnlyCourseMaterials)
-                        }
-                        className={`flex w-full items-center justify-center gap-2.5 rounded-lg border p-3 text-xs font-medium transition cursor-pointer text-center ${useOnlyCourseMaterials
-                            ? "border-[#2C5F8D] bg-[#E8F2FC] text-[#2C5F8D] font-semibold"
-                            : "border-[#DCE5EF] bg-[#F8FAFC] text-[#3F4852] hover:bg-[#EAEFF5]"
-                          }`}
-                      >
-                        <span
-                          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition ${useOnlyCourseMaterials
-                              ? "border-[#2C5F8D] bg-[#2C5F8D]"
-                              : "border-[#94A3B8] bg-white"
+                  {/* Card Type */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-[#222427]">
+                      Card Type
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {cardTypeOptions.map((option) => {
+                        const isSelected = selectedCardType === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setSelectedCardType?.(option.value)}
+                            className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition cursor-pointer min-h-21.25 ${
+                              isSelected
+                                ? "border-[#2C5F8D] bg-[#E8F2FC] text-[#2C5F8D]"
+                                : "border-[#E5E7EB] bg-white text-[#53606D] hover:bg-[#F8FAFC]"
                             }`}
-                        >
-                          {useOnlyCourseMaterials && (
-                            <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                          )}
-                        </span>
-                        <span>Use only my course materials provided</span>
-                      </button>
+                          >
+                            <span
+                              className={`text-xs font-bold leading-tight ${
+                                isSelected ? "text-[#2C5F8D]" : "text-[#222427]"
+                              }`}
+                            >
+                              {option.label}
+                            </span>
+                            <span className="mt-1.5 text-[9.5px] leading-tight text-[#697586] font-normal">
+                              {option.description}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
-                  ) : null}
+                  </div>
+
+                  {/* Learning Mode */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-[#222427]">
+                      Learning Mode
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setUseOnlyCourseMaterials?.(!useOnlyCourseMaterials)
+                      }
+                      className={`flex w-full items-center justify-center gap-2.5 rounded-full border p-3 text-xs font-semibold transition cursor-pointer text-center ${
+                        useOnlyCourseMaterials
+                          ? "border-[#2C5F8D] bg-[#E8F2FC] text-[#2C5F8D]"
+                          : "border-[#DCE5EF] bg-[#F8FAFC] text-[#3F4852] hover:bg-[#EAEFF5]"
+                      }`}
+                    >
+                      <span>Use only my course materials provided</span>
+                    </button>
+                  </div>
 
                   {/* Card Amount Input */}
                   <div className="space-y-2">

@@ -71,7 +71,7 @@ function FlashCardsContent() {
               onClick={() => handleTabChange("browse")}
               className={`pb-3 font-bold transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === "browse"
-                  ? "text-[#1B4B66] border-b-2 border-[#1B4B66]"
+                  ? "text-[#1B4B66] border-b-2 border-[#fe5e7e]"
                   : "text-gray-500 hover:text-[#1B4B66]"
               }`}
             >
@@ -82,7 +82,7 @@ function FlashCardsContent() {
               onClick={() => handleTabChange("favorites")}
               className={`pb-3 font-bold transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === "favorites"
-                  ? "text-[#1B4B66] border-b-2 border-[#1B4B66]"
+                  ? "text-[#1B4B66] border-b-2 border-[#fe5e7e]"
                   : "text-gray-500 hover:text-[#1B4B66]"
               }`}
             >
@@ -93,7 +93,7 @@ function FlashCardsContent() {
               onClick={() => handleTabChange("performance")}
               className={`pb-3 font-bold transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === "performance"
-                  ? "text-[#1B4B66] border-b-2 border-[#1B4B66]"
+                  ? "text-[#1B4B66] border-b-2 border-[#fe5e7e]"
                   : "text-gray-500 hover:text-[#1B4B66]"
               }`}
             >

@@ -52,6 +52,7 @@ export default function NotesToQuizeClient() {
   const [selectedQuestionCount, setSelectedQuestionCount] = useState(10);
   const [selectedProgram, setSelectedProgram] = useState("RN");
   const [selectedQuizType, setSelectedQuizType] = useState("MCQ");
+  const [selectedDifficulty, setSelectedDifficulty] = useState("all");
   const [selectedFile, setSelectedFile] = useState(null);
   const [contentSource, setContentSource] = useState("");
 
@@ -116,6 +117,7 @@ export default function NotesToQuizeClient() {
     formData.append("question_requested", String(selectedQuestionCount));
     if (selectedProgram) formData.append("program", selectedProgram);
     if (selectedQuizType) formData.append("question_format", selectedQuizType);
+    if (selectedDifficulty) formData.append("question_type", selectedDifficulty);
 
     try {
       const response = await generateNclexQuiz(formData);
@@ -237,6 +239,8 @@ export default function NotesToQuizeClient() {
         setSelectedProgram={setSelectedProgram}
         selectedQuizType={selectedQuizType}
         setSelectedQuizType={setSelectedQuizType}
+        selectedDifficulty={selectedDifficulty}
+        setSelectedDifficulty={setSelectedDifficulty}
         selectedFile={selectedFile}
         setSelectedFile={setSelectedFile}
         contentSource={contentSource}

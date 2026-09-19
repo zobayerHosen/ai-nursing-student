@@ -5,10 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { useState, useRef, useEffect } from "react";
-import { BsInstagram, BsLayoutSidebarReverse, BsThreeDotsVertical } from "react-icons/bs";
-import { FaFacebookF } from "react-icons/fa";
+import { BsLayoutSidebarReverse, BsThreeDotsVertical } from "react-icons/bs";
 import { GoBellFill } from "react-icons/go";
-import { TbBrandTiktok } from "react-icons/tb";
 import NotificationPanel from "./NotificationPanel";
 import { settingsIcon } from "@/dummydata";
 

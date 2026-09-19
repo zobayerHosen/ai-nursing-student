@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const BodySystemList = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const itemsPerPage = 100;
   const offset = (currentPage - 1) * itemsPerPage;
 
   const { coreLearningData, coreLearningPagination, isLoading } = useCoreLearning("body_system", { limit: itemsPerPage, offset });

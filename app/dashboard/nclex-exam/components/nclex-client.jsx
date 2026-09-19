@@ -76,7 +76,7 @@ export default function NclexClient() {
               onClick={() => setActiveTab("simulation")}
               className={`pb-3 sm:pb-3.5 text-xs sm:text-sm font-bold transition-colors cursor-pointer relative whitespace-nowrap ${
                 activeTab === "simulation"
-                  ? "text-[#1E3A5F] border-b-2 border-[#1E3A5F]"
+                  ? "text-[#1E3A5F] border-b-2 border-[#fe5e7e]"
                   : "text-[#64748b] hover:text-[#1E3A5F]"
               }`}
             >
@@ -87,7 +87,7 @@ export default function NclexClient() {
               onClick={() => setActiveTab("performance")}
               className={`pb-3 sm:pb-3.5 text-xs sm:text-sm font-bold transition-colors cursor-pointer relative whitespace-nowrap ${
                 activeTab === "performance"
-                  ? "text-[#1E3A5F] border-b-2 border-[#1E3A5F]"
+                  ? "text-[#1E3A5F] border-b-2 border-[#fe5e7e]"
                   : "text-[#64748b] hover:text-[#1E3A5F]"
               }`}
             >

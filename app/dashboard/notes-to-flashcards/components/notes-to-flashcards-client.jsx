@@ -16,6 +16,7 @@ import NotesFlashcardPlayer, { NotesFlashcardPlayerSkeleton } from "./notes-flas
 export default function NotesToFlashcardsClient() {
   const [selectedCardCount, setSelectedCardCount] = useState(10);
   const [selectedProgram, setSelectedProgram] = useState("LPN");
+  const [selectedCardType, setSelectedCardType] = useState("qa");
   const [useOnlyCourseMaterials, setUseOnlyCourseMaterials] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [contentSource, setContentSource] = useState("");
@@ -54,6 +55,7 @@ export default function NotesToFlashcardsClient() {
     if (hasContent) formData.append("content_source", contentSource);
     formData.append("card_count", String(selectedCardCount));
     if (selectedProgram) formData.append("program", selectedProgram);
+    if (selectedCardType) formData.append("card_type", selectedCardType);
     formData.append("use_only_course_materials", String(useOnlyCourseMaterials));
 
     try {
@@ -91,6 +93,8 @@ export default function NotesToFlashcardsClient() {
         setSelectedCardCount={setSelectedCardCount}
         selectedProgram={selectedProgram}
         setSelectedProgram={setSelectedProgram}
+        selectedCardType={selectedCardType}
+        setSelectedCardType={setSelectedCardType}
         useOnlyCourseMaterials={useOnlyCourseMaterials}
         setUseOnlyCourseMaterials={setUseOnlyCourseMaterials}
         selectedFile={selectedFile}
@@ -106,7 +110,7 @@ export default function NotesToFlashcardsClient() {
         selectedHistoryId={viewingHistoryId}
       />
 
-      {/* ── Right panel ─────────────────────────────────────────────────── */}
+      {/* ── Right panel */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* header bar */}
         <div className="flex min-h-14 items-center justify-between border-b border-[#E5E7EB] bg-white px-4 py-3 sm:px-6">

@@ -325,7 +325,7 @@ export default function QbankClient() {
               onClick={() => setActiveTab("qbank")}
               className={`pb-2.5 sm:pb-3 xl:pb-3.5 text-xs sm:text-sm xl:text-[15px] font-bold transition-all cursor-pointer relative whitespace-nowrap ${
                 activeTab === "qbank"
-                  ? "text-[#1e3a5f] border-b-2 border-[#1e3a5f]"
+                  ? "text-[#1e3a5f] border-b-2 border-[#fe5e7e]"
                   : "text-[#64748b] hover:text-[#1e3a5f]"
               }`}
             >
@@ -336,7 +336,7 @@ export default function QbankClient() {
               onClick={() => setActiveTab("performance")}
               className={`pb-2.5 sm:pb-3 xl:pb-3.5 text-xs sm:text-sm xl:text-[15px] font-bold transition-all cursor-pointer relative whitespace-nowrap ${
                 activeTab === "performance"
-                  ? "text-[#1e3a5f] border-b-2 border-[#1e3a5f]"
+                  ? "text-[#1e3a5f] border-b-2 border-[#fe5e7e]"
                   : "text-[#64748b] hover:text-[#1e3a5f]"
               }`}
             >
