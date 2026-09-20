@@ -4,7 +4,7 @@ import Image from "next/image";
 
 const RootsSection = () => {
     return (
-        <section className="bg-[rgba(158,181,203,0.33)] py-12 sm:py-16 md:py-20 xl:py-24" id="roots">
+        <section className="bg-white py-12 sm:py-16 md:py-20 xl:py-24" id="roots">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Header */}
@@ -13,12 +13,12 @@ const RootsSection = () => {
                     {/* Left Content */}
                     <div className="max-w-3xl">
 
-                        <span className="inline-flex items-center rounded-full border border-[#7294B3] px-3 py-1.5 text-[10px] font-medium tracking-wide text-[#677489] sm:text-xs">
+                        <span className="text-[10px] font-semibold tracking-wide text-[#2C5F8D] sm:text-sm">
                             THE STEMRN METHOD
                         </span>
 
-                        <h2 className="mt-4 text-3xl font-semibold text-[#285680] lg:text-4xl">
-                            4 Roots of Success
+                        <h2 className="mt-2 text-3xl font-semibold text-[#285680] lg:text-4xl">
+                            4 Roots <span className="text-[#0F172A]">of Success</span>
                         </h2>
 
                         <p className="mt-4 max-w-2xl text-sm md:leading-6 lg:leading-7 text-[#64748B] sm:text-base">
@@ -29,11 +29,11 @@ const RootsSection = () => {
                     </div>
 
                     {/* Badge */}
-                    <div className=" flex w-full max-w-md items-center gap-2 xl:gap-3 rounded-full bg-primary px-1.5 py-2 text-white sm:w-fit xl:py-3">
+                    <div className="flex w-full max-w-md items-center gap-3 xl:gap-4 rounded-xl px-4 py-3 text-white sm:w-fit sm:px-5 sm:py-4 xl:px-6 xl:py-5" style={{ background: "linear-gradient(to right, #c084fc, #e879a0, #ec4899)" }}>
 
-                        <div className="flex w-10 h-10 md:h-11 md:w-11 lg:h-10 lg:w-10 xl:h-12 xl:w-12 shrink-0 items-center justify-center rounded-full bg-white p-2 sm:h-14 sm:w-14">
+                        <div className="w-8 h-8  shrink-0">
                             <Image
-                                src="/assets/mini_logo.png"
+                                src="/assets/root_logo.png"
                                 alt="Roots Badge"
                                 width={250}
                                 height={150}
@@ -41,15 +41,9 @@ const RootsSection = () => {
                             />
                         </div>
 
-                        <div className="space-y-1">
-                            <p className="text-sm font-semibold sm:text-base lg:text-sm xl:text-lg">
-                                Root Knowledge. Real Results.
-                            </p>
-
-                            <p className=" text-xs text-white/90  lg:text-sm ">
-                                The STEMRN promise
-                            </p>
-                        </div>
+                        <p className="text-sm font-medium sm:text-base xl:text-lg leading-snug">
+                            Root Knowledge. Real Results. The STEMRN promise.
+                        </p>
                     </div>
                 </div>
 
@@ -58,12 +52,18 @@ const RootsSection = () => {
                     {rootsData?.map((item, index) => (
                         <div
                             key={index}
-                            className="rounded-2xl bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md sm:p-6 lg:p-4.5 xl:p-7"
+                            className="rounded-2xl bg-[#FBFBFB] p-5 transition-all duration-300 hover:-translate-y-1 sm:p-6 lg:p-4.5 xl:p-7 border border-[#E2E8F0]"
                         >
 
                             {/* Icon */}
-                            <div className="mb-3 lg:mb-4 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white sm:h-11 sm:w-11 lg:h-10 lg:w-10 xl:h-12 xl:w-12">
-                                {item.icon}
+                            <div className={`mb-3 lg:mb-4 flex h-11 w-11 items-center justify-center rounded-xl p-2 sm:h-13 sm:w-13 lg:h-12 lg:w-12 xl:h-14 xl:w-14 ${item.bgColor || "bg-primary/10"}`}>
+                                <Image
+                                    src={item.icon}
+                                    alt={item.title}
+                                    width={40}
+                                    height={40}
+                                    className="h-7 w-7 object-contain shrink-0"
+                                />
                             </div>
 
                             {/* Title */}

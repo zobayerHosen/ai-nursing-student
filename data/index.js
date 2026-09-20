@@ -6,69 +6,18 @@ import {
   FaInstagram,
 } from "react-icons/fa";
 
+import rootImg1 from "@/public/assets/root1.png";
+import rootImg2 from "@/public/assets/root2.png";
+import rootImg3 from "@/public/assets/root3.png";
+import rootImg4 from "@/public/assets/root4.png";
+
 import { Play, DollarSign } from "lucide-react";
 
 // Note: roots section data start
 export const rootsData = [
   {
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-      >
-        <g clipPath="url(#clip0_1_16539)">
-          <mask
-            id="mask0_1_16539"
-            style={{ maskType: "luminance" }}
-            maskUnits="userSpaceOnUse"
-            x="0"
-            y="0"
-            width="24"
-            height="24"
-          >
-            <path d="M24 0H0V24H24V0Z" fill="white" />
-          </mask>
-          <g mask="url(#mask0_1_16539)">
-            <path
-              d="M2 2C8.16 5.69 15.84 5.69 22 2"
-              stroke="white"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M2 21.9999C8.16 18.3099 15.84 18.3099 22 21.9999"
-              stroke="white"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M6.86984 7.50977C7.99984 11.8098 7.48984 16.4198 5.33984 20.3998"
-              stroke="white"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M18.6694 20.41C15.8894 15.25 15.8394 9.03007 18.5694 3.82007L18.6994 3.58008"
-              stroke="white"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </g>
-        </g>
-        <defs>
-          <clipPath id="clip0_1_16539">
-            <rect width="24" height="24" fill="white" />
-          </clipPath>
-        </defs>
-      </svg>
-    ),
+    icon: rootImg1,
+    bgColor: "bg-[#EAFBF5]",
     title: "Practice",
     desc: `2,000+ NGN-style items across every case type the new NCLEX throws at you —
 bowtie, matrix, cloze, extended multiple
@@ -76,57 +25,8 @@ response. CARA explains the why behind
 every answer.`,
   },
   {
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-      >
-        <g clipPath="url(#clip0_1_16553)">
-          <mask
-            id="mask0_1_16553"
-            style={{ maskType: "luminance" }}
-            maskUnits="userSpaceOnUse"
-            x="0"
-            y="0"
-            width="24"
-            height="24"
-          >
-            <path d="M24 0H0V24H24V0Z" fill="white" />
-          </mask>
-          <g mask="url(#mask0_1_16553)">
-            <path
-              d="M12 16C15.866 16 19 12.866 19 9C19 5.13401 15.866 2 12 2C8.13401 2 5 5.13401 5 9C5 12.866 8.13401 16 12 16Z"
-              stroke="white"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M12 16V22"
-              stroke="white"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M15 19H9"
-              stroke="white"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </g>
-        </g>
-        <defs>
-          <clipPath id="clip0_1_16553">
-            <rect width="24" height="24" fill="white" />
-          </clipPath>
-        </defs>
-      </svg>
-    ),
+    icon: rootImg2,
+    bgColor: "bg-[#FFF0F3]",
     title: "Knowledge",
     desc: `Full coverage of all 8 NCLEX client need
 categories across 17 specialties, taught the
@@ -135,104 +35,23 @@ pathophysiology assessment
 intervention rationale.`,
   },
   {
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-      >
-        <g clipPath="url(#clip0_1_16566)">
-          <mask
-            id="mask0_1_16566"
-            style={{ maskType: "luminance" }}
-            maskUnits="userSpaceOnUse"
-            x="0"
-            y="0"
-            width="24"
-            height="24"
-          >
-            <path d="M24 0H0V24H24V0Z" fill="white" />
-          </mask>
-          <g mask="url(#mask0_1_16566)">
-            <path
-              d="M18.32 11.9992C20.92 11.9992 22 10.9992 21.04 7.7192C20.39 5.5092 18.49 3.6092 16.28 2.9592C13 1.9992 12 3.0792 12 5.6792V8.5592C12 10.9992 13 11.9992 15 11.9992H18.32Z"
-              stroke="white"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M19.9995 14.6998C19.0695 19.3298 14.6295 22.6898 9.57944 21.8698C5.78944 21.2598 2.73944 18.2098 2.11944 14.4198C1.30944 9.38977 4.64944 4.94977 9.25944 4.00977"
-              stroke="white"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </g>
-        </g>
-        <defs>
-          <clipPath id="clip0_1_16566">
-            <rect width="24" height="24" fill="white" />
-          </clipPath>
-        </defs>
-      </svg>
-    ),
+    icon: rootImg3,
+    bgColor: "bg-[#EBF3FE]",
     title: "Strategy",
     desc: `The frameworks that turn a 50/50 into a
 confident answer. Maslow, ABCs, safety-
 first, SATA anchoring, priority-setting.`,
   },
   {
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-      >
-        <g clipPath="url(#clip0_1_16578)">
-          <mask
-            id="mask0_1_16578"
-            style={{ maskType: "luminance" }}
-            maskUnits="userSpaceOnUse"
-            x="0"
-            y="0"
-            width="24"
-            height="24"
-          >
-            <path d="M24 0H0V24H24V0Z" fill="white" />
-          </mask>
-          <g mask="url(#mask0_1_16578)">
-            <path
-              d="M12.0011 13.3008C11.8711 13.3008 11.7411 13.2708 11.6211 13.2008L2.79106 8.09083C2.44106 7.88083 2.31106 7.42083 2.52106 7.06083C2.73106 6.70083 3.19106 6.58083 3.55106 6.79083L12.0011 11.6808L20.4011 6.82083C20.7611 6.61083 21.2211 6.74083 21.4311 7.09083C21.6411 7.45083 21.5111 7.91083 21.1611 8.12083L12.3911 13.2008C12.2611 13.2608 12.1311 13.3008 12.0011 13.3008Z"
-              fill="white"
-            />
-            <path
-              d="M12 22.3591C11.59 22.3591 11.25 22.0191 11.25 21.6091V12.5391C11.25 12.1291 11.59 11.7891 12 11.7891C12.41 11.7891 12.75 12.1291 12.75 12.5391V21.6091C12.75 22.0191 12.41 22.3591 12 22.3591Z"
-              fill="white"
-            />
-            <path
-              d="M12.0006 22.75C11.1206 22.75 10.2506 22.56 9.56063 22.18L4.22063 19.21C2.77063 18.41 1.64062 16.48 1.64062 14.82V9.17C1.64062 7.51 2.77063 5.59 4.22063 4.78L9.56063 1.82C10.9306 1.06 13.0706 1.06 14.4406 1.82L19.7806 4.79C21.2306 5.59 22.3606 7.52 22.3606 9.18V14.83C22.3606 16.49 21.2306 18.41 19.7806 19.22L14.4406 22.18C13.7506 22.56 12.8806 22.75 12.0006 22.75ZM12.0006 2.75C11.3706 2.75 10.7506 2.88 10.2906 3.13L4.95063 6.1C3.99063 6.63 3.14062 8.07 3.14062 9.17V14.82C3.14062 15.92 3.99063 17.36 4.95063 17.9L10.2906 20.87C11.2006 21.38 12.8006 21.38 13.7106 20.87L19.0506 17.9C20.0106 17.36 20.8606 15.93 20.8606 14.82V9.17C20.8606 8.07 20.0106 6.63 19.0506 6.09L13.7106 3.12C13.2506 2.88 12.6306 2.75 12.0006 2.75Z"
-              fill="white"
-            />
-          </g>
-        </g>
-        <defs>
-          <clipPath id="clip0_1_16578">
-            <rect width="24" height="24" fill="white" />
-          </clipPath>
-        </defs>
-      </svg>
-    ),
+    icon: rootImg4,
+    bgColor: "bg-[#F4ECFB]",
     title: "Organization",
     desc: `CARA builds your study plan, tracks your
 weak spots, and adjusts daily. You show
 up; the system handles the rest.`,
   },
 ];
+
 // Note: roots section data end
 
 // Note: FAQ DATA START HERE

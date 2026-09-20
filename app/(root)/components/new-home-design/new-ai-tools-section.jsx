@@ -1,14 +1,16 @@
+import Image from "next/image";
 import {
-    BookOpen,
-    Layers,
-    ClipboardCheck,
-    Pill,
-    Brain,
-    ClipboardList,
     Heart,
     CheckCircle2,
     ArrowDown,
 } from "lucide-react";
+
+import img01 from "@/public/assets/ai_tool_img1.png";
+import img02 from "@/public/assets/ai_tool_img2.png";
+import img03 from "@/public/assets/ai_tool_img3.png";
+import img04 from "@/public/assets/ai_tool_img4.png";
+import img05 from "@/public/assets/ai_tool_img5.png";
+import img06 from "@/public/assets/ai_tool_img1.png";
 
 const CASE_TABS = [
     { label: "Vitals", active: true },
@@ -47,10 +49,16 @@ const CARE_PLAN_STEPS = [
 const CARD_CLASS =
     "grid grid-rows-[auto_1fr] rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs transition-shadow hover:shadow-md sm:row-span-2 sm:grid-rows-subgrid sm:p-6";
 
-const ToolCard = ({ icon: Icon, iconClassName, title, description, panelClassName, children }) => (
+const ToolCard = ({ icon, title, description, panelClassName, children }) => (
     <article className={CARD_CLASS}>
         <div>
-            <Icon className={`h-6 w-6 sm:h-7 sm:w-7 ${iconClassName}`} strokeWidth={1.75} />
+            <Image
+                src={icon}
+                alt={title}
+                width={32}
+                height={32}
+                className="h-6 w-6 sm:h-7 sm:w-7 object-contain"
+            />
 
             <h3 className="mt-3 text-xl font-bold text-[#5D55FA] sm:text-2xl">{title}</h3>
 
@@ -65,7 +73,7 @@ const ToolCard = ({ icon: Icon, iconClassName, title, description, panelClassNam
 
 const NewAiToolsSection = () => {
     return (
-        <section className="w-full bg-[#F8FAFC] py-14 text-slate-800 sm:py-16 md:py-20 lg:py-24" id="features">
+        <section className="w-full bg-[#FBFBFB] py-14 text-slate-800 sm:py-16 md:py-20 lg:py-24" id="features">
             <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
                 {/* Section Header */}
@@ -83,8 +91,7 @@ const NewAiToolsSection = () => {
 
                     {/* Card 1: Case Studies */}
                     <ToolCard
-                        icon={BookOpen}
-                        iconClassName="text-[#5D55FA]"
+                        icon={img01}
                         title="Case Studies"
                         description="Practice with real-world nursing scenarios. Make critical decisions and build critical thinking."
                         panelClassName="border-indigo-100/80 bg-indigo-50/60"
@@ -119,8 +126,7 @@ const NewAiToolsSection = () => {
 
                     {/* Card 2: Notes to Flashcard */}
                     <ToolCard
-                        icon={Layers}
-                        iconClassName="text-amber-500"
+                        icon={img02}
                         title="Notes to Flashcard"
                         description="Convert your notes into smart flashcards. Study more in less time."
                         panelClassName="border-amber-100/80 bg-amber-50/60"
@@ -146,8 +152,7 @@ const NewAiToolsSection = () => {
 
                     {/* Card 3: Notes to Quiz */}
                     <ToolCard
-                        icon={ClipboardCheck}
-                        iconClassName="text-blue-600"
+                        icon={img03}
                         title="Notes to Quiz"
                         description="Turn notes into custom quizzes. Test yourself and track your progress."
                         panelClassName="border-indigo-100/80 bg-indigo-50/60"
@@ -193,8 +198,7 @@ const NewAiToolsSection = () => {
 
                     {/* Card 4: Drug Cards */}
                     <ToolCard
-                        icon={Pill}
-                        iconClassName="text-rose-500"
+                        icon={img04}
                         title="Drug Cards"
                         description="Get comprehensive drug info: class, indications, dosage, side effects, interactions & more."
                         panelClassName="border-slate-200/80 bg-white"
@@ -228,8 +232,7 @@ const NewAiToolsSection = () => {
 
                     {/* Card 5: Concept Map */}
                     <ToolCard
-                        icon={Brain}
-                        iconClassName="text-purple-500"
+                        icon={img05}
                         title="Concept Map"
                         description="Visualize complex topics and convert ideas to better understanding."
                         panelClassName="border-slate-200/80 bg-slate-50"
@@ -269,8 +272,7 @@ const NewAiToolsSection = () => {
 
                     {/* Card 6: Care Plan Builder */}
                     <ToolCard
-                        icon={ClipboardList}
-                        iconClassName="text-teal-600"
+                        icon={img06}
                         title="Care Plan Builder"
                         description="Generate complete, personalized care plans with assessments, goals, interventions & rationales."
                         panelClassName="border-slate-200/80 bg-white"

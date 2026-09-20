@@ -1,0 +1,3554 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        (function () {
+            /* ── helpers ── */
+            function getCookie(name) {
+                const match = document.cookie.match('(^|;\\s*)' + name + '=([^;]*)');
+                return match ? decodeURIComponent(match[2]) : null;
+            }
+            function getToken() { return localStorage.getItem('ac_access_token') || ''; }
+            function setToken(t) { localStorage.setItem('ac_access_token', t); }
+            function clearToken() { localStorage.removeItem('ac_access_token'); }
+
+            /* ── response‑wrapper unwrap ── */
+            function isWrappedEnvelope(obj) {
+                return obj && typeof obj === 'object' && !Array.isArray(obj)
+                    && 'success' in obj && 'status' in obj && 'data' in obj;
+            }
+            async function unwrapResponse(response) {
+                const ct = response.headers.get('content-type') || '';
+                if (!ct.includes('application/json')) return response;
+                let parsed;
+                try { parsed = await response.clone().json(); } catch (e) { return response; }
+                if (!isWrappedEnvelope(parsed)) return response;
+                const inner = (parsed.data && typeof parsed.data === 'object' && !Array.isArray(parsed.data))
+                    ? parsed.data : {};
+                const flat = Object.assign({}, inner, { success: parsed.success, message: parsed.message });
+                return new Response(JSON.stringify(flat), {
+                    status: response.status, statusText: response.statusText, headers: response.headers,
+                });
+            }
+
+            /* ── patched fetch: CSRF + Bearer + unwrap + 401 handler ── */
+            const originalFetch = window.fetch;
+            window.fetch = function (input, init) {
+                init = init || {};
+                const method = (init.method || 'GET').toUpperCase();
+                const headers = Object.assign({}, init.headers);
+                /* CSRF for unsafe methods */
+                if (!['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
+                    const csrf = getCookie('csrftoken');
+                    if (csrf) headers['X-CSRFToken'] = csrf;
+                }
+                /* JWT Bearer token */
+                const token = getToken();
+                if (token) headers['Authorization'] = 'Bearer ' + token;
+                init.headers = headers;
+                init.credentials = init.credentials || 'same-origin';
+                return originalFetch(input, init).then(unwrapResponse).then(function (res) {
+                    if (res.status === 401 || res.status === 403) {
+                        clearToken();
+                        showLoginOverlay();
+                    }
+                    return res;
+                });
+            };
+
+            /* ── login overlay UI ── */
+            function showLoginOverlay() {
+                if (document.getElementById('ac-login-overlay')) return;
+                const overlay = document.createElement('div');
+                overlay.id = 'ac-login-overlay';
+                overlay.style.cssText = [
+                    'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center',
+                    'background:rgba(15,23,42,0.7);backdrop-filter:blur(6px)'
+                ].join(';');
+                overlay.innerHTML = `
+                <div style="background:#fff;border-radius:20px;padding:2.5rem 2rem;max-width:400px;width:92%;box-shadow:0 25px 50px rgba(0,0,0,0.25);font-family:'Inter',sans-serif;">
+                    <div style="text-align:center;margin-bottom:1.75rem;">
+                        <div style="width:52px;height:52px;background:#eff6ff;border:1px solid #dbeafe;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.5rem;">🗓️</div>
+                        <h2 style="font-size:1.3rem;font-weight:800;color:#0f172a;margin:0 0 0.25rem;">Academic Calendar</h2>
+                        <p style="font-size:0.85rem;color:#64748b;margin:0;">Sign in to access your calendar & syllabi</p>
+                    </div>
+                    <div id="ac-login-error" style="display:none;background:#fee2e2;color:#dc2626;border-radius:8px;padding:0.65rem 0.9rem;font-size:0.82rem;margin-bottom:1rem;font-weight:600;"></div>
+                    <div style="margin-bottom:1rem;">
+                        <label style="font-size:0.78rem;font-weight:700;color:#374151;display:block;margin-bottom:0.4rem;">Email</label>
+                        <input id="ac-login-email" type="email" placeholder="your@email.com"
+                            style="width:100%;box-sizing:border-box;border:1.5px solid #e2e8f0;border-radius:8px;padding:0.65rem 0.85rem;font-size:0.9rem;outline:none;font-family:inherit;"
+                            onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="font-size:0.78rem;font-weight:700;color:#374151;display:block;margin-bottom:0.4rem;">Password</label>
+                        <input id="ac-login-password" type="password" placeholder="••••••••"
+                            style="width:100%;box-sizing:border-box;border:1.5px solid #e2e8f0;border-radius:8px;padding:0.65rem 0.85rem;font-size:0.9rem;outline:none;font-family:inherit;"
+                            onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'"
+                            onkeydown="if(event.key==='Enter') document.getElementById('ac-login-btn').click()">
+                    </div>
+                    <button id="ac-login-btn"
+                        style="width:100%;background:#2563eb;color:#fff;border:none;border-radius:10px;padding:0.75rem;font-size:0.95rem;font-weight:700;cursor:pointer;transition:background 0.2s;font-family:inherit;"
+                        onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+                        Sign In
+                    </button>
+                </div>`;
+                document.body.appendChild(overlay);
+
+                document.getElementById('ac-login-btn').addEventListener('click', async function () {
+                    const btn = this;
+                    const email = document.getElementById('ac-login-email').value.trim();
+                    const password = document.getElementById('ac-login-password').value;
+                    const errEl = document.getElementById('ac-login-error');
+                    if (!email || !password) { errEl.textContent = 'Please enter email and password.'; errEl.style.display = 'block'; return; }
+                    btn.textContent = 'Signing in…'; btn.disabled = true;
+                    try {
+                        const res = await originalFetch(window.location.origin + '/api/login/', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, password })
+                        });
+                        const body = await res.json();
+                        /* Support both wrapped {data:{tokens:{access}}} and flat {tokens:{access}} or {access} */
+                        const tokens = (body.data && body.data.tokens) || body.tokens || body.data || body;
+                        const accessToken = tokens.access || tokens.access_token || tokens.token || '';
+                        if (res.ok && accessToken) {
+                            setToken(accessToken);
+                            document.getElementById('ac-login-overlay').remove();
+                            if (typeof refreshAllData === 'function') refreshAllData();
+                        } else {
+                            const msg = body.message || (body.data && body.data.message) || body.detail || 'Invalid credentials. Please try again.';
+                            errEl.textContent = msg; errEl.style.display = 'block';
+                        }
+                    } catch (e) {
+                        errEl.textContent = 'Network error. Is the server running?'; errEl.style.display = 'block';
+                    }
+                    btn.textContent = 'Sign In'; btn.disabled = false;
+                });
+            }
+
+            /* ── auto‑show overlay if no token on load ── */
+            document.addEventListener('DOMContentLoaded', function () {
+                if (!getToken()) showLoginOverlay();
+            });
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Calendars Tool - Dynamic Document-Driven Academic Calendar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f8fafc;
+            --card-bg: #ffffff;
+            --border-light: #e2e8f0;
+            --primary-blue: #2563eb;
+            --primary-dark: #1d4ed8;
+            --blue-soft: #eff6ff;
+            --blue-icon-bg: #dbeafe;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --red-pdf: #ef4444;
+            --red-soft: #fef2f2;
+            --status-pending-bg: #f1f5f9;
+            --status-pending-text: #475569;
+            --status-success-bg: #dcfce7;
+            --status-success-text: #166534;
+            --radius-xl: 16px;
+            --radius-lg: 12px;
+            --radius-md: 8px;
+            --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+            /* Category Colors */
+            --cat-blue-bg: #e0f2fe;
+            --cat-blue-text: #0284c7;
+            --cat-yellow-bg: #fef3c7;
+            --cat-yellow-text: #d97706;
+            --cat-red-bg: #fee2e2;
+            --cat-red-text: #dc2626;
+            --cat-green-bg: #dcfce7;
+            --cat-green-text: #166534;
+            --cat-purple-bg: #f3e8ff;
+            --cat-purple-text: #7e22ce;
+            --cat-slate-bg: #f1f5f9;
+            --cat-slate-text: #475569;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            padding: 1.5rem 2rem;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .main-wrapper {
+            max-width: 1320px;
+            margin: 0 auto;
+        }
+
+        /* Top Header Title Card */
+        .header-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 1.1rem 1.5rem;
+            margin-bottom: 1.25rem;
+            box-shadow: var(--shadow-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn-header-link {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+            background: var(--blue-soft);
+            border: 1px solid var(--blue-icon-bg);
+            padding: 0.4rem 0.85rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-header-link:hover {
+            background: #dbeafe;
+        }
+
+        /* Primary Page Sections */
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        /* IMPORTER PAGE */
+        .calendars-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 992px) {
+            .calendars-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .tool-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            padding: 1.75rem;
+            box-shadow: var(--shadow-card);
+        }
+
+        .tool-card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .header-icon-box {
+            width: 44px;
+            height: 44px;
+            background-color: var(--blue-soft);
+            border: 1px solid var(--blue-icon-bg);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+            flex-shrink: 0;
+        }
+
+        .header-text h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.2rem;
+        }
+
+        .header-text p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .upload-dropzone {
+            border: 2px dashed #93c5fd;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 1.75rem;
+            position: relative;
+        }
+
+        .upload-dropzone:hover,
+        .upload-dropzone.dragover {
+            border-color: var(--primary-blue);
+            background: var(--blue-soft);
+        }
+
+        .upload-icon-container {
+            width: 56px;
+            height: 56px;
+            background-color: #e0f2fe;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem auto;
+            color: var(--primary-blue);
+        }
+
+        .upload-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.35rem;
+        }
+
+        .upload-subtitle {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 1.25rem;
+        }
+
+        .btn-upload {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #2563eb;
+            color: white;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 0.6rem 1.4rem;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-upload:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* Processing Progress Bar */
+        .processing-box {
+            display: none;
+            background: #ffffff;
+            border: 1.5px solid #93c5fd;
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .processing-box.active {
+            display: block;
+        }
+
+        .processing-status {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .progress-bar-track {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.65rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 30%;
+            background: #2563eb;
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        .processing-steps {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .uploaded-section-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.85rem;
+        }
+
+        .syllabi-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .empty-syllabi-msg {
+            font-size: 0.83rem;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 1.5rem;
+            border: 1px dashed var(--border-light);
+            border-radius: var(--radius-lg);
+            background: #f8fafc;
+        }
+
+        .syllabus-item-card {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 0.9rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+            transition: border-color 0.2s;
+        }
+
+        .item-left {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .pdf-icon-box {
+            width: 38px;
+            height: 38px;
+            background-color: var(--red-soft);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--red-pdf);
+            flex-shrink: 0;
+            font-size: 1.2rem;
+        }
+
+        .file-info h4 {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.15rem;
+        }
+
+        .file-info p {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .item-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .badge-pending {
+            background-color: var(--status-pending-bg);
+            color: var(--status-pending-text);
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.25rem 0.65rem;
+            border-radius: 12px;
+        }
+
+        .badge-extracted {
+            background-color: var(--status-success-bg);
+            color: var(--status-success-text);
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.25rem 0.65rem;
+            border-radius: 12px;
+        }
+
+        .btn-remove {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 0.2rem;
+            border-radius: 4px;
+        }
+
+        .btn-remove:hover {
+            color: var(--red-pdf);
+        }
+
+        .sidebar-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .sidebar-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-card);
+        }
+
+        .sidebar-card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 1.25rem;
+        }
+
+        .sparkle-icon {
+            color: #f59e0b;
+        }
+
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.85rem;
+        }
+
+        .feature-icon-box {
+            width: 34px;
+            height: 34px;
+            background: var(--blue-soft);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+            flex-shrink: 0;
+            font-size: 0.95rem;
+        }
+
+        .feature-text h5 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.15rem;
+        }
+
+        .feature-text p {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+
+        .steps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .step-number {
+            width: 22px;
+            height: 22px;
+            background-color: #1d4ed8;
+            color: white;
+            font-size: 0.72rem;
+            font-weight: 700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        .step-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .btn-action-outline {
+            width: 100%;
+            background-color: white;
+            border: 1.5px solid #2563eb;
+            color: #2563eb;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.65rem 1rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .btn-action-outline:hover {
+            background-color: var(--blue-soft);
+        }
+
+        .tip-banner {
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: var(--radius-lg);
+            padding: 0.9rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-size: 0.83rem;
+            color: #0369a1;
+        }
+
+        /* PLANNER & CALENDAR DASHBOARD */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        @media (max-width: 900px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 1.1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .icon-blue {
+            background: #e0f2fe;
+            color: #0284c7;
+        }
+
+        .icon-green {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .icon-yellow {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .icon-purple {
+            background: #f3e8ff;
+            color: #7e22ce;
+        }
+
+        .stat-value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+
+        .stat-label {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .stat-sub {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .stat-sub.positive {
+            color: #10b981;
+        }
+
+        .calendar-controls {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .controls-left,
+        .controls-center,
+        .controls-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-tab {
+            background: none;
+            border: none;
+            padding: 0.5rem 0.9rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+        }
+
+        .btn-tab:hover {
+            background: #f1f5f9;
+            color: var(--text-dark);
+        }
+
+        .btn-tab.active {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        .date-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #0f172a;
+        }
+
+        .btn-arrow {
+            background: none;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            padding: 0.2rem 0.6rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-arrow:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-today {
+            background: #f1f5f9;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            padding: 0.25rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+        }
+
+        .btn-today:hover {
+            background: #e2e8f0;
+        }
+
+        .course-filter-select {
+            font-family: var(--font-family);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #334155;
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            padding: 0.35rem 0.6rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn-group {
+            display: flex;
+            background: #f1f5f9;
+            padding: 2px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-view {
+            border: none;
+            background: none;
+            padding: 0.35rem 0.8rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-view.active {
+            background: white;
+            color: var(--text-dark);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-add-task {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: #2563eb;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: none;
+            padding: 0.42rem 0.85rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-add-task:hover {
+            background: var(--primary-dark);
+        }
+
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .calendar-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            padding: 0;
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+            min-height: 650px;
+        }
+
+        .main-tab-content {
+            display: none;
+        }
+
+        .main-tab-content.active {
+            display: block;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* VIEW 1: DYNAMIC MONTH GRID */
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .day-name-cell {
+            padding: 0.75rem 0.25rem;
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
+            background: #ffffff;
+            min-width: 0;
+        }
+
+        .day-cell {
+            min-height: 105px;
+            padding: 0.45rem 0.35rem;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            background: #ffffff;
+            transition: background 0.15s;
+            min-width: 0;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .day-cell:nth-child(7n) {
+            border-right: none;
+        }
+
+        .day-cell.other-month {
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: default;
+        }
+
+        .day-cell.selected-day {
+            background: #eff6ff;
+        }
+
+        .day-cell:hover:not(.other-month) {
+            background: #f8fafc;
+        }
+
+        .day-number {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 0.35rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .day-number.current-day {
+            background: #2563eb;
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+        }
+
+        .event-pill {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.18rem 0.35rem;
+            border-radius: 4px;
+            margin-bottom: 0.25rem;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            transition: transform 0.1s;
+            width: 100%;
+            display: block;
+        }
+
+        .event-pill:hover {
+            transform: scale(1.01);
+            filter: brightness(0.95);
+        }
+
+        .event-pill.completed {
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .pill-blue {
+            background: var(--cat-blue-bg);
+            color: var(--cat-blue-text);
+        }
+
+        .pill-yellow {
+            background: var(--cat-yellow-bg);
+            color: var(--cat-yellow-text);
+        }
+
+        .pill-red {
+            background: var(--cat-red-bg);
+            color: var(--cat-red-text);
+        }
+
+        .pill-green {
+            background: var(--cat-green-bg);
+            color: var(--cat-green-text);
+        }
+
+        .pill-purple {
+            background: var(--cat-purple-bg);
+            color: var(--cat-purple-text);
+        }
+
+        .pill-slate {
+            background: var(--cat-slate-bg);
+            color: var(--cat-slate-text);
+        }
+
+        /* VIEW 2: WEEK VIEW TABLE */
+        .week-table-wrapper {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        .week-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        .week-table th {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 0.65rem 0.5rem;
+            border: 1px solid var(--border-light);
+            background: #ffffff;
+            text-align: center;
+        }
+
+        .week-table td {
+            height: 50px;
+            border: 1px solid var(--border-light);
+            padding: 0.25rem;
+            vertical-align: top;
+            background: white;
+            min-width: 80px;
+        }
+
+        .time-col {
+            width: 68px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: center;
+            vertical-align: middle !important;
+            background: #f8fafc !important;
+        }
+
+        .day-num-circle {
+            display: inline-flex;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #2563eb;
+            color: white;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 0.2rem;
+        }
+
+        /* VIEW 3: DAY VIEW */
+        .day-view-container {
+            padding: 1.5rem;
+        }
+
+        .day-view-header {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 0.75rem;
+        }
+
+        .day-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .day-event-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1.1rem;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            background: white;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .day-event-card:hover {
+            border-color: #93c5fd;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .day-event-time {
+            width: 75px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #2563eb;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .day-event-info {
+            flex: 1;
+        }
+
+        .day-event-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .day-event-title.completed {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .day-event-course {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        /* TAB 2: TASKS VIEW */
+        .tasks-view-container {
+            padding: 1.5rem;
+        }
+
+        .tasks-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+        }
+
+        .tasks-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .tasks-table th {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            padding: 0.75rem 1rem;
+            border-bottom: 1.5px solid var(--border-light);
+            background: #f8fafc;
+        }
+
+        .tasks-table td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: middle;
+            font-size: 0.85rem;
+        }
+
+        .tasks-table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .task-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #2563eb;
+            cursor: pointer;
+        }
+
+        .task-name-col {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .task-title-text {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .task-title-text.completed {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .grade-pencil-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: all 0.15s;
+        }
+
+        .grade-pencil-btn:hover {
+            color: #2563eb;
+            background: var(--blue-soft);
+        }
+
+        .grade-cell-content {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 700;
+        }
+
+        /* TAB 3: GRADES VIEW */
+        .grades-view-container {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .cgpa-summary-card {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            border-radius: var(--radius-xl);
+            padding: 1.75rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-card);
+        }
+
+        .cgpa-left h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.9;
+            margin-bottom: 0.3rem;
+        }
+
+        .cgpa-left .cgpa-score {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .cgpa-left .cgpa-sub {
+            font-size: 0.82rem;
+            opacity: 0.85;
+            margin-top: 0.4rem;
+        }
+
+        .cgpa-right {
+            text-align: right;
+        }
+
+        .cgpa-stat-pill {
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(8px);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .course-grade-card {
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-subtle);
+            margin-bottom: 1.25rem;
+        }
+
+        .course-grade-header {
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .course-grade-title h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .course-grade-title p {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .course-grade-badge {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #1e3a8a;
+            background: var(--blue-soft);
+            border: 1px solid var(--blue-icon-bg);
+            padding: 0.3rem 0.85rem;
+            border-radius: 8px;
+        }
+
+        .grade-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .grade-item-row:last-child {
+            border-bottom: none;
+        }
+
+        .grade-input-inline {
+            width: 65px;
+            padding: 0.25rem 0.4rem;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .grade-input-inline:focus {
+            border-color: #2563eb;
+            outline: none;
+        }
+
+        /* EMPTY STATES */
+        .empty-state-box {
+            padding: 3.5rem 1.5rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-state-icon {
+            font-size: 2.8rem;
+            margin-bottom: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .empty-state-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.3rem;
+        }
+
+        .empty-state-sub {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            max-width: 380px;
+            margin-bottom: 1.25rem;
+        }
+
+        /* SIDEBAR STACK */
+        .course-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.65rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .course-item:last-child {
+            border-bottom: none;
+        }
+
+        .course-left {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dot-blue {
+            background: #0284c7;
+        }
+
+        .dot-purple {
+            background: #7e22ce;
+        }
+
+        .dot-green {
+            background: #166534;
+        }
+
+        .dot-yellow {
+            background: #d97706;
+        }
+
+        .dot-red {
+            background: #dc2626;
+        }
+
+        .course-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .course-info {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .grade-badge {
+            background: #f1f5f9;
+            padding: 0.15rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .deadline-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.65rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .deadline-item:last-child {
+            border-bottom: none;
+        }
+
+        .deadline-title {
+            font-size: 0.83rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .deadline-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .badge-urgency {
+            padding: 0.2rem 0.55rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .urgency-today {
+            background: #fee2e2;
+            color: #dc2626;
+            font-weight: 800;
+        }
+
+        .urgency-1d {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .urgency-4d {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .urgency-9d {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .add-course-card {
+            text-align: center;
+            padding: 1.25rem;
+        }
+
+        .btn-outline-upload {
+            width: 100%;
+            border: 1.5px solid #2563eb;
+            color: #2563eb;
+            background: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.6rem 1rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            margin-top: 0.75rem;
+            transition: background 0.2s;
+        }
+
+        .btn-outline-upload:hover {
+            background: var(--blue-soft);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.75rem;
+            max-width: 500px;
+            width: 92%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+            position: relative;
+            animation: modalPop 0.25s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes modalPop {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .cat-tag-pill {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            background: #e0f2fe;
+            color: #0284c7;
+            text-transform: lowercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.2rem;
+        }
+
+        .modal-sub {
+            font-size: 0.85rem;
+            color: #0284c7;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 0.85rem;
+        }
+
+        .modal-box-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .modal-box-val {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .modal-box-sub {
+            font-size: 0.75rem;
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .instructor-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 0.9rem 1rem;
+            margin-bottom: 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .instructor-box:hover {
+            border-color: #cbd5e1;
+            background: #f1f5f9;
+        }
+
+        .instructor-title {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.35rem;
+        }
+
+        .instructor-name-row {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .instructor-icon {
+            font-size: 1rem;
+        }
+
+        .instructor-name {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .instructor-meta-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            padding-top: 0.45rem;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .instructor-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.82rem;
+            color: #475569;
+        }
+
+        .meta-icon {
+            font-size: 0.85rem;
+        }
+
+        .meta-label {
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .meta-val {
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .instructor-email-link {
+            font-size: 0.82rem;
+            color: #2563eb;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .instructor-email-link:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+
+        .grade-input-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .grade-input {
+            width: 85px;
+            padding: 0.5rem;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .btn-save-grade {
+            background: #1d4ed8;
+            color: white;
+            font-weight: 700;
+            border: none;
+            padding: 0.55rem 1.25rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+        }
+
+        .btn-toggle-done {
+            width: 100%;
+            background: #f1f5f9;
+            border: none;
+            padding: 0.65rem;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #334155;
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-delete-task {
+            width: 100%;
+            background: #fee2e2;
+            border: none;
+            padding: 0.55rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #dc2626;
+            cursor: pointer;
+        }
+
+        /* Form Controls for Add Task */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form_text {
+            color: #0284c7;
+            font-size:  15px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 0.35rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.55rem 0.75rem;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            font-family: var(--font-family);
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: var(--primary-blue);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .btn-submit-task {
+            width: 100%;
+            background: #2563eb;
+            color: white;
+            font-weight: 700;
+            padding: 0.7rem;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-submit-task:hover {
+            background: var(--primary-dark);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main-wrapper">
+
+        <!-- Top App Bar Header -->
+        <div class="header-card">
+            <div class="header-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                Calendars Tool
+            </div>
+            <div class="header-actions">
+                <button class="btn-header-link" onclick="switchPageSection('importer')">⬆️ Upload Syllabus</button>
+                <button class="btn-header-link" onclick="switchPageSection('planner')">📅 View Calendar</button>
+                <button class="btn-header-link" onclick="confirmResetAllData()"
+                    style="color:#dc2626; background:#fef2f2; border-color:#fecaca;"
+                    title="Wipe all data to clean empty state">🗑️ Reset Data</button>
+            </div>
+        </div>
+
+        <!-- PAGE 1: SYLLABUS IMPORTER -->
+        <div id="page-importer" class="page-section">
+            <div class="calendars-grid">
+                <div class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="header-icon-box">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </div>
+                        <div class="header-text">
+                            <h2>Add Your Syllabus</h2>
+                            <p>Upload your syllabuses to let AI extract and organize all your course information</p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Drag & Drop Area -->
+                    <div class="upload-dropzone" id="dropzone" onclick="triggerFileInput()"
+                        ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
+                        ondrop="handleFileDrop(event)">
+                        <input type="file" id="file-input" style="display: none;" multiple
+                            accept=".pdf,.doc,.docx,.ppt,.pptx,.txt" onchange="handleFileSelect(event)">
+                        <div class="upload-icon-container">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <div class="upload-title" id="dropzone-status">Drag & drop your syllabus files here</div>
+                        <div class="upload-subtitle">or click to browse • PDF, Word, PowerPoint, text files up to 25 MB
+                        </div>
+                        <button type="button" class="btn-upload">Upload Files</button>
+                    </div>
+
+                    <!-- Progress / Processing State Box -->
+                    <div class="processing-box" id="processing-box">
+                        <div class="processing-status" id="processing-status-text">
+                            <span>⚙️</span> Processing syllabus...
+                        </div>
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                        </div>
+                        <div class="processing-steps">
+                            <span id="step-parsing">1. Parsing document</span>
+                            <span id="step-extracting">2. Extracting dates</span>
+                            <span id="step-saving">3. Updating calendar</span>
+                        </div>
+                    </div>
+
+                    <!-- UPLOADED SYLLABI SECTION (EMPTY ON FIRST LOAD UNTIL USER UPLOADS) -->
+                    <div class="uploaded-section-title" id="uploaded-count-title">Uploaded Syllabi (0)</div>
+                    <div class="syllabi-list" id="syllabi-container">
+                        <div class="empty-syllabi-msg">No syllabi uploaded yet. Drag & drop files above to start.</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-stack">
+                    <div class="sidebar-card">
+                        <div class="sidebar-card-title"><span class="sparkle-icon">✨</span> AI-Powered Extraction</div>
+                        <div class="feature-list">
+                            <div class="feature-item">
+                                <div class="feature-icon-box">📋</div>
+                                <div class="feature-text">
+                                    <h5>Course Info</h5>
+                                    <p>Instructor, email, office hours, room & meeting times</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon-box">📅</div>
+                                <div class="feature-text">
+                                    <h5>All Deadlines</h5>
+                                    <p>Every exam, quiz, assignment & lab date pulled from your syllabus</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon-box">📈</div>
+                                <div class="feature-text">
+                                    <h5>Grade Weights</h5>
+                                    <p>Grading breakdown extracted for accurate GPA calculation</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon-box">🎯</div>
+                                <div class="feature-text">
+                                    <h5>Smart Alerts</h5>
+                                    <p>Color-coded urgency so you never miss a deadline</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <div class="sidebar-card-title">What happens next?</div>
+                        <div class="steps-list">
+                            <div class="step-item">
+                                <div class="step-number">1</div>
+                                <div class="step-desc">AI reads your syllabuses and extracts all course data</div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">2</div>
+                                <div class="step-desc">Deadlines populate your calendar automatically</div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">3</div>
+                                <div class="step-desc">Track completion and enter grades as you receive them</div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">4</div>
+                                <div class="step-desc">GPA updates in real-time — always know where you stand</div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-action-outline" onclick="switchPageSection('planner')">Skip &
+                            Go to Planner</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tip-banner">
+                <span class="tip-icon">✨</span>
+                <div><strong>Tip:</strong> For best results, upload the full syllabus. AI works best with complete
+                    course information including grading breakdowns, due dates, and instructor details.</div>
+            </div>
+        </div>
+
+        <!-- PAGE 2: COURSE PLANNER & DYNAMIC MASTER CALENDAR DASHBOARD -->
+        <div id="page-planner" class="page-section active">
+
+            <!-- Top 4 Stats Metric Cards (DYNAMIC) -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue">🎖️</div>
+                    <div>
+                        <div class="stat-value" id="stat-gpa">--</div>
+                        <div class="stat-label">Overall GPA</div>
+                        <div class="stat-sub" id="stat-gpa-note">No graded courses</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-green">✔️</div>
+                    <div>
+                        <div class="stat-value" id="stat-completed">0/0</div>
+                        <div class="stat-label">Completed</div>
+                        <div class="stat-sub" style="color:var(--text-muted);">assignments</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-yellow">⏰</div>
+                    <div>
+                        <div class="stat-value" id="stat-upcoming">0</div>
+                        <div class="stat-label">Upcoming</div>
+                        <div class="stat-sub" style="color:var(--text-muted);">due this week</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-purple">📖</div>
+                    <div>
+                        <div class="stat-value" id="stat-courses">0</div>
+                        <div class="stat-label">Courses</div>
+                        <div class="stat-sub" style="color:var(--text-muted);">this semester</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub-Header Controls: Calendar, Tasks, Grades tabs + Month navigation + Filter + Add Task -->
+            <div class="calendar-controls">
+                <div class="controls-left">
+                    <button class="btn-tab active" id="tab-btn-calendar" onclick="switchMainTab('calendar')">📅
+                        Calendar</button>
+                    <button class="btn-tab" id="tab-btn-tasks" onclick="switchMainTab('tasks')">✔️ Tasks</button>
+                    <button class="btn-tab" id="tab-btn-grades" onclick="switchMainTab('grades')">📊 Grades</button>
+                </div>
+
+                <div class="controls-center" id="calendar-date-controls">
+                    <div class="date-nav">
+                        <button class="btn-arrow" onclick="prevPeriod()" title="Previous">‹</button>
+                        <span id="month-year-header">September 2026</span>
+                        <button class="btn-arrow" onclick="nextPeriod()" title="Next">›</button>
+                        <button class="btn-today" onclick="goToToday()">Today</button>
+                    </div>
+                </div>
+
+                <div class="controls-right">
+                    <!-- Dynamic Course Filter -->
+                    <select class="course-filter-select" id="course-filter"
+                        onchange="handleCourseFilterChange(this.value)">
+                        <option value="all">All Courses</option>
+                    </select>
+
+                    <!-- Add Task Action -->
+                    <button class="btn-add-task" onclick="openAddTaskModal()">
+                        <span>+</span> Add Task
+                    </button>
+
+                    <!-- Month / Week / Day View Toggle -->
+                    <div class="btn-group" id="view-toggle-group">
+                        <button class="btn-view active" id="btn-view-month"
+                            onclick="switchCalendarView('month')">Month</button>
+                        <button class="btn-view" id="btn-view-week" onclick="switchCalendarView('week')">Week</button>
+                        <button class="btn-view" id="btn-view-day" onclick="switchCalendarView('day')">Day</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workspace Grid -->
+            <div class="workspace-grid">
+
+                <div class="calendar-card">
+
+                    <!-- TAB CONTENT 1: CALENDAR (Month, Week, Day Views) -->
+                    <div id="tab-content-calendar" class="main-tab-content active">
+
+                        <!-- VIEW 1: MONTH VIEW -->
+                        <div id="view-month" class="view-section active">
+                            <div class="month-grid" id="month-grid-cells">
+                                <!-- Dynamically generated cells -->
+                            </div>
+                        </div>
+
+                        <!-- VIEW 2: WEEK VIEW -->
+                        <div id="view-week" class="view-section">
+                            <div class="week-table-wrapper" id="week-table-container">
+                                <!-- Dynamically generated week grid -->
+                            </div>
+                        </div>
+
+                        <!-- VIEW 3: DAY VIEW (Renamed from Agenda) -->
+                        <div id="view-day" class="view-section">
+                            <div class="day-view-container" id="day-view-container">
+                                <!-- Dynamically generated day schedule -->
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- TAB CONTENT 2: TASKS TABLE VIEW -->
+                    <div id="tab-content-tasks" class="main-tab-content">
+                        <div class="tasks-view-container">
+                            <div class="tasks-toolbar">
+                                <h3 style="font-size:1.1rem; font-weight:800; color:#0f172a;">All Course Tasks &
+                                    Deadlines</h3>
+                                <button class="btn-add-task" onclick="openAddTaskModal()">+ Add Task</button>
+                            </div>
+                            <div id="tasks-table-wrapper">
+                                <!-- Dynamic tasks table -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB CONTENT 3: GRADES & CGPA VIEW -->
+                    <div id="tab-content-grades" class="main-tab-content">
+                        <div class="grades-view-container" id="grades-view-container">
+                            <!-- Dynamic CGPA card + Course Grade Cards -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Sidebar Stack -->
+                <div class="sidebar-stack">
+                    <!-- My Courses Card -->
+                    <div class="sidebar-card">
+                        <div class="sidebar-card-header"
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                            <div class="sidebar-card-title" style="margin-bottom:0;">My Courses</div>
+                            <div class="sidebar-sub" id="sidebar-courses-count"
+                                style="font-size:0.78rem; font-weight:700; color:var(--text-muted);">0 courses</div>
+                        </div>
+                        <div id="sidebar-courses-list">
+                            <!-- Populated dynamically or empty state -->
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Deadlines Card -->
+                    <div class="sidebar-card">
+                        <div class="sidebar-card-title">⏰ Upcoming Deadlines</div>
+                        <div id="sidebar-deadlines-list">
+                            <!-- Populated dynamically or empty state -->
+                        </div>
+                    </div>
+
+                    <!-- Add Course Upload Action Card -->
+                    <div class="sidebar-card add-course-card">
+                        <div style="font-size:1.8rem; margin-bottom:0.3rem;">☁️</div>
+                        <div class="sidebar-card-title" style="justify-content:center; margin-bottom:0.2rem;">Add Course
+                        </div>
+                        <div class="sidebar-sub" style="font-size:0.78rem; color:var(--text-muted);">Upload another
+                            syllabus to add a new course.</div>
+                        <button class="btn-outline-upload" onclick="switchPageSection('importer')">
+                            ⬆️ Upload Syllabus
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL 1: EVENT DETAIL & GRADE INPUT MODAL -->
+    <div class="modal-overlay" id="event-modal">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeModal('event-modal')">✕</button>
+            <span class="cat-tag-pill" id="m-cat">lab</span>
+            <div class="modal-title" id="m-title">Assignment Title</div>
+            <div class="modal-sub" id="m-course">Course Code • Course Name</div>
+
+            <div class="modal-grid">
+                <div class="modal-box">
+                    <div class="modal-box-label">Due Date</div>
+                    <div class="modal-box-val" id="m-date">September 10</div>
+                    <div class="modal-box-sub" id="m-daysleft">1 days left</div>
+                </div>
+                <div class="modal-box">
+                    <div class="modal-box-label">Points</div>
+                    <div class="modal-box-val" id="m-pts">50 pts</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);" id="m-weight">--</div>
+                </div>
+            </div>
+
+            <div class="instructor-box" id="m-instructor-box">
+                <div class="instructor-title">Instructor & Office Details</div>
+                <div class="instructor-name-row">
+                    <span class="instructor-icon">👤</span>
+                    <span class="instructor-name" id="m-prof">Instructor Name</span>
+                </div>
+                <div class="instructor-meta-grid" id="m-meta-grid">
+                    <div class="instructor-meta-item" id="m-room-container">
+                        <span class="meta-icon">📍</span>
+                        <span class="meta-label">Office:</span>
+                        <span class="meta-val" id="m-room">REC 409</span>
+                    </div>
+                    <div class="instructor-meta-item" id="m-email-container">
+                        <span class="meta-icon">✉️</span>
+                        <span class="meta-label">Email:</span>
+                        <a href="#" class="instructor-email-link" id="m-email-link"
+                            target="_blank">email@university.edu</a>
+                    </div>
+                </div>
+            </div>
+
+            <div style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:0.4rem;">Grade / Score
+            </div>
+            <div class="grade-input-row">
+                <input type="number" step="0.5" min="0" class="grade-input" id="m-grade-input" placeholder="0">
+                <span style="font-weight:700; color:var(--text-muted);">/ <span id="m-pts-total">50</span></span>
+                <button class="btn-save-grade" onclick="saveGradeFromModal()">Save Grade</button>
+            </div>
+
+            <button class="btn-toggle-done" id="m-btn-toggle-done" onclick="toggleCompleteFromModal()">✔️ Mark
+                Complete</button>
+            <button class="btn-delete-task" id="m-btn-delete" style="display:none;" onclick="deleteCurrentEvent()">🗑️
+                Delete Task</button>
+        </div>
+    </div>
+
+    <!-- MODAL 2: ADD TASK / EVENT MODAL -->
+    <div class="modal-overlay" id="add-task-modal">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeModal('add-task-modal')">✕</button>
+            <div class="modal-title" style="margin-bottom: 0.3rem;">+ Add Academic Task</div>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom: 1.25rem;">Create a custom assignment,
+                quiz, exam, study session, or personal academic event.</p>
+
+            <form id="add-task-form" onsubmit="handleCreateTaskSubmit(event)">
+                <div class="form-group">
+                    <label class="form-label">Task Title *</label>
+                    <input type="text" class="form-input" id="task-input-title" placeholder="e.g. SBAR Case Study Draft"
+                        required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Course</label>
+                        <select class="form-select" id="task-input-course">
+                            <option value="">No Course / Personal</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Type *</label>
+                        <select class="form-select" id="task-input-type" required>
+                            <option value="assignment">Assignment</option>
+                            <option value="quiz">Quiz</option>
+                            <option value="exam">Midterm Exam / Final</option>
+                            <option value="lab">Lab / Clinical</option>
+                            <option value="reading">Reading</option>
+                            <option value="project">Project</option>
+                            <option value="presentation">Presentation</option>
+                            <option value="class">Class / Lecture</option>
+                            <option value="check-off">Check-off</option>
+                            <option value="deadline">Deadline</option>
+                            <option value="holiday">Holiday</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Date *</label>
+                        <input type="date" class="form-input" id="task-input-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Points Possible</label>
+                        <input type="number" step="1" min="0" class="form-input" id="task-input-points"
+                            placeholder="e.g. 50">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Start Time (optional)</label>
+                        <input type="text" class="form-input" id="task-input-start" placeholder="e.g. 09:00 AM">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Time (optional)</label>
+                        <input type="text" class="form-input" id="task-input-end" placeholder="e.g. 10:15 AM">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Location / Room (optional)</label>
+                    <input type="text" class="form-input" id="task-input-location" placeholder="e.g. SCI 204 or Online">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description (optional)</label>
+                    <textarea class="form-textarea" id="task-input-desc" rows="2"
+                        placeholder="Notes or submission instructions..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit-task" id="btn-submit-task">Save Task</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Client Application Logic -->
+    <script>
+        const API_BASE = window.location.origin;
+
+        // Application State
+        let activeEventId = null;
+        let eventsData = [];
+        let coursesData = [];
+        let uploadedFiles = [];
+        let gradesSummary = null;
+
+        // Navigation and Date State
+        let currentDate = new Date();
+        let displayYear = currentDate.getFullYear();
+        let displayMonth = currentDate.getMonth(); // 0-indexed (0=Jan, 11=Dec)
+        let selectedDateStr = formatDateYMD(currentDate);
+
+        // Active Views
+        let currentMainTab = 'calendar'; // 'calendar', 'tasks', 'grades'
+        let currentCalendarView = 'month'; // 'month', 'week', 'day'
+        let selectedCourseFilter = 'all';
+
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Set default date input for Add Task to today
+            document.getElementById('task-input-date').value = selectedDateStr;
+
+            // Auto-update points when category changes (100 for exam, 10 for others)
+            const typeEl = document.getElementById('task-input-type');
+            if (typeEl) {
+                typeEl.addEventListener('change', (e) => {
+                    const ptsInput = document.getElementById('task-input-points');
+                    if (ptsInput) {
+                        ptsInput.value = e.target.value === 'exam' ? 100 : 10;
+                    }
+                });
+            }
+
+            // Load persistent data from Backend / Database
+            await refreshAllData();
+        });
+
+        let hasManuallyNavigated = false;
+
+        async function refreshAllData() {
+            await Promise.all([
+                fetchCourses(),
+                fetchEvents(),
+                fetchSyllabi(),
+                fetchGradesSummary()
+            ]);
+
+            // Auto-focus calendar on the academic semester of the uploaded courses
+            if (eventsData.length > 0 && !hasManuallyNavigated) {
+                const currentMonthEvents = eventsData.filter(e => {
+                    if (!e.date) return false;
+                    const p = e.date.split('-');
+                    return parseInt(p[0]) === displayYear && parseInt(p[1]) === (displayMonth + 1);
+                });
+                if (currentMonthEvents.length === 0) {
+                    const todayStr = formatDateYMD(new Date());
+                    // 1. Prefer events in current year that are today or upcoming
+                    const futureThisYear = eventsData.filter(e => e.date && e.date >= todayStr && e.date.startsWith(String(displayYear)));
+                    // 2. Or any event in current year
+                    const anyThisYear = eventsData.filter(e => e.date && e.date.startsWith(String(displayYear)));
+                    // 3. Or upcoming event in any future year
+                    const anyFuture = eventsData.filter(e => e.date && e.date >= todayStr);
+                    // 4. Or the latest event (most recent course)
+                    const targetEvt = futureThisYear[0] || anyThisYear[0] || anyFuture[0] || eventsData[eventsData.length - 1];
+                    if (targetEvt && targetEvt.date) {
+                        const p = targetEvt.date.split('-');
+                        displayYear = parseInt(p[0]);
+                        displayMonth = parseInt(p[1]) - 1;
+                        selectedDateStr = targetEvt.date;
+                    }
+                }
+            }
+
+            renderAllViews();
+        }
+
+        // ==========================================
+        // API FETCH FUNCTIONS
+        // ==========================================
+
+        async function fetchCourses() {
+            try {
+                const res = await fetch(`${API_BASE}/api/courses`);
+                if (res.ok) {
+                    const data = await res.json();
+                    coursesData = data.courses || [];
+                    populateCourseDropdowns();
+                }
+            } catch (err) {
+                console.error("Error fetching courses:", err);
+            }
+        }
+
+        async function fetchEvents() {
+            try {
+                let url = `${API_BASE}/api/calendar/events`;
+                if (selectedCourseFilter && selectedCourseFilter !== 'all') {
+                    url += `?course=${encodeURIComponent(selectedCourseFilter)}`;
+                }
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    eventsData = data.events || [];
+                }
+            } catch (err) {
+                console.error("Error fetching events:", err);
+            }
+        }
+
+        async function fetchSyllabi() {
+            try {
+                const res = await fetch(`${API_BASE}/api/syllabus/syllabi`);
+                if (res.ok) {
+                    const data = await res.json();
+                    uploadedFiles = data.syllabi || [];
+                    renderSyllabiList();
+                }
+            } catch (err) {
+                console.error("Error fetching syllabi:", err);
+            }
+        }
+
+        async function fetchGradesSummary() {
+            try {
+                const res = await fetch(`${API_BASE}/api/grades/summary`);
+                if (res.ok) {
+                    const data = await res.json();
+                    gradesSummary = data.summary;
+                }
+            } catch (err) {
+                console.error("Error fetching grades summary:", err);
+            }
+        }
+
+        // ==========================================
+        // NAVIGATION & VIEW SWITCHERS
+        // ==========================================
+
+        function switchPageSection(sectionName) {
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            if (sectionName === 'importer') {
+                document.getElementById('page-importer').classList.add('active');
+            } else {
+                document.getElementById('page-planner').classList.add('active');
+                renderAllViews();
+            }
+        }
+
+        function switchMainTab(tabName) {
+            currentMainTab = tabName;
+            document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.main-tab-content').forEach(c => c.classList.remove('active'));
+
+            const tabBtn = document.getElementById(`tab-btn-${tabName}`);
+            const tabContent = document.getElementById(`tab-content-${tabName}`);
+            if (tabBtn) tabBtn.classList.add('active');
+            if (tabContent) tabContent.classList.add('active');
+
+            // Show/hide view toggles based on active main tab
+            const toggleGroup = document.getElementById('view-toggle-group');
+            const dateControls = document.getElementById('calendar-date-controls');
+            if (tabName === 'calendar') {
+                toggleGroup.style.display = 'flex';
+                dateControls.style.display = 'flex';
+                renderActiveCalendarView();
+            } else if (tabName === 'tasks') {
+                toggleGroup.style.display = 'none';
+                dateControls.style.display = 'none';
+                renderTasksTableView();
+            } else if (tabName === 'grades') {
+                toggleGroup.style.display = 'none';
+                dateControls.style.display = 'none';
+                renderGradesView();
+            }
+        }
+
+        function switchCalendarView(viewType) {
+            currentCalendarView = viewType;
+            document.querySelectorAll('.btn-view').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#tab-content-calendar .view-section').forEach(s => s.classList.remove('active'));
+
+            const targetBtn = document.getElementById(`btn-view-${viewType}`);
+            const targetView = document.getElementById(`view-${viewType}`);
+            if (targetBtn) targetBtn.classList.add('active');
+            if (targetView) targetView.classList.add('active');
+
+            renderActiveCalendarView();
+        }
+
+        function prevPeriod() {
+            hasManuallyNavigated = true;
+            if (currentCalendarView === 'month') {
+                displayMonth--;
+                if (displayMonth < 0) { displayMonth = 11; displayYear--; }
+            } else if (currentCalendarView === 'week') {
+                let d = parseYMD(selectedDateStr);
+                d.setDate(d.getDate() - 7);
+                selectedDateStr = formatDateYMD(d);
+                displayYear = d.getFullYear();
+                displayMonth = d.getMonth();
+            } else if (currentCalendarView === 'day') {
+                let d = parseYMD(selectedDateStr);
+                d.setDate(d.getDate() - 1);
+                selectedDateStr = formatDateYMD(d);
+                displayYear = d.getFullYear();
+                displayMonth = d.getMonth();
+            }
+            renderActiveCalendarView();
+        }
+
+        function nextPeriod() {
+            hasManuallyNavigated = true;
+            if (currentCalendarView === 'month') {
+                displayMonth++;
+                if (displayMonth > 11) { displayMonth = 0; displayYear++; }
+            } else if (currentCalendarView === 'week') {
+                let d = parseYMD(selectedDateStr);
+                d.setDate(d.getDate() + 7);
+                selectedDateStr = formatDateYMD(d);
+                displayYear = d.getFullYear();
+                displayMonth = d.getMonth();
+            } else if (currentCalendarView === 'day') {
+                let d = parseYMD(selectedDateStr);
+                d.setDate(d.getDate() + 1);
+                selectedDateStr = formatDateYMD(d);
+                displayYear = d.getFullYear();
+                displayMonth = d.getMonth();
+            }
+            renderActiveCalendarView();
+        }
+
+        function goToToday() {
+            hasManuallyNavigated = true;
+            const today = new Date();
+            displayYear = today.getFullYear();
+            displayMonth = today.getMonth();
+            selectedDateStr = formatDateYMD(today);
+            renderActiveCalendarView();
+        }
+
+        async function handleCourseFilterChange(courseCode) {
+            selectedCourseFilter = courseCode;
+            await fetchEvents();
+            if (courseCode !== 'all') {
+                const courseEvents = eventsData.filter(e => e.course_code === courseCode);
+                if (courseEvents.length > 0 && courseEvents[0].date) {
+                    const p = courseEvents[0].date.split('-');
+                    displayYear = parseInt(p[0]);
+                    displayMonth = parseInt(p[1]) - 1;
+                    selectedDateStr = courseEvents[0].date;
+                }
+            }
+            renderAllViews();
+        }
+
+        function populateCourseDropdowns() {
+            // Course Filter in sub-header
+            const filterSelect = document.getElementById('course-filter');
+            const currentVal = filterSelect.value;
+            filterSelect.innerHTML = `<option value="all">All Courses</option>` +
+                coursesData.map(c => `<option value="${c.code}">${c.code} - ${c.name}</option>`).join('');
+            filterSelect.value = currentVal || 'all';
+
+            // Course selection in Add Task modal
+            const taskCourseSelect = document.getElementById('task-input-course');
+            taskCourseSelect.innerHTML = `<option value="">No Course / Personal</option>` +
+                coursesData.map(c => `<option value="${c.code}">${c.code} - ${c.name}</option>`).join('');
+        }
+
+        // ==========================================
+        // RENDERING FUNCTIONS
+        // ==========================================
+
+        function renderAllViews() {
+            renderStatsMetrics();
+            renderSidebarCourses();
+            renderSidebarDeadlines();
+            renderActiveCalendarView();
+            if (currentMainTab === 'tasks') renderTasksTableView();
+            if (currentMainTab === 'grades') renderGradesView();
+        }
+
+        function renderActiveCalendarView() {
+            if (currentCalendarView === 'month') {
+                renderDynamicMonthGrid();
+            } else if (currentCalendarView === 'week') {
+                renderDynamicWeekView();
+            } else if (currentCalendarView === 'day') {
+                renderDynamicDayView();
+            }
+        }
+
+        function getPillClass(category) {
+            switch ((category || '').toLowerCase()) {
+                case 'lab':
+                case 'clinical':
+                case 'check-off':
+                    return 'pill-blue';
+                case 'reading':
+                    return 'pill-yellow';
+                case 'quiz':
+                    return 'pill-purple';
+                case 'exam':
+                case 'midterm':
+                case 'final':
+                    return 'pill-red';
+                case 'assignment':
+                case 'project':
+                case 'paper':
+                    return 'pill-green';
+                default:
+                    return 'pill-slate';
+            }
+        }
+
+        /* 1. REAL DYNAMIC MONTH GRID */
+        function renderDynamicMonthGrid() {
+            document.getElementById('month-year-header').innerText = `${monthNames[displayMonth]} ${displayYear}`;
+            const gridContainer = document.getElementById('month-grid-cells');
+            if (!gridContainer) return;
+
+            const firstDayIndex = new Date(displayYear, displayMonth, 1).getDay();
+            const totalDays = new Date(displayYear, displayMonth + 1, 0).getDate();
+
+            const today = new Date();
+            const isCurrentMonthReal = (today.getFullYear() === displayYear && today.getMonth() === displayMonth);
+            const todayDateNum = today.getDate();
+
+            let html = `
+                <div class="day-name-cell">Sun</div>
+                <div class="day-name-cell">Mon</div>
+                <div class="day-name-cell">Tue</div>
+                <div class="day-name-cell">Wed</div>
+                <div class="day-name-cell">Thu</div>
+                <div class="day-name-cell">Fri</div>
+                <div class="day-name-cell">Sat</div>
+            `;
+
+            for (let p = firstDayIndex; p > 0; p--) {
+                html += `<div class="day-cell other-month"></div>`;
+            }
+
+            for (let day = 1; day <= totalDays; day++) {
+                const cellDateStr = `${displayYear}-${String(displayMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isTodayCell = isCurrentMonthReal && (day === todayDateNum);
+                const isSelected = (cellDateStr === selectedDateStr);
+
+                html += `
+                    <div class="day-cell ${isSelected ? 'selected-day' : ''}" onclick="selectCalendarDate('${cellDateStr}')">
+                        <div class="day-number ${isTodayCell ? 'current-day' : ''}">${day}</div>
+                        <div id="day-container-${day}"></div>
+                    </div>
+                `;
+            }
+
+            const totalCells = firstDayIndex + totalDays;
+            const remainingCells = (7 - (totalCells % 7)) % 7;
+            for (let n = 0; n < remainingCells; n++) {
+                html += `<div class="day-cell other-month"></div>`;
+            }
+
+            gridContainer.innerHTML = html;
+
+            // Empty state check
+            if (eventsData.length === 0 && coursesData.length === 0) {
+                gridContainer.innerHTML = `
+                    <div class="empty-state-box" style="grid-column: 1 / -1;">
+                        <div class="empty-state-icon">📅</div>
+                        <div class="empty-state-title">No course data available</div>
+                        <div class="empty-state-sub">Upload a course syllabus or click "+ Add Task" to populate your calendar with schedules and deadlines.</div>
+                        <button class="btn-upload" onclick="switchPageSection('importer')">Upload Syllabus</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Populate events for visible month
+            eventsData.forEach(evt => {
+                if (!evt.date) return;
+                const parts = evt.date.split('-');
+                if (parts.length === 3) {
+                    const evtYear = parseInt(parts[0]);
+                    const evtMonth = parseInt(parts[1]);
+                    const dayNum = parseInt(parts[2]);
+
+                    if (evtYear === displayYear && evtMonth === (displayMonth + 1)) {
+                        const cellEl = document.getElementById(`day-container-${dayNum}`);
+                        if (cellEl) {
+                            const pillClass = getPillClass(evt.category);
+                            const completedClass = evt.completed ? 'completed' : '';
+                            const pillHtml = `<div class="event-pill ${pillClass} ${completedClass}" onclick="event.stopPropagation(); openEventModal('${evt.id}')" title="${escapeHtml(evt.title)} • ${escapeHtml(evt.course_code)}">${escapeHtml(evt.title)}</div>`;
+                            cellEl.insertAdjacentHTML('beforeend', pillHtml);
+                        }
+                    }
+                }
+            });
+        }
+
+        function selectCalendarDate(dateStr) {
+            selectedDateStr = dateStr;
+            const parts = dateStr.split('-');
+            displayYear = parseInt(parts[0]);
+            displayMonth = parseInt(parts[1]) - 1;
+            renderActiveCalendarView();
+        }
+
+        /* 2. REAL DYNAMIC WEEK VIEW */
+        function renderDynamicWeekView() {
+            const container = document.getElementById('week-table-container');
+            if (!container) return;
+
+            // Find the Sunday of the week containing selectedDateStr
+            const currDate = parseYMD(selectedDateStr);
+            const dayOfWeek = currDate.getDay(); // 0 = Sun
+            const sunday = new Date(currDate);
+            sunday.setDate(currDate.getDate() - dayOfWeek);
+
+            const today = new Date();
+            const dayAbbrs = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            const weekDays = [];
+            let weekDaysHeaderHtml = '';
+
+            for (let i = 0; i < 7; i++) {
+                const dayDate = new Date(sunday);
+                dayDate.setDate(sunday.getDate() + i);
+                const dateStr = formatDateYMD(dayDate);
+                const dNum = dayDate.getDate();
+                const isToday = (today.toDateString() === dayDate.toDateString());
+                weekDays.push({ dateStr, dNum, isToday });
+
+                weekDaysHeaderHtml += `
+                    <th>
+                        ${dayAbbrs[i]}<br>
+                        ${isToday ? `<span class="day-num-circle">${dNum}</span>` : `<strong>${dNum}</strong>`}
+                    </th>
+                `;
+            }
+
+            const startMonthName = monthNames[sunday.getMonth()];
+            const endSunday = new Date(sunday);
+            endSunday.setDate(sunday.getDate() + 6);
+            const endMonthName = monthNames[endSunday.getMonth()];
+            const headerLabel = (startMonthName === endMonthName)
+                ? `${startMonthName} ${sunday.getDate()} - ${endSunday.getDate()}, ${sunday.getFullYear()}`
+                : `${startMonthName} ${sunday.getDate()} - ${endMonthName} ${endSunday.getDate()}, ${sunday.getFullYear()}`;
+            document.getElementById('month-year-header').innerText = headerLabel;
+
+            const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+
+            let rowsHtml = '';
+            hours.forEach(hr => {
+                const timeLabel = hr === 12 ? '12 PM' : (hr > 12 ? `${hr - 12} PM` : `${hr} AM`);
+                let colsHtml = '';
+
+                weekDays.forEach(wd => {
+                    // Match events on this date and hour
+                    const matching = eventsData.filter(e => {
+                        if (e.date !== wd.dateStr) return false;
+                        if (!e.start_time) return hr === 9; // default slot
+                        const timeParts = e.start_time.split(':');
+                        const h = parseInt(timeParts[0]);
+                        return h === hr;
+                    });
+
+                    const pillsHtml = matching.map(e => `
+                        <div class="event-pill ${getPillClass(e.category)} ${e.completed ? 'completed' : ''}" onclick="openEventModal('${e.id}')">
+                            ${escapeHtml(e.title)}
+                        </div>
+                    `).join('');
+
+                    colsHtml += `<td>${pillsHtml}</td>`;
+                });
+
+                rowsHtml += `
+                    <tr>
+                        <td class="time-col">${timeLabel}</td>
+                        ${colsHtml}
+                    </tr>
+                `;
+            });
+
+            container.innerHTML = `
+                <table class="week-table">
+                    <thead>
+                        <tr>
+                            <th class="time-col">Time</th>
+                            ${weekDaysHeaderHtml}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        /* 3. REAL DYNAMIC DAY VIEW */
+        function renderDynamicDayView() {
+            const container = document.getElementById('day-view-container');
+            if (!container) return;
+
+            const curr = parseYMD(selectedDateStr);
+            const dayName = dayNames[curr.getDay()];
+            const monthName = monthNames[curr.getMonth()];
+            const titleFormatted = `${dayName}, ${monthName} ${curr.getDate()}, ${curr.getFullYear()}`;
+            document.getElementById('month-year-header').innerText = titleFormatted;
+
+            const dayEvents = eventsData.filter(e => e.date === selectedDateStr);
+
+            if (dayEvents.length === 0) {
+                // Find upcoming tasks in the next 7-14 days to show on day view
+                const upcomingNear = eventsData.filter(e => e.date && e.date >= selectedDateStr).slice(0, 5);
+                const upcomingHtml = upcomingNear.length > 0 ? `
+                    <div style="margin-top:1.5rem; text-align:left;">
+                        <h4 style="font-size:0.9rem; font-weight:700; color:var(--text-main); margin-bottom:0.75rem;">Upcoming Next in Your Schedule:</h4>
+                        <div class="day-timeline">
+                            ${upcomingNear.map(evt => `
+                                <div class="day-event-card" onclick="openEventModal('${evt.id}')" style="opacity:0.95;">
+                                    <div class="day-event-time">${evt.date}</div>
+                                    <div class="day-event-info">
+                                        <div class="day-event-title">${escapeHtml(evt.title)}</div>
+                                        <div class="day-event-course">
+                                            ${evt.course_code ? `<strong>${escapeHtml(evt.course_code)}</strong> • ` : ''}
+                                            ${evt.points > 0 ? `${evt.points} pts • ` : ''}
+                                            ${escapeHtml(evt.location || evt.category)}
+                                        </div>
+                                    </div>
+                                    <span class="cat-tag-pill">${escapeHtml(evt.category)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : '';
+
+                container.innerHTML = `
+                    <div class="day-view-header">
+                        <div>${titleFormatted}</div>
+                        <button class="btn-add-task" onclick="openAddTaskModal()">+ Add Event</button>
+                    </div>
+                    <div class="empty-state-box">
+                        <div class="empty-state-icon">☕</div>
+                        <div class="empty-state-title">No events scheduled for this day.</div>
+                        <div class="empty-state-sub">Enjoy your free time or add a study session or assignment using "+ Add Event".</div>
+                    </div>
+                    ${upcomingHtml}
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="day-view-header">
+                    <div>${titleFormatted} (${dayEvents.length} events)</div>
+                    <button class="btn-add-task" onclick="openAddTaskModal()">+ Add Event</button>
+                </div>
+                <div class="day-timeline">
+                    ${dayEvents.map(evt => `
+                        <div class="day-event-card" onclick="openEventModal('${evt.id}')">
+                            <div class="day-event-time">${evt.start_time || 'All Day'}</div>
+                            <div class="day-event-info">
+                                <div class="day-event-title ${evt.completed ? 'completed' : ''}">
+                                    ${escapeHtml(evt.title)}
+                                    ${evt.completed ? ' <span style="color:#16a34a;">✔️</span>' : ''}
+                                </div>
+                                <div class="day-event-course">
+                                    ${evt.course_code ? `<strong>${escapeHtml(evt.course_code)}</strong> • ` : ''}
+                                    ${evt.points > 0 ? `${evt.points} pts • ` : ''}
+                                    ${evt.location || evt.category}
+                                </div>
+                            </div>
+                            <span class="cat-tag-pill">${escapeHtml(evt.category)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        /* 4. REAL DYNAMIC TASKS TABLE VIEW */
+        function renderTasksTableView() {
+            const wrapper = document.getElementById('tasks-table-wrapper');
+            if (!wrapper) return;
+
+            if (eventsData.length === 0) {
+                wrapper.innerHTML = `
+                    <div class="empty-state-box">
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-title">No tasks available</div>
+                        <div class="empty-state-sub">Upload a syllabus or click "+ Add Task" to create your academic schedule.</div>
+                        <button class="btn-upload" onclick="openAddTaskModal()">+ Add Your First Task</button>
+                    </div>
+                `;
+                return;
+            }
+
+            wrapper.innerHTML = `
+                <table class="tasks-table">
+                    <thead>
+                        <tr>
+                            <th style="width:40px;"></th>
+                            <th>Assignment / Event Name</th>
+                            <th>Course</th>
+                            <th>Due Date</th>
+                            <th>Points</th>
+                            <th>Score / Grade</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${eventsData.map(evt => {
+                const isGraded = evt.grade_earned !== null && evt.grade_earned !== undefined;
+                const scoreDisplay = isGraded ? `${evt.grade_earned} / ${evt.points}` : `– / ${evt.points || 0}`;
+                return `
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="task-checkbox" ${evt.completed ? 'checked' : ''} onchange="toggleTaskComplete('${evt.id}', this.checked)">
+                                    </td>
+                                    <td>
+                                        <div class="task-name-col">
+                                            <span class="cat-tag-pill" style="margin-bottom:0;">${escapeHtml(evt.category)}</span>
+                                            <span class="task-title-text ${evt.completed ? 'completed' : ''}">${escapeHtml(evt.title)}</span>
+                                        </div>
+                                    </td>
+                                    <td><strong>${escapeHtml(evt.course_code || 'Personal')}</strong></td>
+                                    <td>${evt.date}</td>
+                                    <td>${evt.points || 0} pts</td>
+                                    <td>
+                                        <div class="grade-cell-content">
+                                            <span>${scoreDisplay}</span>
+                                            <button class="grade-pencil-btn" onclick="promptGradeInput('${evt.id}', ${evt.grade_earned || 0}, ${evt.points || 100})" title="Edit Grade">✏️</button>
+                                        </div>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <button class="btn-remove" onclick="openEventModal('${evt.id}')" title="View Details">🔍</button>
+                                        ${evt.source === 'manual' ? `<button class="btn-remove" onclick="deleteTaskDirect('${evt.id}')" title="Delete Task">🗑️</button>` : ''}
+                                    </td>
+                                </tr>
+                            `;
+            }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        /* 5. REAL DYNAMIC GRADES & CGPA VIEW */
+        function renderGradesView() {
+            const container = document.getElementById('grades-view-container');
+            if (!container) return;
+
+            if (!gradesSummary || coursesData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state-box">
+                        <div class="empty-state-icon">📊</div>
+                        <div class="empty-state-title">No courses or grades recorded yet</div>
+                        <div class="empty-state-sub">Upload course documents to begin tracking your assignments, calculating grades, and predicting your overall CGPA.</div>
+                        <button class="btn-upload" onclick="switchPageSection('importer')">Upload Syllabus</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const cgpaDisplay = gradesSummary.cgpa_formatted || '--';
+            const cgpaNote = gradesSummary.note || 'No graded courses';
+
+            let coursesHtml = gradesSummary.courses.map(course => {
+                const hasGrade = course.is_graded;
+                const headerGrade = hasGrade ? `${course.percentage}% / ${course.letter_grade}` : 'No grades yet';
+                const cInfo = (coursesData || []).find(c => (course.course_id && c.id === course.course_id) || (c.code && course.course_code && c.code.trim().toUpperCase() === course.course_code.trim().toUpperCase()));
+                const profStr = cInfo?.instructor ? `👤 ${escapeHtml(cInfo.instructor)}` : '';
+                const roomStr = cInfo?.room ? `📍 ${escapeHtml(cInfo.room)}` : '';
+                const emailStr = cInfo?.email ? `✉️ ${escapeHtml(cInfo.email)}` : '';
+                const metaParts = [profStr, roomStr, emailStr, `${course.credits} Credits`, `${course.total_items} assignments (${course.graded_count} graded)`].filter(Boolean).join(' • ');
+
+                return `
+                    <div class="course-grade-card">
+                        <div class="course-grade-header">
+                            <div class="course-grade-title">
+                                <h4>${escapeHtml(course.course_code)} • ${escapeHtml(course.course_name)}</h4>
+                                <p>${metaParts}</p>
+                            </div>
+                            <div class="course-grade-badge">${headerGrade}</div>
+                        </div>
+                        <div class="course-grade-items">
+                            ${course.items.length === 0 ? `<div style="padding:1rem 1.5rem; color:var(--text-muted); font-size:0.85rem;">No assignments in this course yet.</div>` : ''}
+                            ${course.items.map(item => {
+                    const itemScore = item.grade_earned !== null && item.grade_earned !== undefined ? item.grade_earned : '';
+                    const itemPercentage = (item.grade_earned !== null && item.points > 0)
+                        ? `(${Math.round((item.grade_earned / item.points) * 100)}%)`
+                        : '';
+
+                    return `
+                                    <div class="grade-item-row">
+                                        <div>
+                                            <span class="cat-tag-pill" style="margin-bottom:0; margin-right:0.4rem;">${escapeHtml(item.category)}</span>
+                                            <strong style="font-size:0.85rem;">${escapeHtml(item.title)}</strong>
+                                            <span style="font-size:0.75rem; color:var(--text-muted); margin-left:0.5rem;">Due: ${item.date}</span>
+                                        </div>
+                                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                                            <span style="font-size:0.8rem; color:#2563eb; font-weight:700;">${itemPercentage}</span>
+                                            <input type="number" step="0.5" min="0" class="grade-input-inline" value="${itemScore}" placeholder="–" onchange="updateItemGrade('${item.id}', this.value, ${item.points})">
+                                            <span style="font-size:0.85rem; font-weight:700; color:var(--text-muted);">/ ${item.points || 0}</span>
+                                        </div>
+                                    </div>
+                                `;
+                }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="cgpa-summary-card">
+                    <div class="cgpa-left">
+                        <h3>Dynamic Cumulative GPA</h3>
+                        <div class="cgpa-score">${cgpaDisplay}</div>
+                        <div class="cgpa-sub">${cgpaNote}</div>
+                    </div>
+                    <div class="cgpa-right">
+                        <div class="cgpa-stat-pill">
+                            Scale: Standard 4.0
+                        </div>
+                    </div>
+                </div>
+                <div>${coursesHtml}</div>
+            `;
+        }
+
+        /* 6. SIDEBAR SECTIONS */
+        function renderSidebarCourses() {
+            const container = document.getElementById('sidebar-courses-list');
+            const countLabel = document.getElementById('sidebar-courses-count');
+            if (!container) return;
+
+            countLabel.innerText = `${coursesData.length} course${coursesData.length === 1 ? '' : 's'}`;
+
+            if (coursesData.length === 0) {
+                container.innerHTML = `
+                    <div style="font-size:0.8rem; color:var(--text-muted); padding:0.75rem 0;">
+                        No courses added yet.<br>
+                        Upload a syllabus to add your first course.
+                    </div>
+                `;
+                return;
+            }
+
+            const colors = ['dot-blue', 'dot-purple', 'dot-green', 'dot-yellow', 'dot-red'];
+            container.innerHTML = coursesData.map((c, i) => {
+                let code = (c.code || '').trim();
+                if (code.toUpperCase() === 'UNKNOWN') code = 'Course';
+                let instructor = (c.instructor || '').trim();
+                if (instructor.toUpperCase() === 'UNKNOWN' || instructor.toUpperCase() === 'N/A') instructor = '';
+                const profInfo = instructor ? `${escapeHtml(instructor)} • ` : '';
+                return `
+                <div class="course-item" title="${escapeHtml(c.name || '')}${instructor ? `\nInstructor: ${instructor}` : ''}${c.room ? `\nOffice: ${c.room}` : ''}${c.email ? `\nEmail: ${c.email}` : ''}">
+                    <div class="course-left">
+                        <div class="dot ${colors[i % colors.length]}"></div>
+                        <div>
+                            <div class="course-name">${escapeHtml(code)}</div>
+                            <div class="course-info">${profInfo}${escapeHtml(c.progress || '0/0 done')}</div>
+                        </div>
+                    </div>
+                    <div class="grade-badge">${c.current_letter_grade || c.grade || '--'}</div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        function renderSidebarDeadlines() {
+            const container = document.getElementById('sidebar-deadlines-list');
+            if (!container) return;
+
+            // Only upcoming deadlines (days_left != 'Past')
+            const upcoming = eventsData.filter(e => e.days_left !== 'Past' && e.category !== 'class').slice(0, 6);
+
+            if (upcoming.length === 0) {
+                container.innerHTML = `
+                    <div style="font-size:0.8rem; color:var(--text-muted); padding:0.75rem 0;">
+                        No upcoming deadlines.
+                    </div>
+                `;
+                return;
+            }
+
+            const getUrgencyClass = (u) => {
+                if (u === 'Today') return 'urgency-today';
+                if (u === '1d' || u === '2d') return 'urgency-1d';
+                if (u === '3d' || u === '4d' || u === '5d' || u === '6d') return 'urgency-4d';
+                return 'urgency-9d';
+            };
+
+            container.innerHTML = upcoming.map(d => `
+                <div class="deadline-item" onclick="openEventModal('${d.id}')" style="cursor:pointer;">
+                    <div>
+                        <div class="deadline-title">${escapeHtml(d.title)}</div>
+                        <div class="deadline-meta">• ${escapeHtml(d.course_code || 'Personal')} - ${d.points || 0} pts</div>
+                    </div>
+                    <span class="badge-urgency ${getUrgencyClass(d.days_left)}">${d.days_left || '1d'}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderStatsMetrics() {
+            // Overall GPA
+            const gpaValEl = document.getElementById('stat-gpa');
+            const gpaNoteEl = document.getElementById('stat-gpa-note');
+            if (gradesSummary && gradesSummary.cgpa_formatted && gradesSummary.cgpa_formatted !== '--') {
+                gpaValEl.innerText = gradesSummary.cgpa_formatted;
+                gpaNoteEl.innerText = gradesSummary.note || 'Scale: 4.0';
+                gpaNoteEl.classList.add('positive');
+            } else {
+                gpaValEl.innerText = '--';
+                gpaNoteEl.innerText = 'No grades yet';
+                gpaNoteEl.classList.remove('positive');
+            }
+
+            // Completed tasks
+            const completedCount = eventsData.filter(e => e.completed).length;
+            document.getElementById('stat-completed').innerText = `${completedCount}/${eventsData.length}`;
+
+            // Upcoming deadlines (due in next 7 days)
+            const upcomingCount = eventsData.filter(e => {
+                if (e.days_left === 'Past') return false;
+                if (e.days_left === 'Today' || e.days_left === '1d' || e.days_left === '2d' || e.days_left === '3d' || e.days_left === '4d' || e.days_left === '5d' || e.days_left === '6d' || e.days_left === '7d') return true;
+                return false;
+            }).length;
+            document.getElementById('stat-upcoming').innerText = upcomingCount;
+
+            // Courses count
+            document.getElementById('stat-courses').innerText = coursesData.length;
+        }
+
+        // ==========================================
+        // EVENT MODAL & GRADE EDITING
+        // ==========================================
+
+        function openEventModal(eventId) {
+            activeEventId = eventId;
+            const evt = eventsData.find(e => e.id === eventId);
+            if (!evt) return;
+
+            document.getElementById('m-cat').innerText = evt.category || 'assignment';
+            document.getElementById('m-title').innerText = evt.title;
+
+            // Clean course code and name - never show 'UNKNOWN'
+            let cCode = (evt.course_code || '').trim();
+            if (cCode.toUpperCase() === 'UNKNOWN' || cCode.toUpperCase() === 'N/A') cCode = '';
+            let cName = (evt.course_name || '').trim();
+            if (cName.toUpperCase() === 'UNKNOWN' || cName.toUpperCase() === 'UNKNOWN COURSE') cName = '';
+
+            const courseLabel = cCode ? (cName ? `${cCode} • ${cName}` : cCode) : (cName || 'Academic Course');
+            document.getElementById('m-course').innerText = courseLabel;
+            document.getElementById('m-date').innerText = evt.date;
+            document.getElementById('m-daysleft').innerText = evt.days_left || '';
+            document.getElementById('m-pts').innerText = `${evt.points || 0} pts`;
+            document.getElementById('m-pts-total').innerText = evt.points || 0;
+
+            const isGraded = evt.grade_earned !== null && evt.grade_earned !== undefined;
+            const weightVal = (isGraded && evt.points > 0) ? `${Math.round((evt.grade_earned / evt.points) * 100)}%` : '--';
+            document.getElementById('m-weight').innerText = `${isGraded ? evt.grade_earned : 0} earned = ${weightVal}`;
+
+            // Match corresponding course to ensure reliable dynamic fallback
+            const course = (coursesData || []).find(c =>
+                (evt.course_id && c.id === evt.course_id) ||
+                (evt.course_code && c.code && c.code.trim().toUpperCase() === evt.course_code.trim().toUpperCase())
+            );
+
+            // Instructor, Office / Location, and Email
+            let instructor = (evt.instructor || course?.instructor || '').trim();
+            if (instructor.toUpperCase() === 'UNKNOWN' || instructor.toUpperCase() === 'N/A') instructor = '';
+
+            let officeRoom = (evt.office_room || evt.location || course?.room || '').trim();
+            if (officeRoom.toUpperCase() === 'UNKNOWN' || officeRoom.toUpperCase() === 'N/A') officeRoom = '';
+
+            let email = (evt.email || course?.email || '').trim();
+            if (email.toUpperCase() === 'UNKNOWN' || email.toUpperCase() === 'N/A') email = '';
+
+            document.getElementById('m-prof').innerText = instructor || 'Instructor not specified';
+
+            const roomContainer = document.getElementById('m-room-container');
+            const roomEl = document.getElementById('m-room');
+            if (officeRoom) {
+                roomEl.innerText = officeRoom;
+                if (roomContainer) roomContainer.style.display = 'flex';
+            } else {
+                if (roomContainer) roomContainer.style.display = 'none';
+            }
+
+            const emailContainer = document.getElementById('m-email-container');
+            const emailLink = document.getElementById('m-email-link');
+            if (email) {
+                emailLink.href = `mailto:${email}`;
+                emailLink.innerText = email;
+                if (emailContainer) emailContainer.style.display = 'flex';
+            } else {
+                if (emailContainer) emailContainer.style.display = 'none';
+            }
+
+            const metaGrid = document.getElementById('m-meta-grid');
+            if (metaGrid) {
+                metaGrid.style.display = (officeRoom || email) ? 'flex' : 'none';
+            }
+
+            // Grade input
+            document.getElementById('m-grade-input').value = isGraded ? evt.grade_earned : '';
+
+            // Toggle done button state
+            const toggleDoneBtn = document.getElementById('m-btn-toggle-done');
+            toggleDoneBtn.innerText = evt.completed ? '↩️ Mark Incomplete' : '✔️ Mark Complete';
+
+            // Delete button for manual tasks
+            const delBtn = document.getElementById('m-btn-delete');
+            delBtn.style.display = (evt.source === 'manual') ? 'block' : 'none';
+
+            openModal('event-modal');
+        }
+
+        async function saveGradeFromModal() {
+            const inputVal = document.getElementById('m-grade-input').value;
+            const gradeNum = (inputVal === '' || inputVal === null) ? null : parseFloat(inputVal);
+
+            if (gradeNum !== null && gradeNum < 0) {
+                alert("Score cannot be negative.");
+                return;
+            }
+
+            await saveGradeToAPI(activeEventId, gradeNum);
+            closeModal('event-modal');
+        }
+
+        async function toggleCompleteFromModal() {
+            if (!activeEventId) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/calendar/events/${activeEventId}/toggle-complete`, { method: 'PATCH' });
+                if (res.ok) {
+                    await refreshAllData();
+                    closeModal('event-modal');
+                }
+            } catch (err) {
+                console.error("Error toggling completion:", err);
+            }
+        }
+
+        async function deleteCurrentEvent() {
+            if (!activeEventId) return;
+            if (!confirm("Are you sure you want to delete this task?")) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/calendar/events/${activeEventId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    closeModal('event-modal');
+                    await refreshAllData();
+                }
+            } catch (err) {
+                console.error("Error deleting event:", err);
+            }
+        }
+
+        async function promptGradeInput(eventId, currentGrade, pointsPossible) {
+            const promptVal = prompt(`Enter earned score for this assignment (out of ${pointsPossible}):`, currentGrade || '');
+            if (promptVal === null) return; // User cancelled
+            const val = promptVal.trim() === '' ? null : parseFloat(promptVal);
+            if (val !== null && isNaN(val)) {
+                alert("Please enter a valid numeric score.");
+                return;
+            }
+            await saveGradeToAPI(eventId, val);
+        }
+
+        async function updateItemGrade(eventId, valStr, pointsPossible) {
+            const val = valStr.trim() === '' ? null : parseFloat(valStr);
+            if (val !== null && isNaN(val)) {
+                alert("Please enter a valid numeric score.");
+                return;
+            }
+            await saveGradeToAPI(eventId, val);
+        }
+
+        async function saveGradeToAPI(eventId, gradeValue) {
+            try {
+                const res = await fetch(`${API_BASE}/api/calendar/events/${eventId}/grade`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ grade_earned: gradeValue, mark_completed: gradeValue !== null })
+                });
+                if (res.ok) {
+                    await refreshAllData();
+                } else {
+                    alert("Failed to save grade.");
+                }
+            } catch (err) {
+                console.error("Error saving grade:", err);
+            }
+        }
+
+        async function toggleTaskComplete(eventId, isCompleted) {
+            try {
+                await fetch(`${API_BASE}/api/calendar/events/${eventId}/toggle-complete`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ completed: isCompleted })
+                });
+                await refreshAllData();
+            } catch (err) {
+                console.error("Error toggling task complete:", err);
+            }
+        }
+
+        async function deleteTaskDirect(eventId) {
+            if (!confirm("Delete this manual task?")) return;
+            try {
+                await fetch(`${API_BASE}/api/calendar/events/${eventId}`, { method: 'DELETE' });
+                await refreshAllData();
+            } catch (err) {
+                console.error("Error deleting task:", err);
+            }
+        }
+
+        // ==========================================
+        // ADD TASK / EVENT MODAL & SUBMIT
+        // ==========================================
+
+        function openAddTaskModal() {
+            document.getElementById('task-input-date').value = selectedDateStr;
+            const typeSelect = document.getElementById('task-input-type');
+            document.getElementById('task-input-points').value = typeSelect.value === 'exam' ? 100 : 10;
+            openModal('add-task-modal');
+        }
+
+        async function handleCreateTaskSubmit(e) {
+            e.preventDefault();
+            const title = document.getElementById('task-input-title').value.trim();
+            const courseCode = document.getElementById('task-input-course').value;
+            const category = document.getElementById('task-input-type').value;
+            const dateVal = document.getElementById('task-input-date').value;
+            let pointsVal = parseFloat(document.getElementById('task-input-points').value);
+            if (isNaN(pointsVal) || pointsVal <= 0) {
+                pointsVal = category === 'exam' ? 100 : 10;
+            }
+            const startVal = document.getElementById('task-input-start').value.trim();
+            const endVal = document.getElementById('task-input-end').value.trim();
+            const locVal = document.getElementById('task-input-location').value.trim();
+            const descVal = document.getElementById('task-input-desc').value.trim();
+
+            if (!title || !dateVal) {
+                alert("Please provide at least a title and date.");
+                return;
+            }
+
+            const payload = {
+                title: title,
+                date: dateVal,
+                course_code: courseCode,
+                category: category,
+                points: pointsVal,
+                start_time: startVal,
+                end_time: endVal,
+                location: locVal,
+                description: descVal,
+                source: "manual"
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/api/calendar/events`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.is_duplicate_warning) {
+                        alert("Note: An event with this title, course, and date already exists. The task was recorded.");
+                    }
+                    closeModal('add-task-modal');
+                    document.getElementById('add-task-form').reset();
+                    await refreshAllData();
+                } else {
+                    alert("Failed to save task.");
+                }
+            } catch (err) {
+                console.error("Error creating task:", err);
+                alert("Error connecting to server.");
+            }
+        }
+
+        // ==========================================
+        // SYLLABUS IMPORTER DRAG & DROP
+        // ==========================================
+
+        function triggerFileInput() { document.getElementById('file-input').click(); }
+        function handleDragOver(e) { e.preventDefault(); document.getElementById('dropzone').classList.add('dragover'); }
+        function handleDragLeave(e) { e.preventDefault(); document.getElementById('dropzone').classList.remove('dragover'); }
+        function handleFileDrop(e) {
+            e.preventDefault(); document.getElementById('dropzone').classList.remove('dragover');
+            if (e.dataTransfer.files.length) uploadSelectedFiles(e.dataTransfer.files);
+        }
+        function handleFileSelect(e) { if (e.target.files.length) uploadSelectedFiles(e.target.files); }
+
+        async function uploadSelectedFiles(fileList) {
+            for (let file of fileList) {
+                await uploadSingleSyllabus(file);
+            }
+        }
+
+        async function uploadSingleSyllabus(file) {
+            const pBox = document.getElementById('processing-box');
+            const pStatus = document.getElementById('processing-status-text');
+            const pFill = document.getElementById('progress-bar-fill');
+            pBox.classList.add('active');
+
+            pStatus.innerHTML = `<span>⚙️</span> Processing ${escapeHtml(file.name)}...`;
+            pFill.style.width = '30%';
+
+            try {
+                setTimeout(() => {
+                    pStatus.innerHTML = `<span>📖</span> Extracting course info & schedule...`;
+                    pFill.style.width = '65%';
+                }, 400);
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const res = await fetch(`${API_BASE}/api/syllabus/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    pFill.style.width = '100%';
+                    pStatus.innerHTML = `<span>✔️</span> ${data.course.code} added! ${data.new_events_count} events placed on calendar.`;
+
+                    await refreshAllData();
+
+                    setTimeout(() => {
+                        pBox.classList.remove('active');
+                        pFill.style.width = '0%';
+                        switchPageSection('planner');
+                    }, 900);
+                } else {
+                    const errData = await res.json();
+                    pStatus.innerHTML = `<span>❌</span> Unable to identify course information from this document.`;
+                    setTimeout(() => { pBox.classList.remove('active'); }, 3000);
+                }
+            } catch (err) {
+                pStatus.innerHTML = `<span>❌</span> Error uploading document.`;
+                setTimeout(() => { pBox.classList.remove('active'); }, 3000);
+            }
+        }
+
+        function renderSyllabiList() {
+            const container = document.getElementById('syllabi-container');
+            const titleEl = document.getElementById('uploaded-count-title');
+            if (!container) return;
+
+            titleEl.innerText = `Uploaded Syllabi (${uploadedFiles.length})`;
+
+            if (uploadedFiles.length === 0) {
+                container.innerHTML = `<div class="empty-syllabi-msg">No syllabi uploaded yet. Drag & drop files above to start.</div>`;
+                return;
+            }
+
+            container.innerHTML = uploadedFiles.map(s => `
+                <div class="syllabus-item-card" id="${s.id}">
+                    <div class="item-left">
+                        <div class="pdf-icon-box">📄</div>
+                        <div class="file-info">
+                            <h4>${escapeHtml(s.filename)}</h4>
+                            <p>${escapeHtml(s.course_code)} • ${escapeHtml(s.course_name || '')} • ${s.extracted_events_count || 0} events</p>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <span class="badge-extracted">Extracted</span>
+                        <button type="button" class="btn-remove" onclick="removeSyllabusDirect('${s.id}')" title="Delete Syllabus">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function removeSyllabusDirect(syllabusId) {
+            try {
+                await fetch(`${API_BASE}/api/syllabus/${syllabusId}`, { method: 'DELETE' });
+                await refreshAllData();
+            } catch (err) {
+                console.error("Error deleting syllabus:", err);
+            }
+        }
+
+        async function confirmResetAllData() {
+            if (confirm("Are you sure you want to clear all courses, syllabi, and events? This will return the calendar to a clean empty state.")) {
+                try {
+                    const res = await fetch(`${API_BASE}/api/data/clear`, { method: 'POST' });
+                    if (res.ok) {
+                        hasManuallyNavigated = false;
+                        await refreshAllData();
+                    }
+                } catch (err) {
+                    console.error("Error clearing data:", err);
+                }
+            }
+        }
+
+        // ==========================================
+        // MODAL HELPERS & UTILITIES
+        // ==========================================
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function formatDateYMD(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        function parseYMD(str) {
+            if (!str) return new Date();
+            const parts = str.split('-');
+            return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+
+</html>

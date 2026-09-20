@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import logo from "@/public/assets/auth/auth-header-logo.svg"
+import logo from "@/public/assets/new_logo.png"
 
 export default function AuthHeader({ type }) {
   const isRegisterPage = type === "/auth/register";
@@ -12,13 +12,13 @@ export default function AuthHeader({ type }) {
   if(isForgetPasswordPage || isNewPasswordPage){
     return (
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0 sticky top-0 bg-white z-50 py-4 sm:py-8 w-full px-4 sm:px-0">
-        <Link href={"/"}>
+        <Link href={"/"} className="w-full sm:w-35 xl:w-45 h-auto">
           <Image
             src={logo}
             alt="logo"
-            width={180}
             height={180}
-            className="object-contain w-[140px] xl:w-[180px]"
+            width={180}
+            className="object-contain w-full h-full"
           />
         </Link>
       </div>
@@ -36,7 +36,7 @@ export default function AuthHeader({ type }) {
                 alt="logo"
                 width={180}
                 height={180}
-                className="object-contain w-[140px] xl:w-[180px]"
+                className="object-contain w-full sm:w-35 xl:w-45 h-auto"
               />
             </Link>
 
@@ -55,7 +55,7 @@ export default function AuthHeader({ type }) {
                 alt="logo"
                 width={180}
                 height={180}
-                className="object-contain w-[140px] xl:w-[180px]"
+                className="object-contain w-full sm:w-35 xl:w-45 h-auto"
               />
             </Link>
 

@@ -1,24 +1,29 @@
 import React from "react";
-import { Users, Sparkles, ThumbsUp, Clock } from "lucide-react";
+import Image from "next/image";
+
+import img1 from "@/public/assets/stat_img1.png";
+import img2 from "@/public/assets/stat_img2.png";
+import img3 from "@/public/assets/stat_img3.png";
+import img4 from "@/public/assets/stat_img2.png";
 
 const statsData = [
     {
-        icon: Users,
+        icon: img1,
         value: "40K+",
         label: "Active Students",
     },
     {
-        icon: Sparkles,
+        icon: img2,
         value: "500k+",
         label: "Questions Answered",
     },
     {
-        icon: ThumbsUp,
+        icon: img4 ,
         value: "95%",
         label: "Satisfaction Rate",
     },
     {
-        icon: Clock,
+        icon: img3,
         value: "24/7",
         label: "AI Tutor Support",
     },
@@ -41,7 +46,6 @@ const NewStatsSection = () => {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4 md:gap-y-0">
                     {statsData.map((item, index) => {
-                        const Icon = item.icon;
                         return (
                             <div
                                 key={index}
@@ -52,8 +56,14 @@ const NewStatsSection = () => {
                                 }
                             >
                                 {/* Icon */}
-                                <div className="shrink-0 text-white">
-                                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+                                <div className="shrink-0 flex items-center justify-center">
+                                    <Image
+                                        src={item.icon}
+                                        alt={item.label}
+                                        width={32}
+                                        height={32}
+                                        className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 object-contain shrink-0"
+                                    />
                                 </div>
 
                                 {/* Content */}
