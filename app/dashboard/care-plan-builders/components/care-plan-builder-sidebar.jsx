@@ -180,7 +180,7 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
                                         value={formData.age}
                                         onChange={handleChange}
                                         placeholder="e.g. 68"
-                                        className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#FCFDFD]"
+                                        className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#F8FAFC]"
                                     />
                                 </div>
                                 <div className="flex-1 flex flex-col gap-1.5">
@@ -190,7 +190,7 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
                                             name="gender"
                                             value={formData.gender}
                                             onChange={handleChange}
-                                            className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-sm appearance-none bg-[#FCFDFD] focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D]"
+                                            className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-xs leading-5 text-[#53606D] appearance-none bg-[#F8FAFC] focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D]"
                                         >
                                             <option value="">Select...</option>
                                             <option value="male">Male</option>
@@ -210,7 +210,7 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
                                     value={formData.careSetting}
                                     onChange={handleChange}
                                     placeholder="e.g. Structured (Background/Methods/Result..."
-                                    className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#FCFDFD]"
+                                    className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#F8FAFC]"
                                 />
                             </div>
 
@@ -225,7 +225,7 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
                                     onChange={handleChange}
                                     placeholder="e.g. 68yo male admitted with chest pain, SOB, and diaphoresis. HR 112, BP 88/54, SpO2 91% on RA..."
                                     rows={4}
-                                    className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#FCFDFD] resize-none"
+                                    className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#F8FAFC] resize-none"
                                 />
                             </div>
 
@@ -239,7 +239,7 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
                                         value={formData.pastMedicalHistory}
                                         onChange={handleChange}
                                         placeholder="HTN, DM2, CKD..."
-                                        className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#FCFDFD]"
+                                        className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#F8FAFC]"
                                     />
                                 </div>
                                 <div className="flex-1 flex flex-col gap-1.5">
@@ -250,7 +250,7 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
                                         value={formData.currentMedications}
                                         onChange={handleChange}
                                         placeholder="Metformin, Lisinop..."
-                                        className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#FCFDFD]"
+                                        className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#F8FAFC]"
                                     />
                                 </div>
                             </div>
@@ -265,7 +265,7 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
                                         value={formData.allergies}
                                         onChange={handleChange}
                                         placeholder="NKDA or list..."
-                                        className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#FCFDFD]"
+                                        className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#F8FAFC]"
                                     />
                                 </div>
                                 <div className="flex-1 flex flex-col gap-1.5">
@@ -276,7 +276,7 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
                                         value={formData.keyVitals}
                                         onChange={handleChange}
                                         placeholder="BP, HR, SpO2, Te..."
-                                        className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#FCFDFD]"
+                                        className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#F8FAFC]"
                                     />
                                 </div>
                             </div>
@@ -290,7 +290,7 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
                                     value={formData.labs}
                                     onChange={handleChange}
                                     placeholder="Na 128, K 5.8, Glucose 485, WBC 18..."
-                                    className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#FCFDFD]"
+                                    className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#F8FAFC]"
                                 />
                             </div>
 
@@ -303,7 +303,7 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
                                     onChange={handleChange}
                                     placeholder="IV access, fall risk, isolation precautions,..."
                                     rows={3}
-                                    className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#FCFDFD] resize-none"
+                                    className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2.5 text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#2C5F8D]/20 focus:border-[#2C5F8D] bg-[#F8FAFC] resize-none"
                                 />
                             </div>
 
@@ -518,4 +518,4 @@ const CarePlanBuilderSidebar = ({ onClose }) => {
         </>
     );
 };
-export default CarePlanBuilderSidebar;
+export default CarePlanBuilderSidebar;

@@ -1,7 +1,7 @@
 "use client";
 import { footerSections, socialLinks } from "@/data";
 import Link from "next/link";
-import logo from "@/public/assets/logo.png";
+import logo from "@/public/assets/new_logo.png";
 import Image from "next/image";
 
 const Footer = () => {

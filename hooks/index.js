@@ -10,3 +10,4 @@ export * from "./qbank";
 export * from "./drug-card";
 export * from "./care-plan-builder";
 export * from "./nclex-exam";
+export * from "./calendars-planner";

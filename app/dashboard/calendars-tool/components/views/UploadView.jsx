@@ -1,7 +1,11 @@
 "use client";
 import { useState } from "react";
 import { Upload, X, FileText, Sparkles, CalendarDays, TrendingUp, Bell, ChevronRight } from "lucide-react";
-import { UPLOADED_SYLLABI } from "./demo-data";
+import {
+  useCalendarSyllabi,
+  useUploadSyllabus,
+  useDeleteSyllabus,
+} from "@/hooks/calendars-planner";
 
 const AI_FEATURES = [
   { icon: <CalendarDays size={16} />, title: "Course Info", desc: "Instructor, email, office hours, room & meeting times" },
@@ -18,25 +22,83 @@ const STEPS = [
 ];
 
 export default function UploadView({ onComplete }) {
-  const [syllabi, setSyllabi] = useState(UPLOADED_SYLLABI);
-  const [dragging, setDragging] = useState(false);
+  const { syllabiData, isSyllabiLoading } = useCalendarSyllabi();
+  console.log("Syllabi data", syllabiData)
 
-  console.log("syllabi", syllabi);
+  const { uploadSyllabus, isUploading } = useUploadSyllabus();
+  const { deleteSyllabus, isDeletingSyllabus } = useDeleteSyllabus();
+
+  const [dragging, setDragging] = useState(false);
+  const [processingFile, setProcessingFile] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [statusText, setStatusText] = useState("");
+  const [statusError, setStatusError] = useState(false);
 
   const handleDrop = (e) => {
     e.preventDefault();
     setDragging(false);
     const files = Array.from(e.dataTransfer.files);
-    files.forEach(f => setSyllabi(prev => [...prev, { name: f.name, course: "Pending", size: (f.size / 1048576).toFixed(1) + " MB", status: "pending" }]));
+    if (files.length > 0) uploadFiles(files);
   };
 
-  const remove = (i) => setSyllabi(prev => prev.filter((_, idx) => idx !== i));
+  const handleFileInput = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) uploadFiles(files);
+    e.target.value = "";
+  };
+
+  const uploadFiles = async (fileList) => {
+    for (const file of fileList) {
+      await uploadSingleFile(file);
+    }
+  };
+
+  const uploadSingleFile = async (file) => {
+    setProcessingFile(file.name);
+    setProgress(30);
+    setStatusText(`⚙️ Processing ${file.name}...`);
+    setStatusError(false);
+
+    try {
+      // Simulate step progress
+      setTimeout(() => {
+        setStatusText(`📖 Extracting course info & schedule...`);
+        setProgress(65);
+      }, 400);
+
+      const result = await uploadSyllabus(file);
+
+      setProgress(100);
+      setStatusText(`✔️ ${result?.course?.code || "Course"} added! ${result?.new_events_count || 0} events placed on calendar.`);
+
+      setTimeout(() => {
+        setProcessingFile(null);
+        setProgress(0);
+        onComplete();
+      }, 900);
+    } catch (err) {
+      setStatusText(`❌ Unable to identify course information from this document.`);
+      setStatusError(true);
+      setTimeout(() => {
+        setProcessingFile(null);
+        setProgress(0);
+      }, 3000);
+    }
+  };
+
+  const handleRemoveSyllabus = async (id) => {
+    try {
+      await deleteSyllabus(id);
+    } catch (err) {
+      console.error("Error deleting syllabus:", err);
+    }
+  };
 
   return (
     <div className="w-full flex flex-col gap-4">
       <div className="flex gap-4 flex-col lg:flex-row">
         {/* Left: Upload Area */}
-        <div className="flex-1 bg-white border border-[#E4E7EC] rounded-2xl p-6 shadow-sm flex flex-col gap-5">
+        <div className="w-full bg-white border border-[#E4E7EC] rounded-2xl p-6 shadow-sm flex flex-col gap-5">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-9 h-9 bg-[#EFF6FF] rounded-xl flex items-center justify-center text-[#3B82F6]">
               <CalendarDays size={18} />
@@ -64,41 +126,67 @@ export default function UploadView({ onComplete }) {
             <label className="mt-2 px-5 py-2.5 bg-[#1D2939] hover:bg-[#2D3A4A] text-white text-sm font-semibold rounded-xl cursor-pointer flex items-center gap-2 transition-all">
               <Upload size={14} /> Upload Files
               <input type="file" multiple className="hidden" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt"
-                onChange={(e) => {
-                  const files = Array.from(e.target.files);
-                  files.forEach(f => setSyllabi(prev => [...prev, { name: f.name, course: "Pending", size: (f.size / 1048576).toFixed(1) + " MB", status: "pending" }]));
-                }}
+                onChange={handleFileInput}
               />
             </label>
           </div>
 
+          {/* Processing Progress */}
+          {processingFile && (
+            <div className="bg-white border-[1.5px] border-[#93C5FD] rounded-xl p-4">
+              <p className="text-sm font-bold text-[#1E40AF] mb-2">{statusText}</p>
+              <div className="w-full h-2 bg-[#E2E8F0] rounded overflow-hidden mb-2">
+                <div
+                  className="h-full bg-[#2563EB] rounded transition-all duration-400"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-[11px] text-[#667085]">
+                <span>1. Parsing document</span>
+                <span>2. Extracting dates</span>
+                <span>3. Updating calendar</span>
+              </div>
+            </div>
+          )}
+
           {/* Uploaded list */}
           <div>
-            <p className="text-sm font-semibold text-[#1D2939] mb-3">Uploaded Syllabus ({syllabi.length})</p>
+            <p className="text-sm font-semibold text-[#1D2939] mb-3">Uploaded Syllabi ({syllabiData?.length || 0})</p>
             <div className="flex flex-col gap-2">
-              {syllabi.map((s, i) => (
-                <div key={i} className="flex items-center gap-3 border border-[#E4E7EC] rounded-xl px-4 py-3 bg-white hover:bg-[#F9FAFB] transition-all">
-                  <div className="w-8 h-8 bg-[#FEE2E2] rounded-lg flex items-center justify-center text-[#EF4444] shrink-0">
-                    <FileText size={15} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-[#1D2939] truncate">{s.name}</p>
-                    <p className="text-[11px] text-[#667085]">{s.course} · {s.size}</p>
-                  </div>
-                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg ${s.status === "done" ? "bg-[#D1FAE5] text-[#065F46]" : "bg-[#FEF3C7] text-[#92400E]"}`}>
-                    {s.status === "done" ? "Done" : "Pending"}
-                  </span>
-                  <button onClick={() => remove(i)} className="text-[#9CA3AF] hover:text-[#EF4444] transition-colors ml-1">
-                    <X size={14} />
-                  </button>
+              {syllabiData?.length === 0 ? (
+                <div className="text-xs text-[#667085] text-center py-5 border border-dashed border-[#E4E7EC] rounded-xl bg-[#F8FAFC]">
+                  No syllabi uploaded yet. Drag &amp; drop files above to start.
                 </div>
-              ))}
+              ) : (
+                syllabiData?.map((s) => (
+                  <div key={s.id} className="flex items-center gap-3 border border-[#E4E7EC] rounded-xl px-4 py-3 bg-white hover:bg-[#F9FAFB] transition-all">
+                    <div className="w-8 h-8 bg-[#FEE2E2] rounded-lg flex items-center justify-center text-[#EF4444] shrink-0">
+                      <FileText size={15} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-[#1D2939] truncate">{s.filename}</p>
+                      <p className="text-[11px] text-[#667085]">
+                        {s.course_code} • {s.course_name || ""} • {s.extracted_events_count || 0} events
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-[#D1FAE5] text-[#065F46]">
+                      Extracted
+                    </span>
+                    <button
+                      onClick={() => handleRemoveSyllabus(s.id)}
+                      className="text-[#9CA3AF] hover:text-[#EF4444] transition-colors ml-1"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
 
         {/* Right column */}
-        <div className="w-full lg:w-[300px] flex flex-col gap-4">
+        <div className="w-full flex flex-col gap-4">
           {/* AI Features */}
           <div className="bg-white border border-[#E4E7EC] rounded-2xl p-5 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
@@ -146,4 +234,4 @@ export default function UploadView({ onComplete }) {
       </div>
     </div>
   );
-};
+}
