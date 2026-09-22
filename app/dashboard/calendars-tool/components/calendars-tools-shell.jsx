@@ -1,6 +1,17 @@
 "use client";
-import { useState } from "react";
-import { GraduationCap, CheckCircle2, Clock, BookOpen, CalendarDays, Upload, RotateCcw } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  GraduationCap, 
+  CheckCircle2, 
+  Clock, 
+  BookOpen, 
+  CalendarDays, 
+  Upload, 
+  RotateCcw, 
+  AlertTriangle, 
+  X 
+} from "lucide-react";
 import UploadView from "./views/UploadView";
 import CalendarView from "./views/CalendarView";
 import RightSidebar from "./views/RightSidebar";
@@ -77,8 +88,9 @@ function StatsBar({ coursesData, eventsData, gradesSummary }) {
 }
 
 const CalendarsToolsShell = () => {
-  const [phase, setPhase] = useState("upload"); // "upload" | "planner"
+  const [phase, setPhase] = useState("upload");
   const [courseFilter, setCourseFilter] = useState("all");
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
   const { coursesData, isCoursesLoading } = useCalendarCourses();
   console.log("Course data", coursesData);
@@ -86,15 +98,111 @@ const CalendarsToolsShell = () => {
   const { eventsData, isEventsLoading } = useCalendarEvents(courseFilter);
   console.log("Event data", eventsData);
 
-
   const { gradesSummary, isGradesLoading } = useGradesSummary();
   const { clearAllData, isClearing } = useClearAllData();
 
-  const handleResetData = async () => {
-    if (confirm("Are you sure you want to clear all courses, syllabi, and events? This will return the calendar to a clean empty state.")) {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && isResetModalOpen && !isClearing) {
+        setIsResetModalOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isResetModalOpen, isClearing]);
+
+  const handleConfirmReset = async () => {
+    try {
       await clearAllData();
+      setIsResetModalOpen(false);
+    } catch (err) {
+      console.error("Error resetting calendar data:", err);
     }
   };
+
+  const renderResetModal = () => (
+    <AnimatePresence>
+      {isResetModalOpen && (
+        <motion.div
+          key="reset-confirm-modal-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => !isClearing && setIsResetModalOpen(false)}
+        >
+          <motion.div
+            key="reset-confirm-modal-content"
+            initial={{ opacity: 0, scale: 0.95, y: 14 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 14 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-6 pb-4 flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 shrink-0 mt-0.5">
+                  <AlertTriangle size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Reset All Calendar Data?
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    This action will wipe all your calendar content and return the planner to a clean empty state.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={isClearing}
+                onClick={() => setIsResetModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Warning Details Box */}
+            <div className="px-6 py-2">
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-600 space-y-1.5">
+                <p className="font-semibold text-slate-700">The following data will be cleared:</p>
+                <ul className="list-disc list-inside space-y-1 text-slate-500 text-[11px] pl-1">
+                  <li>All uploaded course syllabi & schedules</li>
+                  <li>All assignments, quizzes, exams, and personal tasks</li>
+                  <li>All grade summaries and GPA progress</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Actions Footer */}
+            <div className="p-6 pt-4 flex items-center justify-end gap-2.5 bg-slate-50/50 border-t border-slate-100 mt-2">
+              <button
+                type="button"
+                disabled={isClearing}
+                onClick={() => setIsResetModalOpen(false)}
+                className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isClearing}
+                onClick={handleConfirmReset}
+                className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <RotateCcw size={14} className={`shrink-0 ${isClearing ? "animate-spin" : ""}`} />
+                <span>{isClearing ? "Resetting Data..." : "Confirm Reset"}</span>
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 
   if (phase === "upload") {
     return (
@@ -112,6 +220,7 @@ const CalendarsToolsShell = () => {
           </div>
         </div>
         <UploadView onComplete={() => setPhase("planner")} />
+        {renderResetModal()}
       </div>
     );
   }
@@ -129,7 +238,7 @@ const CalendarsToolsShell = () => {
             <span>Upload Syllabus</span>
           </button>
           <button
-            onClick={handleResetData}
+            onClick={() => setIsResetModalOpen(true)}
             disabled={isClearing}
             className="cursor-pointer shadow flex items-center gap-1.5 text-xs font-semibold text-[#DC2626] bg-[#FEF2F2] px-3 py-1.5 rounded-lg hover:bg-[#FEE2E2] transition-all disabled:opacity-50"
             title="Wipe all data to clean empty state"
@@ -164,6 +273,7 @@ const CalendarsToolsShell = () => {
           eventsData={eventsData}
         />
       </div>
+      {renderResetModal()}
     </div>
   );
 };

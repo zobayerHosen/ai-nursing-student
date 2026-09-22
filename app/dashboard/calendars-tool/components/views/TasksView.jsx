@@ -67,7 +67,7 @@ export default function TasksView({ eventsData = [], coursesData = [], onAddTask
           {onAddTask && (
             <button
               onClick={onAddTask}
-              className="mt-3 px-5 py-2 bg-[#2563EB] text-white text-sm font-semibold rounded-xl hover:bg-[#1D4ED8] transition-all flex items-center gap-1"
+              className="mt-3 px-5 py-2 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all flex items-center gap-1"
             >
               <Plus size={14} /> Add Your First Task
             </button>

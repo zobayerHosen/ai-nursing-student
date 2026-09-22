@@ -302,7 +302,7 @@ export default function CalendarView({
               </p>
               <button
                 onClick={onUploadMore}
-                className="mt-3 px-5 py-2 bg-[#2563EB] text-white text-sm font-semibold rounded-xl hover:bg-[#1D4ED8] transition-all"
+                className="mt-3 px-5 py-2 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all cursor-pointer"
               >
                 Upload Syllabus
               </button>

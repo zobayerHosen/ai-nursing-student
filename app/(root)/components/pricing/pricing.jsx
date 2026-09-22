@@ -1,6 +1,9 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { useGetUser } from "@/hooks";
+import { getClientToken } from "@/utils/getClientToken";
 import {
     useGetSubscriptionPlanData,
     useSubscriptionPlan,
@@ -9,7 +12,7 @@ import {
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import LoadingIcon from "@/components/loading-icon";
-import { Clock, Calendar, GraduationCap, Check } from "lucide-react";
+import { Clock, Calendar, GraduationCap, Check, Lock, LogIn, UserPlus, X, Sparkles } from "lucide-react";
 
 const planIcons = [
     {
@@ -95,9 +98,30 @@ const PricingPage = () => {
     const { subscripitonPlanCancel, isPending: cancelPending } = useSubscriptionPlanCancel();
     const queryClient = useQueryClient();
 
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [selectedPlanForAuth, setSelectedPlanForAuth] = useState(null);
+
     const displayPlans = planDataGet && planDataGet.length > 0 ? planDataGet : fallbackPlans;
 
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape" && isAuthModalOpen) {
+                setIsAuthModalOpen(false);
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isAuthModalOpen]);
+
     const handleSubscription = (name) => {
+        const token = getClientToken();
+        if (!token || !user) {
+            const chosenPlan = displayPlans.find((p) => p.name === name);
+            setSelectedPlanForAuth(chosenPlan || { name });
+            setIsAuthModalOpen(true);
+            return;
+        }
+
         const payload = {
             package: name,
         };
@@ -289,6 +313,112 @@ const PricingPage = () => {
                 </div>
 
             </div>
+
+            {/* Authentication Required Popup Modal */}
+            <AnimatePresence>
+                {isAuthModalOpen && (
+                    <motion.div
+                        key="auth-modal-backdrop"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4"
+                        onClick={() => setIsAuthModalOpen(false)}
+                    >
+                        <motion.div
+                            key="auth-modal-content"
+                            initial={{ opacity: 0, scale: 0.95, y: 16 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 16 }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
+                            className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* Header */}
+                            <div className="p-6 pb-4 flex items-start justify-between gap-4">
+                                <div className="flex items-center gap-3.5">
+                                    <div className="w-11 h-11 rounded-2xl bg-sky-50 border border-sky-100 text-[#2A5C8A] flex items-center justify-center shrink-0 shadow-xs">
+                                        <Lock className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-900 tracking-tight">
+                                            Please Log In First
+                                        </h3>
+                                        <p className="text-xs text-slate-500 mt-0.5">
+                                            Account required to get subscription
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAuthModalOpen(false)}
+                                    className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition-colors shrink-0 cursor-pointer"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {/* Body Content */}
+                            <div className="px-6 py-2 space-y-3.5">
+                                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                                    Please log in to your account first so we can link your subscription, progress, and study tools to your personal account.
+                                </p>
+
+                                {selectedPlanForAuth && (
+                                    <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-8 h-8 rounded-xl bg-[#2A5C8A]/10 text-[#2A5C8A] flex items-center justify-center shrink-0">
+                                                <Sparkles className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                                                    Selected Plan
+                                                </span>
+                                                <span className="text-xs font-bold text-slate-800">
+                                                    {selectedPlanForAuth.display_title || selectedPlanForAuth.name}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {selectedPlanForAuth.price && (
+                                            <span className="text-xs font-extrabold text-[#2A5C8A] bg-white px-2.5 py-1 rounded-lg border border-slate-200/60 shadow-2xs">
+                                                {selectedPlanForAuth.price}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="p-6 pt-4 flex flex-col gap-2.5 bg-slate-50/60 border-t border-slate-100 mt-4">
+                                <Link
+                                    href="/auth"
+                                    onClick={() => setIsAuthModalOpen(false)}
+                                    className="w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-[#2A5C8A] hover:bg-[#1E4366] transition-all shadow-md shadow-sky-900/10 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+                                >
+                                    <LogIn className="w-4 h-4" />
+                                    <span>Log In to Account</span>
+                                </Link>
+                                <Link
+                                    href="/auth/register"
+                                    onClick={() => setIsAuthModalOpen(false)}
+                                    className="w-full py-2.5 px-4 rounded-xl font-semibold text-xs text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                                >
+                                    <UserPlus className="w-4 h-4 text-slate-500" />
+                                    <span>Create New Account</span>
+                                </Link>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAuthModalOpen(false)}
+                                    className="text-center text-[11px] font-medium text-slate-400 hover:text-slate-600 transition-colors pt-1 cursor-pointer"
+                                >
+                                    Cancel and browse plans
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </section>
     );
 };
