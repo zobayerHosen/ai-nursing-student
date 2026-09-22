@@ -32,7 +32,16 @@ export default function UserTicketsList({ tickets, onCreateNew }) {
             ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
             ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
 
-        const matchesCat = selectedCategory === "all" || ticket.category === selectedCategory;
+        const matchesCat = 
+            selectedCategory === "all" || 
+            ticket.category === selectedCategory ||
+            (selectedCategory === "technical" && ticket.category === "technical_problem") ||
+            (selectedCategory === "technical_problem" && ticket.category === "technical") ||
+            (selectedCategory === "account" && ticket.category === "account_support") ||
+            (selectedCategory === "account_support" && ticket.category === "account") ||
+            (selectedCategory === "feedback" && ticket.category === "general_feedback") ||
+            (selectedCategory === "general_feedback" && ticket.category === "feedback");
+
         const matchesStatus = selectedStatus === "all" || ticket.status.toLowerCase() === selectedStatus.toLowerCase();
 
         return matchesSearch && matchesCat && matchesStatus;
@@ -44,11 +53,19 @@ export default function UserTicketsList({ tickets, onCreateNew }) {
 
     const getCategoryIcon = (catId) => {
         switch(catId) {
-            case "question": return <HelpCircle className="w-4 h-4 text-blue-600" />;
-            case "technical": return <Wrench className="w-4 h-4 text-amber-600" />;
-            case "account": return <UserCheck className="w-4 h-4 text-purple-600" />;
-            case "feedback": return <MessageSquare className="w-4 h-4 text-emerald-600" />;
-            default: return <HelpCircle className="w-4 h-4 text-slate-600" />;
+            case "question": 
+                return <HelpCircle className="w-4 h-4 text-blue-600" />;
+            case "technical": 
+            case "technical_problem":
+                return <Wrench className="w-4 h-4 text-amber-600" />;
+            case "account": 
+            case "account_support":
+                return <UserCheck className="w-4 h-4 text-purple-600" />;
+            case "feedback": 
+            case "general_feedback":
+                return <MessageSquare className="w-4 h-4 text-emerald-600" />;
+            default: 
+                return <HelpCircle className="w-4 h-4 text-slate-600" />;
         }
     };
 
