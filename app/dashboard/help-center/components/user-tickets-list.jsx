@@ -11,38 +11,58 @@ import {
     Wrench, 
     UserCheck, 
     MessageSquare, 
-    ChevronDown,
-    Plus,
-    Inbox,
-    Paperclip,
-    User
+    ChevronDown, 
+    Plus, 
+    Inbox, 
+    Paperclip, 
+    User,
+    RotateCw
 } from "lucide-react";
 import { HELP_CATEGORIES } from "../data/initial-tickets";
+import { useGetHelpAndSupportList } from "@/hooks";
 
-export default function UserTicketsList({ tickets, onCreateNew }) {
+export default function UserTicketsList({ tickets: propTickets = [], onCreateNew }) {
+    const { ticketsList, isLoading, isError, error, refetch, isFetching } = useGetHelpAndSupportList();
+
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [selectedStatus, setSelectedStatus] = useState("all");
     const [expandedTicketId, setExpandedTicketId] = useState(null);
 
-    // Filter tickets
-    const filteredTickets = tickets.filter(ticket => {
-        const matchesSearch = 
-            ticket.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
+    // Active tickets: prefer live API data; fallback to propTickets if not yet loaded or error
+    const activeTickets = (ticketsList && ticketsList.length > 0)
+        ? ticketsList
+        : (!isLoading && !isError && ticketsList)
+            ? ticketsList
+            : (propTickets || []);
 
+    // Filter tickets
+    const filteredTickets = activeTickets.filter((ticket) => {
+        const idStr = String(ticket.id || "").toLowerCase();
+        const subjectStr = (ticket.subject || "").toLowerCase();
+        const messageStr = (ticket.message || ticket.description || "").toLowerCase();
+        const searchLower = searchTerm.trim().toLowerCase();
+
+        const matchesSearch = 
+            !searchLower ||
+            idStr.includes(searchLower) ||
+            subjectStr.includes(searchLower) ||
+            messageStr.includes(searchLower);
+
+        const ticketCat = ticket.category || "";
         const matchesCat = 
             selectedCategory === "all" || 
-            ticket.category === selectedCategory ||
-            (selectedCategory === "technical" && ticket.category === "technical_problem") ||
-            (selectedCategory === "technical_problem" && ticket.category === "technical") ||
-            (selectedCategory === "account" && ticket.category === "account_support") ||
-            (selectedCategory === "account_support" && ticket.category === "account") ||
-            (selectedCategory === "feedback" && ticket.category === "general_feedback") ||
-            (selectedCategory === "general_feedback" && ticket.category === "feedback");
+            ticketCat === selectedCategory ||
+            (selectedCategory === "technical" && ticketCat === "technical_problem") ||
+            (selectedCategory === "technical_problem" && ticketCat === "technical") ||
+            (selectedCategory === "account" && ticketCat === "account_support") ||
+            (selectedCategory === "account_support" && ticketCat === "account") ||
+            (selectedCategory === "feedback" && ticketCat === "general_feedback") ||
+            (selectedCategory === "general_feedback" && ticketCat === "feedback");
 
-        const matchesStatus = selectedStatus === "all" || ticket.status.toLowerCase() === selectedStatus.toLowerCase();
+        const ticketStatus = (ticket.status || "").toLowerCase().replace("_", " ");
+        const selectedStatusNorm = selectedStatus.toLowerCase().replace("_", " ");
+        const matchesStatus = selectedStatus === "all" || ticketStatus === selectedStatusNorm;
 
         return matchesSearch && matchesCat && matchesStatus;
     });
@@ -69,54 +89,58 @@ export default function UserTicketsList({ tickets, onCreateNew }) {
         }
     };
 
-    const getStatusBadge = (status) => {
-        switch(status.toLowerCase()) {
+    const getStatusBadge = (status, statusDisplay) => {
+        const text = statusDisplay || status || "Open";
+        const norm = (status || statusDisplay || "").toLowerCase().replace("_", " ");
+        switch(norm) {
             case "open":
                 return (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                        Open
+                        {text}
                     </span>
                 );
             case "in progress":
                 return (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
                         <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span>
-                        In Progress
+                        {text}
                     </span>
                 );
             case "resolved":
                 return (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                         <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                        Resolved
+                        {text}
                     </span>
                 );
             case "closed":
                 return (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                        Closed
+                        {text}
                     </span>
                 );
             default:
                 return (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
-                        {status}
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 capitalize">
+                        {text}
                     </span>
                 );
         }
     };
 
-    const getPriorityBadge = (priority) => {
-        switch(priority?.toLowerCase()) {
+    const getPriorityBadge = (priority, priorityDisplay) => {
+        const text = priorityDisplay || priority || "Low";
+        const norm = (priority || priorityDisplay || "").toLowerCase();
+        switch(norm) {
             case "urgent":
-                return <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-rose-100 text-rose-700 uppercase tracking-wider">Urgent</span>;
+                return <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-rose-100 text-rose-700 uppercase tracking-wider">{text}</span>;
             case "high":
-                return <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-orange-100 text-orange-700 uppercase tracking-wider">High</span>;
+                return <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-orange-100 text-orange-700 uppercase tracking-wider">{text}</span>;
             case "medium":
-                return <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700 uppercase tracking-wider">Medium</span>;
+                return <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700 uppercase tracking-wider">{text}</span>;
             default:
-                return <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600 uppercase tracking-wider">Low</span>;
+                return <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600 uppercase tracking-wider">{text}</span>;
         }
     };
 
@@ -127,19 +151,32 @@ export default function UserTicketsList({ tickets, onCreateNew }) {
                 <div>
                     <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                         <Inbox className="w-5 h-5 text-sky-600" />
-                        My Submitted Requests ({tickets.length})
+                        My Submitted Requests ({activeTickets.length})
+                        {isFetching && !isLoading && (
+                            <RotateCw className="w-3.5 h-3.5 text-slate-400 animate-spin" />
+                        )}
                     </h2>
                     <p className="text-xs md:text-sm text-slate-500 mt-0.5">
                         Track the status of your questions, technical issues, account support, and feedback.
                     </p>
                 </div>
-                <button
-                    onClick={onCreateNew}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] hover:bg-[#162d4a] text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer self-start md:self-center"
-                >
-                    <Plus className="w-4 h-4" />
-                    <span>New Request</span>
-                </button>
+                <div className="flex items-center gap-2 self-start md:self-center">
+                    <button
+                        onClick={() => refetch()}
+                        title="Refresh requests"
+                        disabled={isFetching}
+                        className="p-2.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 rounded-xl transition-all cursor-pointer disabled:opacity-50"
+                    >
+                        <RotateCw className={`w-4 h-4 ${isFetching ? "animate-spin text-sky-600" : ""}`} />
+                    </button>
+                    <button
+                        onClick={onCreateNew}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1E3A5F] hover:bg-[#162d4a] text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span>New Request</span>
+                    </button>
+                </div>
             </div>
 
             {/* Filters Bar */}
@@ -188,13 +225,53 @@ export default function UserTicketsList({ tickets, onCreateNew }) {
                 </div>
             </div>
 
-            {/* Tickets Table / Cards List */}
-            {filteredTickets.length === 0 ? (
+            {/* Loading State */}
+            {isLoading ? (
+                <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="p-4 rounded-xl border border-slate-200 bg-white animate-pulse space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3 flex-1">
+                                    <div className="w-9 h-9 rounded-xl bg-slate-200 shrink-0"></div>
+                                    <div className="space-y-2 flex-1 max-w-md">
+                                        <div className="flex gap-2">
+                                            <div className="w-12 h-4 bg-slate-200 rounded"></div>
+                                            <div className="w-24 h-4 bg-slate-200 rounded"></div>
+                                            <div className="w-16 h-4 bg-slate-200 rounded"></div>
+                                        </div>
+                                        <div className="w-3/4 h-4 bg-slate-200 rounded"></div>
+                                    </div>
+                                </div>
+                                <div className="w-20 h-4 bg-slate-200 rounded"></div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : isError ? (
+                /* Error State */
+                <div className="text-center py-10 px-4 border border-rose-200 rounded-xl bg-rose-50/50">
+                    <AlertCircle className="w-9 h-9 text-rose-500 mx-auto mb-2" />
+                    <h3 className="text-sm font-bold text-rose-800 mb-1">Failed to load support requests</h3>
+                    <p className="text-xs text-rose-600 mb-4 max-w-sm mx-auto">
+                        {error?.response?.data?.message || error?.message || "There was an error communicating with the server."}
+                    </p>
+                    <button
+                        onClick={() => refetch()}
+                        className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                    >
+                        <RotateCw className="w-3.5 h-3.5" />
+                        <span>Retry</span>
+                    </button>
+                </div>
+            ) : filteredTickets.length === 0 ? (
+                /* Empty State */
                 <div className="text-center py-12 px-4 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/40">
                     <AlertCircle className="w-10 h-10 text-slate-300 mx-auto mb-3" />
                     <h3 className="text-sm font-bold text-slate-700 mb-1">No requests found</h3>
                     <p className="text-xs text-slate-500 max-w-sm mx-auto mb-4">
-                        We couldn't find any requests matching your filters. Submit a new request or adjust your search criteria.
+                        {searchTerm || selectedCategory !== "all" || selectedStatus !== "all"
+                            ? "We couldn't find any requests matching your filters. Try clearing or adjusting them."
+                            : "You haven't submitted any support requests yet. Click below if you need any assistance!"}
                     </p>
                     <button
                         onClick={onCreateNew}
@@ -204,9 +281,15 @@ export default function UserTicketsList({ tickets, onCreateNew }) {
                     </button>
                 </div>
             ) : (
+                /* Tickets List */
                 <div className="space-y-3">
                     {filteredTickets.map((ticket) => {
                         const isExpanded = expandedTicketId === ticket.id;
+                        const displayId = typeof ticket.id === "number" ? `#${ticket.id}` : ticket.id;
+                        const categoryName = ticket.category_display || ticket.categoryLabel || ticket.category;
+                        const descriptionText = ticket.message || ticket.description || "";
+                        const createdDate = ticket.created_at || ticket.createdAt;
+
                         return (
                             <div
                                 key={ticket.id}
@@ -222,14 +305,14 @@ export default function UserTicketsList({ tickets, onCreateNew }) {
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <div className="flex flex-wrap items-center gap-2 mb-1">
-                                                <span className="text-xs font-mono font-bold text-slate-400">
-                                                    {ticket.id}
+                                                <span className="text-xs font-mono font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
+                                                    {displayId}
                                                 </span>
                                                 <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                                                    {ticket.categoryLabel}
+                                                    {categoryName}
                                                 </span>
-                                                {getPriorityBadge(ticket.priority)}
-                                                {getStatusBadge(ticket.status)}
+                                                {getPriorityBadge(ticket.priority_level, ticket.priority_level_display || ticket.priority)}
+                                                {getStatusBadge(ticket.status, ticket.status_display)}
                                             </div>
                                             <h3 className="text-sm font-bold text-slate-800 truncate">
                                                 {ticket.subject}
@@ -241,11 +324,11 @@ export default function UserTicketsList({ tickets, onCreateNew }) {
                                         <div className="text-left md:text-right">
                                             <div className="text-[11px] font-medium text-slate-400 flex items-center gap-1">
                                                 <Clock className="w-3 h-3" />
-                                                {new Date(ticket.createdAt).toLocaleDateString("en-US", {
+                                                {createdDate ? new Date(createdDate).toLocaleDateString("en-US", {
                                                     month: "short",
                                                     day: "numeric",
                                                     year: "numeric"
-                                                })}
+                                                }) : "Recent"}
                                             </div>
                                         </div>
                                         <div className={`w-8 h-8 rounded-full bg-slate-100 text-slate-500 transition-transform flex items-center justify-center shrink-0 ${isExpanded ? "rotate-180 bg-sky-100 text-sky-700" : ""}`}>
@@ -259,10 +342,28 @@ export default function UserTicketsList({ tickets, onCreateNew }) {
                                     <div className="p-4 bg-slate-50/70 border-t border-slate-100 text-xs text-slate-700 space-y-3">
                                         <div>
                                             <span className="font-bold text-slate-800 block mb-1">Request Details:</span>
-                                            <p className="bg-white p-3 rounded-lg border border-slate-200/80 leading-relaxed text-slate-800 whitespace-pre-wrap">
-                                                {ticket.description}
+                                            <p className="bg-white p-3.5 rounded-lg border border-slate-200/80 leading-relaxed text-slate-800 whitespace-pre-wrap">
+                                                {descriptionText}
                                             </p>
                                         </div>
+
+                                        {/* Admin Response Card */}
+                                        {ticket.admin_response ? (
+                                            <div className="bg-sky-50/80 border border-sky-200 rounded-xl p-3.5 space-y-1.5">
+                                                <div className="flex items-center gap-2 text-sky-900 font-bold text-xs">
+                                                    <CheckCircle2 className="w-4 h-4 text-sky-600 shrink-0" />
+                                                    <span>Support Team Response:</span>
+                                                </div>
+                                                <p className="text-xs text-sky-950 leading-relaxed whitespace-pre-wrap pl-6">
+                                                    {ticket.admin_response}
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="bg-slate-100/70 border border-slate-200/80 rounded-xl p-3 text-xs text-slate-500 flex items-center gap-2">
+                                                <Clock className="w-4 h-4 text-amber-500 shrink-0" />
+                                                <span>Awaiting response from our support team.</span>
+                                            </div>
+                                        )}
 
                                         {ticket.attachment && (
                                             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg text-xs font-semibold border border-sky-200">
@@ -271,10 +372,10 @@ export default function UserTicketsList({ tickets, onCreateNew }) {
                                             </div>
                                         )}
 
-                                        <div className="pt-2 text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-200/60">
+                                        <div className="pt-2 text-[11px] text-slate-500 flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-t border-slate-200/60">
                                             <span className="flex items-center gap-1">
                                                 <User className="w-3 h-3 text-slate-400" />
-                                                Submitted by: <strong>{ticket.userName}</strong> ({ticket.userEmail})
+                                                Submitted by: <strong>{ticket.name || ticket.userName || "User"}</strong> ({ticket.email || ticket.userEmail})
                                             </span>
                                             <span>Assigned: <strong>{ticket.assignedAgent || "Support Team"}</strong></span>
                                         </div>

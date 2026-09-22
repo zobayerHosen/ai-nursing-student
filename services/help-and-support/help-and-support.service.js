@@ -3,4 +3,14 @@ const helpAndSupportService = async (axiosInstance, payload) => {
     return response?.data;
 };
 
-export { helpAndSupportService };
+const getHelpAndSupportListService = async (axiosInstance) => {
+    const response = await axiosInstance.get(`/cms/help-center/`);
+    return response?.data;
+};
+
+export { 
+    helpAndSupportService,
+    helpAndSupportService as createHelpAndSupportService,
+    getHelpAndSupportListService,
+    getHelpAndSupportListService as getHelpAndSupportService
+};

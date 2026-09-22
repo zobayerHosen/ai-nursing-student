@@ -10,12 +10,13 @@ import {
 import TicketSubmitForm from "./ticket-submit-form";
 import UserTicketsList from "./user-tickets-list";
 import { INITIAL_TICKETS, HELP_CATEGORIES } from "../data/initial-tickets";
-import { useGetUser } from "@/hooks";
+import { useGetUser, useGetHelpAndSupportList } from "@/hooks";
 
 const LOCAL_STORAGE_KEY = "stemrn_help_desk_tickets_v1";
 
 const HelpCenterShell = () => {
     const { user } = useGetUser();
+    const { ticketsList } = useGetHelpAndSupportList();
     const [tickets, setTickets] = useState([]);
     const [activeTab, setActiveTab] = useState("submit"); // "submit" | "my-tickets"
     const [prefilledCategory, setPrefilledCategory] = useState("question");
@@ -58,7 +59,11 @@ const HelpCenterShell = () => {
         setActiveTab("submit");
     };
 
-    const openCount = tickets.filter(t => t.status === "Open" || t.status === "In Progress").length;
+    const activeTicketsList = (ticketsList && ticketsList.length > 0) ? ticketsList : tickets;
+    const openCount = activeTicketsList.filter(t => {
+        const s = (t.status || "").toLowerCase().replace("_", " ");
+        return s === "open" || s === "in progress";
+    }).length;
 
     return (
         <div className="w-full min-h-screen bg-[#f8fafc] p-4 md:p-8">
@@ -155,7 +160,7 @@ const HelpCenterShell = () => {
 
                 {activeTab === "my-tickets" && (
                     <UserTicketsList
-                        tickets={tickets}
+                        tickets={activeTicketsList}
                         onCreateNew={() => setActiveTab("submit")}
                     />
                 )}
