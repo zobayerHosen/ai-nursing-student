@@ -31,8 +31,6 @@ export default function DashboardHeader({
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const dropdownRef = useRef(null);
 
-    const userImage = user?.profile_photo ?? "/dummyProfile.jpg";
-
     // Sidebar Toggle
     const handleSidebarToggle = () => {
         // Mobile
@@ -56,6 +54,11 @@ export default function DashboardHeader({
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    const [imageSrc, setImageSrc] = useState(user?.profile_photo || "/dummyProfile.jpg");
+    useEffect(() => {
+        setImageSrc(user?.profile_photo || "/dummyProfile.jpg");
+    }, [user?.profile_photo]);
 
     // Note: UI
     return (
@@ -186,10 +189,11 @@ export default function DashboardHeader({
                 {/* Profile */}
                 <Link href={"/dashboard/settings"} className="shrink-0 ring-1 rounded-full ring-gray-300">
                     <Image
-                        src={userImage}
+                        src={imageSrc}
                         alt="user"
                         width={150}
                         height={150}
+                        onError={() => setImageSrc("/dummyProfile.jpg")}
                         className="cursor-pointer w-8 h-8 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full"
                     />
                 </Link>

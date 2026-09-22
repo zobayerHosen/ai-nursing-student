@@ -1,18 +1,3 @@
-import {
-  Stethoscope,
-  Heart,
-  Pill,
-  Wind,
-  Brain,
-  Baby,
-  Activity,
-  ShieldAlert,
-  Droplets,
-  BookOpen,
-  Layers,
-  Target,
-  Crown,
-} from "lucide-react";
 // ─── FLASHCARD BRAND ICON ───────────────────────────────────────────────
 export const FLASHCARD_ICON = (
   <svg
@@ -58,158 +43,147 @@ export const FLASHCARD_ICON = (
     <line x1="14" y1="17" x2="19" y2="17" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
   </svg>
 );
-// ─── ICON HELPER ────────────────────────────────────────────────────────
-export const getCategoryIcon = (categoryName = "") => {
-  const lower = categoryName.toLowerCase();
-  if (lower.includes("cardio") || lower.includes("heart")) return Heart;
-  if (lower.includes("pharm") || lower.includes("drug") || lower.includes("med")) return Pill;
-  if (lower.includes("resp") || lower.includes("lung") || lower.includes("pulmon")) return Wind;
-  if (lower.includes("matern") || lower.includes("pediatr") || lower.includes("baby")) return Baby;
-  if (lower.includes("mental") || lower.includes("neuro") || lower.includes("psych")) return Brain;
-  if (lower.includes("safety") || lower.includes("infection")) return ShieldAlert;
-  if (lower.includes("fluid") || lower.includes("electrolyte")) return Droplets;
-  if (lower.includes("critical") || lower.includes("icu")) return Activity;
-  return Stethoscope;
+
+// ─── 16 CATEGORY BACKGROUND COLORS FROM DESIGN ───────────────────────────
+export const CATEGORY_COLORS = [
+  {
+    name: "Nursing Fundamentals",
+    pillBg: "#E5F0FC",
+    iconBg: "#82BBE4",
+    accentColor: "#3B82F6",
+  },
+  {
+    name: "Health Assessment",
+    pillBg: "#EAF5EE",
+    iconBg: "#79C198",
+    accentColor: "#10B981",
+  },
+  {
+    name: "Pharmacology",
+    pillBg: "#F0EBFA",
+    iconBg: "#A78CFA",
+    accentColor: "#8B5CF6",
+  },
+  {
+    name: "Dosage Calculations",
+    pillBg: "#FEF6DA",
+    iconBg: "#F6CE6A",
+    accentColor: "#F59E0B",
+  },
+  {
+    name: "Medical Surgical Nursing",
+    pillBg: "#FCE8EA",
+    iconBg: "#F17585",
+    accentColor: "#F43F5E",
+  },
+  {
+    name: "ECG Interpretation",
+    pillBg: "#FEEDDE",
+    iconBg: "#FCA065",
+    accentColor: "#F97316",
+  },
+  {
+    name: "Fluids, Electrolytes",
+    pillBg: "#E2F7FB",
+    iconBg: "#56CCE3",
+    accentColor: "#06B6D4",
+  },
+  {
+    name: "Maternal & Newborn",
+    pillBg: "#FDE9F1",
+    iconBg: "#F469A0",
+    accentColor: "#EC4899",
+  },
+  {
+    name: "Pediatric Nursing",
+    pillBg: "#FEF8E3",
+    iconBg: "#F9CE5F",
+    accentColor: "#EAB308",
+  },
+  {
+    name: "Mental Health Nursing",
+    pillBg: "#ECEEFE",
+    iconBg: "#7F8AF8",
+    accentColor: "#6366F1",
+  },
+  {
+    name: "Critical Care",
+    pillBg: "#E2F8F1",
+    iconBg: "#50D2AC",
+    accentColor: "#14B8A6",
+  },
+  {
+    name: "Clinical Skills",
+    pillBg: "#FCE8EB",
+    iconBg: "#F46F80",
+    accentColor: "#F43F5E",
+  },
+  {
+    name: "Laboratory Values",
+    pillBg: "#FDECE6",
+    iconBg: "#FA8865",
+    accentColor: "#EA580C",
+  },
+  {
+    name: "Geriatric Nursing",
+    pillBg: "#F8EDE4",
+    iconBg: "#DD9568",
+    accentColor: "#D97706",
+  },
+  {
+    name: "Community Health",
+    pillBg: "#F1F7E4",
+    iconBg: "#9EC760",
+    accentColor: "#84CC16",
+  },
+  {
+    name: "Nutrition",
+    pillBg: "#FDEBEF",
+    iconBg: "#F67488",
+    accentColor: "#F43F5E",
+  },
+];
+
+// Helper to retrieve the background color theme for a category by name or index
+export const getCategoryColor = (categoryName = "", fallbackIndex = 0) => {
+  const lower = (categoryName || "").toLowerCase().trim();
+
+  // Exact match
+  const exact = CATEGORY_COLORS.find(
+    (c) => c.name.toLowerCase() === lower
+  );
+  if (exact) return exact;
+
+  // Normalized alphanumeric match
+  const cNorm = lower.replace(/[^a-z0-9]/g, "");
+  const partial = CATEGORY_COLORS.find((c) => {
+    const tNorm = c.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+    return cNorm.includes(tNorm) || tNorm.includes(cNorm);
+  });
+  if (partial) return partial;
+
+  // Keyword matches
+  if (lower.includes("cardio") || lower.includes("heart")) return CATEGORY_COLORS[4];
+  if (lower.includes("pharm") || lower.includes("drug")) return CATEGORY_COLORS[2];
+  if (lower.includes("ecg") || lower.includes("ekg")) return CATEGORY_COLORS[5];
+  if (lower.includes("fluid") || lower.includes("electrolyte")) return CATEGORY_COLORS[6];
+  if (lower.includes("pediatr") || lower.includes("child")) return CATEGORY_COLORS[8];
+  if (lower.includes("matern") || lower.includes("ob") || lower.includes("birth")) return CATEGORY_COLORS[7];
+  if (lower.includes("mental") || lower.includes("psych")) return CATEGORY_COLORS[9];
+  if (lower.includes("critical") || lower.includes("icu")) return CATEGORY_COLORS[10];
+  if (lower.includes("skill")) return CATEGORY_COLORS[11];
+  if (lower.includes("lab") || lower.includes("value")) return CATEGORY_COLORS[12];
+  if (lower.includes("geri") || lower.includes("elder")) return CATEGORY_COLORS[13];
+  if (lower.includes("commun")) return CATEGORY_COLORS[14];
+  if (lower.includes("nutri") || lower.includes("diet")) return CATEGORY_COLORS[15];
+  if (lower.includes("dose") || lower.includes("calc")) return CATEGORY_COLORS[3];
+  if (lower.includes("assess") || lower.includes("exam")) return CATEGORY_COLORS[1];
+
+  // Fallback by index cycle
+  return CATEGORY_COLORS[fallbackIndex % CATEGORY_COLORS.length];
 };
 
-// ─── 1. BROWSE ALL DECKS DUMMY DATA (SCREENSHOT 1) ──────────────────────
-export const DEFAULT_CATEGORIES = [
-  {
-    id: "fundamentals-of-nursing",
-    name: "Nursing Fundamentals",
-    deckCount: 178,
-    icon: Stethoscope,
-    topics: [
-      {
-        id: "vital-signs",
-        name: "Vital Signs & Assessment",
-        is_favorite: true,
-        questions: [
-          { id: 1, front: "What is the normal adult body temperature range in Celsius?", back: "36.5°C to 37.5°C" },
-          { id: 2, front: "Where is the apical pulse located?", back: "At the 5th intercostal space, left midclavicular line." },
-          { id: 3, front: "Define Bradypnea.", back: "A respiratory rate less than 12 breaths per minute." },
-          { id: 4, front: "What is normal adult blood pressure?", back: "Systolic < 120 mmHg and Diastolic < 80 mmHg." },
-        ],
-      },
-      {
-        id: "infection-control",
-        name: "Infection Control & PPE",
-        is_favorite: false,
-        questions: [
-          { id: 1, front: "What is the most effective way to prevent the spread of infection?", back: "Hand hygiene." },
-          { id: 2, front: "Name the sequence for donning PPE.", back: "Gown, Mask/Respirator, Goggles/Face Shield, Gloves." },
-          { id: 3, front: "Name the sequence for doffing PPE.", back: "Gloves, Goggles/Face Shield, Gown, Mask/Respirator." },
-        ],
-      }
-    ],
-  },
-  {
-    id: "cardiovascular",
-    name: "Cardiovascular",
-    deckCount: 142,
-    icon: Heart,
-    topics: [
-      {
-        id: "heart-failure",
-        name: "Heart Failure & Diagnostics",
-        is_favorite: true,
-        questions: [
-          { id: 1, front: "What is the primary diagnostic lab for heart failure?", back: "BNP (B-type Natriuretic Peptide) > 100 pg/mL." },
-          { id: 2, front: "Symptoms of Left-sided Heart Failure?", back: "Crackles, dyspnea, orthopnea, cough (pulmonary symptoms)." },
-          { id: 3, front: "Symptoms of Right-sided Heart Failure?", back: "JVD, peripheral edema, ascites, hepatomegaly (systemic)." },
-        ],
-      },
-      {
-        id: "ecg-dysrhythmias",
-        name: "ECG Interpretation & Dysrhythmias",
-        is_favorite: false,
-        questions: [
-          { id: 1, front: "Priority nursing action for Ventricular Fibrillation (V-Fib)?", back: "Defibrillate immediately and initiate CPR." },
-          { id: 2, front: "First-line drug for symptomatic sinus bradycardia?", back: "Atropine IV." },
-        ],
-      },
-      {
-        id: "hypertension-angina",
-        name: "Hypertension & Acute Coronary Syndrome",
-        is_favorite: false,
-        questions: [
-          { id: 1, front: "MONA acronym for suspected Myocardial Infarction?", back: "Morphine, Oxygen, Nitroglycerin, Aspirin." },
-        ],
-      },
-    ],
-  },
-];
-
-// ─── 2. FAVORITES DUMMY DATA (SCREENSHOT 2) ─────────────────────────────
-export const INITIAL_FAVORITES = [
-  {
-    id: "fav-1",
-    category: "CARDIOVASCULAR",
-    title: "1. Fundamentals of Nursing",
-    decksCount: "219 Decks",
-    progress: 75,
-    questions: [
-      { id: 1, front: "What is the primary diagnostic marker for acute myocardial infarction?", back: "Cardiac Troponin I and Troponin T." },
-      { id: 2, front: "Priority intervention for suspected MI?", back: "Administer MONA (Morphine, Oxygen, Nitroglycerin, Aspirin) and obtain 12-lead ECG." },
-      { id: 3, front: "What does an elevated BNP (> 100 pg/mL) indicate?", back: "Heart failure severity and ventricular wall stretch." },
-    ],
-  },
-  {
-    id: "fav-2",
-    category: "CARDIOVASCULAR",
-    title: "1. Fundamentals of Nursing",
-    decksCount: "219 Decks",
-    progress: 60,
-    questions: [
-      { id: 1, front: "What is the normal adult heart rate?", back: "60 to 100 beats per minute." },
-      { id: 2, front: "Where is the apical pulse auscultated?", back: "Left 5th intercostal space at the midclavicular line." },
-    ],
-  },
-  {
-    id: "fav-3",
-    category: "CARDIOVASCULAR",
-    title: "1. Fundamentals of Nursing",
-    decksCount: "219 Decks",
-    progress: 85,
-    questions: [
-      { id: 1, front: "What is orthostatic hypotension?", back: "Drop of >= 20 mmHg systolic or >= 10 mmHg diastolic upon standing." },
-      { id: 2, front: "Patient teaching for Holter monitor?", back: "Keep a daily activity diary and do not get the monitor wet." },
-    ],
-  },
-  {
-    id: "fav-4",
-    category: "CARDIOVASCULAR",
-    title: "1. Fundamentals of Nursing",
-    decksCount: "219 Decks",
-    progress: 70,
-    questions: [
-      { id: 1, front: "First nursing step for acute chest pain?", back: "Cease all activity, sit patient upright, and administer supplemental oxygen if SaO2 < 90%." },
-    ],
-  },
-  {
-    id: "fav-5",
-    category: "CARDIOVASCULAR",
-    title: "1. Fundamentals of Nursing",
-    decksCount: "219 Decks",
-    progress: 90,
-    questions: [
-      { id: 1, front: "What is the therapeutic INR range for warfarin in atrial fibrillation?", back: "2.0 to 3.0." },
-      { id: 2, front: "Antidote for Warfarin toxicity?", back: "Vitamin K (Phytonadione)." },
-    ],
-  },
-  {
-    id: "fav-6",
-    category: "CARDIOVASCULAR",
-    title: "1. Fundamentals of Nursing",
-    decksCount: "219 Decks",
-    progress: 65,
-    questions: [
-      { id: 1, front: "Signs of digoxin toxicity?", back: "Nausea, vomiting, visual halos (yellow/green), bradycardia." },
-      { id: 2, front: "Hold digoxin if adult pulse is below?", back: "60 beats per minute." },
-    ],
-  },
-];
-
+// ─── FAVORITES STATS ───────────────────────────────────────────────────
 export const LEARNING_READINESS_STATS = {
   readinessPct: 74,
   trend: "6% this Week",
@@ -219,209 +193,3 @@ export const LEARNING_READINESS_STATS = {
     { label: "New", pct: 25, color: "#FDA4AF", rate: "86%" },
   ],
 };
-
-// ─── 3. PERFORMANCE DUMMY DATA (SCREENSHOT 3) ───────────────────────────
-export const DEFAULT_MASTERY_STATS = {
-  percent: 35,
-  cardsStudied: 665,
-  cardsStudiedTrend: "18% vs last 7 days",
-  totalCards: "1,402",
-  avgRecall: "78%",
-  avgRecallTrend: "6% vs last 7 days",
-  masteredCards: 312,
-  masteredPercent: "22% of total",
-  breakdown: [
-    {
-      label: "Easy",
-      sub: "Got it right",
-      count: 485,
-      pct: 52,
-      color: "#1B4B66",
-    },
-    {
-      label: "Hard",
-      sub: "Worth a re-attempt",
-      count: 403,
-      pct: 25,
-      color: "#F43F5E",
-    },
-    {
-      label: "Not Attempted",
-      sub: "Still to attempt",
-      count: 355,
-      pct: 22,
-      color: "#BAE6FD",
-    },
-  ],
-};
-
-export const TOPIC_MASTERY_LIST = [
-  {
-    id: "cardio-1",
-    name: "Cardiovascular",
-    icon: Heart,
-    iconColor: "text-rose-500",
-    iconBg: "bg-rose-50 border-rose-100",
-    dueCount: 8,
-    cardsCount: 94,
-    recallRate: "62%",
-    easyCount: "72 easy",
-    progressPct: 68,
-    progressColor: "bg-cyan-500",
-    easyColor: "text-cyan-600",
-  },
-  {
-    id: "pharm-1",
-    name: "Pharmacology",
-    icon: Pill,
-    iconColor: "text-amber-500",
-    iconBg: "bg-amber-50 border-amber-100",
-    dueCount: 8,
-    cardsCount: 94,
-    recallRate: "62%",
-    easyCount: "72 easy",
-    progressPct: 65,
-    progressColor: "bg-pink-500",
-    easyColor: "text-pink-600",
-  },
-  {
-    id: "resp-1",
-    name: "Respiratory",
-    icon: Wind,
-    iconColor: "text-teal-500",
-    iconBg: "bg-teal-50 border-teal-100",
-    dueCount: 8,
-    cardsCount: 94,
-    recallRate: "62%",
-    easyCount: "72 easy",
-    progressPct: 74,
-    progressColor: "bg-teal-400",
-    easyColor: "text-teal-600",
-  },
-  {
-    id: "matern-1",
-    name: "Maternal Newborn",
-    icon: Baby,
-    iconColor: "text-purple-500",
-    iconBg: "bg-purple-50 border-purple-100",
-    dueCount: 8,
-    cardsCount: 94,
-    recallRate: "62%",
-    easyCount: "72 easy",
-    progressPct: 82,
-    progressColor: "bg-purple-500",
-    easyColor: "text-purple-600",
-  },
-  {
-    id: "cardio-2",
-    name: "Cardiovascular",
-    icon: Heart,
-    iconColor: "text-rose-500",
-    iconBg: "bg-rose-50 border-rose-100",
-    dueCount: 8,
-    cardsCount: 94,
-    recallRate: "62%",
-    easyCount: "72 easy",
-    progressPct: 60,
-    progressColor: "bg-cyan-500",
-    easyColor: "text-cyan-600",
-  },
-  {
-    id: "pharm-2",
-    name: "Pharmacology",
-    icon: Pill,
-    iconColor: "text-amber-500",
-    iconBg: "bg-amber-50 border-amber-100",
-    dueCount: 8,
-    cardsCount: 94,
-    recallRate: "62%",
-    easyCount: "72 easy",
-    progressPct: 58,
-    progressColor: "bg-pink-500",
-    easyColor: "text-pink-600",
-  },
-  {
-    id: "resp-2",
-    name: "Respiratory",
-    icon: Wind,
-    iconColor: "text-teal-500",
-    iconBg: "bg-teal-50 border-teal-100",
-    dueCount: 8,
-    cardsCount: 94,
-    recallRate: "62%",
-    easyCount: "72 easy",
-    progressPct: 70,
-    progressColor: "bg-teal-400",
-    easyColor: "text-teal-600",
-  },
-  {
-    id: "matern-2",
-    name: "Maternal Newborn",
-    icon: Baby,
-    iconColor: "text-purple-500",
-    iconBg: "bg-purple-50 border-purple-100",
-    dueCount: 8,
-    cardsCount: 94,
-    recallRate: "62%",
-    easyCount: "72 easy",
-    progressPct: 80,
-    progressColor: "bg-purple-500",
-    easyColor: "text-purple-600",
-  },
-  {
-    id: "cardio-3",
-    name: "Cardiovascular",
-    icon: Heart,
-    iconColor: "text-rose-500",
-    iconBg: "bg-rose-50 border-rose-100",
-    dueCount: 8,
-    cardsCount: 94,
-    recallRate: "62%",
-    easyCount: "72 easy",
-    progressPct: 62,
-    progressColor: "bg-cyan-500",
-    easyColor: "text-cyan-600",
-  },
-  {
-    id: "cardio-4",
-    name: "Cardiovascular",
-    icon: Heart,
-    iconColor: "text-rose-500",
-    iconBg: "bg-rose-50 border-rose-100",
-    dueCount: 8,
-    cardsCount: 94,
-    recallRate: "62%",
-    easyCount: "72 easy",
-    progressPct: 75,
-    progressColor: "bg-pink-500",
-    easyColor: "text-pink-600",
-  },
-  {
-    id: "cardio-5",
-    name: "Cardiovascular",
-    icon: Heart,
-    iconColor: "text-rose-500",
-    iconBg: "bg-rose-50 border-rose-100",
-    dueCount: 8,
-    cardsCount: 94,
-    recallRate: "62%",
-    easyCount: "72 easy",
-    progressPct: 66,
-    progressColor: "bg-teal-500",
-    easyColor: "text-teal-600",
-  },
-  {
-    id: "cardio-6",
-    name: "Cardiovascular",
-    icon: Heart,
-    iconColor: "text-rose-500",
-    iconBg: "bg-rose-50 border-rose-100",
-    dueCount: 8,
-    cardsCount: 94,
-    recallRate: "62%",
-    easyCount: "72 easy",
-    progressPct: 78,
-    progressColor: "bg-purple-500",
-    easyColor: "text-purple-600",
-  },
-];

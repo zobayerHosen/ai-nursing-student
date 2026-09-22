@@ -95,7 +95,7 @@ export default function TasksView({ eventsData = [], coursesData = [], onAddTask
     <div className="bg-white border border-[#E4E7EC] rounded-2xl overflow-hidden shadow-sm">
       {/* Toolbar */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-[#F2F4F7]">
-        <h3 className="text-sm font-bold text-[#1D2939]">All Course Tasks & Deadlines</h3>
+        <h3 className="text-sm font-semibold text-[#1D2939]">All Assignments</h3>
         {onAddTask && (
           <button
             onClick={onAddTask}

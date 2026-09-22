@@ -60,7 +60,7 @@ const ToolCard = ({ icon, title, description, panelClassName, children }) => (
                 className="h-6 w-6 sm:h-7 sm:w-7 object-contain"
             />
 
-            <h3 className="mt-3 text-xl font-bold text-[#5D55FA] sm:text-2xl">{title}</h3>
+            <h3 className="mt-3 text-xl font-bold text-primary sm:text-2xl">{title}</h3>
 
             <p className="mt-1.5 text-xs leading-relaxed text-slate-500 sm:text-sm">{description}</p>
         </div>
@@ -79,7 +79,7 @@ const NewAiToolsSection = () => {
                 {/* Section Header */}
                 <div className="mx-auto mb-10 max-w-3xl text-center sm:mb-12 md:mb-14">
                     <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl md:text-4xl">
-                        Powerful <span className="text-[#5D55FA]">AI Tools</span> for Nursing Students
+                        Powerful <span className="text-primary">AI Tools</span> for Nursing Students
                     </h2>
                     <p className="mt-3 text-xs font-medium text-slate-500 sm:text-sm md:text-base">
                         Everything you need to study, practice, and succeed — all in one place.
@@ -108,7 +108,7 @@ const NewAiToolsSection = () => {
                                         key={tab.label}
                                         className={
                                             tab.active
-                                                ? "rounded-lg bg-[#5D55FA] px-2.5 py-1 font-semibold text-white"
+                                                ? "rounded-lg bg-primary px-2.5 py-1 font-semibold text-white"
                                                 : "rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-medium text-slate-600"
                                         }
                                     >
@@ -158,7 +158,7 @@ const NewAiToolsSection = () => {
                         panelClassName="border-indigo-100/80 bg-indigo-50/60"
                     >
                         <p className="text-[11px] font-bold leading-snug text-slate-800 sm:text-[12px]">
-                            <span className="text-[#5D55FA]">Q1.</span> A nurse is caring for a patient with
+                            <span className="text-primary">Q1.</span> A nurse is caring for a patient with
                             COPD. Which assessment finding is priority?
                         </p>
 
@@ -170,11 +170,11 @@ const NewAiToolsSection = () => {
                                 >
                                     <span
                                         className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border ${
-                                            option.correct ? "border-[#5D55FA]" : "border-slate-300"
+                                            option.correct ? "border-primary" : "border-slate-300"
                                         }`}
                                     >
                                         {option.correct && (
-                                            <span className="h-1.5 w-1.5 rounded-full bg-[#5D55FA]" />
+                                            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                                         )}
                                     </span>
 
@@ -189,7 +189,7 @@ const NewAiToolsSection = () => {
                                     </span>
 
                                     {option.correct && (
-                                        <CheckCircle2 className="ml-auto h-3.5 w-3.5 shrink-0 text-[#2563EB]" />
+                                        <CheckCircle2 className="ml-auto h-3.5 w-3.5 shrink-0 text-primary" />
                                     )}
                                 </div>
                             ))}

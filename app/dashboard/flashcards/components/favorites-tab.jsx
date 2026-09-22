@@ -234,95 +234,6 @@ export default function FavoritesTab({ onStudyTopic }) {
             </button>
           </div>
 
-          {/* 2. How you're Learning Widget */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
-            <h3 className="text-base font-bold text-[#1B4B66] mb-4">
-              How you're Learning
-            </h3>
-
-            <div className="flex items-center justify-between gap-4">
-              {/* Donut Chart */}
-              <div className="relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 flex items-center justify-center">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                  {/* Background Track */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r={radius}
-                    fill="none"
-                    stroke="#F1F5F9"
-                    strokeWidth="10"
-                  />
-                  {/* Segment arcs */}
-                  {segments.map((seg, idx) => {
-                    const strokeDasharray = `${(seg.pct / 100) * circumference} ${circumference}`;
-                    const strokeDashoffset = -(accumulated / 100) * circumference;
-                    accumulated += seg.pct;
-
-                    return (
-                      <circle
-                        key={idx}
-                        cx="50"
-                        cy="50"
-                        r={radius}
-                        fill="none"
-                        stroke={seg.color}
-                        strokeWidth="10"
-                        strokeDasharray={strokeDasharray}
-                        strokeDashoffset={strokeDashoffset}
-                        strokeLinecap="round"
-                        className="transition-all duration-700"
-                      />
-                    );
-                  })}
-                </svg>
-
-                {/* Center Label */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-xl sm:text-2xl font-black text-[#1B4B66] leading-none">
-                    74%
-                  </span>
-                  <span className="text-[9px] font-semibold text-gray-400 mt-1">
-                    Readiness
-                  </span>
-                </div>
-              </div>
-
-              {/* Legend & Stats */}
-              <div className="flex-1 space-y-2.5">
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#1B4B66]" />
-                    <span className="text-gray-600 font-medium">Easy</span>
-                  </div>
-                  <span className="font-bold text-gray-800">76%</span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#F43F5E]" />
-                    <span className="text-gray-600 font-medium">Hard</span>
-                  </div>
-                  <span className="font-bold text-gray-800">81%</span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#FDA4AF]" />
-                    <span className="text-gray-600 font-medium">New</span>
-                  </div>
-                  <span className="font-bold text-gray-800">86%</span>
-                </div>
-
-                {/* Trend badge */}
-                <div className="pt-2 border-t border-gray-50 flex items-center gap-1.5 text-xs font-bold text-emerald-600">
-                  <TrendingUp size={13} />
-                  <span>6% this Week</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* 3. Need a Simpler Explanation? CARA / Lumi Card */}
           {showCaraCard && (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 relative flex items-center gap-3.5">
@@ -360,7 +271,7 @@ export default function FavoritesTab({ onStudyTopic }) {
                   className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1B4B66] hover:bg-[#14394e] text-white text-[11px] font-semibold rounded-lg shadow-2xs transition-colors cursor-pointer"
                 >
                   <MessageSquare size={12} />
-                  <span>Ask Lumi</span>
+                  <span>Ask CARA</span>
                 </Link>
               </div>
             </div>
