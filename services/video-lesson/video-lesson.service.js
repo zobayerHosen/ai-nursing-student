@@ -1,6 +1,10 @@
 export const videoLessonService = {
-  getModules: async (axiosInstance) => {
-    const response = await axiosInstance.get("/module/");
+  getExploreModules: async (axiosInstance) => {
+    const response = await axiosInstance.get("/explore/");
+    return response?.data;
+  },
+  getBrowseVideoCategories: async (axiosInstance) => {
+    const response = await axiosInstance.get("/browse-categories/");
     return response?.data;
   },
   getModuleById: async (axiosInstance, id) => {

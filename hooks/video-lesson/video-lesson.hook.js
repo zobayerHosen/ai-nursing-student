@@ -2,12 +2,12 @@ import axiosPrivateClient from "@/lib/axios.private.client";
 import { videoLessonService } from "@/services/video-lesson";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
-export const useGetModules = () => {
+export const useGetExploreModules = () => {
   const axiosInstance = axiosPrivateClient();
 
   const { data, isLoading, isError, isFetching } = useQuery({
     queryKey: ["video-modules"],
-    queryFn: () => videoLessonService.getModules(axiosInstance),
+    queryFn: () => videoLessonService.getExploreModules(axiosInstance),
     staleTime: 2 * 60 * 1000,
     retry: false,
   });
@@ -19,6 +19,26 @@ export const useGetModules = () => {
     isFetching,
   };
 };
+
+
+export const useGetBrowseVideoCategories = () => {
+  const axiosInstance = axiosPrivateClient();
+
+  const { data, isLoading, isError, isFetching } = useQuery({
+    queryKey: ["browse-video-categories"],
+    queryFn: () => videoLessonService.getBrowseVideoCategories(axiosInstance),
+    staleTime: 2 * 60 * 1000,
+    retry: false,
+  });
+
+  return {
+    browseVideoCategoriesData: data?.data,
+    isLoading,
+    isError,
+    isFetching,
+  };
+};
+
 
 export const useGetModuleById = (id) => {
   const axiosInstance = axiosPrivateClient();
