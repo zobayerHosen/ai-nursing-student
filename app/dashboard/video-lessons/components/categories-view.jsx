@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -13,65 +13,51 @@ import {
   BookmarkCheck,
   X,
   Sparkles,
-  Stethoscope,
-  UserCheck,
-  Pill,
-  Calculator,
-  Droplets,
-  Baby,
-  Bed,
-  Activity,
-  Smile,
-  Brain,
-  Siren,
-  ShieldCheck,
-  TestTube,
-  User,
-  Users,
-  Apple,
+
 } from "lucide-react";
 import {
-  VIDEO_CATEGORIES,
   POPULAR_THIS_WEEK,
 } from "../data/video-lessons-data";
+import dummayImage from "@/public/med_dumm.png";
+import { useGetBrowseVideoCategories } from "@/hooks";
 
-function getCategoryIcon(iconName, className = "w-5 h-5") {
-  switch (iconName) {
-    case "stethoscope":
-      return <Stethoscope className={className} />;
-    case "user-check":
-      return <UserCheck className={className} />;
-    case "pill":
-      return <Pill className={className} />;
-    case "calculator":
-      return <Calculator className={className} />;
-    case "droplets":
-      return <Droplets className={className} />;
-    case "baby":
-      return <Baby className={className} />;
-    case "bed":
-      return <Bed className={className} />;
-    case "activity":
-      return <Activity className={className} />;
-    case "smile":
-      return <Smile className={className} />;
-    case "brain":
-      return <Brain className={className} />;
-    case "siren":
-      return <Siren className={className} />;
-    case "shield-check":
-      return <ShieldCheck className={className} />;
-    case "test-tube":
-      return <TestTube className={className} />;
-    case "user":
-      return <User className={className} />;
-    case "users":
-      return <Users className={className} />;
-    case "apple":
-      return <Apple className={className} />;
-    default:
-      return <Video className={className} />;
-  }
+function CategoryLogo({ logo, title }) {
+  const BASEURL = process.env.NEXT_PUBLIC_BASE_URL || "";
+
+  const resolveLogoUrl = (url) => {
+    if (!url || typeof url !== "string") return null;
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      return url;
+    }
+    const cleanBase = BASEURL.replace(/\/+$/, "");
+    const cleanPath = url.startsWith("/") ? url : `/${url}`;
+    return cleanBase ? `${cleanBase}${cleanPath}` : url;
+  };
+
+  const initialSrc = resolveLogoUrl(logo) || dummayImage;
+  const [src, setSrc] = useState(initialSrc);
+  const [hasError, setHasError] = useState(!logo);
+
+  useEffect(() => {
+    const resolved = resolveLogoUrl(logo);
+    setSrc(resolved || dummayImage);
+    setHasError(!resolved);
+  }, [logo]);
+
+  return (
+    <Image
+      src={hasError || !src ? dummayImage : src}
+      alt={title || "Category logo"}
+      width={44}
+      height={44}
+      unoptimized={typeof src === "string" && src.startsWith("http")}
+      className="w-6 h-full object-contain"
+      onError={() => {
+        setHasError(true);
+        setSrc(dummayImage);
+      }}
+    />
+  );
 }
 
 export default function CategoriesView({
@@ -79,15 +65,15 @@ export default function CategoriesView({
   savedVideos,
   toggleBookmark,
 }) {
+  const { browseVideoCategoriesData, isLoading, isError } = useGetBrowseVideoCategories();
+  const stats = browseVideoCategoriesData?.stats ?? {};
+  const categories = browseVideoCategoriesData?.categories ?? [];
+  const popularThisWeek = browseVideoCategoriesData?.popular_this_week ?? [];
+  console.log("Categories", categories)
+
   const [searchCategoryQuery, setSearchCategoryQuery] = useState("");
   const [isLumiOpen, setIsLumiOpen] = useState(true);
 
-  const filteredCategories = useMemo(() => {
-    if (!searchCategoryQuery.trim()) return VIDEO_CATEGORIES;
-    return VIDEO_CATEGORIES.filter((c) =>
-      c.title.toLowerCase().includes(searchCategoryQuery.toLowerCase())
-    );
-  }, [searchCategoryQuery]);
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -99,7 +85,7 @@ export default function CategoriesView({
             <Video className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-[#0f172a] tracking-tight">200+ Videos</h3>
+            <h3 className="text-2xl font-bold text-[#0f172a] tracking-tight">{stats?.total_videos ?? 0}+ Videos</h3>
             <p className="text-xs sm:text-sm text-[#64748b]">High-yield video lessons</p>
           </div>
         </div>
@@ -110,7 +96,7 @@ export default function CategoriesView({
             <CheckCircle2 className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-[#0f172a] tracking-tight">20+ Categories</h3>
+            <h3 className="text-2xl font-bold text-[#0f172a] tracking-tight">{stats?.total_categories ?? 0}+ Categories</h3>
             <p className="text-xs sm:text-sm text-[#64748b]">All major nursing topics</p>
           </div>
         </div>
@@ -140,32 +126,53 @@ export default function CategoriesView({
 
           {/* 2-Column Grid of 16 categories */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-5">
-            {filteredCategories.map((category) => (
-              <div
-                key={category.id}
-                onClick={() => onOpenCategory(category)}
-                className="bg-white rounded-2xl border border-[#eef2f6] hover:border-[#cbd5e1] p-4 flex items-start gap-3.5 transition-all shadow-2xs hover:shadow-md cursor-pointer group"
-              >
+            {isLoading ? (
+              Array.from({ length: 8 }).map((_, index) => (
                 <div
-                  className={`w-11 h-11 rounded-xl ${category.bgClass} ${category.iconColor} border ${category.borderClass} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform`}
+                  key={index}
+                  className="bg-white rounded-2xl border border-[#eef2f6] p-4 flex items-start gap-3.5 transition-all shadow-2xs animate-pulse"
                 >
-                  {getCategoryIcon(category.icon, "w-5 h-5")}
+                  <div className="w-11 h-11 rounded-xl bg-gray-200 shrink-0" />
+                  <div className="min-w-0 flex-1 py-0.5">
+                    <div className="h-4 w-3/4 bg-gray-200 rounded mb-2" />
+                    <div className="h-3.5 w-1/2 bg-gray-100 rounded mb-2.5" />
+                    <div className="h-3 w-20 bg-gray-200 rounded" />
+                  </div>
                 </div>
-
-                <div className="min-w-0 flex-1">
-                  <h4 className="font-bold text-sm text-[#0f172a] group-hover:text-[#1e3a5f] transition-colors truncate">
-                    {category.title}
-                  </h4>
-                  <p className="text-xs text-[#64748b] mt-0.5">
-                    {category.lessonsCount} Lessons • {category.completedCount} Completed
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-info mt-2 group-hover:translate-x-0.5 transition-transform">
-                    <span>View Lessons</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </span>
-                </div>
+              ))
+            ) : categories?.length === 0 ? (
+              <div className="col-span-full flex flex-col items-center justify-center h-48">
+                <Video className="w-12 h-12 text-gray-400 mb-4" />
+                <p className="text-sm text-gray-500">No categories found</p>
               </div>
-            ))}
+            ) : (
+              categories?.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/dashboard/video-lessons/category/${category.id}`}
+                  className="bg-white rounded-2xl border border-[#eef2f6] hover:border-[#cbd5e1] p-4 flex items-start gap-3.5 transition-all shadow-2xs hover:shadow-md cursor-pointer group"
+                >
+                  <div
+                    className={`w-11 h-11 rounded-xl border border-gray-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform overflow-hidden`}
+                  >
+                    <CategoryLogo logo={category?.logo} title={category?.title} />
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-bold text-sm text-[#0f172a] group-hover:text-[#1e3a5f] transition-colors truncate">
+                      {category.title}
+                    </h4>
+                    <p className="text-xs text-[#64748b] mt-0.5">
+                      {category?.total_lessons ?? 0} Lessons • {category?.completed_lessons ?? 0} Completed
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-info mt-2 group-hover:translate-x-0.5 transition-transform">
+                      <span>View Lessons</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                </Link>
+              ))
+            )}
           </div>
         </div>
 

@@ -16,6 +16,9 @@ export default function NotificationPanel({ isOpen, onClose }) {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (panelRef.current && !panelRef.current.contains(event.target)) {
+        if (event.target.closest('[aria-label="Notifications"]')) {
+          return;
+        }
         onClose();
       }
     };

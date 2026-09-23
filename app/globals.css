@@ -90,6 +90,26 @@ body {
   font-family: "Inter", sans-serif;
 }
 
+/* Dashboard Fixed Header Positioning */
+@media (min-width: 1024px) {
+  .dashboard-header-expanded {
+    left: 16rem !important;
+    width: calc(100% - 16rem) !important;
+  }
+  .dashboard-header-collapsed {
+    left: 4rem !important;
+    width: calc(100% - 4rem) !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  .dashboard-header-expanded,
+  .dashboard-header-collapsed {
+    left: 0 !important;
+    width: 100% !important;
+  }
+}
+
 /* Scrollbar width */
 ::-webkit-scrollbar {
   width: 5px;
