@@ -43,7 +43,7 @@ export default function DashboardHeader({
 
     // Note: UI
     return (
-        <div className={`fixed top-0 right-0 z-40 flex items-center justify-between px-3 lg:px-4.5 py-3 md:py-4 bg-white border-b-2 border-[#e6e8ec] transition-all duration-300 ${collapsed ? "dashboard-header-collapsed" : "dashboard-header-expanded"}`}>
+        <div className={`fixed top-0 right-0 z-40 left-0 ${collapsed ? "lg:left-16 dashboard-header-collapsed" : "lg:left-64 dashboard-header-expanded"} flex items-center justify-between px-3 lg:px-4.5 py-3 md:py-4 bg-white border-b-2 border-[#e6e8ec] transition-all duration-300`}>
 
             {/* Left */}
             <div className="flex items-center gap-2">

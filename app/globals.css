@@ -91,6 +91,22 @@ body {
 }
 
 /* Dashboard Fixed Header Positioning */
+@utility dashboard-header-expanded {
+  left: 0;
+  @media (min-width: 1024px) {
+    left: 16rem;
+    width: calc(100% - 16rem);
+  }
+}
+
+@utility dashboard-header-collapsed {
+  left: 0;
+  @media (min-width: 1024px) {
+    left: 4rem;
+    width: calc(100% - 4rem);
+  }
+}
+
 @media (min-width: 1024px) {
   .dashboard-header-expanded {
     left: 16rem !important;
