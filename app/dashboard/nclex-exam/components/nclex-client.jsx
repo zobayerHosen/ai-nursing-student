@@ -1,39 +1,42 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import FullNCLEXSection from "./full-nclex-section";
 import ProgressSection from "./progress-section";
-import QuestionInterface from "./question-interface";
+import { useStartExam } from "@/hooks";
 
 export default function NclexClient() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("simulation"); // "simulation" | "performance"
-  const [examState, setExamState] = useState(null);
-  const [consumedExams, setConsumedExams] = useState({});
 
-  const handleStartExam = (questions, mode, title, opts = {}) => {
-    setExamState({ questions, mode, title, ...opts });
-  };
+  const [activeStartingExamId, setActiveStartingExamId] = useState(null);
+  const { startExam, isPending: isStarting } = useStartExam();
 
-  const handleExamFinish = ({ examId, isFullExam }) => {
-    if (isFullExam && examId != null) {
-      setConsumedExams((prev) => ({ ...prev, [examId]: true }));
+  const handleStartOrResumeExam = async (exam) => {
+    const examId = exam?.id ?? exam?.exam_id ?? exam;
+    setActiveStartingExamId(examId);
+    try {
+      const res = await startExam(examId);
+      
+      const sessionData =
+        res?.data && typeof res.data === "object" && (res.data.session_id || res.data.id)
+          ? res.data
+          : res?.session_id || res?.id
+          ? res
+          : res?.data || res;
+
+      const sessionId = sessionData?.session_id || sessionData?.id || exam?.session_id;
+
+      if (sessionId) {
+        router.push(`/dashboard/nclex-exam/session/${sessionId}`);
+      }
+    } catch (err) {
+      console.error("Failed to start or resume NCLEX simulation exam:", err);
+    } finally {
+      setActiveStartingExamId(null);
     }
   };
-
-  if (examState) {
-    return (
-      <div className="w-full h-full flex flex-col bg-[#f4f6f9] min-h-[calc(100vh-80px)] overflow-x-hidden">
-        <QuestionInterface
-          questions={examState.questions}
-          mode={examState.mode}
-          title={examState.title}
-          examMeta={{ examId: examState.examId, isFullExam: !!examState.isFullExam }}
-          onSessionEnd={handleExamFinish}
-          onFinish={() => setExamState(null)}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="w-full min-h-screen bg-[#f8fafc] flex flex-col overflow-x-hidden">
@@ -102,8 +105,10 @@ export default function NclexClient() {
         <div className="w-full">
           {activeTab === "simulation" ? (
             <FullNCLEXSection
-              onStartExam={handleStartExam}
-              consumedExams={consumedExams}
+              onStartExam={handleStartOrResumeExam}
+              onResumeExam={handleStartOrResumeExam}
+              isStarting={isStarting}
+              activeStartingExamId={activeStartingExamId}
             />
           ) : (
             <ProgressSection />

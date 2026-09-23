@@ -209,7 +209,21 @@ export default function PerformanceSection() {
   // Radius = 60, circumference = 2 * PI * 60 ≈ 376.99
   const radius = 60;
   const circumference = 2 * Math.PI * radius;
-  let accumulatedPercent = 0;
+
+  const chartSegments = useMemo(() => {
+    return stats.breakdown.map((item, idx) => {
+      const precedingSum = stats.breakdown
+        .slice(0, idx)
+        .reduce((sum, prev) => sum + prev.pct, 0);
+      const strokeDasharray = `${(item.pct / 100) * circumference} ${circumference}`;
+      const strokeDashoffset = -(precedingSum / 100) * circumference;
+      return {
+        ...item,
+        strokeDasharray,
+        strokeDashoffset,
+      };
+    });
+  }, [stats.breakdown, circumference]);
 
   return (
     <div className="w-full space-y-5 animate-[fadeIn_0.3s_ease]">
@@ -240,26 +254,20 @@ export default function PerformanceSection() {
                       strokeWidth="16"
                     />
                     {/* Segments */}
-                    {stats.breakdown.map((item, idx) => {
-                      const strokeDasharray = `${(item.pct / 100) * circumference} ${circumference}`;
-                      const strokeDashoffset = -(accumulatedPercent / 100) * circumference;
-                      accumulatedPercent += item.pct;
-
-                      return (
-                        <circle
-                          key={idx}
-                          cx="80"
-                          cy="80"
-                          r={radius}
-                          fill="none"
-                          stroke={item.color}
-                          strokeWidth="16"
-                          strokeDasharray={strokeDasharray}
-                          strokeDashoffset={strokeDashoffset}
-                          className="transition-all duration-700 ease-out"
-                        />
-                      );
-                    })}
+                    {chartSegments.map((item, idx) => (
+                      <circle
+                        key={idx}
+                        cx="80"
+                        cy="80"
+                        r={radius}
+                        fill="none"
+                        stroke={item.color}
+                        strokeWidth="16"
+                        strokeDasharray={item.strokeDasharray}
+                        strokeDashoffset={item.strokeDashoffset}
+                        className="transition-all duration-700 ease-out"
+                      />
+                    ))}
                   </svg>
 
                   {/* Center Label */}
