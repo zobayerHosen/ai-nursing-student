@@ -303,9 +303,9 @@ export default function ExploreSection({
             </div>
           ) : (
             modulesData?.categories?.slice(0, 8).map((category) => (
-              <div
+              <Link
                 key={category.id}
-                onClick={() => onOpenCategory(category)}
+                href={`/dashboard/video-lessons/category/${category.id}?from=explore`}
                 className="bg-white rounded-2xl border border-[#e5e9f0] hover:border-[#cbd5e1] p-4 sm:p-4.5 flex items-start gap-3.5 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:shadow-md cursor-pointer group"
               >
                 <div
@@ -326,7 +326,7 @@ export default function ExploreSection({
                     <ChevronRight className="w-3.5 h-3.5" />
                   </span>
                 </div>
-              </div>
+              </Link>
             ))
           )}
         </div>

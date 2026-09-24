@@ -75,7 +75,7 @@ export default function CategoryDetailView({ selectedCategory }) {
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
         </div>
       </div>
-
+ 
       {/* 5-Column Grid of Category Videos */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {filteredCategoryVideos.map((video) => (

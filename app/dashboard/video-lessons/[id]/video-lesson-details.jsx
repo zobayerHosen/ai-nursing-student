@@ -20,9 +20,6 @@ import {
   HelpCircle,
   ChevronRight,
   FileText,
-  FileCheck,
-  Bookmark,
-  BookmarkCheck,
 } from "lucide-react";
 import { useGetVideoDetails, usePostVideoProgress } from "@/hooks";
 import { useQueryClient } from "@tanstack/react-query";

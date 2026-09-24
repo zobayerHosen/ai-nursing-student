@@ -40,6 +40,26 @@ export const useGetBrowseVideoCategories = () => {
 };
 
 
+export const useGetSingleBrowseCategoriesVideos = (id) => {
+  const axiosInstance = axiosPrivateClient();
+
+  const { data, isLoading, isError, isFetching } = useQuery({
+    queryKey: ["browse-single-categories-videos", id],
+    queryFn: () => videoLessonService.getSingleBrowseCategoriesVideos(axiosInstance, id),
+    staleTime: 2 * 60 * 1000,
+    retry: false,
+    enabled: !!id,
+  });
+
+  return {
+    singleBrowseCategoriesVideosData: data?.data,
+    isLoading,
+    isError,
+    isFetching,
+  };
+}
+
+
 export const useGetModuleById = (id) => {
   const axiosInstance = axiosPrivateClient();
 

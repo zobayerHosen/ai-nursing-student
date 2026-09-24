@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -15,9 +15,6 @@ import {
   Sparkles,
 
 } from "lucide-react";
-import {
-  POPULAR_THIS_WEEK,
-} from "../data/video-lessons-data";
 import dummayImage from "@/public/med_dumm.png";
 import { useGetBrowseVideoCategories } from "@/hooks";
 
@@ -61,7 +58,6 @@ function CategoryLogo({ logo, title }) {
 }
 
 export default function CategoriesView({
-  onOpenCategory,
   savedVideos,
   toggleBookmark,
 }) {
@@ -149,7 +145,7 @@ export default function CategoriesView({
               categories?.map((category) => (
                 <Link
                   key={category.id}
-                  href={`/dashboard/video-lessons/category/${category.id}`}
+                  href={`/dashboard/video-lessons/category/${category.id}?from=categories`}
                   className="bg-white rounded-2xl border border-[#eef2f6] hover:border-[#cbd5e1] p-4 flex items-start gap-3.5 transition-all shadow-2xs hover:shadow-md cursor-pointer group"
                 >
                   <div
@@ -188,7 +184,7 @@ export default function CategoriesView({
             </div>
 
             <div className="divide-y divide-[#f1f5f9]">
-              {POPULAR_THIS_WEEK.map((item) => (
+              {popularThisWeek?.map((item) => (
                 <div
                   key={item.id}
                   className="py-3.5 flex items-center justify-between gap-3 group cursor-pointer"
@@ -199,9 +195,9 @@ export default function CategoriesView({
                     </div>
                     <div className="min-w-0">
                       <h5 className="text-xs sm:text-sm font-semibold text-[#0f172a] truncate group-hover:text-[#1e3a5f] transition-colors">
-                        {item.title}
+                        {item?.title ?? "N/F"}
                       </h5>
-                      <span className="text-[11px] text-[#64748b]">{item.category}</span>
+                      <span className="text-[11px] text-[#64748b]">{item?.category ?? "N/F"}</span>
                     </div>
                   </div>
 
@@ -244,7 +240,7 @@ export default function CategoriesView({
                     Need a Simpler Explanation?
                   </h4>
                   <p className="text-[11px] text-[#64748b]">
-                    Ask Lumi about any concept or video
+                    Ask CARA about any concept or video
                   </p>
                 </div>
               </div>
@@ -254,7 +250,7 @@ export default function CategoriesView({
                 className="w-full inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-[#1e3a5f] hover:bg-[#142d4a] text-white text-xs font-semibold transition-all shadow-xs"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span>Ask Lumi</span>
+                <span>Ask CARA</span>
               </Link>
             </div>
           )}
