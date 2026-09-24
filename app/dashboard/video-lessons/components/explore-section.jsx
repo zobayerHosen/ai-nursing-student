@@ -13,6 +13,7 @@ import {
   Video,
   FolderOpen,
   AlertCircle,
+  Heart,
 } from "lucide-react";
 import { useGetExploreModules } from "@/hooks";
 import dummayImage from "@/public/med_dumm.png";
@@ -96,13 +97,12 @@ function CategoryLogo({ logo, title }) {
 
 export default function ExploreSection({
   onViewAllCategories,
-  onOpenCategory,
   savedVideos,
   toggleBookmark,
 }) {
 
   const { modulesData, isLoading, isError, isFetching } = useGetExploreModules();
-  console.log("Module data", modulesData);
+  
 
   const continueWatching = modulesData?.continue_watching;
 
@@ -113,6 +113,22 @@ export default function ExploreSection({
   const newReleases = Array.isArray(modulesData?.new_releases)
     ? modulesData.new_releases
     : modulesData?.new_releases?.results || [];
+
+  const formatPlays = (video) => {
+    if (video?.plays_formatted) return video.plays_formatted;
+    if (video?.views_formatted) {
+      return video.views_formatted.replace(/views?/i, "Plays");
+    }
+    const count = video?.plays_count ?? video?.views_count;
+    if (count !== undefined && count !== null) {
+      if (count >= 1000) {
+        const formatted = (count / 1000).toFixed(1);
+        return `${formatted.endsWith(".0") ? formatted.slice(0, -2) : formatted}k Plays`;
+      }
+      return `${count} Plays`;
+    }
+    return "0 Plays";
+  };
 
   return (
     <div className="w-full flex flex-col gap-6 sm:gap-8">
@@ -347,23 +363,23 @@ export default function ExploreSection({
           </button>
         </div>
 
-        {/* 6 Cards Row/Grid */}
+        {/* 5 Cards Row/Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-4">
-            {Array.from({ length: 6 }).map((_, index) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {Array.from({ length: 5 }).map((_, index) => (
               <div
                 key={index}
                 className="bg-white rounded-2xl border border-[#e5e9f0] overflow-hidden shadow-xs flex flex-col animate-pulse"
               >
                 <div className="aspect-video w-full bg-slate-200" />
-                <div className="p-3.5 flex-1 flex flex-col justify-between">
+                <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between">
                   <div>
                     <div className="w-full h-4 bg-slate-200 rounded" />
                     <div className="w-2/3 h-4 bg-slate-200 rounded mt-1.5" />
                     <div className="w-16 h-3 bg-slate-200 rounded mt-2.5" />
                   </div>
-                  <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[#f1f5f9]">
-                    <div className="w-12 h-3 bg-slate-200 rounded" />
+                  <div className="flex items-center justify-between mt-3.5 pt-1">
+                    <div className="w-14 h-3 bg-slate-200 rounded" />
                     <div className="w-7 h-7 rounded-full bg-slate-200" />
                   </div>
                 </div>
@@ -395,12 +411,12 @@ export default function ExploreSection({
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-4">
-            {popularVideos?.slice(0, 6).map((video) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {popularVideos?.slice(0, 5).map((video) => (
               <Link
                 key={video.id || video.video_id}
                 href={`/dashboard/video-lessons/${video.video_id || video.id}`}
-                className="bg-white rounded-2xl border border-[#e5e9f0] hover:border-[#cbd5e1] overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col group"
+                className="bg-white rounded-2xl border border-[#e5e9f0] hover:border-[#cbd5e1] overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col group cursor-pointer"
               >
                 <div className="relative aspect-video w-full bg-slate-900 overflow-hidden">
                   <SafeVideoThumbnail
@@ -408,22 +424,38 @@ export default function ExploreSection({
                     alt={video.title}
                     className="group-hover:scale-105 transition-transform duration-300"
                   />
+                  {(video.duration_formatted || video.duration_seconds !== undefined || video.duration) && (
+                    <div className="absolute bottom-2 left-2 bg-black/80 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
+                      {video.duration_formatted || video.duration || (video.duration_seconds > 0 ? `${Math.round(video.duration_seconds / 60)}m` : "08:21")}
+                    </div>
+                  )}
+
+                  {/* Favorite Button on Top-Right Corner */}
+                  <button
+                    type="button"
+                    className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 hover:bg-white backdrop-blur-xs flex items-center justify-center transition-all duration-200 cursor-pointer z-10 group/fav shadow-md hover:scale-105 active:scale-95"
+
+                  >
+                    <Heart
+                      className={`w-4 h-4 transition-all duration-200 group-hover/fav:scale-110`}
+                    />
+                  </button>
                 </div>
 
                 <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between">
                   <div>
                     <h4 className="font-bold text-xs sm:text-sm text-[#0f172a] line-clamp-2 leading-snug group-hover:text-[#1e3a5f] transition-colors">
-                      {video.title ?? "Title"}
+                      {video.title ?? "Atrial Fibrillation in 7 Minutes"}
                     </h4>
                     <span className="text-[10px] font-bold text-info uppercase tracking-wider block mt-1 truncate">
-                      {video.module_name || video.category_name || video.module_title || "Nursing Lesson"}
+                      {video.module_name || video.category_name || video.module_title || "CARDIAC SERIES"}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[#f1f5f9]">
-                    <span className="text-[11px] text-[#64748b] flex items-center gap-1 font-medium">
+                  <div className="flex items-center justify-between mt-3.5 pt-1">
+                    <span className="text-[11px] text-[#64748b] flex items-center gap-1.5 font-medium">
                       <Play className="w-3 h-3 fill-current text-[#94a3b8]" />
-                      <span>{video.views_formatted || `${video.views_count ?? 0} Views`}</span>
+                      <span>{formatPlays(video)}</span>
                     </span>
 
                     <div className="w-7 h-7 rounded-full bg-[#1e3a5f] text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-xs">
@@ -452,23 +484,23 @@ export default function ExploreSection({
           </button>
         </div>
 
-        {/* 6 Cards Row/Grid */}
+        {/* 5 Cards Row/Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-4">
-            {Array.from({ length: 6 }).map((_, index) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {Array.from({ length: 5 }).map((_, index) => (
               <div
                 key={index}
                 className="bg-white rounded-2xl border border-[#e5e9f0] overflow-hidden shadow-xs flex flex-col animate-pulse"
               >
                 <div className="aspect-video w-full bg-slate-200" />
-                <div className="p-3.5 flex-1 flex flex-col justify-between">
+                <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between">
                   <div>
                     <div className="w-full h-4 bg-slate-200 rounded" />
                     <div className="w-2/3 h-4 bg-slate-200 rounded mt-1.5" />
                     <div className="w-16 h-3 bg-slate-200 rounded mt-2.5" />
                   </div>
-                  <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[#f1f5f9]">
-                    <div className="w-12 h-3 bg-slate-200 rounded" />
+                  <div className="flex items-center justify-between mt-3.5 pt-1">
+                    <div className="w-14 h-3 bg-slate-200 rounded" />
                     <div className="w-7 h-7 rounded-full bg-slate-200" />
                   </div>
                 </div>
@@ -500,12 +532,12 @@ export default function ExploreSection({
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-4">
-            {newReleases.slice(0, 6).map((video) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {newReleases.slice(0, 5).map((video) => (
               <Link
                 key={video.id || video.video_id}
                 href={`/dashboard/video-lessons/${video.video_id || video.id}`}
-                className="bg-white rounded-2xl border border-[#e5e9f0] hover:border-[#cbd5e1] overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col group"
+                className="bg-white rounded-2xl border border-[#e5e9f0] hover:border-[#cbd5e1] overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col group cursor-pointer"
               >
                 <div className="relative aspect-video w-full bg-slate-900 overflow-hidden">
                   <SafeVideoThumbnail
@@ -513,9 +545,9 @@ export default function ExploreSection({
                     alt={video.title}
                     className="group-hover:scale-105 transition-transform duration-300"
                   />
-                  {(video.duration_formatted || video.duration_seconds !== undefined) && (
-                    <div className="absolute bottom-2 left-2 bg-black/75 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
-                      {video.duration_formatted || (video.duration_seconds > 0 ? `${Math.round(video.duration_seconds / 60)}m` : "0m")}
+                  {(video.duration_formatted || video.duration_seconds !== undefined || video.duration) && (
+                    <div className="absolute bottom-2 left-2 bg-black/80 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
+                      {video.duration_formatted || video.duration || (video.duration_seconds > 0 ? `${Math.round(video.duration_seconds / 60)}m` : "08:21")}
                     </div>
                   )}
                 </div>
@@ -526,14 +558,14 @@ export default function ExploreSection({
                       {video.title}
                     </h4>
                     <span className="text-[10px] font-bold text-info uppercase tracking-wider block mt-1 truncate">
-                      {video.module_name || video.category_name || video.module_title || "Nursing Lesson"}
+                      {video.module_name || video.category_name || video.module_title || "CARDIAC SERIES"}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[#f1f5f9]">
-                    <span className="text-[11px] text-[#64748b] flex items-center gap-1 font-medium">
+                  <div className="flex items-center justify-between mt-3.5 pt-1">
+                    <span className="text-[11px] text-[#64748b] flex items-center gap-1.5 font-medium">
                       <Play className="w-3 h-3 fill-current text-[#94a3b8]" />
-                      <span>{video.views_formatted || `${video.views_count ?? 0} Views`}</span>
+                      <span>{formatPlays(video)}</span>
                     </span>
 
                     <div className="w-7 h-7 rounded-full bg-[#1e3a5f] text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-xs">

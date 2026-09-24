@@ -57,7 +57,28 @@ export const useGetSingleBrowseCategoriesVideos = (id) => {
     isError,
     isFetching,
   };
-}
+};
+
+export const useGetVideoDetails = (id) => {
+  const axiosInstance = axiosPrivateClient();
+
+  const { data, isLoading, isError, isFetching } = useQuery({
+    queryKey: ["video-details", id],
+    queryFn: () => videoLessonService.getVideoDetails(axiosInstance, id),
+    staleTime: 2 * 60 * 1000,
+    retry: false,
+    enabled: !!id,
+  });
+
+  return {
+    videoData: data?.data,
+    isLoading,
+    isError,
+    isFetching,
+  };
+};
+
+
 
 
 export const useGetModuleById = (id) => {
@@ -80,24 +101,6 @@ export const useGetModuleById = (id) => {
   };
 };
 
-export const useGetVideoDetails = (id) => {
-  const axiosInstance = axiosPrivateClient();
-
-  const { data, isLoading, isError, isFetching } = useQuery({
-    queryKey: ["video-details", id],
-    queryFn: () => videoLessonService.getVideoDetails(axiosInstance, id),
-    staleTime: 2 * 60 * 1000,
-    retry: false,
-    enabled: !!id,
-  });
-
-  return {
-    videoData: data?.data,
-    isLoading,
-    isError,
-    isFetching,
-  };
-};
 
 export const usePostVideoProgress = () => {
   const axiosInstance = axiosPrivateClient();

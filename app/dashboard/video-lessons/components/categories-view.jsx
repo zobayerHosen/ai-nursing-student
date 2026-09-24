@@ -197,7 +197,7 @@ export default function CategoriesView({
                       <h5 className="text-xs sm:text-sm font-semibold text-[#0f172a] truncate group-hover:text-[#1e3a5f] transition-colors">
                         {item?.title ?? "N/F"}
                       </h5>
-                      <span className="text-[11px] text-[#64748b]">{item?.category ?? "N/F"}</span>
+                      <span className="text-[11px] text-[#64748b]">{item?.module_name ?? "N/F"}</span>
                     </div>
                   </div>
 
