@@ -22,8 +22,11 @@ import {
   Download,
   Video,
   AlertCircle,
+  Loader2,
+  BookmarkCheck,
+  Bookmark,
 } from "lucide-react";
-import { useGetVideoDetails, usePostVideoProgress } from "@/hooks";
+import { useAddVideoToFavorite, useGetVideoDetails, usePostVideoProgress } from "@/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
@@ -163,6 +166,8 @@ export default function VideoLessonDetails({ videoId }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { videoData, isLoading, isError } = useGetVideoDetails(videoId);
+  const { addVideoToFavorite, isPending } = useAddVideoToFavorite();
+  console.log("Video data", videoData);
   const { videoProgress } = usePostVideoProgress();
 
   // Extract raw details object safely
@@ -367,9 +372,8 @@ export default function VideoLessonDetails({ videoId }) {
   const series =
     details?.module_name || details?.module_title || details?.category || "Nursing Video Lessons";
   const lessonNumber = details?.serial_number
-    ? `Lesson ${details.serial_number}${
-        details.module_total_videos ? ` of ${details.module_total_videos}` : ""
-      }`
+    ? `Lesson ${details.serial_number}${details.module_total_videos ? ` of ${details.module_total_videos}` : ""
+    }`
     : "Nursing Lesson";
   const aboutText =
     details?.overview_data?.about || details?.description || "No overview available for this lesson.";
@@ -565,24 +569,29 @@ export default function VideoLessonDetails({ videoId }) {
               </div>
             </div>
 
-            {/* 2. Action Bar: Add to Favorites only (Download button removed) */}
+            {/* 2. Action Bar: Add to Favorites */}
             <div className="flex items-center gap-4 text-xs sm:text-sm font-semibold text-[#1e3a5f]">
               <button
                 type="button"
-                onClick={() => {
-                  const next = !isFavorite;
-                  setIsFavorite(next);
-                  toast.success(
-                    next ? "Added to favorites!" : "Removed from favorites"
-                  );
+                disabled={isPending}
+                onClick={async () => {
+                  try {
+                    await addVideoToFavorite(videoId);
+                  } catch (e) {
+                    // Handled by mutation hook toast
+                  }
                 }}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-gray-200 hover:border-[#1e3a5f]/40 hover:bg-white text-[#1e3a5f] bg-white transition-all cursor-pointer shadow-2xs font-semibold"
+                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-gray-200 hover:border-[#1e3a5f]/40 hover:bg-white text-[#1e3a5f] bg-white transition-all cursor-pointer shadow-2xs font-semibold w-fit ${
+                  isPending ? "opacity-60 cursor-not-allowed" : ""
+                }`}
               >
-                <Heart
-                  className={`w-4 h-4 transition-all duration-200 ${
-                    isFavorite ? "text-red-500 fill-red-500" : "text-[#1e3a5f]"
-                  }`}
-                />
+                {isPending ? (
+                  <Loader2 className="w-4 h-4 text-[#1e3a5f] animate-spin" />
+                ) : isFavorite ? (
+                  <BookmarkCheck className="w-4 h-4 text-[#e14564] fill-current transition-all duration-200" />
+                ) : (
+                  <Bookmark className="w-4 h-4 text-[#1e3a5f] transition-all duration-200" />
+                )}
                 <span>{isFavorite ? "Favorited" : "Add to Favorites"}</span>
               </button>
             </div>
@@ -594,11 +603,10 @@ export default function VideoLessonDetails({ videoId }) {
                 <button
                   type="button"
                   onClick={() => setActiveTab("Overview")}
-                  className={`text-sm sm:text-[15px] font-bold pb-2 transition-all cursor-pointer relative ${
-                    activeTab === "Overview"
-                      ? "text-[#0f172a] border-b-2 border-[#1e3a5f]"
-                      : "text-[#64748b] hover:text-[#0f172a]"
-                  }`}
+                  className={`text-sm sm:text-[15px] font-bold pb-2 transition-all cursor-pointer relative ${activeTab === "Overview"
+                    ? "text-[#0f172a] border-b-2 border-[#1e3a5f]"
+                    : "text-[#64748b] hover:text-[#0f172a]"
+                    }`}
                 >
                   Overview
                 </button>
@@ -606,11 +614,10 @@ export default function VideoLessonDetails({ videoId }) {
                 <button
                   type="button"
                   onClick={() => setActiveTab("Resources")}
-                  className={`text-sm sm:text-[15px] font-bold pb-2 transition-all cursor-pointer relative ${
-                    activeTab === "Resources"
-                      ? "text-[#0f172a] border-b-2 border-[#1e3a5f]"
-                      : "text-[#64748b] hover:text-[#0f172a]"
-                  }`}
+                  className={`text-sm sm:text-[15px] font-bold pb-2 transition-all cursor-pointer relative ${activeTab === "Resources"
+                    ? "text-[#0f172a] border-b-2 border-[#1e3a5f]"
+                    : "text-[#64748b] hover:text-[#0f172a]"
+                    }`}
                 >
                   Resources {resources.length > 0 ? `(${resources.length})` : ""}
                 </button>
@@ -762,30 +769,28 @@ export default function VideoLessonDetails({ videoId }) {
                     );
                     const isCompleted = Boolean(
                       lesson.status === "watched" ||
-                        lesson.status === "completed" ||
-                        lesson.is_completed ||
-                        lesson.progress_percent === 100
+                      lesson.status === "completed" ||
+                      lesson.is_completed ||
+                      lesson.progress_percent === 100
                     );
 
                     return (
                       <Link
                         key={lesson.video_id || lesson.id || index}
                         href={`/dashboard/video-lessons/${lesson.video_id || lesson.id}`}
-                        className={`p-2.5 sm:p-3 rounded-xl flex items-center gap-2.5 sm:gap-3 transition-colors cursor-pointer group ${
-                          isCurrent
-                            ? "bg-[#eef4fb] text-[#1e3a5f] border border-[#1e3a5f]/20 shadow-2xs"
-                            : "hover:bg-gray-50 text-[#334155] border border-transparent"
-                        }`}
+                        className={`p-2.5 sm:p-3 rounded-xl flex items-center gap-2.5 sm:gap-3 transition-colors cursor-pointer group ${isCurrent
+                          ? "bg-[#eef4fb] text-[#1e3a5f] border border-[#1e3a5f]/20 shadow-2xs"
+                          : "hover:bg-gray-50 text-[#334155] border border-transparent"
+                          }`}
                       >
                         {/* Status / Lesson Number Badge */}
                         <div
-                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 font-bold text-xs transition-colors ${
-                            isCompleted
-                              ? "bg-emerald-100 text-emerald-600"
-                              : isCurrent
+                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 font-bold text-xs transition-colors ${isCompleted
+                            ? "bg-emerald-100 text-emerald-600"
+                            : isCurrent
                               ? "bg-[#1e3a5f] text-white"
                               : "bg-gray-100 group-hover:bg-gray-200 text-[#1e3a5f]"
-                          }`}
+                            }`}
                         >
                           {isCompleted ? (
                             <CheckCircle2 className="w-4 h-4 fill-emerald-500 text-white" />
@@ -799,9 +804,8 @@ export default function VideoLessonDetails({ videoId }) {
                         {/* Title & Duration */}
                         <div className="min-w-0 flex-1">
                           <h4
-                            className={`text-xs font-semibold truncate leading-tight ${
-                              isCurrent ? "text-[#1e3a5f]" : "group-hover:text-[#1e3a5f]"
-                            }`}
+                            className={`text-xs font-semibold truncate leading-tight ${isCurrent ? "text-[#1e3a5f]" : "group-hover:text-[#1e3a5f]"
+                              }`}
                           >
                             {lesson.title}
                           </h4>

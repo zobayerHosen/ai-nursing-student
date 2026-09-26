@@ -40,6 +40,10 @@ export const videoLessonService = {
     return response?.data;
   },
 
+  getVideoLessonsProgress: async (axiosInstance) => {
+    const response = await axiosInstance.get("/dashboard-vedio-progress/");
+    return response?.data;
+  },
 
 
 
@@ -49,8 +53,4 @@ export const videoLessonService = {
   },
 
 
-  getVideoLessonsProgress: async (axiosInstance) => {
-    const response = await axiosInstance.get("/dashboard-vedio-progress/");
-    return response?.data;
-  },
 };

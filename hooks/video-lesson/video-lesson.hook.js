@@ -195,7 +195,7 @@ export const useGetVideoLessonsProgress = () => {
   });
 
   return {
-    progressData: data?.data?.data,
+    progressData: data?.data || data,
     isLoading,
     isError,
     isFetching,
