@@ -1,6 +1,7 @@
 import axiosPrivateClient from "@/lib/axios.private.client";
 import { videoLessonService } from "@/services/video-lesson";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 export const useGetExploreModules = () => {
   const axiosInstance = axiosPrivateClient();
@@ -72,6 +73,69 @@ export const useGetVideoDetails = (id) => {
 
   return {
     videoData: data?.data,
+    isLoading,
+    isError,
+    isFetching,
+  };
+};
+
+export const useAddVideoToFavorite = () => {
+  const queryClient = useQueryClient();
+  const axiosInstance = axiosPrivateClient();
+
+  const { mutateAsync: addVideoToFavorite, isPending, variables } = useMutation({
+    mutationKey: ["add-video-to-favorite"],
+    mutationFn: async (id) => videoLessonService.addVideosTofavriate(axiosInstance, id),
+
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["browse-single-categories-videos"] });
+      queryClient.invalidateQueries({ queryKey: ["video-favorites"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-video-lessons", "favorites"] });
+      queryClient.invalidateQueries({ queryKey: ["video-details"] });
+      toast.success(data?.data?.message || data?.message || "Favorite status updated");
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || error?.message || "Failed to update favorite");
+    }
+  });
+
+  return {
+    addVideoToFavorite,
+    isPending,
+    pendingId: variables,
+  };
+};
+
+export const useGetVideoFavorites = (params = {}) => {
+  const axiosInstance = axiosPrivateClient();
+
+  const { data, isLoading, isError, isFetching } = useQuery({
+    queryKey: ["video-favorites", params],
+    queryFn: () => videoLessonService.getVideoFavorites(axiosInstance, params),
+    staleTime: 2 * 60 * 1000,
+    retry: false,
+  });
+
+  return {
+    videoFavoritesData: data?.data,
+    isLoading,
+    isError,
+    isFetching,
+  };
+};
+
+export const useGetVideoCategories = () => {
+  const axiosInstance = axiosPrivateClient();
+
+  const { data, isLoading, isError, isFetching } = useQuery({
+    queryKey: ["video-categories"],
+    queryFn: () => videoLessonService.getVideoCategories(axiosInstance),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+
+  return {
+    videoCategoriesData: data?.data,
     isLoading,
     isError,
     isFetching,

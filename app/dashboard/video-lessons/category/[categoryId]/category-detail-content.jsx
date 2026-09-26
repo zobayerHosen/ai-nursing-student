@@ -13,9 +13,11 @@ import {
     BookmarkCheck,
     Video,
     AlertCircle,
+    Loader2,
+    Bookmark,
 } from "lucide-react";
 import dummayImage from "@/public/med_dumm.png";
-import { useGetSingleBrowseCategoriesVideos } from "@/hooks";
+import { useAddVideoToFavorite, useGetSingleBrowseCategoriesVideos } from "@/hooks";
 
 function SafeThumbnail({ src, alt }) {
     const BASEURL = process.env.NEXT_PUBLIC_BASE_URL || "";
@@ -61,6 +63,8 @@ export default function CategoryDetailContent({
     categoryId: propCategoryId,
     selectedCategory,
 }) {
+    const { addVideoToFavorite, isPending, pendingId } = useAddVideoToFavorite();
+
     const router = useRouter();
     const searchParams = useSearchParams();
     const from = searchParams.get("from");
@@ -219,11 +223,10 @@ export default function CategoryDetailContent({
                         <button
                             type="button"
                             onClick={() => setCategoryFilter("all")}
-                            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-                                categoryFilter === "all"
-                                    ? "bg-[#0f172a] text-white"
-                                    : "bg-white border border-gray-200 text-[#64748b] hover:text-[#0f172a]"
-                            }`}
+                            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${categoryFilter === "all"
+                                ? "bg-[#0f172a] text-white"
+                                : "bg-white border border-gray-200 text-[#64748b] hover:text-[#0f172a]"
+                                }`}
                         >
                             All {totalVideos}
                         </button>
@@ -231,11 +234,10 @@ export default function CategoryDetailContent({
                         <button
                             type="button"
                             onClick={() => setCategoryFilter("in-progress")}
-                            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-                                categoryFilter === "in-progress"
-                                    ? "bg-[#0f172a] text-white"
-                                    : "bg-white border border-gray-200 text-[#64748b] hover:text-[#0f172a]"
-                            }`}
+                            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${categoryFilter === "in-progress"
+                                ? "bg-[#0f172a] text-white"
+                                : "bg-white border border-gray-200 text-[#64748b] hover:text-[#0f172a]"
+                                }`}
                         >
                             In progress {inProgressCount}
                         </button>
@@ -243,11 +245,10 @@ export default function CategoryDetailContent({
                         <button
                             type="button"
                             onClick={() => setCategoryFilter("watched")}
-                            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-                                categoryFilter === "watched"
-                                    ? "bg-[#0f172a] text-white"
-                                    : "bg-white border border-gray-200 text-[#64748b] hover:text-[#0f172a]"
-                            }`}
+                            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${categoryFilter === "watched"
+                                ? "bg-[#0f172a] text-white"
+                                : "bg-white border border-gray-200 text-[#64748b] hover:text-[#0f172a]"
+                                }`}
                         >
                             Watched {watchedCount}
                         </button>
@@ -255,11 +256,10 @@ export default function CategoryDetailContent({
                         <button
                             type="button"
                             onClick={() => setCategoryFilter("not-started")}
-                            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-                                categoryFilter === "not-started"
-                                    ? "bg-[#0f172a] text-white"
-                                    : "bg-white border border-gray-200 text-[#64748b] hover:text-[#0f172a]"
-                            }`}
+                            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${categoryFilter === "not-started"
+                                ? "bg-[#0f172a] text-white"
+                                : "bg-white border border-gray-200 text-[#64748b] hover:text-[#0f172a]"
+                                }`}
                         >
                             Not started {notStartedCount}
                         </button>
@@ -370,14 +370,36 @@ export default function CategoryDetailContent({
                                     </div>
 
                                     {/* Favorite Button on Top-Right Corner */}
-                                    <button
-                                        type="button"
-                                        className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 hover:bg-white backdrop-blur-xs flex items-center justify-center transition-all duration-200 cursor-pointer z-10 group/fav shadow-md hover:scale-105 active:scale-95"
-                                    >
-                                        <Heart
-                                            className="w-4 h-4 transition-all duration-200 group-hover/fav:scale-110"
-                                        />
-                                    </button>
+                                    {(() => {
+                                        const videoId = video.id || video.video_id;
+                                        const isThisPending = isPending && pendingId === videoId;
+                                        const isFav = Boolean(video.is_favorite);
+
+                                        return (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    addVideoToFavorite(videoId);
+                                                }}
+                                                disabled={isThisPending}
+                                                title={isFav ? "Remove from favorites" : "Add to favorites"}
+                                                aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
+                                                className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 hover:bg-white backdrop-blur-xs flex items-center justify-center transition-all duration-200 cursor-pointer z-20 group/fav shadow-md hover:scale-105 active:scale-95 ${
+                                                    isThisPending ? "cursor-not-allowed opacity-50" : ""
+                                                }`}
+                                            >
+                                                {isThisPending ? (
+                                                    <Loader2 className="w-4 h-4 text-[#1e3a5f] animate-spin" />
+                                                ) : isFav ? (
+                                                    <BookmarkCheck className="w-4 h-4 text-[#e14564] fill-current transition-all duration-200 group-hover/fav:scale-110" />
+                                                ) : (
+                                                    <Bookmark className="w-4 h-4 text-[#1e3a5f] transition-all duration-200 group-hover/fav:scale-110" />
+                                                )}
+                                            </button>
+                                        );
+                                    })()}
 
                                     {/* Completed Badge */}
                                     {(video.is_completed || video.user_progress?.is_completed) && (
@@ -422,10 +444,6 @@ export default function CategoryDetailContent({
                                                     `${video.views_count ?? 0} Views`}
                                             </span>
                                         </span>
-
-                                        {video.is_favorite && (
-                                            <BookmarkCheck className="w-4 h-4 text-[#e14564] fill-current" />
-                                        )}
                                     </div>
                                 </div>
                             </Link>

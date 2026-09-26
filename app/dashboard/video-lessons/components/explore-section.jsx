@@ -247,7 +247,7 @@ export default function ExploreSection({
                     className="p-2 sm:p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-500 hover:text-[#1e3a5f] transition-colors cursor-pointer"
                     title="Save to favorites"
                   >
-                    {savedVideos?.[continueWatching.id || continueWatching.video_id] ?? continueWatching.is_favorite ? (
+                    {continueWatching.is_favorite ? (
                       <BookmarkCheck className="w-4 h-4 text-[#e14564] fill-current" />
                     ) : (
                       <Bookmark className="w-4 h-4" />

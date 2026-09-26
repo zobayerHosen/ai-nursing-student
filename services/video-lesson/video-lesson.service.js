@@ -25,7 +25,21 @@ export const videoLessonService = {
   },
 
 
-  
+  addVideosTofavriate: async (axiosInstance, id) => {
+    const response = await axiosInstance.post(`/video/${id}/favorite/`);
+    return response?.data;
+  },
+
+  getVideoFavorites: async (axiosInstance, params) => {
+    const response = await axiosInstance.get("/video-favorites/", { params });
+    return response?.data;
+  },
+
+  getVideoCategories: async (axiosInstance) => {
+    const response = await axiosInstance.get("/video-categories/");
+    return response?.data;
+  },
+
 
 
 
