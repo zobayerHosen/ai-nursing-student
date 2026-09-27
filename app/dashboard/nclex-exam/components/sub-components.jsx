@@ -277,9 +277,30 @@ export function RationaleBlock({ question, userAnswer, isQBank, backendFeedback 
               Clinical Reasoning — Reading the Trend
             </div>
           </div>
-          <div className="text-[13.5px] text-[#1e293b] leading-relaxed px-0.5">
-            {isQBank ? (backendFeedback?.[q.id]?.explanation || q.rationale || q.note || "") : q.rationale}
-          </div>
+          {(() => {
+            const explanationText = isQBank
+              ? (backendFeedback?.[q.id]?.explanation || q.rationale || q.note || "")
+              : q.rationale;
+            if (!explanationText) {
+              return (
+                <div className="flex items-center gap-3 px-4 py-3.5 rounded-lg bg-[#eff6ff] border border-[#bfdbfe]">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                  </svg>
+                  <div className="text-[13px] text-[#1e40af] font-medium leading-snug">
+                    Detailed explanation will be available soon. Review the correct answer above to reinforce your learning.
+                  </div>
+                </div>
+              );
+            }
+            return (
+              <div className="text-[13.5px] text-[#1e293b] leading-relaxed px-0.5">
+                {explanationText}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Diagram */}

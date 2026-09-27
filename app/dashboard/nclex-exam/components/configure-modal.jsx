@@ -51,7 +51,7 @@ export default function ConfigureModal({ category, subtopic, totalQuestions, onC
     >
       <div
         className="bg-white rounded-xl p-7 w-full max-h-[90vh] overflow-y-auto animate-[scaleIn_0.22s_ease]"
-        style={{ maxWidth: 540 }}
+        style={{ maxWidth: 540 }}s
       >
         {/* Header */}
         <div className="flex items-start justify-between mb-5.5 gap-3">
@@ -63,7 +63,7 @@ export default function ConfigureModal({ category, subtopic, totalQuestions, onC
           </div>
           <button
             onClick={onClose}
-            className="bg-transparent text-[#6b7280] border border-[#e5e7eb] rounded-lg px-2.5 py-1.5 text-xs font-medium cursor-pointer transition-all hover:bg-[#f9fafb] hover:text-[#111827] shrink-0"
+            className="bg-transparent text-[#6b7280] border border-[#e5e7eb] rounded-lg px-2.5 py-1.5 text-xs font-medium cursor-pointer transition-all hover:bg-[#f9fafb] hover:text-text-primary shrink-0"
           >
             ✕
           </button>

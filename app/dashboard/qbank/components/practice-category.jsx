@@ -16,9 +16,7 @@ import {
   Play,
   Menu,
   ChevronDown,
-  ArrowRight,
   Layers,
-  Sparkles,
 } from "lucide-react";
 import ConfigureModal from "../../nclex-exam/components/configure-modal";
 
