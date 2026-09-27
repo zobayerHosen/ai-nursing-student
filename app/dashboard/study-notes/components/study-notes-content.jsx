@@ -30,7 +30,7 @@ export default function StudyNotesContent({
         {selectedCategory ? (
           <StudyNotesCategorySystemsView
             category={selectedCategory}
-            categoryTitle={selectedCategory.title || "Medical Surgical"}
+            categoryTitle={selectedCategory.title}
             onBack={onBackToAllNotes}
           />
         ) : (

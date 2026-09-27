@@ -165,7 +165,7 @@ export default function StudyNotesSidebarWidgets({ onSelectTopic }) {
         <div className="grid grid-cols-3 gap-2.5">
           {/* Tool 1: Create Flashcards */}
           <Link
-            href="/dashboard/flashcards"
+            href="/dashboard/notes-to-flashcards"
             className="flex flex-col items-center justify-center p-3 rounded-xl bg-[#EBF5FB] hover:bg-[#DDF0FA] transition-all group text-center cursor-pointer border border-[#D0E6F5]/50 hover:shadow-2xs"
           >
             <div className="w-8 h-8 rounded-lg bg-[#326798]/10 text-[#1B4B66] flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
@@ -178,7 +178,7 @@ export default function StudyNotesSidebarWidgets({ onSelectTopic }) {
 
           {/* Tool 2: Practice Questions */}
           <Link
-            href="/dashboard/nclex-practice"
+            href="/dashboard/notes-to-quize"
             className="flex flex-col items-center justify-center p-3 rounded-xl bg-[#EDF2FE] hover:bg-[#E2EAFF] transition-all group text-center cursor-pointer border border-[#D5E1FC]/50 hover:shadow-2xs"
           >
             <div className="w-8 h-8 rounded-lg bg-blue-600/10 text-blue-700 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">

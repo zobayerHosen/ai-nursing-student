@@ -25,7 +25,7 @@ const FAQ = () => {
     }));
 
     return (
-        <section id="faq" className="w-full overflow-hidden bg-[#f7f4ef] text-[#0b2447] pb-16 md:pb-24">
+        <section id="faq" className="w-full overflow-hidden bg-white text-[#0b2447] pb-16 md:pb-24">
             <div className="mx-auto max-w-275 px-6">
                 {/* Hero */}
                 <div className="pb-8 xl:pb-10 pt-10 md:pt-14 lg:pt-20 xl:pt-30 text-center">
@@ -34,7 +34,7 @@ const FAQ = () => {
                         Frequently Asked Questions
                     </div>
 
-                    <h1 className="mx-auto mb-5 max-w-205 text-[26px] md:text-4xl lg:text-[42px] xl:text-5xl font-extrabold leading-[1.08] tracking-[-0.025em] text-[#234C7B]">
+                    <h1 className="mx-auto mb-5 max-w-205 text-[26px] md:text-4xl lg:text-[42px] xl:text-5xl font-bold leading-[1.08] tracking-[-0.025em] text-[#234C7B]">
                         Everything you need to know about {" "}
                         <span className="text-[#ff6b6b]">STEMRN.</span>
                     </h1>

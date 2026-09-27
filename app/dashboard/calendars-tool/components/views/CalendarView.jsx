@@ -7,7 +7,6 @@ import "./calendar-overrides.css";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import EventModal from "./EventModal";
 import TasksView from "./TasksView";
-import GradesView from "./GradesView";
 import AddTaskModal from "./AddTaskModal";
 
 const localizer = momentLocalizer(moment);
@@ -189,7 +188,7 @@ export default function CalendarView({
           {[
             { key: "calendar", label: "📅 Calendar" },
             { key: "tasks", label: "✅ Tasks" },
-            { key: "grades", label: "📊 Grades" },
+            // { key: "grades", label: "📊 Grades" },
           ].map((t) => (
             <button
               key={t.key}
@@ -282,14 +281,14 @@ export default function CalendarView({
           onAddTask={() => setAddTaskOpen(true)}
         />
       )}
-      {tab === "grades" && (
+      {/* {tab === "grades" && (
         <GradesView
           eventsData={eventsData}
           coursesData={coursesData}
           gradesSummary={gradesSummary}
           onUploadMore={onUploadMore}
         />
-      )}
+      )} */}
 
       {tab === "calendar" && (
         <div className="bg-white border border-[#E4E7EC] rounded-2xl overflow-hidden shadow-sm">

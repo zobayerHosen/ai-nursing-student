@@ -90,24 +90,25 @@ export default function StudyNoteClient() {
     }
   };
 
-  // Handle Mark Complete
+  // Handle Mark Complete (toggle)
   const handleCompleteClick = async () => {
     if (!contentId) {
-      toast.error("Unable to mark note as completed");
+      toast.error("Unable to update completion status");
       return;
     }
 
     try {
       const res = await markComplete({ id: contentId });
-      toast.success(res?.message || "Marked as completed!");
-      setCompletedOverride(true);
+      const newState = !isCompleted;
+      toast.success(res?.message || (newState ? "Marked as completed!" : "Marked as incomplete"));
+      setCompletedOverride(newState);
       queryClient.invalidateQueries({
         queryKey: ["core-learning-content-details", contentId],
       });
       queryClient.invalidateQueries({ queryKey: ["study-notes-progress"] });
       queryClient.invalidateQueries({ queryKey: ["core-learning"] });
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to mark as completed");
+      toast.error(error?.response?.data?.message || "Failed to update completion status");
     }
   };
 
@@ -194,13 +195,20 @@ export default function StudyNoteClient() {
           <p className="text-xs text-gray-500 mb-6 leading-relaxed">
             The study note you are looking for does not exist or has been moved.
           </p>
-          <Link
-            href="/dashboard/study-notes"
+          <button
+            type="button"
+            onClick={() => {
+              if (window.history.length > 1) {
+                router.back();
+              } else {
+                router.push("/dashboard/study-notes");
+              }
+            }}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1B4B66] hover:bg-[#14394E] text-white text-xs font-semibold transition cursor-pointer shadow-xs"
           >
             <ArrowLeft size={14} />
             <span>Back to Study Notes</span>
-          </Link>
+          </button>
         </div>
       </div>
     );
@@ -209,14 +217,23 @@ export default function StudyNoteClient() {
   const categoryName = currentNote?.category_name || "Medical Surgical";
   const noteTitle = currentNote?.content_name || "Study Note";
 
+  const handleBackNavigation = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/dashboard/study-notes");
+    }
+  };
+
   return (
     <div className="w-full flex flex-col gap-6">
       {/* 1. Header Breadcrumb & Top Actions Bar (Image 3) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200/80 pb-4">
         {/* Breadcrumb back link */}
-        <Link
-          href="/dashboard/study-notes"
-          className="inline-flex items-center gap-2 text-base sm:text-lg lg:text-xl font-bold text-[#1B4B66] hover:text-[#0D3043] transition group truncate max-w-full sm:max-w-xl"
+        <button
+          type="button"
+          onClick={handleBackNavigation}
+          className="inline-flex items-center gap-2 text-base font-bold text-[#1B4B66] hover:text-[#0D3043] transition group truncate max-w-full sm:max-w-xl text-left cursor-pointer"
         >
           <ArrowLeft
             size={20}
@@ -225,7 +242,7 @@ export default function StudyNoteClient() {
           <span className="truncate">
             {categoryName}/{noteTitle}
           </span>
-        </Link>
+        </button>
 
         {/* Top Right Action Buttons */}
         <div className="flex items-center gap-3 shrink-0">
@@ -257,10 +274,10 @@ export default function StudyNoteClient() {
           <button
             type="button"
             onClick={handleCompleteClick}
-            disabled={isCompletePending || isCompleted}
+            disabled={isCompletePending}
             className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 cursor-pointer shadow-xs active:scale-95 ${
               isCompleted
-                ? "bg-emerald-600 text-white cursor-default"
+                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                 : "bg-[#1B4B66] hover:bg-[#14394E] text-white"
             }`}
           >
@@ -280,10 +297,6 @@ export default function StudyNoteClient() {
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         {/* Left Column: Note Document Card rendering the HTML Note File */}
         <div className="xl:col-span-8 2xl:col-span-9 bg-white rounded-2xl border border-gray-200/90 p-5 sm:p-7 lg:p-8 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col">
-          {/* Note Title */}
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold leading-tight tracking-tight text-[#1B4B66] mb-5">
-            {noteTitle}
-          </h1>
 
           {/* HTML Note File Iframe / Content View matching previous code functionality */}
           <div className="w-full h-[calc(100vh-250px)] min-h-150 relative rounded-xl overflow-hidden border border-gray-200 bg-white">
@@ -453,7 +466,7 @@ export default function StudyNoteClient() {
 
             <div className="grid grid-cols-3 gap-2">
               <Link
-                href="/dashboard/flashcards"
+                href="/dashboard/notes-to-flashcards"
                 className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-[#EBF5FB] hover:bg-[#DDF0FA] transition text-center cursor-pointer border border-[#D0E6F5]/50"
               >
                 <div className="w-7 h-7 rounded-lg bg-[#326798]/10 text-[#1B4B66] flex items-center justify-center mb-1">
@@ -465,7 +478,7 @@ export default function StudyNoteClient() {
               </Link>
 
               <Link
-                href="/dashboard/nclex-practice"
+                href="/dashboard/notes-to-quize"
                 className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-[#EDF2FE] hover:bg-[#E2EAFF] transition text-center cursor-pointer border border-[#D5E1FC]/50"
               >
                 <div className="w-7 h-7 rounded-lg bg-blue-600/10 text-blue-700 flex items-center justify-center mb-1">

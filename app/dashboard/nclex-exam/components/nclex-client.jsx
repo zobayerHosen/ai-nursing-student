@@ -18,13 +18,13 @@ export default function NclexClient() {
     setActiveStartingExamId(examId);
     try {
       const res = await startExam(examId);
-      
+
       const sessionData =
         res?.data && typeof res.data === "object" && (res.data.session_id || res.data.id)
           ? res.data
           : res?.session_id || res?.id
-          ? res
-          : res?.data || res;
+            ? res
+            : res?.data || res;
 
       const sessionId = sessionData?.session_id || sessionData?.id || exam?.session_id;
 
@@ -47,18 +47,17 @@ export default function NclexClient() {
           <div className="flex items-start gap-2.5 sm:gap-3.5 mb-4 sm:mb-5 lg:mb-6">
             {/* Logo / Icon */}
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#eef4fb] text-[#1E3A5F] flex items-center justify-center shrink-0 shadow-sm border border-primary-100">
-              <svg
-                className="w-5 h-5 sm:w-5.5 sm:h-5.5"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                <path d="M9 10a2.5 2.5 0 1 1 5 0c0 1.5-2 2-2 3" />
-                <line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="3" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <g clipPath="url(#clip0_425_74616)">
+                  <path d="M2.69383 11.4756C1.20848 11.4756 0 12.6841 0 14.1694V17.3061C0 18.7915 1.20848 20 2.69387 20C4.17926 20 5.3877 18.7915 5.3877 17.3061V14.1694C5.3877 12.6841 4.17922 11.4756 2.69383 11.4756ZM3.82516 17.3061C3.82516 17.9299 3.31766 18.4375 2.69383 18.4375C2.07004 18.4375 1.5625 17.9299 1.5625 17.3061V14.1694C1.5625 13.5456 2.07004 13.0381 2.69387 13.0381C3.3177 13.0381 3.8252 13.5456 3.82516 14.1694V17.3061Z" fill="#64748B" />
+                  <path d="M10.0005 0C8.51512 0 7.30664 1.20848 7.30664 2.69387V17.3061C7.30664 18.7915 8.51512 20 10.0005 20C11.4859 20 12.6944 18.7915 12.6944 17.3061V2.69387C12.6944 1.20848 11.4859 0 10.0005 0ZM11.1319 17.3061C11.1319 17.93 10.6243 18.4375 10.0005 18.4375C9.37668 18.4375 8.86914 17.93 8.86914 17.3061V2.69387C8.86914 2.07 9.37668 1.5625 10.0005 1.5625C10.6243 1.5625 11.1319 2.07 11.1319 2.69387V17.3061Z" fill="#64748B" />
+                  <path d="M17.3071 5.73828C15.8218 5.73828 14.6133 6.94676 14.6133 8.43215V17.3066C14.6133 18.792 15.8218 20.0005 17.3071 20.0005C18.7925 20.0005 20.001 18.792 20.001 17.3066V8.43215C20.001 6.94676 18.7925 5.73828 17.3071 5.73828ZM18.4385 17.3066C18.4385 17.9305 17.9309 18.438 17.3071 18.438C16.6833 18.438 16.1758 17.9305 16.1758 17.3066V8.43215C16.1758 7.80828 16.6833 7.30078 17.3071 7.30078C17.9309 7.30078 18.4385 7.80828 18.4385 8.43215V17.3066Z" fill="#64748B" />
+                </g>
+                <defs>
+                  <clipPath id="clip0_425_74616">
+                    <rect width="20" height="20" fill="white" />
+                  </clipPath>
+                </defs>
               </svg>
             </div>
 
@@ -77,22 +76,20 @@ export default function NclexClient() {
           <div className="flex items-center gap-5 sm:gap-6 lg:gap-8 -mb-px overflow-x-auto">
             <button
               onClick={() => setActiveTab("simulation")}
-              className={`pb-3 sm:pb-3.5 text-xs sm:text-sm font-bold transition-colors cursor-pointer relative whitespace-nowrap ${
-                activeTab === "simulation"
+              className={`pb-3 sm:pb-3.5 text-xs sm:text-sm font-bold transition-colors cursor-pointer relative whitespace-nowrap ${activeTab === "simulation"
                   ? "text-[#1E3A5F] border-b-2 border-[#fe5e7e]"
                   : "text-[#64748b] hover:text-[#1E3A5F]"
-              }`}
+                }`}
             >
               Simulation Exams
             </button>
 
             <button
               onClick={() => setActiveTab("performance")}
-              className={`pb-3 sm:pb-3.5 text-xs sm:text-sm font-bold transition-colors cursor-pointer relative whitespace-nowrap ${
-                activeTab === "performance"
+              className={`pb-3 sm:pb-3.5 text-xs sm:text-sm font-bold transition-colors cursor-pointer relative whitespace-nowrap ${activeTab === "performance"
                   ? "text-[#1E3A5F] border-b-2 border-[#fe5e7e]"
                   : "text-[#64748b] hover:text-[#1E3A5F]"
-              }`}
+                }`}
             >
               Performance
             </button>

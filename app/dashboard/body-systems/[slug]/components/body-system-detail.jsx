@@ -5,6 +5,7 @@ import { Maximize2, Plus, Minus, ArrowLeft, ChevronLeft, ChevronRight } from 'lu
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { getSecureUrl } from "@/utils";
+import dummyImg from "@/public/med_dumm.png"
 
 
 const BodySystemDetail = ({ systemData }) => {
@@ -77,7 +78,12 @@ const BodySystemDetail = ({ systemData }) => {
 
   const currentContent = activeContent || systemData;
   const contentFileUrl = currentContent?.html_file || currentContent?.content_file_url || defaultContent?.content_file_url;
-  const coverUrl = currentContent?.cover || currentContent?.content_cover_url || systemData?.cover;
+  const rawCoverUrl = currentContent?.cover || currentContent?.content_cover_url || systemData?.cover;
+  const [canvasImgSrc, setCanvasImgSrc] = useState(rawCoverUrl || dummyImg);
+
+  React.useEffect(() => {
+    setCanvasImgSrc(rawCoverUrl || dummyImg);
+  }, [rawCoverUrl]);
 
   return (
     <div className="flex h-[calc(100vh-100px)] bg-[#F8F9FA] overflow-hidden max-lg:flex-col max-lg:h-auto max-lg:overflow-visible">
@@ -93,7 +99,7 @@ const BodySystemDetail = ({ systemData }) => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back To Topic
           </button>
-          <h1 className="text-2xl font-bold text-slate-800 max-sm:text-xl">{systemData?.subtitle || systemData?.content_name || systemData?.title}</h1>
+          <h1 className="text-lg font-bold text-slate-700 max-sm:text-xl">{systemData?.subtitle || systemData?.content_name || systemData?.title}</h1>
           <p className="text-slate-500 text-sm mb-4">Body System</p>
           
           {/* Thumbnails Row */}
@@ -107,43 +113,44 @@ const BodySystemDetail = ({ systemData }) => {
                 <ChevronLeft size={20} />
               </button>
 
-              <div className="overflow-hidden w-[292px] py-2 px-1 -mx-1">
+              <div className="overflow-hidden w-73 py-2 px-1 -mx-1">
                 <motion.div 
                   className="flex items-center gap-3"
                   initial={false}
                   animate={{ x: -(thumbnailStartIndex * 76) }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 >
-                  {systemData?.contents?.map((content) => (
-                    <button
-                      key={content?.id}
-                      onClick={() => {
-                        if (activeContent?.id !== content?.id) {
-                          setIsIframeLoading(true);
-                          setActiveContent(content);
-                          setZoomScale(1);
-                          setResetKey(prev => prev + 1);
-                        }
-                      }}
-                      className={`relative w-16 h-16 rounded-lg overflow-hidden shrink-0 border-2 transition-all bg-white ${
-                        activeContent?.id === content?.id ? 'border-primary shadow-md' : 'border-slate-200 hover:border-slate-300'
-                      }`}
-                      title={content?.content_name}
-                    >
-                      {content?.content_cover_url || content?.cover ? (
+                  {systemData?.contents?.map((content) => {
+                    const thumbUrl = content?.content_cover_url || content?.cover;
+                    return (
+                      <button
+                        key={content?.id}
+                        onClick={() => {
+                          if (activeContent?.id !== content?.id) {
+                            setIsIframeLoading(true);
+                            setActiveContent(content);
+                            setZoomScale(1);
+                            setResetKey(prev => prev + 1);
+                          }
+                        }}
+                        className={`relative w-12 h-12 rounded-md overflow-hidden shrink-0 border transition-all bg-white ${
+                          activeContent?.id === content?.id ? 'border-primary shadow-md' : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                        title={content?.content_name}
+                      >
                         <Image
-                          src={content?.content_cover_url || content?.cover}
+                          src={thumbUrl || dummyImg}
                           alt={content?.content_name || 'Thumbnail'}
                           fill
                           className="object-contain p-1"
+                          onError={(e) => {
+                            e.currentTarget.srcset = "";
+                            e.currentTarget.src = typeof dummyImg === "object" ? dummyImg.src : dummyImg;
+                          }}
                         />
-                      ) : (
-                        <div className="w-full h-full bg-slate-50 flex items-center justify-center text-[10px] text-slate-400 text-center p-1 leading-tight">
-                          {content?.content_name}
-                        </div>
-                      )}
-                    </button>
-                  ))}
+                      </button>
+                    );
+                  })}
                 </motion.div>
               </div>
 
@@ -160,7 +167,7 @@ const BodySystemDetail = ({ systemData }) => {
 
         {/* Main Canvas Area */}
         <div 
-          className="flex-1 bg-white rounded-3xl border border-slate-200 relative shadow-sm overflow-hidden flex items-center justify-center max-lg:min-h-[450px] max-lg:flex-initial"
+          className="flex-1 bg-white rounded-3xl border border-slate-200 relative shadow-sm overflow-hidden flex items-center justify-center max-lg:min-h-112.5 max-lg:flex-initial"
           onWheel={handleWheel}
         >
           {/* Main Image Wrapper with Dynamic Zoom Constraints */}
@@ -173,53 +180,46 @@ const BodySystemDetail = ({ systemData }) => {
             dragConstraints={{ left: -600, right: 600, top: -300, bottom: 300 }}
             dragElastic={0.2}
           >
-            {coverUrl ? (
-              <Image 
-                src={coverUrl} 
-                alt={`${currentContent?.subtitle || currentContent?.content_name || currentContent?.title} Active Diagram View`} 
-                fill 
-                className="object-contain select-none pointer-events-none"
-                priority
-                draggable={false}
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full text-slate-400">
-                No cover image available.
-              </div>
-            )}
+            <Image 
+              src={canvasImgSrc || dummyImg} 
+              alt={`${currentContent?.subtitle || currentContent?.content_name || currentContent?.title || 'Body System'} Active Diagram View`} 
+              fill 
+              className="object-contain select-none pointer-events-none"
+              priority
+              draggable={false}
+              onError={() => setCanvasImgSrc(dummyImg)}
+            />
           </motion.div>
 
           {/* Canvas Floating Utility Actions */}
-          {coverUrl && (
-            <div className="absolute bottom-6 right-6 flex flex-col gap-2 z-10">
-              <button 
-                onClick={handleResetZoom}
-                title="Reset View"
-                className="p-2 bg-white rounded-full shadow-md border border-slate-100 hover:bg-slate-50 text-slate-600 transition-colors"
-              >
-                <Maximize2 size={18}/>
-              </button>
-              <button 
-                onClick={handleZoomIn}
-                title="Zoom In"
-                className="p-2 bg-white rounded-full shadow-md border border-slate-100 hover:bg-slate-50 text-slate-600 transition-colors"
-              >
-                <Plus size={18}/>
-              </button>
-              <button 
-                onClick={handleZoomOut}
-                title="Zoom Out"
-                className="p-2 bg-white rounded-full shadow-md border border-slate-100 hover:bg-slate-50 text-slate-600 transition-colors"
-              >
-                <Minus size={18}/>
-              </button>
-            </div>
-          )}
+          <div className="absolute bottom-6 right-6 flex flex-col gap-2 z-10">
+            <button 
+              onClick={handleResetZoom}
+              title="Reset View"
+              className="p-2 bg-white rounded-full shadow-md border border-slate-100 hover:bg-slate-50 text-slate-600 transition-colors"
+            >
+              <Maximize2 size={18}/>
+            </button>
+            <button 
+              onClick={handleZoomIn}
+              title="Zoom In"
+              className="p-2 bg-white rounded-full shadow-md border border-slate-100 hover:bg-slate-50 text-slate-600 transition-colors"
+            >
+              <Plus size={18}/>
+            </button>
+            <button 
+              onClick={handleZoomOut}
+              title="Zoom Out"
+              className="p-2 bg-white rounded-full shadow-md border border-slate-100 hover:bg-slate-50 text-slate-600 transition-colors"
+            >
+              <Minus size={18}/>
+            </button>
+          </div>
         </div>
-      </div>  
+      </div>
 
       {/* RIGHT COLUMN: iframe content area */}
-      <div className="w-[450px] h-full bg-white border-l border-slate-200 flex flex-col max-lg:w-full max-lg:h-[600px] max-lg:border-t max-lg:border-l-0 shrink-0 relative overflow-hidden">
+      <div className="w-112.5 h-full bg-white border-l border-slate-200 flex flex-col max-lg:w-full max-lg:h-150 max-lg:border-t max-lg:border-l-0 shrink-0 relative overflow-hidden">
         <div className="w-full h-full relative">
           {contentFileUrl ? (
             <>

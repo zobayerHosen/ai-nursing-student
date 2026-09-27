@@ -396,9 +396,7 @@ export default function VideoLessonDetails({ videoId }) {
 
   return (
     <div className="w-full min-h-screen bg-[#f8fafc] flex flex-col overflow-x-hidden">
-      {/* ─────────────────────────────────────────────────────────── */}
-      {/* TOP HEADER / BREADCRUMB                                     */}
-      {/* ─────────────────────────────────────────────────────────── */}
+      {/* TOP HEADER / BREADCRUMB*/}
       <div className="w-full bg-white border-b border-[#e2e8f0] px-3.5 sm:px-6 lg:px-8 xl:px-10 py-3.5 sm:py-4">
         <div className="flex items-center gap-3">
           <button
@@ -422,14 +420,11 @@ export default function VideoLessonDetails({ videoId }) {
         </div>
       </div>
 
-      {/* ─────────────────────────────────────────────────────────── */}
-      {/* MAIN TWO-COLUMN CONTAINER (RESPONSIVE)                      */}
-      {/* ─────────────────────────────────────────────────────────── */}
+      {/* MAIN TWO-COLUMN CONTAINER */}
       <div className="flex-1 w-full px-3.5 sm:px-6 lg:px-8 xl:px-10 py-4 sm:py-6 lg:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-start">
-          {/* ========================================================= */}
-          {/* LEFT COLUMN: VIDEO PLAYER & LESSON DETAILS (~68% on XL)    */}
-          {/* ========================================================= */}
+          {/* LEFT COLUMN: VIDEO PLAYER & LESSON DETAILS */}
+
           <div className="lg:col-span-8 xl:col-span-8 flex flex-col gap-6">
             {/* 1. Video Player Container - No Thumbnail used */}
             <div
@@ -741,10 +736,7 @@ export default function VideoLessonDetails({ videoId }) {
               )}
             </div>
           </div>
-
-          {/* ========================================================= */}
-          {/* RIGHT COLUMN: NEXT LESSONS & SIMILAR LESSONS (~32% on XL) */}
-          {/* ========================================================= */}
+          {/* RIGHT COLUMN: NEXT LESSONS & SIMILAR LESSONS*/}
           <div className="lg:col-span-4 xl:col-span-4 flex flex-col gap-6">
             {/* Next Lessons Card - No Thumbnail used */}
             <div className="bg-white rounded-2xl sm:rounded-3xl border border-[#e5e9f0] p-4.5 sm:p-5.5 shadow-xs">

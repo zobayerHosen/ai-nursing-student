@@ -38,9 +38,11 @@ const ICON_PALETTE = [
 ];
 
 export default function StudyNotesEpisodesView({ onSelectCategory }) {
-  const [limit, setLimit] = useState(20);
+  const [limit, setLimit] = useState(50);
   const { coreLearningData, isLoading, coreLearningPagination, isFetching } =
     useCoreLearning("study_notes", { limit });
+  console.log("Core learning data", coreLearningData);
+
 
   const categories = useMemo(() => coreLearningData || [], [coreLearningData]);
   const hasMore = coreLearningPagination?.count > (coreLearningData?.length || 0);
@@ -99,11 +101,10 @@ export default function StudyNotesEpisodesView({ onSelectCategory }) {
                     setSortBy("default");
                     setIsFilterMenuOpen(false);
                   }}
-                  className={`w-full text-left px-3 py-1.5 text-xs rounded-lg transition cursor-pointer ${
-                    sortBy === "default"
-                      ? "bg-blue-50 text-[#1B4B66] font-bold"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
+                  className={`w-full text-left px-3 py-1.5 text-xs rounded-lg transition cursor-pointer ${sortBy === "default"
+                    ? "bg-blue-50 text-[#1B4B66] font-bold"
+                    : "text-gray-700 hover:bg-gray-100"
+                    }`}
                 >
                   Standard Order
                 </button>
@@ -113,11 +114,10 @@ export default function StudyNotesEpisodesView({ onSelectCategory }) {
                     setSortBy("az");
                     setIsFilterMenuOpen(false);
                   }}
-                  className={`w-full text-left px-3 py-1.5 text-xs rounded-lg transition cursor-pointer ${
-                    sortBy === "az"
-                      ? "bg-blue-50 text-[#1B4B66] font-bold"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
+                  className={`w-full text-left px-3 py-1.5 text-xs rounded-lg transition cursor-pointer ${sortBy === "az"
+                    ? "bg-blue-50 text-[#1B4B66] font-bold"
+                    : "text-gray-700 hover:bg-gray-100"
+                    }`}
                 >
                   Alphabetical (A - Z)
                 </button>
@@ -127,11 +127,10 @@ export default function StudyNotesEpisodesView({ onSelectCategory }) {
                     setSortBy("topics");
                     setIsFilterMenuOpen(false);
                   }}
-                  className={`w-full text-left px-3 py-1.5 text-xs rounded-lg transition cursor-pointer ${
-                    sortBy === "topics"
-                      ? "bg-blue-50 text-[#1B4B66] font-bold"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
+                  className={`w-full text-left px-3 py-1.5 text-xs rounded-lg transition cursor-pointer ${sortBy === "topics"
+                    ? "bg-blue-50 text-[#1B4B66] font-bold"
+                    : "text-gray-700 hover:bg-gray-100"
+                    }`}
                 >
                   Most Topics
                 </button>
@@ -192,9 +191,9 @@ export default function StudyNotesEpisodesView({ onSelectCategory }) {
               >
                 {/* Left colored square icon container / cover image */}
                 <div
-                  className={`w-13 h-13 sm:w-14 sm:h-14 rounded-2xl ${palette.bg} shrink-0 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105`}
+                  className={`w-12 h-12 rounded-lg ${palette.bg} shrink-0 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105`}
                 >
-                  {episode.cover ? (
+                  {episode?.cover ? (
                     <Image
                       src={
                         episode.cover.startsWith("http")
@@ -204,8 +203,7 @@ export default function StudyNotesEpisodesView({ onSelectCategory }) {
                       alt={episode.title || "Category cover"}
                       width={56}
                       height={56}
-                      className="w-full h-full object-cover"
-                      unoptimized
+                      className="w-8 h-8 object-cover"
                     />
                   ) : (
                     <IconComponent
@@ -218,7 +216,7 @@ export default function StudyNotesEpisodesView({ onSelectCategory }) {
                 {/* Right content */}
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm sm:text-base font-bold text-[#1B4B66] group-hover:text-[#0D3043] transition-colors leading-snug truncate">
-                    {episode.title}
+                    {episode?.title ?? "No Title"}
                   </h3>
                   <p className="text-xs text-gray-400 font-medium mt-1">
                     {totalTopics} Topics <span className="mx-1">•</span> {completedTopics} Completed
