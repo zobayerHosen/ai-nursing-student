@@ -272,7 +272,7 @@ export function RationaleBlock({ question, userAnswer, isQBank, backendFeedback 
         {/* Clinical Reasoning */}
         <div className="mb-4">
           <div className="flex items-center gap-2.5 mb-2.5">
-            <div className="w-[3px] h-3.5 bg-[#FE5E7E] rounded-sm shrink-0" />
+            <div className="w-0.75 h-3.5 bg-[#FE5E7E] rounded-sm shrink-0" />
             <div className="text-[11px] font-bold text-[#FE5E7E] tracking-wide uppercase">
               Clinical Reasoning — Reading the Trend
             </div>
@@ -322,7 +322,7 @@ export function RationaleBlock({ question, userAnswer, isQBank, backendFeedback 
         {/* Why Others Fail */}
         <div>
           <div className="flex items-center gap-2.5 mb-2.5">
-            <div className="w-[3px] h-3.5 bg-[#FE5E7E] rounded-sm shrink-0" />
+            <div className="w-0.75 h-3.5 bg-[#FE5E7E] rounded-sm shrink-0" />
             <div className="text-[11px] font-bold text-[#FE5E7E] tracking-wide uppercase">
               {q.type === "matrix"
                 ? "Row-by-Row Breakdown"

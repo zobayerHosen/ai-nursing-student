@@ -28,4 +28,9 @@ export const nclexExamService = {
         const response = await axiosInstance.get(`/nclex/exams/review/${sessionId}/`);
         return response?.data;
     },
+
+    getPerformance: async (axiosInstance) => {
+        const response = await axiosInstance.get(`/nclex/exams/performance/`);
+        return response?.data;
+    },
 };

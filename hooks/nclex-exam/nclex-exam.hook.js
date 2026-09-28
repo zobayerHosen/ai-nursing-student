@@ -164,3 +164,29 @@ export const useGetExamReview = (sessionId) => {
         refetch,
     };
 };
+
+export const useNclexPerformance = () => {
+    const axiosInstance = axiosPrivateClient();
+
+    const {
+        data,
+        isLoading,
+        isError,
+        error,
+        refetch,
+    } = useQuery({
+        queryKey: ["nclex-performance"],
+        queryFn: async () => {
+            const response = await nclexExamService.getPerformance(axiosInstance);
+            return response?.data;
+        },
+    });
+
+    return {
+        performanceData: data,
+        isLoading,
+        isError,
+        error,
+        refetch,
+    };
+};

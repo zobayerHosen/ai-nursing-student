@@ -4,7 +4,8 @@ import {
     createSessionService,
     getExamQuestionService,
     submitAnswerService,
-    finishExamService
+    finishExamService,
+    examPerformanceService
 } from "@/services";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
@@ -114,3 +115,26 @@ export const useFinishExam = () => {
     };
 };
 
+// exam performance hook
+export const useExamPerformance = () => {
+    const axiosInstance = axiosPrivateClient();
+
+    const {
+        data,
+        isError,
+        isFetching,
+        isLoading,
+        refetch,
+    } = useQuery({
+        queryKey: ["exam-performance"],
+        queryFn: () => examPerformanceService(axiosInstance),
+    });
+
+    return {
+        examPerformance: data?.data,
+        isError,
+        isFetching,
+        isLoading,
+        refetch,
+    }
+}

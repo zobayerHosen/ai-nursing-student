@@ -607,7 +607,7 @@ export default function QuestionInterface({
 
                     <div className="ml-11.5">
                       <RationaleBlock question={qq} userAnswer={userAns} isQBank={isQBank} backendFeedback={backendFeedback} />
-                      <QuestionStats question={qq} />
+                      {!isQBank && <QuestionStats question={qq} />}
                     </div>
                   </div>
                 );
@@ -1522,7 +1522,7 @@ export default function QuestionInterface({
             )}
 
             {/* Stats */}
-            {isTutorial && isAnswered && <QuestionStats question={q} />}
+            {isTutorial && isAnswered && !isQBank && <QuestionStats question={q} />}
 
             {/* Submit button in tutorial/practice mode */}
             {(() => {

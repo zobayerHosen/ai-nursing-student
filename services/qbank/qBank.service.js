@@ -27,3 +27,10 @@ export const finishExamService = async (axiosInstance, sessionId) => {
     const response = await axiosInstance.post(`/nclex/practice/finish/${sessionId}/`);
     return response?.data;
 }
+
+
+// exam performance service
+export const examPerformanceService = async (axiosInstance) => {
+    const response = await axiosInstance.get(`/nclex/practice/performance/`);
+    return response?.data;
+}
