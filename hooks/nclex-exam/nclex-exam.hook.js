@@ -138,6 +138,64 @@ export const useFinishExam = () => {
     };
 };
 
+export const usePauseExam = () => {
+    const axiosInstance = axiosPrivateClient();
+    const queryClient = useQueryClient();
+
+    const {
+        mutateAsync: pauseExam,
+        isPending,
+        isError,
+        error,
+    } = useMutation({
+        mutationFn: async (params) => {
+            const sessionId = typeof params === "object" ? params?.sessionId : params;
+            const payload = typeof params === "object" ? params?.payload : undefined;
+            const response = await nclexExamService.pauseExam(axiosInstance, sessionId, payload);
+            return response?.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["exam-list"] });
+            queryClient.invalidateQueries({ queryKey: ["nclex-session-questions"] });
+        },
+    });
+
+    return {
+        pauseExam,
+        isPending,
+        isError,
+        error,
+    };
+};
+
+export const useResumeExam = () => {
+    const axiosInstance = axiosPrivateClient();
+    const queryClient = useQueryClient();
+
+    const {
+        mutateAsync: resumeExam,
+        isPending,
+        isError,
+        error,
+    } = useMutation({
+        mutationFn: async (sessionId) => {
+            const response = await nclexExamService.resumeExam(axiosInstance, sessionId);
+            return response?.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["exam-list"] });
+            queryClient.invalidateQueries({ queryKey: ["nclex-session-questions"] });
+        },
+    });
+
+    return {
+        resumeExam,
+        isPending,
+        isError,
+        error,
+    };
+};
+
 export const useGetExamReview = (sessionId) => {
     const axiosInstance = axiosPrivateClient();
 

@@ -110,7 +110,7 @@ function TopicGrid({ topics, subtitle, savedNoteIds, onBookmark, onNoteClick }) 
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 pt-2">
+    <div className="grid grid-cols-1  gap-3 pt-2">
       {topics.map((topic) => (
         <TopicItem
           key={topic.id}

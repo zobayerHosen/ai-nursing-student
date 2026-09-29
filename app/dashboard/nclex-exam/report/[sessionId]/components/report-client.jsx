@@ -7,7 +7,6 @@ import { useGetExamReview } from "@/hooks";
 import ReportHero from "./report-hero";
 import ReportFilters from "./report-filters";
 import QuestionReviewItem from "./question-review-item";
-import PerformanceAnalytics from "./performance-analytics";
 
 export default function ReportClient() {
   const params = useParams();
@@ -15,25 +14,23 @@ export default function ReportClient() {
 
   const { reviewData, isLoading, isError, refetch } = useGetExamReview(sessionId);
 
-  const [activeTab, setActiveTab] = useState("questions"); // "questions" | "analytics"
-  const [activeFilter, setActiveFilter] = useState("all"); // "all" | "correct" | "incorrect" | "flagged" | "skipped"
+  const [activeFilter, setActiveFilter] = useState("all"); // "all" | "correct" | "incorrect" | "skipped"
 
   const examInfo = reviewData;
   const result = reviewData?.result;
   const questions = useMemo(() => reviewData?.result?.review ?? [], [reviewData?.result?.review]);
 
-  // Compute stats for 5 top cards
+  // Compute stats for top cards
   const stats = useMemo(() => {
     const total = result?.total_questions ?? questions.length;
     const correct = result?.total_correct ?? questions.filter((q) => q.is_correct).length;
-    const flagged = questions.filter((q) => q.is_flagged).length;
     const skipped =
       result?.total_skipped ?? questions.filter((q) => q.is_skipped || !q.user_answer).length;
     const incorrect =
       result?.total_incorrect ??
       questions.filter((q) => !q.is_correct && !q.is_skipped && q.user_answer != null).length;
 
-    return { total, correct, incorrect, flagged, skipped };
+    return { total, correct, incorrect, skipped };
   }, [result?.total_questions, result?.total_correct, result?.total_skipped, result?.total_incorrect, questions]);
 
   // Filtered questions list
@@ -42,16 +39,16 @@ export default function ReportClient() {
       const isCorrect = !!q.is_correct;
       const isSkipped = !!q.is_skipped || !q.user_answer;
       const isIncorrect = !isCorrect && !isSkipped;
-      const isFlagged = !!q.is_flagged;
 
       if (activeFilter === "all") return true;
       if (activeFilter === "correct") return isCorrect;
       if (activeFilter === "incorrect") return isIncorrect;
-      if (activeFilter === "flagged") return isFlagged;
       if (activeFilter === "skipped") return isSkipped;
       return true;
     });
   }, [questions, activeFilter]);
+
+  console.log("Review data", reviewData);
 
   // Loading skeleton
   if (isLoading) {
@@ -135,30 +132,6 @@ export default function ReportClient() {
             </svg>
             <span>Back to Simulation Exams</span>
           </Link>
-
-          {/* View Mode Switcher */}
-          <div className="flex items-center bg-[#f1f5f9] p-1 rounded-xl border border-[#e2e8f0]">
-            <button
-              onClick={() => setActiveTab("questions")}
-              className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeTab === "questions"
-                  ? "bg-white text-[#1E3A5F] shadow-xs"
-                  : "text-[#64748b] hover:text-[#1E3A5F]"
-              }`}
-            >
-              Question Review
-            </button>
-            <button
-              onClick={() => setActiveTab("analytics")}
-              className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeTab === "analytics"
-                  ? "bg-white text-[#1E3A5F] shadow-xs"
-                  : "text-[#64748b] hover:text-[#1E3A5F]"
-              }`}
-            >
-              Performance Analytics
-            </button>
-          </div>
         </div>
       </div>
 
@@ -175,62 +148,57 @@ export default function ReportClient() {
           readinessLevel={examInfo.readiness_level || result.readiness_level}
         />
 
-        {/* Tab 1: Question Review */}
-        {activeTab === "questions" ? (
+        {/* Question Review */}
+        {
           <div>
-            {/* 5 Filter Cards & Pill Selector */}
-            <ReportFilters
-              stats={stats}
-              activeFilter={activeFilter}
-              onFilterChange={setActiveFilter}
-            />
+              {/* 5 Filter Cards & Pill Selector */}
+              <ReportFilters
+                stats={stats}
+                activeFilter={activeFilter}
+                onFilterChange={setActiveFilter}
+              />
 
-            {/* Questions Header */}
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#e2e8f0]">
-              <h3 className="text-sm sm:text-base font-bold text-[#0f172a]">
-                {activeFilter === "all"
-                  ? "All Questions Breakdown"
-                  : activeFilter === "correct"
-                  ? "Correct Questions"
-                  : activeFilter === "incorrect"
-                  ? "Incorrect Questions"
-                  : activeFilter === "flagged"
-                  ? "Flagged Questions"
-                  : "Skipped / Omitted Questions"}
-              </h3>
-              <span className="text-xs text-[#64748b]">
-                Showing {filteredQuestions.length} of {questions.length}
-              </span>
+              {/* Questions Header */}
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#e2e8f0]">
+                <h3 className="text-sm sm:text-base font-bold text-[#0f172a]">
+                  {activeFilter === "all"
+                    ? "All Questions Breakdown"
+                    : activeFilter === "correct"
+                      ? "Correct Questions"
+                      : activeFilter === "incorrect"
+                        ? "Incorrect Questions"
+                        : "Skipped / Omitted Questions"}
+                </h3>
+                <span className="text-xs text-[#64748b]">
+                  Showing {filteredQuestions.length} of {questions.length}
+                </span>
+              </div>
+
+              {/* Questions List */}
+              {filteredQuestions.length === 0 ? (
+                <div className="bg-white border border-[#e2e8f0] rounded-2xl p-12 text-center my-4">
+                  <div className="text-3xl mb-2">📋</div>
+                  <h4 className="text-sm font-bold text-[#1e293b] mb-1">
+                    No questions match the selected filter
+                  </h4>
+                  <p className="text-xs text-[#64748b]">
+                    Try selecting &quot;ALL&quot; to see the entire question review.
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  {filteredQuestions.map((q, idx) => (
+                    <QuestionReviewItem
+                      key={q.question_id || idx}
+                      question={q}
+                      index={idx}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-
-            {/* Questions List */}
-            {filteredQuestions.length === 0 ? (
-              <div className="bg-white border border-[#e2e8f0] rounded-2xl p-12 text-center my-4">
-                <div className="text-3xl mb-2">📋</div>
-                <h4 className="text-sm font-bold text-[#1e293b] mb-1">
-                  No questions match the selected filter
-                </h4>
-                <p className="text-xs text-[#64748b]">
-                  Try selecting &quot;ALL&quot; to see the entire question review.
-                </p>
-              </div>
-            ) : (
-              <div>
-                {filteredQuestions.map((q, idx) => (
-                  <QuestionReviewItem
-                    key={q.question_id || idx}
-                    question={q}
-                    index={idx}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          /* Tab 2: Performance Analytics */
-          <PerformanceAnalytics result={result} />
-        )}
+        }
       </div>
-    </div>
+      </div>
   );
 }

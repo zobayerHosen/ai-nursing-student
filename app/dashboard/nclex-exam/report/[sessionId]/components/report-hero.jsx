@@ -57,12 +57,6 @@ export default function ReportHero({
             </>
           )}
         </div>
-
-        {readinessLevel && (
-          <div className="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#f8fafc] border border-[#e2e8f0] text-[#475569]">
-            Readiness: <strong className="ml-1 text-[#1e293b]">{readinessLevel}</strong>
-          </div>
-        )}
       </div>
     </div>
   );

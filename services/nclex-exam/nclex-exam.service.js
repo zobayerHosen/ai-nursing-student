@@ -24,6 +24,16 @@ export const nclexExamService = {
         return response?.data;
     },
 
+    pauseExam: async (axiosInstance, sessionId, payload) => {
+        const response = await axiosInstance.post(`/nclex/exams/session/${sessionId}/pause/`, payload);
+        return response?.data;
+    },
+
+    resumeExam: async (axiosInstance, sessionId) => {
+        const response = await axiosInstance.post(`/nclex/exams/session/${sessionId}/resume/`);
+        return response?.data;
+    },
+
     getExamReview: async (axiosInstance, sessionId) => {
         const response = await axiosInstance.get(`/nclex/exams/review/${sessionId}/`);
         return response?.data;

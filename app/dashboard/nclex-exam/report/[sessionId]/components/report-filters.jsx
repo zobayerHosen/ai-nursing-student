@@ -1,7 +1,7 @@
 "use client";
 
 export default function ReportFilters({
-  stats = { total: 0, correct: 0, incorrect: 0, flagged: 0, skipped: 0 },
+  stats = { total: 0, correct: 0, incorrect: 0, skipped: 0 },
   activeFilter = "all",
   onFilterChange,
 }) {
@@ -9,7 +9,6 @@ export default function ReportFilters({
     { key: "all", label: "All", val: stats.total, color: "#1E3A5F" },
     { key: "correct", label: "Correct", val: stats.correct, color: "#16a34a" },
     { key: "incorrect", label: "Incorrect", val: stats.incorrect, color: "#dc2626" },
-    { key: "flagged", label: "Flagged", val: stats.flagged, color: "#d97706" },
     { key: "skipped", label: "Skipped", val: stats.skipped, color: "#94a3b8" },
   ];
 
@@ -17,8 +16,7 @@ export default function ReportFilters({
     { key: "all", label: "ALL" },
     { key: "correct", label: "CORRECT" },
     { key: "incorrect", label: "INCORRECT" },
-    { key: "flagged", label: "FLAGGED" },
-    { key: "skipped", label: "OMITTED" },
+    { key: "skipped", label: "SKIPPED" },
   ];
 
   return (
@@ -31,14 +29,9 @@ export default function ReportFilters({
             <button
               key={card.key}
               onClick={() => onFilterChange && onFilterChange(card.key)}
-              className={`bg-white rounded-xl p-3.5 sm:p-4 border text-center cursor-pointer transition-all duration-150 ${
-                isActive
-                  ? "shadow-sm ring-2"
-                  : "hover:border-[#cbd5e1] shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
-              }`}
+              className={`bg-white rounded-xl p-3.5 sm:p-4 border text-center cursor-pointer transition-all duration-150`}
               style={{
                 borderColor: isActive ? card.color : "#e2e8f0",
-                boxShadow: isActive ? `0 0 0 3px ${card.color}20, 0 1px 3px rgba(0,0,0,0.04)` : undefined,
               }}
             >
               <div

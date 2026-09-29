@@ -34,7 +34,7 @@ export default function QuestionReviewItem({ question, index }) {
 
   return (
     <div className="bg-white border border-[#e2e8f0] rounded-2xl p-5 sm:p-7 mb-6 shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all">
-      {/* ─── QUESTION HEADER & TITLE ────────────────────────── */}
+      {/* ─── QUESTION HEADER & TITLE */}
       <div className="flex items-start gap-3 sm:gap-4 mb-4">
         {/* Question Index Badge */}
         <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#f1f5f9] border border-[#e2e8f0] text-[#475569] flex items-center justify-center text-xs sm:text-sm font-bold shrink-0">
@@ -67,9 +67,8 @@ export default function QuestionReviewItem({ question, index }) {
                 <span className="font-semibold text-[#94a3b8]">Skipped</span>
               ) : (
                 <span
-                  className={`font-bold ${
-                    isCorrect ? "text-[#16a34a]" : "text-[#e11d48]"
-                  }`}
+                  className={`font-bold ${isCorrect ? "text-[#16a34a]" : "text-[#e11d48]"
+                    }`}
                 >
                   {userAnswerText || "Answered"}
                 </span>
@@ -113,23 +112,27 @@ export default function QuestionReviewItem({ question, index }) {
           {/* Clinical Reasoning — Reading the Trend */}
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-[3px] h-3.5 bg-[#fe5e7e] rounded-sm shrink-0" />
-              <div className="text-[11px] sm:text-xs font-extrabold text-[#fe5e7e] tracking-wider uppercase">
+              <div className="w-0.75 h-3.5 bg-[#fe5e7e] rounded-sm shrink-0" />
+              <p className="text-[11px] sm:text-xs font-extrabold text-[#fe5e7e] tracking-wider uppercase">
                 CLINICAL REASONING — READING THE TREND
-              </div>
+              </p>
             </div>
-            <p className="text-[13px] sm:text-[13.5px] text-[#334155] leading-relaxed">
+
+            <p>
+              {q?.rationale_takeaway ?? "N/F"}
+            </p>
+            {/* <p className="text-[13px] sm:text-[13.5px] text-[#334155] leading-relaxed">
               {q.explanation ||
                 q.rationale_takeaway ||
                 "Understand the pathophysiological mechanisms, clinical priorities, and safety parameters relevant to this scenario."}
-            </p>
+            </p> */}
           </div>
 
           {/* Why Others Fail / Option Breakdown */}
-          {options.length > 0 && (
+          {options?.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2.5">
-                <div className="w-[3px] h-3.5 bg-[#fe5e7e] rounded-sm shrink-0" />
+                <div className="w-0.75 h-3.5 bg-[#fe5e7e] rounded-sm shrink-0" />
                 <div className="text-[11px] sm:text-xs font-extrabold text-[#fe5e7e] tracking-wider uppercase">
                   WHY OTHERS FAIL / OPTION ANALYSIS
                 </div>
@@ -143,19 +146,17 @@ export default function QuestionReviewItem({ question, index }) {
                   return (
                     <div
                       key={opt.id || oi}
-                      className={`flex items-start gap-3 p-3 sm:p-3.5 border rounded-xl transition-all ${
-                        isOptCorrect
+                      className={`flex items-start gap-3 p-3 sm:p-3.5 border rounded-xl transition-all ${isOptCorrect
                           ? "bg-[#f0fdf4] border-[#bbf7d0]"
                           : "bg-white border-[#e2e8f0]"
-                      }`}
+                        }`}
                     >
                       {/* Option Letter Badge */}
                       <div
-                        className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 text-xs font-bold ${
-                          isOptCorrect
+                        className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 text-xs font-bold ${isOptCorrect
                             ? "bg-[#dcfce7] text-[#16a34a]"
                             : "bg-[#fff1f2] text-[#e11d48]"
-                        }`}
+                          }`}
                       >
                         {letter}
                       </div>
@@ -163,9 +164,8 @@ export default function QuestionReviewItem({ question, index }) {
                       {/* Option Content & Explanation */}
                       <div className="flex-1 text-[13px] text-[#475569] leading-relaxed pt-0.5 min-w-0">
                         <span
-                          className={`font-bold mr-1.5 ${
-                            isOptCorrect ? "text-[#15803d]" : "text-[#e11d48]"
-                          }`}
+                          className={`font-bold mr-1.5 ${isOptCorrect ? "text-[#15803d]" : "text-[#e11d48]"
+                            }`}
                         >
                           {isOptCorrect ? "Correct." : `${opt.text}`}
                         </span>

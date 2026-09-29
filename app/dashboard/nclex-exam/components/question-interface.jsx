@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { usePauseExam, useResumeExam } from "@/hooks";
 import { PARTIAL_CREDIT_TYPES, LETTERS } from "./data";
 import { RationaleBlock, QuestionStats, Calculator } from "./sub-components";
+import toast from "react-hot-toast";
 
 const NGN_TYPES = new Set(["extended-multi", "matrix", "cloze", "bowtie", "trend", "highlight", "rank"]);
 
@@ -117,6 +120,10 @@ export default function QuestionInterface({
   initialFlagged = {},
   initialAnswers = {},
 }) {
+  const router = useRouter();
+  const sessionId = examMeta?.sessionId;
+  const { pauseExam, isPending: isPausingExam } = usePauseExam();
+  const { resumeExam, isPending: isResumingExam } = useResumeExam();
   const [current, setCurrent] = useState(() => {
     const validIdx = Number(initialQuestionIndex);
     if (!isNaN(validIdx) && validIdx >= 0 && questions?.length > 0) {
@@ -191,6 +198,55 @@ export default function QuestionInterface({
       onSessionEnd({ answers, flagged, isAnswerScored: localIsAnswerScored, examId: examMeta ? examMeta.examId : null, isFullExam: examMeta ? examMeta.isFullExam : false });
     }
     onFinish();
+  };
+
+  // End exam (pauses session if in exam mode and navigates back to dashboard)
+  const handleEndExam = async () => {
+    if (isQBank) {
+      router.push("/dashboard/qbank");
+      return;
+    }
+    if (!sessionId) {
+      router.push("/dashboard/nclex-exam");
+      return;
+    }
+    try {
+      await pauseExam(sessionId);
+      toast.success("Exam paused successfully");
+      router.push("/dashboard/nclex-exam");
+    } catch (err) {
+      toast.error("Failed to pause exam");
+      router.push("/dashboard/nclex-exam");
+    }
+  };
+
+  // Paused exam (pauses session, freezes state, does NOT navigate)
+  const handlePausedExam = async () => {
+    if (isPausingExam) return;
+    try {
+      if (sessionId) {
+        await pauseExam(sessionId);
+        toast.success("Exam paused successfully");
+      }
+      setPaused(true);
+    } catch (err) {
+      toast.error("Failed to pause exam");
+      setPaused(true);
+    }
+  };
+
+  // Resume exam
+  const handleResumeExam = async () => {
+    if (isResumingExam) return;
+    try {
+      if (sessionId) {
+        await resumeExam(sessionId);
+        toast.success("Exam resumed successfully");
+      }
+      setPaused(false);
+    } catch (err) {
+      toast.error("Failed to resume exam");
+    }
   };
 
   const submitCurrentAnswer = async (ansVal, currentIndex = current) => {
@@ -319,10 +375,10 @@ export default function QuestionInterface({
       const hasAnswer = Array.isArray(selected)
         ? selected.length > 0
         : typeof selected === "string"
-        ? selected.trim().length > 0
-        : typeof selected === "number"
-        ? true
-        : selected !== null && selected !== undefined;
+          ? selected.trim().length > 0
+          : typeof selected === "number"
+            ? true
+            : selected !== null && selected !== undefined;
 
       if (hasAnswer) {
         if (onSubmitAnswer) {
@@ -574,15 +630,15 @@ export default function QuestionInterface({
                               <span className="font-semibold text-[#16a34a]">
                                 {isQBank
                                   ? (() => {
-                                      const indices = getQbankCorrectIndices(qq);
-                                      if (qq.type === "fill-blank" || qq.type === "input") {
-                                        const caVal = backendFeedback[qq.id]?.correct_answer;
-                                        return typeof caVal === "object" ? (caVal.answer || "") : String(caVal || "");
-                                      }
-                                      return qq.type === "radio" || qq.type === "multiple" || qq.type === "highlight" || qq.type === "order"
-                                        ? indices.map((ci) => LETTERS[ci]).join(", ")
-                                        : "";
-                                    })()
+                                    const indices = getQbankCorrectIndices(qq);
+                                    if (qq.type === "fill-blank" || qq.type === "input") {
+                                      const caVal = backendFeedback[qq.id]?.correct_answer;
+                                      return typeof caVal === "object" ? (caVal.answer || "") : String(caVal || "");
+                                    }
+                                    return qq.type === "radio" || qq.type === "multiple" || qq.type === "highlight" || qq.type === "order"
+                                      ? indices.map((ci) => LETTERS[ci]).join(", ")
+                                      : "";
+                                  })()
                                   : (qq.type === "fill-blank" || qq.type === "input")
                                     ? (() => {
                                       const cfg = qq.blankInput || {};
@@ -720,7 +776,8 @@ export default function QuestionInterface({
 
       {/* Secondary toolbar */}
       <div className="bg-[#3a7ab2] px-3 h-9.5 flex items-center justify-between shrink-0 z-10 gap-1.5">
-        <div className="flex items-center gap-1.5">
+        <div></div>
+        {/* <div className="flex items-center gap-1.5">
           <button
             onClick={() => setFlagged((f) => ({ ...f, [current]: !f[current] }))}
             className="flex items-center gap-1.5 px-2 py-1 border-none rounded-sm cursor-pointer transition-all text-[11px] font-semibold tracking-wide font-sans"
@@ -734,7 +791,7 @@ export default function QuestionInterface({
             </svg>
             <span className="whitespace-nowrap">{flagged[current] ? "FLAGGED" : "MARK FOR LATER"}</span>
           </button>
-        </div>
+        </div> */}
         <div className="flex items-center gap-1">
           <button
             onClick={() => setShowCalc((s) => !s)}
@@ -940,14 +997,14 @@ export default function QuestionInterface({
                       {currentOrder.map((optIdx, displayIdx) => {
                         const optText = q.options[optIdx];
                         if (optText === undefined) return null;
-                        
+
                         const correctIndices = isQBank ? getQbankCorrectIndices(q) : (Array.isArray(q.correct) ? q.correct : []);
                         const isCorrectlyPlaced = correctIndices[displayIdx] === optIdx;
-                        
+
                         let cardBg = "bg-white";
                         let cardBorder = "border-[#e2e8f0]";
                         let badgeBg = "bg-[#2C5F8D] text-white";
-                        
+
                         if (isAnsweredNow) {
                           if (isCorrectlyPlaced) {
                             cardBg = "bg-[#f0fdf4]";
@@ -983,7 +1040,7 @@ export default function QuestionInterface({
                           if (!dragIdxStr) return;
                           const dragIdx = parseInt(dragIdxStr, 10);
                           if (isNaN(dragIdx) || dragIdx === displayIdx) return;
-                          
+
                           const newOrder = [...currentOrder];
                           const [removed] = newOrder.splice(dragIdx, 1);
                           newOrder.splice(displayIdx, 0, removed);
@@ -998,9 +1055,8 @@ export default function QuestionInterface({
                             onDragEnd={handleDragEnd}
                             onDragOver={handleDragOver}
                             onDrop={handleDrop}
-                            className={`flex items-center gap-3.5 px-4 py-3.5 border rounded-lg transition-all duration-150 ${cardBg} ${cardBorder} ${
-                              !isAnsweredNow ? "hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-grab active:cursor-grabbing" : ""
-                            }`}
+                            className={`flex items-center gap-3.5 px-4 py-3.5 border rounded-lg transition-all duration-150 ${cardBg} ${cardBorder} ${!isAnsweredNow ? "hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-grab active:cursor-grabbing" : ""
+                              }`}
                           >
                             {/* Drag handle */}
                             <div className={`shrink-0 flex items-center justify-center w-5 ${isAnsweredNow ? "opacity-40" : "text-[#94a3b8]"}`}>
@@ -1055,15 +1111,15 @@ export default function QuestionInterface({
                           if (part.startsWith("[") && part.endsWith("]")) {
                             const optIdx = optionCounter++;
                             const optText = part.slice(1, -1);
-                            
+
                             const isPicked = userPicks.includes(optIdx);
                             const isCorrect = correctIndices.includes(optIdx);
                             const wasCorrect = isAnsweredNow && isPicked && isCorrect;
                             const wasWrong = isAnsweredNow && isPicked && !isCorrect;
                             const wasCorrectUnpicked = isAnsweredNow && !isPicked && isCorrect;
-                            
+
                             let highlightClass = "px-1.5 py-0.5 mx-0.5 rounded transition-all duration-150 cursor-pointer font-semibold border border-dashed border-[#cbd5e1] bg-[#f1f5f9] text-[#1e293b] hover:bg-[#cbd5e1] hover:border-[#94a3b8]";
-                            
+
                             if (isAnsweredNow) {
                               if (wasCorrect) {
                                 highlightClass = "px-1.5 py-0.5 mx-0.5 rounded font-semibold bg-[#ecfdf3] text-[#15803d] border border-solid border-[#16a34a] cursor-default";
@@ -1077,7 +1133,7 @@ export default function QuestionInterface({
                             } else if (isPicked) {
                               highlightClass = "px-1.5 py-0.5 mx-0.5 rounded font-semibold bg-[#fef08a] text-[#854d0e] border border-solid border-[#eab308] cursor-pointer";
                             }
-                            
+
                             const handleHighlightClick = () => {
                               if (isAnsweredNow) return;
                               const next = userPicks.includes(optIdx)
@@ -1085,7 +1141,7 @@ export default function QuestionInterface({
                                 : [...userPicks, optIdx].sort((a, b) => a - b);
                               setSelected(next);
                             };
-                            
+
                             return (
                               <span
                                 key={pi}
@@ -1104,16 +1160,16 @@ export default function QuestionInterface({
 
                   const foundOptions = q.options.filter(opt => passage.toLowerCase().includes(opt.toLowerCase()));
                   const showInline = foundOptions.length > 0;
-                  
+
                   if (showInline) {
                     const sortedOpts = [...q.options]
                       .map((text, index) => ({ text, index }))
                       .sort((a, b) => b.text.length - a.text.length);
-                      
+
                     const escapedOptions = sortedOpts.map(o => o.text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
                     const regex = new RegExp(`(${escapedOptions.join('|')})`, 'gi');
                     const parts = passage.split(regex);
-                    
+
                     return (
                       <div className="text-[15.5px] leading-[2.2] text-[#0f172a] p-4.5 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl font-sans font-normal">
                         {parts.map((part, pi) => {
@@ -1125,9 +1181,9 @@ export default function QuestionInterface({
                             const wasCorrect = isAnsweredNow && isPicked && isCorrect;
                             const wasWrong = isAnsweredNow && isPicked && !isCorrect;
                             const wasCorrectUnpicked = isAnsweredNow && !isPicked && isCorrect;
-                            
+
                             let highlightClass = "px-1.5 py-0.5 mx-0.5 rounded transition-all duration-150 cursor-pointer font-semibold border border-dashed border-[#cbd5e1] bg-[#f1f5f9] text-[#1e293b] hover:bg-[#cbd5e1] hover:border-[#94a3b8]";
-                            
+
                             if (isAnsweredNow) {
                               if (wasCorrect) {
                                 highlightClass = "px-1.5 py-0.5 mx-0.5 rounded font-semibold bg-[#ecfdf3] text-[#15803d] border border-solid border-[#16a34a] cursor-default";
@@ -1141,7 +1197,7 @@ export default function QuestionInterface({
                             } else if (isPicked) {
                               highlightClass = "px-1.5 py-0.5 mx-0.5 rounded font-semibold bg-[#fef08a] text-[#854d0e] border border-solid border-[#eab308] cursor-pointer";
                             }
-                            
+
                             const handleHighlightClick = () => {
                               if (isAnsweredNow) return;
                               const next = userPicks.includes(optIdx)
@@ -1149,7 +1205,7 @@ export default function QuestionInterface({
                                 : [...userPicks, optIdx].sort((a, b) => a - b);
                               setSelected(next);
                             };
-                            
+
                             return (
                               <span
                                 key={pi}
@@ -1165,7 +1221,7 @@ export default function QuestionInterface({
                       </div>
                     );
                   }
-                  
+
                   return (
                     <div className="flex flex-col gap-2">
                       {q.options.map((optText, optIdx) => {
@@ -1174,9 +1230,9 @@ export default function QuestionInterface({
                         const wasCorrect = isAnsweredNow && isPicked && isCorrect;
                         const wasWrong = isAnsweredNow && isPicked && !isCorrect;
                         const wasCorrectUnpicked = isAnsweredNow && !isPicked && isCorrect;
-                        
+
                         let highlightClass = "p-3.5 border border-dashed border-[#cbd5e1] bg-[#f8fafc] text-[#1e293b] hover:bg-[#f1f5f9] rounded-xl cursor-pointer transition-all duration-150 font-medium text-[14px]";
-                        
+
                         if (isAnsweredNow) {
                           if (wasCorrect) {
                             highlightClass = "p-3.5 border border-solid border-[#16a34a] bg-[#ecfdf3] text-[#15803d] rounded-xl font-medium text-[14px]";
@@ -1190,7 +1246,7 @@ export default function QuestionInterface({
                         } else if (isPicked) {
                           highlightClass = "p-3.5 border border-solid border-[#eab308] bg-[#fef08a] text-[#854d0e] rounded-xl font-medium text-[14px] shadow-sm";
                         }
-                        
+
                         const handleHighlightClick = () => {
                           if (isAnsweredNow) return;
                           const next = userPicks.includes(optIdx)
@@ -1198,7 +1254,7 @@ export default function QuestionInterface({
                             : [...userPicks, optIdx].sort((a, b) => a - b);
                           setSelected(next);
                         };
-                        
+
                         return (
                           <div
                             key={optIdx}
@@ -1361,14 +1417,14 @@ export default function QuestionInterface({
                           placeholder={cfg.placeholder || (cfg.kind === "numeric" ? "Enter a number" : "Type your answer")}
                           onChange={(e) => setSelected(e.target.value)}
                           onKeyDown={async (e) => {
-                             if (e.key === "Enter" && isTutorial && !isAnsweredNow && String(selected).trim().length > 0) {
-                               if (onSubmitAnswer) {
-                                 await submitCurrentAnswer(selected, current);
-                               }
-                               setRevealed(true);
-                               setAnswers((a) => ({ ...a, [current]: selected }));
-                             }
-                           }}
+                            if (e.key === "Enter" && isTutorial && !isAnsweredNow && String(selected).trim().length > 0) {
+                              if (onSubmitAnswer) {
+                                await submitCurrentAnswer(selected, current);
+                              }
+                              setRevealed(true);
+                              setAnswers((a) => ({ ...a, [current]: selected }));
+                            }
+                          }}
                           className="flex-1 min-w-0 border-none outline-none bg-transparent font-sans text-[15px] font-semibold text-[#0f172a] p-0"
                         />
                         {cfg.unit && (
@@ -1460,7 +1516,7 @@ export default function QuestionInterface({
                         style={{
                           borderColor:
                             isAnsweredNow && isCorrectOpt
-                               ? "#16a34a"
+                              ? "#16a34a"
                               : isUserWrong
                                 ? "#FE5E7E"
                                 : isSelectedNow
@@ -1569,9 +1625,8 @@ export default function QuestionInterface({
                           setIsSubmitting(false);
                         }
                       }}
-                      className={`bg-[#2C5F8D] text-white border-none rounded-lg px-7 py-2.5 font-sans text-[13px] font-bold inline-flex items-center gap-2 tracking-wide transition-all ${
-                        isSubmitting ? "opacity-75 cursor-not-allowed" : "cursor-pointer hover:bg-[#1e4773]"
-                      }`}
+                      className={`bg-[#2C5F8D] text-white border-none rounded-lg px-7 py-2.5 font-sans text-[13px] font-bold inline-flex items-center gap-2 tracking-wide transition-all ${isSubmitting ? "opacity-75 cursor-not-allowed" : "cursor-pointer hover:bg-[#1e4773]"
+                        }`}
                     >
                       {isSubmitting ? (
                         <>
@@ -1689,15 +1744,14 @@ export default function QuestionInterface({
                     }}
                     className="w-full aspect-square rounded-lg cursor-pointer text-[11px] font-bold transition-all relative"
                     style={{
-                      border: `2px solid ${
-                        isCur
-                          ? "#2C5F8D"
-                          : isTutorial && isAns
-                            ? (isCorr ? "#86efac" : "#fca5a5")
-                            : isAns
-                              ? "#2C5F8D"
-                              : "#e2e8f0"
-                      }`,
+                      border: `2px solid ${isCur
+                        ? "#2C5F8D"
+                        : isTutorial && isAns
+                          ? (isCorr ? "#86efac" : "#fca5a5")
+                          : isAns
+                            ? "#2C5F8D"
+                            : "#e2e8f0"
+                        }`,
                       background: isCur
                         ? "#eef4fb"
                         : isTutorial && isAns
@@ -1725,16 +1779,16 @@ export default function QuestionInterface({
             <div className="flex flex-col gap-1 mb-3.5">
               {(isTutorial
                 ? [
-                    ["#f0fdf4", "#86efac", "Correct"],
-                    ["#fff5f5", "#fca5a5", "Incorrect"],
-                    ["#eef4fb", "#2C5F8D", "Current"],
-                    ["white", "#e2e8f0", "Unanswered"],
-                  ]
+                  ["#f0fdf4", "#86efac", "Correct"],
+                  ["#fff5f5", "#fca5a5", "Incorrect"],
+                  ["#eef4fb", "#2C5F8D", "Current"],
+                  ["white", "#e2e8f0", "Unanswered"],
+                ]
                 : [
-                    ["#eef4fb", "#2C5F8D", "Current"],
-                    ["#f1f5f9", "#2C5F8D", "Answered"],
-                    ["white", "#e2e8f0", "Unanswered"],
-                  ]
+                  ["#eef4fb", "#2C5F8D", "Current"],
+                  ["#f1f5f9", "#2C5F8D", "Answered"],
+                  ["white", "#e2e8f0", "Unanswered"],
+                ]
               ).map(([bg, bdr, lbl]) => (
                 <div key={lbl} className="flex items-center gap-1.5 text-[11px] text-[#94a3b8]">
                   <div
@@ -1749,15 +1803,15 @@ export default function QuestionInterface({
               <div className="text-[10px] text-[#94a3b8] mb-1.5 uppercase tracking-wide">Session Stats</div>
               {(isTutorial
                 ? [
-                    ["Answered", Object.keys(answers).length],
-                    ["Correct", Object.values(answers).filter((a, i) => localIsAnswerScored(questions[i], a)).length],
-                    ["Flagged", Object.values(flagged).filter(Boolean).length],
-                  ]
+                  ["Answered", Object.keys(answers).length],
+                  ["Correct", Object.values(answers).filter((a, i) => localIsAnswerScored(questions[i], a)).length],
+                  // ["Flagged", Object.values(flagged).filter(Boolean).length],
+                ]
                 : [
-                    ["Answered", Object.keys(answers).length],
-                    ["Remaining", Math.max(0, questions.length - Object.keys(answers).length)],
-                    ["Flagged", Object.values(flagged).filter(Boolean).length],
-                  ]
+                  ["Answered", Object.keys(answers).length],
+                  ["Remaining", Math.max(0, questions.length - Object.keys(answers).length)],
+                  // ["Flagged", Object.values(flagged).filter(Boolean).length],
+                ]
               ).map(([l, v]) => (
                 <div key={l} className="flex justify-between text-xs mb-1">
                   <span className="text-[#64748b]">{l}</span>
@@ -1771,10 +1825,12 @@ export default function QuestionInterface({
 
       {/* Bottom nav */}
       <div className="bg-[#0f3a5f] text-white h-8.5 flex items-stretch justify-between shrink-0 z-11 font-sans text-[13px]">
+        {/* End button */}
         <div className="flex items-stretch">
           <button
-            onClick={attemptExit}
-            className="flex items-center gap-1.5 px-3.5 border-none bg-transparent text-white cursor-pointer text-[13px] font-normal font-sans transition-all h-full"
+            onClick={handleEndExam}
+            disabled={isPausingExam}
+            className="flex items-center gap-1.5 px-3.5 border-none bg-transparent text-white cursor-pointer text-[13px] font-normal font-sans transition-all h-full disabled:opacity-50"
             style={{ borderRight: "1px solid rgba(255,255,255,0.18)" }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
@@ -1784,17 +1840,28 @@ export default function QuestionInterface({
             </svg>
             <span><u>E</u>nd</span>
           </button>
+
+          {/* paused button */}
           {mode === "test" && (
             <button
-              onClick={() => setPaused((p) => !p)}
-              className="flex items-center gap-1.5 px-3.5 border-none cursor-pointer text-[13px] font-normal font-sans transition-all h-full"
+              onClick={async () => {
+                if (paused) {
+                  await handleResumeExam();
+                } else {
+                  await handlePausedExam();
+                }
+              }}
+              disabled={isPausingExam || isResumingExam}
+              className="flex items-center gap-1.5 px-3.5 border-none cursor-pointer text-[13px] font-normal font-sans transition-all h-full disabled:opacity-60"
               style={{
                 borderRight: "1px solid rgba(255,255,255,0.18)",
                 background: paused ? "rgba(252,211,77,0.18)" : "transparent",
                 color: paused ? "#fde047" : "white",
               }}
             >
-              {paused ? (
+              {isPausingExam || isResumingExam ? (
+                <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0" />
+              ) : paused ? (
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" className="shrink-0">
                   <polygon points="6 4 20 12 6 20 6 4" />
                 </svg>
@@ -1807,6 +1874,7 @@ export default function QuestionInterface({
             </button>
           )}
         </div>
+
         <div className="flex items-stretch">
           <button
             onClick={async () => {
@@ -1878,9 +1946,8 @@ export default function QuestionInterface({
                 }
               }
             }}
-            className={`flex items-center gap-1.5 px-3.5 border-none bg-transparent text-white text-[13px] font-normal font-sans transition-all h-full ${
-              isSubmitting || isFinishing ? "opacity-75 cursor-not-allowed" : "cursor-pointer hover:bg-white/10"
-            }`}
+            className={`flex items-center gap-1.5 px-3.5 border-none bg-transparent text-white text-[13px] font-normal font-sans transition-all h-full ${isSubmitting || isFinishing ? "opacity-75 cursor-not-allowed" : "cursor-pointer hover:bg-white/10"
+              }`}
             style={{ borderLeft: "1px solid rgba(255,255,255,0.18)" }}
           >
             {isSubmitting ? (
@@ -1914,17 +1981,41 @@ export default function QuestionInterface({
 
       {/* Pause overlay */}
       {paused && mode === "test" && (
-        <div className="absolute inset-0 bg-[#0f172a/92] z-300 flex items-center justify-center backdrop-blur-lg">
-          <div className="text-center" style={{ animation: "scaleIn 0.2s ease" }}>
-            <div className="text-[64px] mb-3.5">⏸</div>
+        <div 
+          className="absolute top-0 inset-0 z-300 flex items-center justify-center backdrop-blur-md"
+          style={{ backgroundColor: "rgba(15, 23, 42, 0.94)" }}
+        >
+          <div className="text-center p-8 rounded-2xl max-w-md w-full mx-4" style={{ animation: "scaleIn 0.2s ease" }}>
             <div className="text-2xl font-extrabold text-white mb-1.5 font-serif">Exam Paused</div>
-            <div className="text-sm text-[#cbd5e1] mb-6">The timer is frozen. Click Resume when you&apos;re ready.</div>
-            <button
-              onClick={() => setPaused(false)}
-              className="bg-[#FE5E7E] text-white border-none rounded-lg px-8 py-3 font-sans text-sm font-bold cursor-pointer inline-flex items-center gap-2 tracking-wide"
-            >
-              <span className="text-sm">▶</span> Resume
-            </button>
+            <div className="text-sm text-[#cbd5e1] mb-6 leading-relaxed">
+              The exam timer is frozen. Click Start when you&apos;re ready to continue.
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                onClick={handleResumeExam}
+                disabled={isResumingExam}
+                className="w-full sm:w-auto min-w-37.5 bg-[#FE5E7E] hover:bg-[#e04d6c] text-white border-none rounded-lg px-8 py-3 font-sans text-sm font-bold cursor-pointer inline-flex items-center justify-center gap-2 tracking-wide transition-all shadow-lg active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isResumingExam ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Resuming...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-sm">▶</span>
+                    <span>Start</span>
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleEndExam}
+                disabled={isPausingExam || isResumingExam}
+                className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg px-5 py-3 font-sans text-sm font-semibold cursor-pointer inline-flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              >
+                End & Exit
+              </button>
+            </div>
           </div>
         </div>
       )}

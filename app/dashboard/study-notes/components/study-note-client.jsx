@@ -112,35 +112,11 @@ export default function StudyNoteClient() {
     }
   };
 
-
   const router = useRouter();
 
   // Fetch real categories to extract related topics
-  const { coreLearningData } = useCoreLearning("study_notes", { limit: 20 });
   const [selectedNoteForSave, setSelectedNoteForSave] = useState(null);
   const [savedRelatedIds, setSavedRelatedIds] = useState(new Set());
-
-  // Extract related topics from live API categories
-  const relatedTopics = useMemo(() => {
-    const list = [];
-    if (coreLearningData && Array.isArray(coreLearningData)) {
-      coreLearningData.forEach((category) => {
-        if (category.contents && Array.isArray(category.contents)) {
-          category.contents.forEach((topic) => {
-            if (topic.id !== contentId && list.length < 4) {
-              list.push({
-                id: topic.id,
-                title: topic.content_name || topic.title || "Clinical Topic",
-                category: category.title || "Medical Surgical",
-                is_saved: Boolean(topic.is_saved),
-              });
-            }
-          });
-        }
-      });
-    }
-    return list;
-  }, [coreLearningData, contentId]);
 
   const handleRelatedBookmarkClick = (topic, e) => {
     e.stopPropagation();
@@ -216,6 +192,8 @@ export default function StudyNoteClient() {
 
   const categoryName = currentNote?.category_name || "Medical Surgical";
   const noteTitle = currentNote?.content_name || "Study Note";
+  const relatedTopics = currentNote?.related_topics || [];
+  const video = currentNote?.video || {};
 
   const handleBackNavigation = () => {
     if (window.history.length > 1) {
@@ -224,6 +202,7 @@ export default function StudyNoteClient() {
       router.push("/dashboard/study-notes");
     }
   };
+  console.log("Current note", currentNote)
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -251,11 +230,10 @@ export default function StudyNoteClient() {
             type="button"
             onClick={handleSaveClick}
             disabled={isSavePending}
-            className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition flex items-center gap-2 cursor-pointer shadow-2xs ${
-              isSaved
+            className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition flex items-center gap-2 cursor-pointer shadow-2xs ${isSaved
                 ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-            }`}
+              }`}
           >
             {isSavePending ? (
               <Loader2 size={16} className="animate-spin" />
@@ -275,11 +253,10 @@ export default function StudyNoteClient() {
             type="button"
             onClick={handleCompleteClick}
             disabled={isCompletePending}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 cursor-pointer shadow-xs active:scale-95 ${
-              isCompleted
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 cursor-pointer shadow-xs active:scale-95 ${isCompleted
                 ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                 : "bg-[#1B4B66] hover:bg-[#14394E] text-white"
-            }`}
+              }`}
           >
             {isCompletePending ? (
               <Loader2 size={16} className="animate-spin" />
@@ -309,9 +286,8 @@ export default function StudyNoteClient() {
                 )}
                 <iframe
                   src={getSecureUrl(currentNote.content_file_url)}
-                  className={`w-full h-full border-0 rounded-lg transition-opacity duration-300 ${
-                    isIframeLoading ? "opacity-0" : "opacity-100"
-                  }`}
+                  className={`w-full h-full border-0 rounded-lg transition-opacity duration-300 ${isIframeLoading ? "opacity-0" : "opacity-100"
+                    }`}
                   title={currentNote.content_name || "Note Content"}
                   sandbox="allow-same-origin allow-scripts"
                   onLoad={() => setIsIframeLoading(false)}
@@ -334,24 +310,11 @@ export default function StudyNoteClient() {
         <div className="xl:col-span-4 2xl:col-span-3 w-full space-y-5">
           {/* 1. Watch Lesson Card */}
           <div className="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
-            <h3 className="font-bold text-[#1B4B66] text-base mb-3">Watch Lesson</h3>
+            <h3 className="font-bold text-[#1B4B66] text-base mb-3">Lesson Video</h3>
 
             {/* Video preview thumbnail */}
             <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-900 flex items-center justify-center group cursor-pointer shadow-xs border border-gray-200">
               <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-black/20" />
-
-              {/* Lesson Illustration Mock */}
-              <div className="absolute inset-0 flex items-center justify-center p-4 text-center">
-                <div className="space-y-1">
-                  <span className="text-[9px] font-bold text-rose-400 uppercase tracking-widest">
-                    {categoryName}
-                  </span>
-                  <p className="text-white font-black text-sm sm:text-base tracking-wide leading-tight truncate px-2">
-                    {noteTitle}
-                  </p>
-                  <p className="text-gray-300 text-[9px]">High-Yield Clinical Lesson</p>
-                </div>
-              </div>
 
               {/* Play Button Overlay */}
               <div className="w-11 h-11 rounded-full bg-white/90 text-[#1B4B66] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform z-10">
@@ -368,7 +331,7 @@ export default function StudyNoteClient() {
                 {noteTitle}
               </h4>
               <p className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed">
-                Comprehensive NCLEX review, clinical indications, and essential patient care guidelines.
+                {video?.description ?? "N/A"}
               </p>
 
               {/* Lesson Progress Bar */}
@@ -434,7 +397,7 @@ export default function StudyNoteClient() {
                           {topic.title}
                         </h4>
                         <p className="text-[11px] text-gray-400 font-medium truncate">
-                          {topic.category}
+                          {topic.category_name}
                         </p>
                       </div>
                     </div>
