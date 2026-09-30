@@ -777,21 +777,6 @@ export default function QuestionInterface({
       {/* Secondary toolbar */}
       <div className="bg-[#3a7ab2] px-3 h-9.5 flex items-center justify-between shrink-0 z-10 gap-1.5">
         <div></div>
-        {/* <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => setFlagged((f) => ({ ...f, [current]: !f[current] }))}
-            className="flex items-center gap-1.5 px-2 py-1 border-none rounded-sm cursor-pointer transition-all text-[11px] font-semibold tracking-wide font-sans"
-            style={{
-              background: flagged[current] ? "rgba(255,255,255,0.22)" : "transparent",
-              color: "white",
-            }}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill={flagged[current] ? "#fde047" : "none"} stroke={flagged[current] ? "#fde047" : "white"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-              <path d="M4 21V4h13l-2 4 2 4H4" />
-            </svg>
-            <span className="whitespace-nowrap">{flagged[current] ? "FLAGGED" : "MARK FOR LATER"}</span>
-          </button>
-        </div> */}
         <div className="flex items-center gap-1">
           <button
             onClick={() => setShowCalc((s) => !s)}

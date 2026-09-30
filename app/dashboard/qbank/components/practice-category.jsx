@@ -209,7 +209,7 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
             </button>
           </div>
         ) : (
-          filteredCategories.map((cat, catIdx) => {
+          filteredCategories?.map((cat, catIdx) => {
             const catName = cat.category || `Category ${catIdx + 1}`;
             // Only the selected category is expanded
             const isCatExpanded = expandedCategory === catName;
@@ -222,11 +222,11 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
               <div
                 key={catName}
                 className={`rounded-xl sm:rounded-2xl border transition-all duration-200 overflow-hidden bg-white ${isCatExpanded
-                    ? "border-[#2c5f8d]/40 shadow-xs ring-1 ring-[#2c5f8d]/10"
-                    : "border-[#e2e8f0] hover:border-[#cbd5e1] hover:shadow-xs"
+                  ? "border-[#2c5f8d]/40 shadow-xs ring-1 ring-[#2c5f8d]/10"
+                  : "border-[#e2e8f0] hover:border-[#cbd5e1] hover:shadow-xs"
                   }`}
               >
-                {/* ─── CATEGORY CARD HEADER ────────────────────────── */}
+                {/*  CATEGORY CARD HEADER  */}
                 <div
                   onClick={() => toggleCategory(catName)}
                   className="p-3.5 sm:p-4.5 flex items-center justify-between gap-3 cursor-pointer select-none transition-colors hover:bg-[#fcfdff]"
@@ -260,7 +260,7 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
                   </div>
                 </div>
 
-                {/* ─── EXPANDED TOPICS & SUBTOPICS SECTION ──────────── */}
+                {/* EXPANDED TOPICS & SUBTOPICS SECTION */}
                 {isCatExpanded && (
                   <div className="border-t border-[#eef4fb] bg-[#f8fafc]/70 p-3.5 sm:p-4.5 animate-[fadeIn_0.2s_ease]">
                     <div className="mb-2.5 flex items-center justify-between">
@@ -418,7 +418,7 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
         )}
       </div>
 
-      {/* ─── CONFIGURE EXAM MODAL ──────────────────────────────────── */}
+      {/* CONFIGURE EXAM MODAL */}
       {configuring && (
         <ConfigureModal
           category={configuring.topic}
