@@ -20,7 +20,9 @@ import {
   ArrowRight,
   BookOpen,
 } from "lucide-react";
+import dummayImage from "@/public/med_dumm.png";
 import { useCoreLearning } from "@/hooks";
+import Link from "next/link";
 
 const ICON_PALETTE = [
   { icon: Stethoscope, bg: "bg-[#EBF5FF]", iconColor: "text-[#0284C7]" },
@@ -37,37 +39,68 @@ const ICON_PALETTE = [
   { icon: Sparkles, bg: "bg-[#D1FAE5]", iconColor: "text-[#059669]" },
 ];
 
-export default function StudyNotesEpisodesView({ onSelectCategory }) {
-  const [limit, setLimit] = useState(50);
-  const { coreLearningData, isLoading, coreLearningPagination, isFetching } =
-    useCoreLearning("study_notes", { limit });
+function EpisodeCover({ src, alt, palette }) {
+  const BASEURL = process.env.NEXT_PUBLIC_BASE_URL || "";
+
+  const resolvedUrl = useMemo(() => {
+    if (!src || typeof src !== "string") return null;
+    if (src.startsWith("http://") || src.startsWith("https://")) {
+      return src;
+    }
+    const cleanBase = BASEURL.replace(/\/+$/, "");
+    const cleanPath = src.startsWith("/") ? src : `/${src}`;
+    return cleanBase ? `${cleanBase}${cleanPath}` : src;
+  }, [src, BASEURL]);
+
+  const [hasError, setHasError] = useState(false);
+  const imgSrc = hasError || !resolvedUrl ? dummayImage : resolvedUrl;
+
+  return (
+    <div
+      className={`w-12 h-12 rounded-lg ${palette?.bg || "bg-blue-50"} shrink-0 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105 relative`}
+    >
+      <Image
+        src={imgSrc}
+        alt={alt || "Category cover"}
+        width={56}
+        height={56}
+        unoptimized={typeof imgSrc === "string" && imgSrc.startsWith("http")}
+        className="w-8 h-8 object-cover"
+        onError={() => setHasError(true)}
+      />
+    </div>
+  );
+}
+
+export default function StudyNotesEpisodesView() {
+  const { coreLearningData, isLoading } = useCoreLearning();
   console.log("Core learning data", coreLearningData);
-
-
-  const categories = useMemo(() => coreLearningData || [], [coreLearningData]);
-  const hasMore = coreLearningPagination?.count > (coreLearningData?.length || 0);
-
 
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("default");
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
 
   const filteredEpisodes = useMemo(() => {
-    let list = categories.filter((ep) =>
-      (ep.title || "").toLowerCase().includes(searchQuery.toLowerCase().trim())
-    );
+    let list = Array.isArray(coreLearningData) ? [...coreLearningData] : [];
 
-    if (sortBy === "az") {
-      list = [...list].sort((a, b) => (a.title || "").localeCompare(b.title || ""));
-    } else if (sortBy === "topics") {
-      list = [...list].sort(
-        (a, b) =>
-          (b.progress?.total_contents ?? b.contents?.length ?? 0) -
-          (a.progress?.total_contents ?? a.contents?.length ?? 0)
+    if (searchQuery.trim()) {
+      list = list.filter((ep) =>
+        (ep?.title || "").toLowerCase().includes(searchQuery.toLowerCase().trim())
       );
     }
+
+    if (sortBy === "az") {
+      list.sort((a, b) => (a?.title || "").localeCompare(b?.title || ""));
+    } else if (sortBy === "topics") {
+      list.sort(
+        (a, b) =>
+          (b?.total_topic ?? b?.progress?.total_contents ?? 0) -
+          (a?.total_topic ?? a?.progress?.total_contents ?? 0)
+      );
+    }
+
     return list;
-  }, [categories, searchQuery, sortBy]);
+  }, [coreLearningData, searchQuery, sortBy]);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 shadow-[0_2px_8px_rgba(0,0,0,0.03)] w-full">
@@ -161,7 +194,7 @@ export default function StudyNotesEpisodesView({ onSelectCategory }) {
       )}
 
       {/* Empty State */}
-      {!isLoading && categories.length === 0 && (
+      {!isLoading && (!coreLearningData || coreLearningData.length === 0) && (
         <div className="flex flex-col items-center justify-center py-16 text-center px-4">
           <div className="w-14 h-14 rounded-2xl bg-blue-50 text-[#1B4B66] flex items-center justify-center mb-3">
             <BookOpen size={28} />
@@ -173,45 +206,24 @@ export default function StudyNotesEpisodesView({ onSelectCategory }) {
         </div>
       )}
 
-      {/* Grid of Real Episode Cards */}
-      {!isLoading && categories.length > 0 && (
+      {/* Categories card */}
+      {!isLoading && coreLearningData?.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-          {filteredEpisodes.map((episode, idx) => {
+          {filteredEpisodes?.map((episode, idx) => {
             const palette = ICON_PALETTE[idx % ICON_PALETTE.length];
-            const IconComponent = palette.icon;
-            const totalTopics =
-              episode.progress?.total_contents ?? episode.contents?.length ?? 0;
-            const completedTopics = episode.progress?.completed_contents ?? 0;
 
             return (
-              <div
+              <Link
                 key={episode.id}
-                onClick={() => onSelectCategory(episode)}
+                href={`/dashboard/study-notes/sub-categories/${episode.id}`}
                 className="group bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-5 hover:border-[#1B4B66]/40 hover:shadow-md transition-all duration-200 flex items-start gap-4 cursor-pointer"
               >
-                {/* Left colored square icon container / cover image */}
-                <div
-                  className={`w-12 h-12 rounded-lg ${palette.bg} shrink-0 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105`}
-                >
-                  {episode?.cover ? (
-                    <Image
-                      src={
-                        episode.cover.startsWith("http")
-                          ? episode.cover
-                          : `${process.env.NEXT_PUBLIC_BASE_URL || ""}${episode.cover}`
-                      }
-                      alt={episode.title || "Category cover"}
-                      width={56}
-                      height={56}
-                      className="w-8 h-8 object-cover"
-                    />
-                  ) : (
-                    <IconComponent
-                      className={`w-7 h-7 ${palette.iconColor}`}
-                      strokeWidth={1.75}
-                    />
-                  )}
-                </div>
+                {/* Left colored square icon container / cover image with dummy fallback */}
+                <EpisodeCover
+                  src={episode?.cover}
+                  alt={episode?.title}
+                  palette={palette}
+                />
 
                 {/* Right content */}
                 <div className="flex-1 min-w-0">
@@ -219,7 +231,7 @@ export default function StudyNotesEpisodesView({ onSelectCategory }) {
                     {episode?.title ?? "No Title"}
                   </h3>
                   <p className="text-xs text-gray-400 font-medium mt-1">
-                    {totalTopics} Topics <span className="mx-1">•</span> {completedTopics} Completed
+                    {episode?.total_topic ?? 0} Topics <span className="mx-1">•</span> {episode?.total_completed ?? 0} Completed
                   </p>
 
                   {/* View Notes Link */}
@@ -231,7 +243,7 @@ export default function StudyNotesEpisodesView({ onSelectCategory }) {
                     />
                   </div>
                 </div>
-              </div>
+              </Link>
             );
           })}
 
@@ -240,20 +252,6 @@ export default function StudyNotesEpisodesView({ onSelectCategory }) {
               No nursing episodes match your search &ldquo;{searchQuery}&rdquo;.
             </div>
           )}
-        </div>
-      )}
-
-      {/* Pagination Load More */}
-      {!isLoading && hasMore && (
-        <div className="flex justify-center pt-6">
-          <button
-            type="button"
-            onClick={() => setLimit((prev) => prev + 10)}
-            disabled={isFetching}
-            className="px-5 py-2.5 bg-[#1B4B66] hover:bg-[#14394E] text-white rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer disabled:opacity-50 shadow-xs"
-          >
-            {isFetching ? "Loading..." : "See More Episodes"}
-          </button>
         </div>
       )}
     </div>

@@ -2,20 +2,20 @@ import axiosPrivateClient from "@/lib/axios.private.client";
 import { coreLearningService } from "@/services/core-learning";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
-export const useCoreLearning = (pathName, params = {}) => {
+export const useCoreLearning = () => {
   const axiosInstance = axiosPrivateClient();
 
   const { data, isLoading, isError, isFetching } = useQuery({
-    queryKey: ["core-learning", pathName, params],
-    queryFn: () => coreLearningService.getCoreLearning(axiosInstance, pathName, params),
+    queryKey: ["core-learning"],
+    queryFn: () => coreLearningService.getCoreLearning(axiosInstance),
     staleTime: 2 * 60 * 1000,
     retry: false,
-    enabled: !!pathName,
+
   });
 
   return {
-    coreLearningData: data?.data?.data,
-    coreLearningPagination: data?.data?.pagination,
+    coreLearningData: data?.data?.data?.categories,
+    popularThisWeek: data?.data?.data?.popular_this_week,
     isLoading,
     isError,
     isFetching,
@@ -46,7 +46,7 @@ export const useLearningCategoryDetails = (id) => {
 
   const { data, isLoading, isError, isFetching, error } = useQuery({
     queryKey: ["learning-category-details", id],
-    queryFn: () => coreLearningService.getCategoryDetails(axiosInstance, id),
+    queryFn: () => coreLearningService.getStudyNotesSubCategories(axiosInstance, id),
     staleTime: 2 * 60 * 1000,
     retry: false,
     enabled: !!id,

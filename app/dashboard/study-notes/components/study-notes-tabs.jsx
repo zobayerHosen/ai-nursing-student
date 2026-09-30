@@ -2,10 +2,6 @@
 
 import { STUDY_NOTES_TAB_ITEMS, STUDY_NOTES_TABS } from "../constants";
 
-/**
- * Navigation tabs ("All Notes" / "My Progress").
- * Renders buttons from a shared config to avoid duplicated markup.
- */
 export default function StudyNotesTabs({ activeTab, onChange }) {
   return (
     <div className="flex items-center gap-6 border-b border-gray-200">

@@ -1,6 +1,6 @@
 import axiosPrivateClient from "@/lib/axios.private.client";
 import { videoLessonService } from "@/services/video-lesson";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 export const useGetExploreModules = () => {
@@ -44,19 +44,43 @@ export const useGetBrowseVideoCategories = () => {
 export const useGetSingleBrowseCategoriesVideos = (id) => {
   const axiosInstance = axiosPrivateClient();
 
-  const { data, isLoading, isError, isFetching } = useQuery({
+  const {
+    data,
+    isLoading,
+    isError,
+    isFetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ["browse-single-categories-videos", id],
-    queryFn: () => videoLessonService.getSingleBrowseCategoriesVideos(axiosInstance, id),
+    queryFn: ({ pageParam = 1 }) =>
+      videoLessonService.getSingleBrowseCategoriesVideos(axiosInstance, id, { page: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const payload = lastPage?.data || lastPage;
+      if (payload?.has_next) {
+        if (payload?.next_page) return payload.next_page;
+        if (payload?.current_page && payload?.total_pages && payload.current_page < payload.total_pages) {
+          return payload.current_page + 1;
+        }
+      }
+      return undefined;
+    },
     staleTime: 2 * 60 * 1000,
     retry: false,
     enabled: !!id,
   });
 
   return {
-    singleBrowseCategoriesVideosData: data?.data,
+    data,
+    singleBrowseCategoriesVideosData: data?.pages?.[0]?.data || data?.pages?.[0],
     isLoading,
     isError,
     isFetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
   };
 };
 

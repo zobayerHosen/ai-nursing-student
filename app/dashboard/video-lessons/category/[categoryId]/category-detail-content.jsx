@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -22,38 +22,50 @@ import { useAddVideoToFavorite, useGetSingleBrowseCategoriesVideos } from "@/hoo
 function SafeThumbnail({ src, alt }) {
     const BASEURL = process.env.NEXT_PUBLIC_BASE_URL || "";
 
-    const resolveUrl = (url) => {
-        if (!url || typeof url !== "string") return null;
-        if (url.startsWith("http://") || url.startsWith("https://")) {
-            return url;
+    const resolvedUrl = useMemo(() => {
+        if (!src || typeof src !== "string") return null;
+        if (src.startsWith("http://") || src.startsWith("https://")) {
+            return src;
         }
         const cleanBase = BASEURL.replace(/\/+$/, "");
-        const cleanPath = url.startsWith("/") ? url : `/${url}`;
-        return cleanBase ? `${cleanBase}${cleanPath}` : url;
-    };
+        const cleanPath = src.startsWith("/") ? src : `/${src}`;
+        return cleanBase ? `${cleanBase}${cleanPath}` : src;
+    }, [src, BASEURL]);
 
-    const initialSrc = resolveUrl(src) || dummayImage;
-    const [imgSrc, setImgSrc] = useState(initialSrc);
-    const [hasError, setHasError] = useState(!src);
-
-    useEffect(() => {
-        const resolved = resolveUrl(src);
-        setImgSrc(resolved || dummayImage);
-        setHasError(!resolved);
-    }, [src]);
+    const [hasError, setHasError] = useState(false);
 
     return (
         <Image
-            src={hasError || !imgSrc ? dummayImage : imgSrc}
+            src={hasError || !resolvedUrl ? dummayImage : resolvedUrl}
             alt={alt || "Video thumbnail"}
             fill
-            unoptimized={typeof imgSrc === "string" && imgSrc.startsWith("http")}
+            unoptimized={typeof resolvedUrl === "string" && resolvedUrl.startsWith("http")}
             className="object-cover group-hover:scale-105 transition-transform duration-300"
             onError={() => {
                 setHasError(true);
-                setImgSrc(dummayImage);
             }}
         />
+    );
+}
+
+function VideoCardSkeleton() {
+    return (
+        <div className="bg-white rounded-2xl border border-[#e5e9f0] overflow-hidden shadow-2xs flex flex-col animate-pulse">
+            <div className="aspect-video w-full bg-slate-200" />
+            <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between">
+                <div>
+                    <div className="w-16 h-3 bg-slate-200 rounded mb-2" />
+                    <div className="w-full h-4 bg-slate-200 rounded mb-1.5" />
+                    <div className="w-3/4 h-4 bg-slate-200 rounded mb-2.5" />
+                    <div className="w-full h-3 bg-slate-100 rounded mb-1" />
+                    <div className="w-2/3 h-3 bg-slate-100 rounded" />
+                </div>
+                <div className="mt-4 pt-2.5 border-t border-[#f1f5f9] flex justify-between">
+                    <div className="w-16 h-3 bg-slate-200 rounded" />
+                    <div className="w-4 h-4 bg-slate-200 rounded-full" />
+                </div>
+            </div>
+        </div>
     );
 }
 
@@ -77,8 +89,42 @@ export default function CategoryDetailContent({
         routeParams?.categoryId ||
         propParams?.categoryId;
 
-    const { singleBrowseCategoriesVideosData, isLoading, isError } =
-        useGetSingleBrowseCategoriesVideos(categoryId);
+    const {
+        data: infiniteData,
+        singleBrowseCategoriesVideosData,
+        isLoading,
+        isError,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+    } = useGetSingleBrowseCategoriesVideos(categoryId);
+
+    const loadMoreRef = useRef(null);
+
+    useEffect(() => {
+        if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                    fetchNextPage();
+                }
+            },
+            {
+                rootMargin: "250px",
+                threshold: 0.1,
+            }
+        );
+
+        const currentElement = loadMoreRef.current;
+        observer.observe(currentElement);
+
+        return () => {
+            if (currentElement) {
+                observer.unobserve(currentElement);
+            }
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     const handleBack = () => {
         if (from === "categories" || from === "all-categories") {
@@ -95,22 +141,46 @@ export default function CategoryDetailContent({
     const [categoryFilter, setCategoryFilter] = useState("all");
     const [sortBy, setSortBy] = useState("popular");
 
-    // Extract data WITHOUT using the `module` object data
-    const payload = singleBrowseCategoriesVideosData?.results
-        ? singleBrowseCategoriesVideosData
-        : singleBrowseCategoriesVideosData?.data || singleBrowseCategoriesVideosData;
+    // Extract first page payload for category info and summary counts
+    const firstPagePayload =
+        infiniteData?.pages?.[0]?.data ||
+        infiniteData?.pages?.[0] ||
+        singleBrowseCategoriesVideosData;
 
+    const payload = firstPagePayload?.results
+        ? firstPagePayload
+        : firstPagePayload?.data || firstPagePayload;
+
+    // Accumulate all videos across all loaded pagination pages
     const results = useMemo(() => {
-        return Array.isArray(payload?.results)
-            ? payload.results
-            : Array.isArray(payload)
-                ? payload
-                : [];
-    }, [payload]);
+        if (!infiniteData?.pages) {
+            return Array.isArray(payload?.results)
+                ? payload.results
+                : Array.isArray(payload)
+                    ? payload
+                    : [];
+        }
+
+        const flatList = infiniteData.pages.flatMap((page) => {
+            const p = page?.data || page;
+            return Array.isArray(p?.results) ? p.results : Array.isArray(p) ? p : [];
+        });
+
+        // Deduplicate items by ID if applicable
+        const seen = new Set();
+        return flatList.filter((item) => {
+            const id = item.id || item.video_id;
+            if (!id) return true;
+            if (seen.has(id)) return false;
+            seen.add(id);
+            return true;
+        });
+    }, [infiniteData, payload]);
 
     const categoryTitle = useMemo(() => {
         return (
             payload?.module_name ||
+            payload?.module?.name ||
             results[0]?.category_name ||
             results[0]?.module_name ||
             "Video Lessons"
@@ -284,25 +354,7 @@ export default function CategoryDetailContent({
                 {isLoading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                         {Array.from({ length: 10 }).map((_, index) => (
-                            <div
-                                key={index}
-                                className="bg-white rounded-2xl border border-[#e5e9f0] overflow-hidden shadow-2xs flex flex-col animate-pulse"
-                            >
-                                <div className="aspect-video w-full bg-slate-200" />
-                                <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between">
-                                    <div>
-                                        <div className="w-16 h-3 bg-slate-200 rounded mb-2" />
-                                        <div className="w-full h-4 bg-slate-200 rounded mb-1.5" />
-                                        <div className="w-3/4 h-4 bg-slate-200 rounded mb-2.5" />
-                                        <div className="w-full h-3 bg-slate-100 rounded mb-1" />
-                                        <div className="w-2/3 h-3 bg-slate-100 rounded" />
-                                    </div>
-                                    <div className="mt-4 pt-2.5 border-t border-[#f1f5f9] flex justify-between">
-                                        <div className="w-16 h-3 bg-slate-200 rounded" />
-                                        <div className="w-4 h-4 bg-slate-200 rounded-full" />
-                                    </div>
-                                </div>
-                            </div>
+                            <VideoCardSkeleton key={`initial-skeleton-${index}`} />
                         ))}
                     </div>
                 ) : isError ? (
@@ -348,107 +400,118 @@ export default function CategoryDetailContent({
                         )}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {filteredCategoryVideos?.map((video) => (
-                            <Link
-                                key={video.id || video.video_id}
-                                href={`/dashboard/video-lessons/${video.video_id || video.id}`}
-                                className="bg-white rounded-2xl border border-[#e5e9f0] hover:border-[#cbd5e1] overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col group cursor-pointer"
-                            >
-                                {/* Thumbnail with Center Play Overlay */}
-                                <div className="relative aspect-video w-full bg-slate-900 overflow-hidden">
-                                    <SafeThumbnail
-                                        src={video.thumbnail}
-                                        alt={video.title}
-                                    />
+                    <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                            {filteredCategoryVideos?.map((video) => (
+                                <Link
+                                    key={video.id || video.video_id}
+                                    href={`/dashboard/video-lessons/${video.video_id || video.id}`}
+                                    className="bg-white rounded-2xl border border-[#e5e9f0] hover:border-[#cbd5e1] overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col group cursor-pointer"
+                                >
+                                    {/* Thumbnail with Center Play Overlay */}
+                                    <div className="relative aspect-video w-full bg-slate-900 overflow-hidden">
+                                        <SafeThumbnail
+                                            src={video.thumbnail}
+                                            alt={video.title}
+                                        />
 
-                                    {/* Play icon overlay */}
-                                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                                        <div className="w-10 h-10 rounded-full bg-white/95 text-[#1e3a5f] flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                                            <Play className="w-4 h-4 ml-0.5 fill-current" />
+                                        {/* Play icon overlay */}
+                                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                            <div className="w-10 h-10 rounded-full bg-white/95 text-[#1e3a5f] flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                                                <Play className="w-4 h-4 ml-0.5 fill-current" />
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    {/* Favorite Button on Top-Right Corner */}
-                                    {(() => {
-                                        const videoId = video.id || video.video_id;
-                                        const isThisPending = isPending && pendingId === videoId;
-                                        const isFav = Boolean(video.is_favorite);
+                                        {/* Favorite Button on Top-Right Corner */}
+                                        {(() => {
+                                            const videoId = video.id || video.video_id;
+                                            const isThisPending = isPending && pendingId === videoId;
+                                            const isFav = Boolean(video.is_favorite);
 
-                                        return (
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    addVideoToFavorite(videoId);
-                                                }}
-                                                disabled={isThisPending}
-                                                title={isFav ? "Remove from favorites" : "Add to favorites"}
-                                                aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
-                                                className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 hover:bg-white backdrop-blur-xs flex items-center justify-center transition-all duration-200 cursor-pointer z-20 group/fav shadow-md hover:scale-105 active:scale-95 ${
-                                                    isThisPending ? "cursor-not-allowed opacity-50" : ""
-                                                }`}
-                                            >
-                                                {isThisPending ? (
-                                                    <Loader2 className="w-4 h-4 text-[#1e3a5f] animate-spin" />
-                                                ) : isFav ? (
-                                                    <BookmarkCheck className="w-4 h-4 text-[#e14564] fill-current transition-all duration-200 group-hover/fav:scale-110" />
-                                                ) : (
-                                                    <Bookmark className="w-4 h-4 text-[#1e3a5f] transition-all duration-200 group-hover/fav:scale-110" />
-                                                )}
-                                            </button>
-                                        );
-                                    })()}
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        addVideoToFavorite(videoId);
+                                                    }}
+                                                    disabled={isThisPending}
+                                                    title={isFav ? "Remove from favorites" : "Add to favorites"}
+                                                    aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
+                                                    className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 hover:bg-white backdrop-blur-xs flex items-center justify-center transition-all duration-200 cursor-pointer z-20 group/fav shadow-md hover:scale-105 active:scale-95 ${
+                                                        isThisPending ? "cursor-not-allowed opacity-50" : ""
+                                                    }`}
+                                                >
+                                                    {isThisPending ? (
+                                                        <Loader2 className="w-4 h-4 text-[#1e3a5f] animate-spin" />
+                                                    ) : isFav ? (
+                                                        <BookmarkCheck className="w-4 h-4 text-[#e14564] fill-current transition-all duration-200 group-hover/fav:scale-110" />
+                                                    ) : (
+                                                        <Bookmark className="w-4 h-4 text-[#1e3a5f] transition-all duration-200 group-hover/fav:scale-110" />
+                                                    )}
+                                                </button>
+                                            );
+                                        })()}
 
-                                    {/* Completed Badge */}
-                                    {(video.is_completed || video.user_progress?.is_completed) && (
-                                        <div className="absolute top-2.5 left-2.5 bg-emerald-500/95 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
-                                            <CheckCircle2 className="w-3 h-3" />
-                                            <span>Completed</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Body Content */}
-                                <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between">
-                                    <div>
-                                        {/* Tag / Category / Lesson Number */}
-                                        <span className="text-[10px] font-bold text-info uppercase tracking-wider block mb-1 truncate">
-                                            {video.serial_number
-                                                ? `Lesson ${video.serial_number}`
-                                                : video.category_name ||
-                                                video.module_name ||
-                                                "Nursing Lesson"}
-                                        </span>
-
-                                        {/* Title */}
-                                        <h4 className="font-bold text-xs sm:text-sm text-[#0f172a] line-clamp-2 leading-snug group-hover:text-[#1e3a5f] transition-colors">
-                                            {video.title}
-                                        </h4>
-
-                                        {/* Description */}
-                                        {video.description && (
-                                            <p className="text-[11px] sm:text-xs text-[#64748b] mt-1.5 line-clamp-2 leading-relaxed">
-                                                {video.description}
-                                            </p>
+                                        {/* Completed Badge */}
+                                        {(video.is_completed || video.user_progress?.is_completed) && (
+                                            <div className="absolute top-2.5 left-2.5 bg-emerald-500/95 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+                                                <CheckCircle2 className="w-3 h-3" />
+                                                <span>Completed</span>
+                                            </div>
                                         )}
                                     </div>
 
-                                    {/* Footer with Views & Favorite Bookmark */}
-                                    <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[#f1f5f9]">
-                                        <span className="text-[11px] text-[#64748b] flex items-center gap-1 font-medium">
-                                            <Play className="w-3 h-3 fill-current text-[#94a3b8]" />
-                                            <span>
-                                                {video.views_formatted ||
-                                                    `${video.views_count ?? 0} Views`}
+                                    {/* Body Content */}
+                                    <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between">
+                                        <div>
+                                            {/* Tag / Category / Lesson Number */}
+                                            <span className="text-[10px] font-bold text-info uppercase tracking-wider block mb-1 truncate">
+                                                {video.serial_number
+                                                    ? `Lesson ${video.serial_number}`
+                                                    : video.category_name ||
+                                                    video.module_name ||
+                                                    "Nursing Lesson"}
                                             </span>
-                                        </span>
+
+                                            {/* Title */}
+                                            <h4 className="font-bold text-xs sm:text-sm text-[#0f172a] line-clamp-2 leading-snug group-hover:text-[#1e3a5f] transition-colors">
+                                                {video.title}
+                                            </h4>
+
+                                            {/* Description */}
+                                            {video.description && (
+                                                <p className="text-[11px] sm:text-xs text-[#64748b] mt-1.5 line-clamp-2 leading-relaxed">
+                                                    {video.description}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* Footer with Views & Favorite Bookmark */}
+                                        <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[#f1f5f9]">
+                                            <span className="text-[11px] text-[#64748b] flex items-center gap-1 font-medium">
+                                                <Play className="w-3 h-3 fill-current text-[#94a3b8]" />
+                                                <span>
+                                                    {video.views_formatted ||
+                                                        `${video.views_count ?? 0} Views`}
+                                                </span>
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
+                                </Link>
+                            ))}
+
+                            {/* Pagination Loading Skeletons */}
+                            {isFetchingNextPage &&
+                                Array.from({ length: 5 }).map((_, index) => (
+                                    <VideoCardSkeleton key={`pagination-skeleton-${index}`} />
+                                ))}
+                        </div>
+
+                        {/* Infinite scroll sentinel */}
+                        <div ref={loadMoreRef} className="h-6 w-full" />
+                    </>
                 )}
             </div>
         </div>

@@ -13,8 +13,8 @@ export const videoLessonService = {
   },
 
 
-  getSingleBrowseCategoriesVideos: async (axiosInstance, id) => {
-    const response = await axiosInstance.get(`/module/${id}/videos/`);
+  getSingleBrowseCategoriesVideos: async (axiosInstance, id, params = {}) => {
+    const response = await axiosInstance.get(`/module/${id}/videos/`, { params });
     return response?.data;
   },
 
