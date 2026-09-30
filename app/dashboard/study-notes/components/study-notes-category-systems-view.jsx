@@ -331,9 +331,8 @@ export default function StudyNotesCategorySystemsView({
                         {isExpanded ? "Collapse" : "Expand"}
                       </span>
                       <div
-                        className={`p-1 rounded-lg text-gray-400 transition-transform duration-200 ${
-                          isExpanded ? "rotate-180 text-[#1B4B66]" : ""
-                        }`}
+                        className={`p-1 rounded-lg text-gray-400 transition-transform duration-200 ${isExpanded ? "rotate-180 text-[#1B4B66]" : ""
+                          }`}
                       >
                         <ChevronDown size={18} />
                       </div>
