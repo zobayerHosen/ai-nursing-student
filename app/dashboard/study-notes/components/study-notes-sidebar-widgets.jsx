@@ -12,47 +12,22 @@ import {
   Bot,
   X,
   MessageSquare,
-  FileText,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { useCoreLearning, useSaveNote } from "@/hooks";
+import { useSaveNote } from "@/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import SaveNoteModal from "@/components/save-note-modal";
+import ImageErrorHandle from "@/app/dashboard/components/image-error-handle";
 
-export default function StudyNotesSidebarWidgets({ onSelectTopic }) {
+export default function StudyNotesSidebarWidgets({ onSelectTopic, popular_this_week }) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { coreLearningData, isLoading } = useCoreLearning("study_notes", { limit: 10 });
   const { saveNote } = useSaveNote();
-
   const [showLumiBanner, setShowLumiBanner] = useState(true);
   const [selectedNoteForSave, setSelectedNoteForSave] = useState(null);
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [savedIds, setSavedIds] = useState(new Set());
-
-  // Extract popular topics from real categories
-  const popularTopics = useMemo(() => {
-    const list = [];
-    if (coreLearningData && Array.isArray(coreLearningData)) {
-      coreLearningData.forEach((category) => {
-        if (category.contents && Array.isArray(category.contents)) {
-          category.contents.forEach((topic) => {
-            if (list.length < 5) {
-              list.push({
-                id: topic.id,
-                title: topic.content_name || topic.title || "Clinical Note",
-                category: category.title || "Medical Surgical",
-                is_saved: Boolean(topic.is_saved),
-              });
-            }
-          });
-        }
-      });
-    }
-
-    return list;
-  }, [coreLearningData]);
 
   const handleBookmarkClick = (topic, e) => {
     e.stopPropagation();
@@ -94,7 +69,7 @@ export default function StudyNotesSidebarWidgets({ onSelectTopic }) {
   };
 
   return (
-    <div className="flex flex-col gap-5 w-full">
+    <div className="flex flex-col gap-5">
       {/* 1. Popular This Week Card */}
       <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
         <div className="flex items-center gap-2 mb-4">
@@ -103,20 +78,13 @@ export default function StudyNotesSidebarWidgets({ onSelectTopic }) {
         </div>
 
         <div className="space-y-3">
-          {isLoading && (
-            <div className="flex items-center justify-center py-6">
-              <div className="w-5 h-5 border-2 border-[#1B4B66] border-t-transparent rounded-full animate-spin" />
-            </div>
-          )}
 
-          {!isLoading && popularTopics.length === 0 && (
+          {popular_this_week?.length === 0 ? (
             <p className="text-xs text-gray-400 py-3 text-center">
               No popular notes available.
             </p>
-          )}
-
-          {!isLoading &&
-            popularTopics.map((item) => {
+          ) : (
+            popular_this_week?.map((item) => {
               const isSaved = savedIds.has(item.id) || item.is_saved;
 
               return (
@@ -126,15 +94,16 @@ export default function StudyNotesSidebarWidgets({ onSelectTopic }) {
                   className="flex items-center justify-between p-2.5 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50/70 transition-all cursor-pointer group"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-lg bg-linear-to-br from-gray-100 to-gray-200/80 shrink-0 flex items-center justify-center border border-gray-200/50 group-hover:scale-105 transition-transform">
-                      <FileText className="w-4 h-4 text-gray-400 group-hover:text-[#1B4B66] transition-colors" />
-                    </div>
+                    <ImageErrorHandle
+                      src={item?.thumbnail}
+                      alt={item?.title}
+                    />
                     <div className="min-w-0">
                       <h4 className="text-xs sm:text-[13px] font-bold text-[#1B4B66] group-hover:text-[#0D3043] transition-colors truncate">
-                        {item.title}
+                        {item?.title ?? "Untitled Topic"}
                       </h4>
                       <p className="text-[11px] text-gray-400 font-medium truncate">
-                        {item.category}
+                        {item?.category ?? "Untitled Category"}
                       </p>
                     </div>
                   </div>
@@ -154,7 +123,8 @@ export default function StudyNotesSidebarWidgets({ onSelectTopic }) {
                   </button>
                 </div>
               );
-            })}
+            })
+          )}
         </div>
       </div>
 
@@ -263,4 +233,3 @@ export default function StudyNotesSidebarWidgets({ onSelectTopic }) {
     </div>
   );
 }
-

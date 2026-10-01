@@ -1,5 +1,5 @@
-import StudyNoteClient from "../components/study-note-client";
+import TopicContentDetails from "./topic-content-details";
 
 export default function StudyNoteDetails() {
-  return <StudyNoteClient />;
+  return <TopicContentDetails />;
 }

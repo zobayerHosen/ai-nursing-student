@@ -22,7 +22,6 @@ import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetCoreLearningContentDetails,
-  useCoreLearning,
   useSaveNote,
   useMarkComplete,
 } from "@/hooks";
@@ -30,7 +29,7 @@ import SaveNoteModal from "@/components/save-note-modal";
 import { getSecureUrl } from "@/utils";
 
 
-export default function StudyNoteClient() {
+export default function TopicContentDetails() {
   const { studyslug } = useParams();
   const contentId = Number(studyslug);
   const queryClient = useQueryClient();

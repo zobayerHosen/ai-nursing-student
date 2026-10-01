@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Image from "next/image";
 import {
   Search,
   SlidersHorizontal,
@@ -20,9 +19,10 @@ import {
   ArrowRight,
   BookOpen,
 } from "lucide-react";
-import dummayImage from "@/public/med_dumm.png";
 import { useCoreLearning } from "@/hooks";
 import Link from "next/link";
+import ImageErrorHandle from "@/app/dashboard/components/image-error-handle";
+import CardSkeleton from "@/app/dashboard/components/card-skeleton";
 
 const ICON_PALETTE = [
   { icon: Stethoscope, bg: "bg-[#EBF5FF]", iconColor: "text-[#0284C7]" },
@@ -39,43 +39,8 @@ const ICON_PALETTE = [
   { icon: Sparkles, bg: "bg-[#D1FAE5]", iconColor: "text-[#059669]" },
 ];
 
-function EpisodeCover({ src, alt, palette }) {
-  const BASEURL = process.env.NEXT_PUBLIC_BASE_URL || "";
-
-  const resolvedUrl = useMemo(() => {
-    if (!src || typeof src !== "string") return null;
-    if (src.startsWith("http://") || src.startsWith("https://")) {
-      return src;
-    }
-    const cleanBase = BASEURL.replace(/\/+$/, "");
-    const cleanPath = src.startsWith("/") ? src : `/${src}`;
-    return cleanBase ? `${cleanBase}${cleanPath}` : src;
-  }, [src, BASEURL]);
-
-  const [hasError, setHasError] = useState(false);
-  const imgSrc = hasError || !resolvedUrl ? dummayImage : resolvedUrl;
-
-  return (
-    <div
-      className={`w-12 h-12 rounded-lg ${palette?.bg || "bg-blue-50"} shrink-0 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105 relative`}
-    >
-      <Image
-        src={imgSrc}
-        alt={alt || "Category cover"}
-        width={56}
-        height={56}
-        unoptimized={typeof imgSrc === "string" && imgSrc.startsWith("http")}
-        className="w-8 h-8 object-cover"
-        onError={() => setHasError(true)}
-      />
-    </div>
-  );
-}
-
-export default function StudyNotesEpisodesView() {
+export default function StudyNotesCategoriesView() {
   const { coreLearningData, isLoading } = useCoreLearning();
-  console.log("Core learning data", coreLearningData);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("default");
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
@@ -185,16 +150,10 @@ export default function StudyNotesEpisodesView() {
         </div>
       </div>
 
-      {/* Loading State */}
-      {isLoading && (
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="w-8 h-8 border-3 border-[#1B4B66] border-t-transparent rounded-full animate-spin mb-3" />
-          <p className="text-xs text-gray-500 font-medium">Loading episodes...</p>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!isLoading && (!coreLearningData || coreLearningData.length === 0) && (
+      {/* Categories card / States */}
+      {isLoading ? (
+        <CardSkeleton count={10} />
+      ) : coreLearningData?.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center px-4">
           <div className="w-14 h-14 rounded-2xl bg-blue-50 text-[#1B4B66] flex items-center justify-center mb-3">
             <BookOpen size={28} />
@@ -204,10 +163,7 @@ export default function StudyNotesEpisodesView() {
             There are currently no study notes published in this section. Please check back later or explore other study tools.
           </p>
         </div>
-      )}
-
-      {/* Categories card */}
-      {!isLoading && coreLearningData?.length > 0 && (
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
           {filteredEpisodes?.map((episode, idx) => {
             const palette = ICON_PALETTE[idx % ICON_PALETTE.length];
@@ -219,10 +175,13 @@ export default function StudyNotesEpisodesView() {
                 className="group bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-5 hover:border-[#1B4B66]/40 hover:shadow-md transition-all duration-200 flex items-start gap-4 cursor-pointer"
               >
                 {/* Left colored square icon container / cover image with dummy fallback */}
-                <EpisodeCover
+                <ImageErrorHandle
                   src={episode?.cover}
                   alt={episode?.title}
-                  palette={palette}
+                  containerClassName={`w-12 h-12 rounded-lg ${palette?.bg || "bg-blue-50"} shrink-0 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105 relative`}
+                  imageClassName="w-8 h-8 object-cover"
+                  width={56}
+                  height={56}
                 />
 
                 {/* Right content */}
@@ -257,4 +216,3 @@ export default function StudyNotesEpisodesView() {
     </div>
   );
 }
-
