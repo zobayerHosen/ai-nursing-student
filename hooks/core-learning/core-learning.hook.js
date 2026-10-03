@@ -22,6 +22,27 @@ export const useCoreLearning = () => {
   };
 };
 
+
+// body systems
+export const useBodySystem = () => {
+  const axiosInstance = axiosPrivateClient();
+
+  const { data, isLoading, isError, isFetching } = useQuery({
+    queryKey: ["body-systems"],
+    queryFn: () => coreLearningService.getBodySystems(axiosInstance),
+    staleTime: 2 * 60 * 1000,
+    retry: false,
+
+  });
+
+  return {
+    bodySystemData: data?.data?.data,
+    isLoading,
+    isError,
+    isFetching,
+  };
+};
+
 export const useGetCoreLearningContentDetails = (id) => {
   const axiosInstance = axiosPrivateClient();
 

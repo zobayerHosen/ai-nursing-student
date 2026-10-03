@@ -85,8 +85,7 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
     const totalQ = subtopicItem
       ? subtopicItem.total_question
       : topicItem?.total_question ||
-      topicItem?.subtopic?.reduce((a, s) => a + (s.total_question || 0), 0) ||
-      10;
+      topicItem?.subtopic?.reduce((a, s) => a + (s.total_question || 0), 0) || 0;
 
     setConfiguring({
       categoryName,
@@ -158,7 +157,7 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
         </div>
       </div>
 
-      {/* ─── CATEGORY LIST ─────────────────────────────────────────── */}
+      {/* CATEGORY LIST*/}
       <div className="pt-4 grid grid-cols-1 lg:grid-cols-2 gap-3.5 sm:gap-4 items-start">
         {isLoading ? (
           <div className="space-y-3 col-span-full">
@@ -215,8 +214,6 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
             const isCatExpanded = expandedCategory === catName;
             const catTheme = getTheme(catName, catIdx);
             const CatIcon = catTheme.icon;
-            const totalQuestions = cat.total_question || 0;
-            const totalTopics = cat.total_topic || cat.topics?.length || 0;
 
             return (
               <div
@@ -231,7 +228,7 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
                   onClick={() => toggleCategory(catName)}
                   className="p-3.5 sm:p-4.5 flex items-center justify-between gap-3 cursor-pointer select-none transition-colors hover:bg-[#fcfdff]"
                 >
-                  {/* Left: Category Icon & Meta */}
+                  {/* Left: Category Icon, topic and question count */}
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div
                       className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 border ${catTheme.bg} ${catTheme.border} ${catTheme.color}`}
@@ -244,7 +241,7 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
                         {catName}
                       </h3>
                       <p className="text-[11px] text-[#94a3b8] mt-0.5 font-medium">
-                        {totalTopics} topics · {totalQuestions} questions
+                        {cat?.total_topic ?? "0"} topics · {cat?.total_question ?? "0"} questions
                       </p>
                     </div>
                   </div>
@@ -265,7 +262,7 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
                   <div className="border-t border-[#eef4fb] bg-[#f8fafc]/70 p-3.5 sm:p-4.5 animate-[fadeIn_0.2s_ease]">
                     <div className="mb-2.5 flex items-center justify-between">
                       <span className="text-[11px] font-bold text-[#64748b] tracking-wider uppercase">
-                        Topics in {catName}
+                        Topics in {catName ?? "N/A"}
                       </span>
                       <span className="text-[11px] text-[#94a3b8]">
                         {cat.topics?.length || 0} topics available
@@ -275,15 +272,11 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
                     {/* Grid of Topics inside the expanded Category */}
                     <div className="grid grid-cols-1 gap-3 sm:gap-3.5 items-start">
                       {cat.topics && cat.topics.length > 0 ? (
-                        cat.topics.map((topic, topIdx) => {
+                        cat?.topics?.map((topic, topIdx) => {
                           const topicTheme = getTheme(topic.topic_name, topIdx);
                           const TopicIcon = topicTheme.icon;
                           const subtopics = topic.subtopic || [];
                           const isSubOpen = !!openSubtopics[topic.id];
-                          const topicQuestions =
-                            subtopics.reduce((acc, s) => acc + (s.total_question || 0), 0) ||
-                            topic.total_question ||
-                            10;
 
                           return (
                             <div
@@ -301,10 +294,10 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
 
                                   <div className="min-w-0 flex-1">
                                     <h4 className="text-[13px] font-bold text-[#0f172a] truncate">
-                                      {topic.topic_name}
+                                      {topic.topic_name ?? "N/F"}
                                     </h4>
                                     <p className="text-[11px] text-[#94a3b8] mt-0.5 font-medium">
-                                      {subtopics.length} subtopics · {topicQuestions} questions
+                                      {topic?.total_subtopic ?? "0"} subtopics · {0} questions
                                     </p>
                                   </div>
                                 </div>
@@ -327,7 +320,7 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
                                         Practice All
                                       </div>
                                       <div className="text-[10px] text-[#64748b] truncate">
-                                        {topicQuestions} questions · full topic
+                                        {topic?.total_question ?? "0"} questions · full topic
                                       </div>
                                     </div>
                                   </button>

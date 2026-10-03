@@ -42,6 +42,8 @@ export default function ConfigureModal({ category, subtopic, totalQuestions, onC
     onStart(data);
   };
 
+  const isButtonDisabled = totalQuestions === 0 || maxAvailable === 0 || isPending;
+
   return (
     <div
       className="fixed inset-0 bg-black/45 backdrop-blur-sm z-900 flex items-center justify-center p-4"
@@ -51,7 +53,7 @@ export default function ConfigureModal({ category, subtopic, totalQuestions, onC
     >
       <div
         className="bg-white rounded-xl p-7 w-full max-h-[90vh] overflow-y-auto animate-[scaleIn_0.22s_ease]"
-        style={{ maxWidth: 540 }}s
+        style={{ maxWidth: 540 }}
       >
         {/* Header */}
         <div className="flex items-start justify-between mb-5.5 gap-3">
@@ -110,8 +112,9 @@ export default function ConfigureModal({ category, subtopic, totalQuestions, onC
             max={maxAvailable}
             step={1}
             value={count}
+            disabled={isButtonDisabled}
             onChange={(e) => setCount(+e.target.value)}
-            className="w-full accent-[#2C5F8D]"
+            className="w-full accent-[#2C5F8D] disabled:opacity-50 disabled:cursor-not-allowed"
           />
           <div className="flex justify-between text-[11px] text-[#94a3b8] mt-1">
             <span>{minLimit}</span>
@@ -121,9 +124,10 @@ export default function ConfigureModal({ category, subtopic, totalQuestions, onC
 
         <button
           onClick={() => onStart({ mode, count })}
-          className="w-full bg-[#1E3A5F] text-white border-none rounded-lg py-3.5 font-sans text-sm font-semibold cursor-pointer transition-all flex items-center justify-center gap-2 hover:bg-[#162d4a]"
+          disabled={isButtonDisabled}
+          className="w-full bg-[#1E3A5F] text-white border-none rounded-lg py-3.5 font-sans text-sm font-semibold transition-all flex items-center justify-center gap-2 hover:bg-[#162d4a] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#1E3A5F] cursor-pointer"
         >
-          Start Session →
+          {isPending ? "Starting..." : "Start Session →"}
         </button>
       </div>
     </div>

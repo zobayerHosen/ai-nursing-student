@@ -4,6 +4,10 @@ export const coreLearningService = {
         return response?.data;
     },
 
+    getBodySystems: async (axiosInstance) => {
+        const response = await axiosInstance.get(`/learning/body_system/`);
+        return response?.data;
+    },
 
     getStudyNotesSubCategories: async (axiosInstance, id) => {
         const response = await axiosInstance.get(`/learning/category/${id}/`);

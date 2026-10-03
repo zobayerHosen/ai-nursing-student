@@ -2,11 +2,11 @@
 
 import React from "react";
 import BodySystemDetails from "./body-system-detail";
-import { useLearningCategoryDetails } from "@/hooks";
+import { useGetCoreLearningContentDetails } from "@/hooks";
 import { notFound } from "next/navigation";
 
 const BodySystemClient = ({ id }) => {
-  const { learningCategoryDetailsData, isLoading } = useLearningCategoryDetails(id);
+  const { topicDetailsData, isLoading } = useGetCoreLearningContentDetails(id);
 
   if (isLoading) {
     return (
@@ -16,12 +16,10 @@ const BodySystemClient = ({ id }) => {
     );
   }
 
-  const systemData = learningCategoryDetailsData;
-
-  if (!systemData) {
+  if (!topicDetailsData) {
     notFound();
   }
 
-  return <BodySystemDetails systemData={systemData} />;
+  return <BodySystemDetails systemData={topicDetailsData} />;
 };
 export default BodySystemClient;
