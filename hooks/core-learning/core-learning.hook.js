@@ -118,9 +118,7 @@ export const useStudyNotesProgress = () => {
   });
 
   return {
-    content_summary: data?.content_summary,
-    recentActivity: data?.recent_activity,
-    topics: data?.topics,
+    content_summary: data?.data,
     isLoading,
     isError,
     error,

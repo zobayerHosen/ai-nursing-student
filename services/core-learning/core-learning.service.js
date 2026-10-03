@@ -27,7 +27,7 @@ export const coreLearningService = {
     },
 
     getStudyNotesProgress: async (axiosInstance) => {
-        const response = await axiosInstance.get(`/study-notes-dashboard/`);
+        const response = await axiosInstance.get(`/study-notes/progress/`);
         return response?.data?.data;
     },
 };

@@ -11,22 +11,23 @@ const PROGRESS_COLOR = "#1B4B66";
 /**
  * Left summary card: donut chart of overall coverage + completed/remaining legend.
  */
-export default function CoverageDonutCard({
-  coveragePercent,
-  completedNotes,
-  totalNotes,
-  moduleCount,
-}) {
+export default function CoverageDonutCard({ overview_card }) {
+  const {
+    total_notes,
+    overall_coverage_percentage,
+    completed,
+    not_started,
+  } = overview_card || {};
+
   const circumference = 2 * Math.PI * DONUT_RADIUS;
-  const strokeDashoffset = circumference - (coveragePercent / 100) * circumference;
-  const remaining = Math.max(0, totalNotes - completedNotes);
+  const strokeDashoffset = circumference - (overall_coverage_percentage / 100) * circumference;
 
   return (
     <div className="lg:col-span-5 bg-white rounded-2xl border border-gray-200/90 p-6 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between">
       <div>
         <h3 className="text-xl font-bold text-[#1B4B66]">Study Notes</h3>
         <p className="text-xs text-gray-400 mt-0.5 font-medium">
-          {moduleCount} modules total
+          {total_notes ?? "0"} modules total
         </p>
       </div>
 
@@ -61,7 +62,7 @@ export default function CoverageDonutCard({
           {/* Center Value */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
             <span className="text-2xl sm:text-3xl font-extrabold text-[#1B4B66] leading-none">
-              {coveragePercent}%
+              {overall_coverage_percentage ?? "0"}%
             </span>
             <span className="text-[10px] font-semibold text-gray-500 mt-1">
               Overall Coverage
@@ -77,12 +78,12 @@ export default function CoverageDonutCard({
               <span className="font-bold text-gray-800">
                 Completed{" "}
                 <span className="text-[#1B4B66] font-extrabold ml-1">
-                  {completedNotes} ({coveragePercent}%)
+                  {`${completed?.count ?? "0"}`} ({`${completed?.percentage ?? "0"}`} %)
                 </span>
               </span>
             </div>
             <p className="text-[11px] text-gray-400 pl-5 mt-0.5">
-              {completedNotes} topics completed
+              {completed?.count ?? "0"} topics completed
             </p>
           </div>
 
@@ -92,12 +93,12 @@ export default function CoverageDonutCard({
               <span className="font-bold text-gray-800">
                 Not Started{" "}
                 <span className="text-gray-600 font-extrabold ml-1">
-                  {remaining} ({100 - coveragePercent}%)
+                  {`${not_started?.count ?? "0"}`} ({`${not_started?.percentage ?? "0"}`} %)
                 </span>
               </span>
             </div>
             <p className="text-[11px] text-gray-400 pl-5 mt-0.5">
-              {remaining} topics remaining
+              {`${not_started?.count ?? "0"}`} topics remaining
             </p>
           </div>
         </div>
