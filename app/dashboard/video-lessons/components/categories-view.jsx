@@ -13,10 +13,10 @@ import {
   BookmarkCheck,
   X,
   Sparkles,
-
+  Loader2,
 } from "lucide-react";
 import dummayImage from "@/public/med_dumm.png";
-import { useGetBrowseVideoCategories } from "@/hooks";
+import { useAddVideoToFavorite, useGetBrowseVideoCategories } from "@/hooks";
 
 function CategoryLogo({ logo, title }) {
   const BASEURL = process.env.NEXT_PUBLIC_BASE_URL || "";
@@ -57,15 +57,13 @@ function CategoryLogo({ logo, title }) {
   );
 }
 
-export default function CategoriesView({
-  savedVideos,
-  toggleBookmark,
-}) {
+export default function CategoriesView() {
   const { browseVideoCategoriesData, isLoading, isError } = useGetBrowseVideoCategories();
+  const { addVideoToFavorite, isPending, pendingId } = useAddVideoToFavorite();
   const stats = browseVideoCategoriesData?.stats ?? {};
   const categories = browseVideoCategoriesData?.categories ?? [];
   const popularThisWeek = browseVideoCategoriesData?.popular_this_week ?? [];
-  console.log("Categories", categories)
+  console.log("Categories", popularThisWeek)
 
   const [searchCategoryQuery, setSearchCategoryQuery] = useState("");
   const [isLumiOpen, setIsLumiOpen] = useState(true);
@@ -184,35 +182,59 @@ export default function CategoriesView({
             </div>
 
             <div className="divide-y divide-[#f1f5f9]">
-              {popularThisWeek?.map((item) => (
-                <div
-                  key={item.id}
-                  className="py-3.5 flex items-center justify-between gap-3 group cursor-pointer"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
-                      <Video className="w-4 h-4 text-gray-400" />
-                    </div>
-                    <div className="min-w-0">
-                      <h5 className="text-xs sm:text-sm font-semibold text-[#0f172a] truncate group-hover:text-[#1e3a5f] transition-colors">
-                        {item?.title ?? "N/F"}
-                      </h5>
-                      <span className="text-[11px] text-[#64748b]">{item?.module_name ?? "N/F"}</span>
-                    </div>
-                  </div>
+              {popularThisWeek?.map((item) => {
+                const videoId = item?.id || item?.video_id || item?.topic_id;
+                const isThisPending = isPending && pendingId === videoId;
+                const isFav = Boolean(item?.is_favorite ?? item?.is_favorited);
 
-                  <button
-                    onClick={(e) => toggleBookmark(item.id, e)}
-                    className="text-gray-400 hover:text-[#1e3a5f] p-1 transition-colors cursor-pointer"
+                return (
+                  <div
+                    key={item.id || item.video_id || videoId}
+                    className="py-3.5 flex items-center justify-between gap-3 group"
                   >
-                    {savedVideos[item.id] ? (
-                      <BookmarkCheck className="w-4 h-4 text-[#e14564] fill-current" />
-                    ) : (
-                      <Bookmark className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              ))}
+                    <Link
+                      href={`/dashboard/video-lessons/${videoId}`}
+                      className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+                    >
+                      <div className="w-9 h-9 rounded-lg bg-gray-100 group-hover:bg-blue-50 flex items-center justify-center shrink-0 transition-colors">
+                        <Video className="w-4 h-4 text-gray-400 group-hover:text-[#1e3a5f] transition-colors" />
+                      </div>
+                      <div className="min-w-0">
+                        <h5 className="text-xs sm:text-sm font-semibold text-[#0f172a] truncate group-hover:text-[#1e3a5f] transition-colors">
+                          {item?.title ?? "N/F"}
+                        </h5>
+                        <span className="text-[11px] text-[#64748b]">{item?.module_name ?? "N/F"}</span>
+                      </div>
+                    </Link>
+
+                    {/* Favorite button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (videoId) {
+                          addVideoToFavorite(videoId);
+                        }
+                      }}
+                      disabled={isThisPending}
+                      title={isFav ? "Remove from favorites" : "Add to favorites"}
+                      aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
+                      className={`p-1.5 rounded-lg text-gray-400 hover:text-[#1e3a5f] hover:bg-gray-50 transition-all cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed ${
+                        isFav ? "text-[#e14564] hover:text-[#e14564]" : ""
+                      }`}
+                    >
+                      {isThisPending ? (
+                        <Loader2 className="w-4 h-4 text-[#1e3a5f] animate-spin" />
+                      ) : isFav ? (
+                        <BookmarkCheck className="w-4 h-4 text-[#e14564] fill-current" />
+                      ) : (
+                        <Bookmark className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

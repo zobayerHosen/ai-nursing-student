@@ -112,6 +112,7 @@ export const useAddVideoToFavorite = () => {
     mutationFn: async (id) => videoLessonService.addVideosTofavriate(axiosInstance, id),
 
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["browse-video-categories"] });
       queryClient.invalidateQueries({ queryKey: ["browse-single-categories-videos"] });
       queryClient.invalidateQueries({ queryKey: ["video-favorites"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-video-lessons", "favorites"] });

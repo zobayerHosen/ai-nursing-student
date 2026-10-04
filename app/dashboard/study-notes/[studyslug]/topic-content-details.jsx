@@ -272,10 +272,10 @@ export default function TopicContentDetails() {
       {/* 2. Main 2-Column Grid (Left: Note Article, Right: Sidebar) */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         {/* Left Column: Note Document Card rendering the HTML Note File */}
-        <div className="xl:col-span-8 2xl:col-span-9 bg-white rounded-2xl border border-gray-200/90 p-5 sm:p-7 lg:p-8 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col">
+        <div className="xl:col-span-8 2xl:col-span-9 bg-white rounded-2xl border border-gray-200/90 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col">
 
           {/* HTML Note File Iframe / Content View matching previous code functionality */}
-          <div className="w-full h-[calc(100vh-250px)] min-h-150 relative rounded-xl overflow-hidden border border-gray-200 bg-white">
+          <div className="w-full h-[calc(100vh-250px)] min-h-150 relative overflow-hidden bg-white">
             {currentNote?.content_file_url ? (
               <>
                 {isIframeLoading && (
@@ -285,7 +285,7 @@ export default function TopicContentDetails() {
                 )}
                 <iframe
                   src={getSecureUrl(currentNote.content_file_url)}
-                  className={`w-full h-full border-0 rounded-lg transition-opacity duration-300 ${isIframeLoading ? "opacity-0" : "opacity-100"
+                  className={`w-full h-full transition-opacity duration-300 ${isIframeLoading ? "opacity-0" : "opacity-100"
                     }`}
                   title={currentNote.content_name || "Note Content"}
                   sandbox="allow-same-origin allow-scripts"

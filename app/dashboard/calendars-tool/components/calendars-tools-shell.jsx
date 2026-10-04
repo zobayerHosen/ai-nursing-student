@@ -10,7 +10,8 @@ import {
   Upload,
   RotateCcw,
   AlertTriangle,
-  X
+  X,
+  Loader2,
 } from "lucide-react";
 import UploadView from "./views/UploadView";
 import CalendarView from "./views/CalendarView";
@@ -31,15 +32,7 @@ const STAT_ICONS = [
 
 const STAT_COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#8B5CF6"];
 
-function StatsBar({ coursesData, eventsData, gradesSummary }) {
-  // GPA
-  const gpaDisplay =
-    gradesSummary?.cgpa_formatted && gradesSummary.cgpa_formatted !== "--"
-      ? gradesSummary.cgpa_formatted
-      : "--";
-  const gpaSub =
-    gradesSummary?.note && gpaDisplay !== "--" ? gradesSummary.note : "No grades yet";
-
+function StatsBar({ coursesData, eventsData }) {
   // Completed
   const completedCount = eventsData.filter((e) => e.completed).length;
 
@@ -55,7 +48,6 @@ function StatsBar({ coursesData, eventsData, gradesSummary }) {
   }).length;
 
   const stats = [
-    { value: gpaDisplay, label: "Overall GPA", sub: gpaSub },
     { value: `${completedCount}/${eventsData.length}`, label: "Completed", sub: "assignments" },
     { value: String(upcomingCount), label: "Upcoming", sub: "due this week" },
     { value: String(coursesData.length), label: "Courses", sub: "this semester" },
@@ -89,6 +81,7 @@ function StatsBar({ coursesData, eventsData, gradesSummary }) {
 
 const CalendarsToolsShell = () => {
   const [phase, setPhase] = useState("upload");
+  const [hasInitializedPhase, setHasInitializedPhase] = useState(false);
   const [courseFilter, setCourseFilter] = useState("all");
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
@@ -100,6 +93,16 @@ const CalendarsToolsShell = () => {
 
   const { gradesSummary, isGradesLoading } = useGradesSummary();
   const { clearAllData, isClearing } = useClearAllData();
+
+  useEffect(() => {
+    if (!hasInitializedPhase && !isCoursesLoading && !isEventsLoading) {
+      const hasData = (coursesData && coursesData.length > 0) || (eventsData && eventsData.length > 0);
+      if (hasData) {
+        setPhase("planner");
+      }
+      setHasInitializedPhase(true);
+    }
+  }, [coursesData, eventsData, isCoursesLoading, isEventsLoading, hasInitializedPhase]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -115,6 +118,7 @@ const CalendarsToolsShell = () => {
     try {
       await clearAllData();
       setIsResetModalOpen(false);
+      setPhase("upload");
     } catch (err) {
       console.error("Error resetting calendar data:", err);
     }
@@ -204,6 +208,17 @@ const CalendarsToolsShell = () => {
     </AnimatePresence>
   );
 
+  if (!hasInitializedPhase && (isCoursesLoading || isEventsLoading)) {
+    return (
+      <div className="w-full min-h-100 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2.5 text-slate-500">
+          <Loader2 className="w-8 h-8 animate-spin text-[#2563EB]" />
+          <p className="text-xs font-medium text-slate-500">Loading calendar planner...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (phase === "upload") {
     return (
       <div className="w-full flex flex-col gap-5 px-5 py-6">
@@ -243,7 +258,7 @@ const CalendarsToolsShell = () => {
 
   return (
     <div className="w-full flex flex-col gap-5 px-5 py-6">
-      <div className="flex items-center justify-between w-full bg-white border border-gray-200 rounded px-5 py-4">
+      <div className="flex items-center justify-between w-full bg-white ">
         <div className="flex items-center gap-1">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M6.66602 4.79199C6.32435 4.79199 6.04102 4.50866 6.04102 4.16699V1.66699C6.04102 1.32533 6.32435 1.04199 6.66602 1.04199C7.00768 1.04199 7.29102 1.32533 7.29102 1.66699V4.16699C7.29102 4.50866 7.00768 4.79199 6.66602 4.79199Z" fill="#64748B" />

@@ -13,10 +13,7 @@ const SidebarContent = ({ onClose }) => {
   const searchParams = useSearchParams();
   const currentFolder = searchParams.get("folder") || "all";
   const currentSearch = searchParams.get("search") || "";
-
   const { libraryData, isLoading } = useGetLibrary();
-  console.log("Library data:", libraryData);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchInput, setSearchInput] = useState(currentSearch);
 

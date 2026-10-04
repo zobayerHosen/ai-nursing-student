@@ -34,13 +34,13 @@ export default function RightSidebar({ onUploadMore, coursesData = [], eventsDat
           </span>
         </div>
         <div className="flex flex-col gap-2">
-          {coursesData.length === 0 ? (
+          {coursesData?.length === 0 ? (
             <div className="text-xs text-[#667085] py-3">
               No courses added yet.<br />
               Upload a syllabus to add your first course.
             </div>
           ) : (
-            coursesData.map((c, i) => {
+            coursesData?.map((c, i) => {
               let code = cleanValue(c.code) || "Course";
               let instructor = cleanValue(c.instructor);
               const profInfo = instructor ? `${instructor} • ` : "";

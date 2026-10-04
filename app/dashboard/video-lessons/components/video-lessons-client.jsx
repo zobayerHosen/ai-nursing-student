@@ -95,8 +95,6 @@ export default function VideoLessonsClient() {
         {activeTab === "explore" && subView === "all-categories" && (
           <CategoriesView
             onOpenCategory={handleOpenCategory}
-            savedVideos={savedVideos}
-            toggleBookmark={toggleBookmark}
           />
         )}
 
