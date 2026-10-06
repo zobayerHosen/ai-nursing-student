@@ -126,7 +126,7 @@ const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack, categoryId, subcat
 
     if (isDeckLoading && cards.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center p-16 bg-white rounded-2xl border border-gray-100 shadow-sm min-h-[300px]">
+            <div className="flex flex-col items-center justify-center p-16 bg-white rounded-2xl border border-gray-100 shadow-sm min-h-75">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#1B4B66] mb-4"></div>
                 <p className="text-gray-500 font-medium">Loading deck cards...</p>
             </div>
@@ -165,13 +165,6 @@ const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack, categoryId, subcat
                             <span className="text-5xl font-bold text-[#F59E0B] mb-2">{hardCount}</span>
                             <span className="text-xl font-medium text-[#F59E0B]">Hard</span>
                         </div>
-                    </div>
-
-                    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-6 mb-10">
-                        <h4 className="font-bold text-[#1E293B] mb-2 text-lg">Study Feedback:</h4>
-                        <p className="text-[#64748B] leading-relaxed">
-                            Keep practicing daily. The SM-2 algorithm will show difficult cards more often — consistency builds retention.
-                        </p>
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6 border-t border-gray-100">

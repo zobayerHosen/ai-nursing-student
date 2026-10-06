@@ -1,16 +1,24 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useGetExamReview } from "@/hooks";
 import ReportHero from "./report-hero";
 import ReportFilters from "./report-filters";
 import QuestionReviewItem from "./question-review-item";
+import ExitLockModal from "./exit-lock-modal";
 
 export default function ReportClient() {
   const params = useParams();
   const sessionId = params?.sessionId;
+  const [isExitModalOpen, setIsExitModalOpen] = useState(false);
+  const router = useRouter();
+
+  const handleExitConfirm = () => {
+    setIsExitModalOpen(false);
+    router.push("/dashboard/nclex-exam");
+  };
 
   const { reviewData, isLoading, isError, refetch } = useGetExamReview(sessionId);
 
@@ -151,54 +159,85 @@ export default function ReportClient() {
         {/* Question Review */}
         {
           <div>
-              {/* 5 Filter Cards & Pill Selector */}
-              <ReportFilters
-                stats={stats}
-                activeFilter={activeFilter}
-                onFilterChange={setActiveFilter}
-              />
+            {/* 5 Filter Cards & Pill Selector */}
+            <ReportFilters
+              stats={stats}
+              activeFilter={activeFilter}
+              onFilterChange={setActiveFilter}
+            />
 
-              {/* Questions Header */}
-              <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#e2e8f0]">
-                <h3 className="text-sm sm:text-base font-bold text-[#0f172a]">
-                  {activeFilter === "all"
-                    ? "All Questions Breakdown"
-                    : activeFilter === "correct"
-                      ? "Correct Questions"
-                      : activeFilter === "incorrect"
-                        ? "Incorrect Questions"
-                        : "Skipped / Omitted Questions"}
-                </h3>
-                <span className="text-xs text-[#64748b]">
-                  Showing {filteredQuestions.length} of {questions.length}
-                </span>
-              </div>
-
-              {/* Questions List */}
-              {filteredQuestions.length === 0 ? (
-                <div className="bg-white border border-[#e2e8f0] rounded-2xl p-12 text-center my-4">
-                  <div className="text-3xl mb-2">📋</div>
-                  <h4 className="text-sm font-bold text-[#1e293b] mb-1">
-                    No questions match the selected filter
-                  </h4>
-                  <p className="text-xs text-[#64748b]">
-                    Try selecting &quot;ALL&quot; to see the entire question review.
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  {filteredQuestions.map((q, idx) => (
-                    <QuestionReviewItem
-                      key={q.question_id || idx}
-                      question={q}
-                      index={idx}
-                    />
-                  ))}
-                </div>
-              )}
+            {/* Questions Header */}
+            <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#e2e8f0]">
+              <h3 className="text-sm sm:text-base font-bold text-[#0f172a]">
+                {activeFilter === "all"
+                  ? "All Questions Breakdown"
+                  : activeFilter === "correct"
+                    ? "Correct Questions"
+                    : activeFilter === "incorrect"
+                      ? "Incorrect Questions"
+                      : "Skipped / Omitted Questions"}
+              </h3>
+              <span className="text-xs text-[#64748b]">
+                Showing {filteredQuestions.length} of {questions.length}
+              </span>
             </div>
+
+            {/* Questions List */}
+            {filteredQuestions.length === 0 ? (
+              <div className="bg-white border border-[#e2e8f0] rounded-2xl p-12 text-center my-4">
+                <div className="text-3xl mb-2">📋</div>
+                <h4 className="text-sm font-bold text-[#1e293b] mb-1">
+                  No questions match the selected filter
+                </h4>
+                <p className="text-xs text-[#64748b]">
+                  Try selecting &quot;ALL&quot; to see the entire question review.
+                </p>
+              </div>
+            ) : (
+              <div>
+                {filteredQuestions.map((q, idx) => (
+                  <QuestionReviewItem
+                    key={q.question_id || idx}
+                    question={q}
+                    index={idx}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         }
       </div>
+
+      {/* exit button */}
+      <div className="w-full flex items-center justify-center mt-7">
+        <button
+          type="button"
+          onClick={() => setIsExitModalOpen(true)}
+          className="cursor-pointer text-black bg-red-300 font-medium text-xs sm:text-sm py-2 px-8 rounded-lg transition-all active:scale-[0.98] flex items-center gap-2 mt-3"
+        >
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          <span>Exit &amp; Lock</span>
+        </button>
       </div>
+
+      {/* Exit & Lock confirmation modal */}
+      <ExitLockModal
+        isOpen={isExitModalOpen}
+        onClose={() => setIsExitModalOpen(false)}
+        onConfirm={handleExitConfirm}
+      />
+    </div>
   );
 }

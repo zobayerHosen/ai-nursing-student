@@ -147,15 +147,15 @@ export default function QuestionReviewItem({ question, index }) {
                     <div
                       key={opt.id || oi}
                       className={`flex items-start gap-3 p-3 sm:p-3.5 border rounded-xl transition-all ${isOptCorrect
-                          ? "bg-[#f0fdf4] border-[#bbf7d0]"
-                          : "bg-white border-[#e2e8f0]"
+                        ? "bg-[#f0fdf4] border-[#bbf7d0]"
+                        : "bg-white border-[#e2e8f0]"
                         }`}
                     >
                       {/* Option Letter Badge */}
                       <div
                         className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 text-xs font-bold ${isOptCorrect
-                            ? "bg-[#dcfce7] text-[#16a34a]"
-                            : "bg-[#fff1f2] text-[#e11d48]"
+                          ? "bg-[#dcfce7] text-[#16a34a]"
+                          : "bg-[#fff1f2] text-[#e11d48]"
                           }`}
                       >
                         {letter}
@@ -189,7 +189,7 @@ export default function QuestionReviewItem({ question, index }) {
         </div>
       </div>
 
-      {/* ─── STATISTICS FOOTER ───────────────────────────────── */}
+      {/* ─── STATISTICS FOOTER  */}
       <div className="border border-[#e2e8f0] rounded-xl bg-white p-4 sm:p-5 mt-4">
         <div className="text-xs font-bold text-[#0f172a] uppercase tracking-wider mb-3">
           Statistics
@@ -244,6 +244,8 @@ export default function QuestionReviewItem({ question, index }) {
           </div>
         </div>
       </div>
+
+      
     </div>
   );
 }
