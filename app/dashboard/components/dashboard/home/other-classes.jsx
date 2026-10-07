@@ -3,8 +3,16 @@
 import React from 'react';
 import Link from 'next/link';
 import { ChevronRight, BookOpen, ClipboardList, PieChart, Library, Folder } from 'lucide-react';
+import { useGetDashboardHomeData } from '@/hooks';
 
 const OtherClasses = () => {
+    const { dashboardData } = useGetDashboardHomeData();
+    const summaryCards = dashboardData?.summary_cards;
+    const classesData = summaryCards?.classes;
+    const assignmentsData = summaryCards?.assignments;
+    const gpaData = summaryCards?.gpa;
+    const myLibraryData = summaryCards?.my_library;
+
     return (
         <section className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Card 1: Classes */}
@@ -17,13 +25,18 @@ const OtherClasses = () => {
                 </div>
                 
                 <div className="mb-5 flex-1">
-                    <span className="text-[32px] font-bold text-gray-900 leading-none block">5</span>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-1.5">Active Courses</p>
+                    <span className="text-[32px] font-bold text-gray-900 leading-none block">
+                        {classesData?.count ?? 0}
+                    </span>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-1.5">
+                        {classesData?.label ?? "Active Courses"}
+                    </p>
                 </div>
                 
                 <div className="mt-auto">
                     <Link href="/dashboard/classes" className="text-[12px] font-bold text-[#2C5F8D] hover:underline flex items-center">
-                        View All <ChevronRight className="w-3 h-3 ml-0.5" />
+                        <span>{classesData?.action_text ? classesData.action_text.replace(/->|>/g, "").trim() : "View All"}</span>
+                        <ChevronRight className="w-3 h-3 ml-0.5" />
                     </Link>
                 </div>
             </div>
@@ -38,13 +51,18 @@ const OtherClasses = () => {
                 </div>
                 
                 <div className="mb-5 flex-1">
-                    <span className="text-[32px] font-bold text-gray-900 leading-none block">7</span>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-1.5">Due Soon</p>
+                    <span className="text-[32px] font-bold text-gray-900 leading-none block">
+                        {assignmentsData?.count ?? 0}
+                    </span>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-1.5">
+                        {assignmentsData?.label ?? "Due Soon"}
+                    </p>
                 </div>
                 
                 <div className="mt-auto">
                     <Link href="/dashboard/assignments" className="text-[12px] font-bold text-[#2C5F8D] hover:underline flex items-center">
-                        View All <ChevronRight className="w-3 h-3 ml-0.5" />
+                        <span>{assignmentsData?.action_text ? assignmentsData.action_text.replace(/->|>/g, "").trim() : "View All"}</span>
+                        <ChevronRight className="w-3 h-3 ml-0.5" />
                     </Link>
                 </div>
             </div>
@@ -59,13 +77,18 @@ const OtherClasses = () => {
                 </div>
                 
                 <div className="mb-5 flex-1">
-                    <span className="text-[32px] font-bold text-gray-900 leading-none block">5</span>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-1.5">Cumulative</p>
+                    <span className="text-[32px] font-bold text-gray-900 leading-none block">
+                        {gpaData?.value ?? "--"}
+                    </span>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-1.5">
+                        {gpaData?.label ?? "Cumulative"}
+                    </p>
                 </div>
                 
                 <div className="mt-auto">
                     <Link href="/dashboard/gpa" className="text-[12px] font-bold text-[#2C5F8D] hover:underline flex items-center">
-                        View Details <ChevronRight className="w-3 h-3 ml-0.5" />
+                        <span>{gpaData?.action_text ? gpaData.action_text.replace(/->|>/g, "").trim() : "View Details"}</span>
+                        <ChevronRight className="w-3 h-3 ml-0.5" />
                     </Link>
                 </div>
             </div>
@@ -80,32 +103,36 @@ const OtherClasses = () => {
                         <h3 className="text-[15px] font-bold text-gray-800">My Library</h3>
                     </div>
                     <Link href="/dashboard/library" className="text-[11px] font-bold text-[#2C5F8D] hover:underline flex items-center">
-                        View All <ChevronRight className="w-3 h-3 ml-0.5" />
+                        <span>{myLibraryData?.action_text ? myLibraryData.action_text.replace(/->|>/g, "").trim() : "View All"}</span>
+                        <ChevronRight className="w-3 h-3 ml-0.5" />
                     </Link>
                 </div>
                 
                 <div className="flex flex-col gap-3.5 flex-1 justify-center mt-1">
-                    <div className="flex items-center justify-between group cursor-pointer">
-                        <div className="flex items-center gap-2.5">
-                            <Folder className="w-4 h-4 text-[#10B981] fill-[#10B981]" />
-                            <span className="text-[12.5px] font-bold text-gray-700 group-hover:text-gray-900 transition-colors">Medical Surgical</span>
-                        </div>
-                        <span className="text-[11px] font-medium text-gray-400">34 Notes</span>
-                    </div>
-                    <div className="flex items-center justify-between group cursor-pointer">
-                        <div className="flex items-center gap-2.5">
-                            <Folder className="w-4 h-4 text-[#F59E0B] fill-[#F59E0B]" />
-                            <span className="text-[12.5px] font-bold text-gray-700 group-hover:text-gray-900 transition-colors">Pharmacy</span>
-                        </div>
-                        <span className="text-[11px] font-medium text-gray-400">15 Notes</span>
-                    </div>
-                    <div className="flex items-center justify-between group cursor-pointer">
-                        <div className="flex items-center gap-2.5">
-                            <Folder className="w-4 h-4 text-[#F43F5E] fill-[#F43F5E]" />
-                            <span className="text-[12.5px] font-bold text-gray-700 group-hover:text-gray-900 transition-colors">Fundamentals</span>
-                        </div>
-                        <span className="text-[11px] font-medium text-gray-400">17 Notes</span>
-                    </div>
+                    {myLibraryData?.folders && myLibraryData.folders.length > 0 ? (
+                        myLibraryData.folders.map((folder) => (
+                            <Link
+                                href="/dashboard/library"
+                                key={folder.id}
+                                className="flex items-center justify-between group cursor-pointer"
+                            >
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                    <Folder
+                                        className="w-4 h-4 shrink-0"
+                                        style={{ color: folder.color || "#10B981", fill: folder.color || "#10B981" }}
+                                    />
+                                    <span className="text-[12.5px] font-bold text-gray-700 group-hover:text-gray-900 transition-colors truncate">
+                                        {folder.name}
+                                    </span>
+                                </div>
+                                <span className="text-[11px] font-medium text-gray-400 shrink-0 ml-2">
+                                    {folder.formatted_notes || `${folder.notes_count ?? 0} Notes`}
+                                </span>
+                            </Link>
+                        ))
+                    ) : (
+                        <p className="text-[11px] text-gray-400 font-medium text-center py-2">No folders</p>
+                    )}
                 </div>
             </div>
         </section>
