@@ -661,7 +661,7 @@ export default function QuestionInterface({
                       {flagged[i] && <span className="text-amber-500 text-base shrink-0">⚑</span>}
                     </div>
 
-                    <div className="ml-11.5">
+                    <div className="">
                       <RationaleBlock question={qq} userAnswer={userAns} isQBank={isQBank} backendFeedback={backendFeedback} />
                       {!isQBank && <QuestionStats question={qq} />}
                     </div>

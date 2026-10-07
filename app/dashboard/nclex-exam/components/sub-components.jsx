@@ -223,7 +223,7 @@ export function RationaleBlock({ question, userAnswer, isQBank, backendFeedback 
   const q = question;
 
   return (
-    <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl overflow-hidden">
+    <div className="bg-[#f8fafc] overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4.5 py-3.5 bg-white border-b border-[#e2e8f0]">
         <div className="flex items-center gap-2.5">
@@ -241,7 +241,7 @@ export function RationaleBlock({ question, userAnswer, isQBank, backendFeedback 
       </div>
 
       {/* Body */}
-      <div className="p-4.5">
+      <div className="pt-4">
         {/* Clinical Reasoning */}
         <div className="mb-4">
           <div className="flex items-center gap-2.5 mb-2.5">
@@ -285,7 +285,7 @@ export function RationaleBlock({ question, userAnswer, isQBank, backendFeedback 
         {/* Diagram */}
         {RATIONALE_IMAGES[q.id] && (
           <div className="mb-4">
-            <div className="border border-[#e2e8f0] rounded-lg overflow-hidden bg-white">
+            <div className="overflow-hidden bg-white">
               <div
                 dangerouslySetInnerHTML={{ __html: RATIONALE_IMAGES[q.id].svg }}
                 className="block w-full"
@@ -298,259 +298,6 @@ export function RationaleBlock({ question, userAnswer, isQBank, backendFeedback 
             </div>
           </div>
         )}
-        {/* Why Others Fail */}
-        {/* <div>
-          <div className="flex items-center gap-2.5 mb-2.5">
-            <div className="w-0.75 h-3.5 bg-[#FE5E7E] rounded-sm shrink-0" />
-            <div className="text-[11px] font-bold text-[#FE5E7E] tracking-wide uppercase">
-              {q.type === "matrix"
-                ? "Row-by-Row Breakdown"
-                : q.type === "cloze"
-                  ? "Blank-by-Blank Breakdown"
-                  : "Why Others Fail"}
-            </div>
-          </div>
-          <div>
-            {q.type === "cloze"
-              ? q.clozeBlanks.map((blank, bi) => {
-                const correctOpt = blank.correct;
-                const userPicks = Array.isArray(userAnswer) ? userAnswer : [];
-                const userOpt = userPicks[bi];
-                const gotItRight = userOpt === correctOpt;
-                const correctText = blank.options[correctOpt];
-                const userText = userOpt !== undefined ? blank.options[userOpt] : "(blank)";
-                const explanation = q.clozeExplanations ? q.clozeExplanations[bi] : "";
-                return (
-                  <div
-                    key={bi}
-                    className={`flex items-start gap-3 p-3 border border-[#e5e7eb] rounded-lg mb-2 last:mb-0 bg-white transition-all duration-150 ${gotItRight ? "bg-[#f0fdf4] border-[#bbf7d0]" : ""
-                      }`}
-                  >
-                    <div
-                      className={`w-6.5 h-6.5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-extrabold font-mono ${gotItRight ? "bg-[#dcfce7] text-[#16a34a]" : "bg-[#fde8ec] text-[#FE5E7E]"
-                        }`}
-                    >
-                      {bi + 1}
-                    </div>
-                    <div className="flex-1 text-[13px] text-[#475569] leading-relaxed pt-0.5">
-                      <div className="text-xs text-[#64748b] mb-1">
-                        Your pick:{" "}
-                        <span className={`font-semibold ${gotItRight ? "text-[#15803d]" : "text-[#b91c1c]"}`}>
-                          {userText}
-                        </span>
-                        {!gotItRight && (
-                          <>
-                            {" "}· Correct:{" "}
-                            <span className="font-semibold text-[#15803d]">{correctText}</span>
-                          </>
-                        )}
-                      </div>
-                      <span
-                        className={`font-bold ${gotItRight ? "text-[#16a34a]" : "text-[#FE5E7E]"}`}
-                      >
-                        {gotItRight ? "Correct." : "Incorrect."}
-                      </span>{" "}
-                      {explanation}
-                    </div>
-                  </div>
-                );
-              })
-              : (q.type === "fill-blank" || q.type === "input")
-                ? (() => {
-                  let isUserCorrect = false;
-                  let correctText = "";
-                  if (isQBank) {
-                    const fb = backendFeedback?.[q.id];
-                    isUserCorrect = fb ? !!fb.is_correct : false;
-                    const ca = fb?.correct_answer;
-                    correctText = typeof ca === "object" ? (ca.answer || "") : String(ca || "");
-                  } else {
-                    const cfg = q.blankInput || {};
-                    if (cfg.kind === "numeric") {
-                      const u = parseFloat(userAnswer);
-                      const c = parseFloat(cfg.correct);
-                      const t = cfg.tolerance != null ? parseFloat(cfg.tolerance) : 0;
-                      isUserCorrect = !isNaN(u) && !isNaN(c) && Math.abs(u - c) <= t;
-                    } else {
-                      const acc = Array.isArray(cfg.correct) ? cfg.correct : [cfg.correct];
-                      const norm = (s) => cfg.caseSensitive ? String(s).trim() : String(s).trim().toLowerCase();
-                      isUserCorrect = userAnswer != null && acc.some((a) => norm(a) === norm(userAnswer));
-                    }
-                    correctText = Array.isArray(cfg.correct) ? cfg.correct[0] : cfg.correct;
-                  }
-                  const userText =
-                    userAnswer != null && String(userAnswer).trim() !== ""
-                      ? String(userAnswer)
-                      : "(no answer)";
-                  return (
-                    <div
-                      className={`flex items-start gap-3 p-3 border rounded-lg bg-white transition-all ${isUserCorrect ? "bg-[#f0fdf4] border-[#bbf7d0]" : "border-[#e5e7eb]"
-                        }`}
-                    >
-                      <div
-                        className={`w-6.5 h-6.5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-extrabold font-mono ${isUserCorrect ? "bg-[#dcfce7] text-[#16a34a]" : "bg-[#fde8ec] text-[#FE5E7E]"
-                          }`}
-                      >
-                        {isUserCorrect ? "✓" : "✗"}
-                      </div>
-                      <div className="flex-1 text-[13px] text-[#475569] leading-relaxed pt-0.5">
-                        <div className="text-xs text-[#64748b] mb-1">
-                          Your answer:{" "}
-                          <span
-                            className={`font-semibold ${isUserCorrect ? "text-[#15803d]" : "text-[#b91c1c]"}`}
-                          >
-                            {userText}
-                          </span>
-                          {!isUserCorrect && (
-                            <>
-                              {" "}· Correct:{" "}
-                              <span className="font-semibold text-[#15803d]">
-                                {correctText}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                        <span className={`font-bold ${isUserCorrect ? "text-[#16a34a]" : "text-[#FE5E7E]"}`}>
-                          {isUserCorrect ? "Correct." : "Incorrect."}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })()
-                : q.type === "matrix"
-                  ? q.matrixRows.map((row, ri) => {
-                    const correctCol = q.correct[ri];
-                    const userPicks = Array.isArray(userAnswer) ? userAnswer : [];
-                    const userCol = userPicks[ri];
-                    const gotItRight = userCol === correctCol;
-                    const explanation = q.matrixExplanations ? q.matrixExplanations[ri] : "";
-                    return (
-                      <div
-                        key={ri}
-                        className={`flex items-start gap-3 p-3 border rounded-lg mb-2 last:mb-0 bg-white transition-all ${gotItRight ? "bg-[#f0fdf4] border-[#bbf7d0]" : "border-[#e5e7eb]"
-                          }`}
-                      >
-                        <div
-                          className={`w-6.5 h-6.5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-extrabold font-mono ${gotItRight ? "bg-[#dcfce7] text-[#16a34a]" : "bg-[#fde8ec] text-[#FE5E7E]"
-                            }`}
-                        >
-                          {ri + 1}
-                        </div>
-                        <div className="flex-1 text-[13px] text-[#475569] leading-relaxed pt-0.5">
-                          <div className="text-xs text-[#64748b] font-semibold mb-1">{row}</div>
-                          <span
-                            className={`font-bold ${gotItRight ? "text-[#16a34a]" : "text-[#FE5E7E]"}`}
-                          >
-                            {q.matrixCols[correctCol]}.
-                          </span>{" "}
-                          {explanation}
-                        </div>
-                      </div>
-                    );
-                  })
-                  : q.type === "order"
-                    ? (() => {
-                      let correctOrderList = [];
-                      if (isQBank) {
-                        const ca = backendFeedback?.[q.id]?.correct_answer;
-                        if (Array.isArray(ca)) {
-                          const sortedCa = [...ca].sort((a, b) => (a.order || 0) - (b.order || 0));
-                          correctOrderList = sortedCa.map(item => item.text || item.option_text || item.title || "");
-                        }
-                      } else {
-                        const correctIndices = Array.isArray(q.correct) ? q.correct : [];
-                        correctOrderList = correctIndices.map(idx => q.options[idx]);
-                      }
-
-                      return (
-                        <div className="flex flex-col gap-2.5">
-                          <div className="text-xs font-semibold text-[#475569] mb-1">
-                            Correct Sequence:
-                          </div>
-                          {correctOrderList.map((text, oi) => (
-                            <div
-                              key={oi}
-                              className="flex items-center gap-3 p-3 border border-[#bbf7d0] rounded-lg bg-[#f0fdf4]"
-                            >
-                              <div className="w-6.5 h-6.5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-extrabold font-mono bg-[#dcfce7] text-[#16a34a]">
-                                {oi + 1}
-                              </div>
-                              <div className="flex-1 text-[13px] text-[#15803d] font-semibold">
-                                {text}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()
-                    : q.type === "highlight"
-                      ? (() => {
-                        let correctTexts = [];
-                        if (isQBank) {
-                          const ca = backendFeedback?.[q.id]?.correct_answer;
-                          if (Array.isArray(ca)) {
-                            correctTexts = ca.map(item => item.text || item.option_text || item.title || "");
-                          }
-                        } else {
-                          const correctIndices = Array.isArray(q.correct) ? q.correct : [];
-                          correctTexts = correctIndices.map(idx => q.options[idx]);
-                        }
-
-                        return (
-                          <div className="flex flex-col gap-2">
-                            <div className="text-xs font-semibold text-[#475569] mb-1">
-                              Correct Highlighted Finding(s):
-                            </div>
-                            {correctTexts.map((text, oi) => (
-                              <div
-                                key={oi}
-                                className="flex items-center gap-3 p-3 border border-[#bbf7d0] rounded-lg bg-[#f0fdf4]"
-                              >
-                                <div className="w-6.5 h-6.5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-extrabold font-mono bg-[#dcfce7] text-[#16a34a]">
-                                  ✓
-                                </div>
-                                <div className="flex-1 text-[13px] text-[#15803d] font-semibold">
-                                  &ldquo;{text}&rdquo;
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        );
-                      })()
-                      : q.options.map((opt, oi) => {
-                        let isCorrect = false;
-                        if (isQBank) {
-                          const ca = backendFeedback?.[q.id]?.correct_answer;
-                          const caList = Array.isArray(ca) ? ca : ca ? [ca] : [];
-                          isCorrect = caList.some(item => q.originalOptions?.[oi]?.id === item.id);
-                        } else {
-                          isCorrect = Array.isArray(q.correct) ? q.correct.includes(oi) : oi === q.correct;
-                        }
-                        const letter = LETTERS[oi];
-                        const explanation = q.optionExplanations ? q.optionExplanations[oi] : "";
-                        return (
-                          <div
-                            key={oi}
-                            className={`flex items-start gap-3 p-3 border rounded-lg mb-2 last:mb-0 bg-white transition-all ${isCorrect ? "bg-[#f0fdf4] border-[#bbf7d0]" : "border-[#e5e7eb]"
-                              }`}
-                          >
-                            <div
-                              className={`w-6.5 h-6.5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-extrabold font-mono ${isCorrect ? "bg-[#dcfce7] text-[#16a34a]" : "bg-[#fde8ec] text-[#FE5E7E]"
-                                }`}
-                            >
-                              {letter}
-                            </div>
-                            <div className="flex-1 text-[13px] text-[#475569] leading-relaxed pt-0.5">
-                              <span className={`font-bold ${isCorrect ? "text-[#16a34a]" : "text-[#FE5E7E]"}`}>
-                                {isCorrect ? "Correct." : "Incorrect."}
-                              </span>{" "}
-                              {explanation}
-                            </div>
-                          </div>
-                        );
-                      })}
-          </div>
-        </div> */}
       </div>
     </div>
   );

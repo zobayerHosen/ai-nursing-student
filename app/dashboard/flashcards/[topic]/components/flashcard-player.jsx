@@ -18,7 +18,7 @@ const formatImageUrl = (imgPath) => {
     return `${BASE_URL || ""}${imgPath.startsWith("/") ? "" : "/"}${imgPath}`;
 };
 
-const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack, categoryId, subcategoryId }) => {
+const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack }) => {
     const targetDeckId = propDeckId || (typeof topic === "object" ? topic?.id : topic);
 
     // Fetch deck details when deck ID is available
@@ -239,9 +239,13 @@ const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack, categoryId, subcat
                                 </div>
                             )}
 
-                            <h3 className={`${currentCard?.image ? 'text-xl md:text-2xl' : 'text-2xl md:text-4xl'} font-bold text-[#1E293B] leading-tight text-center w-full`}>
+                            {/* <h3 className={`${currentCard?.image ? 'text-xl md:text-2xl' : 'text-2xl md:text-4xl'} font-bold text-[#1E293B] leading-tight text-center w-full`}>
                                 {currentCard?.question_text ?? currentCard?.front ?? ""}
-                            </h3>
+                            </h3> */}
+
+
+                            <div dangerouslySetInnerHTML={{ __html: currentCard?.question_text ?? currentCard?.front ?? "" }} />
+
                         </div>
 
                         <div className="absolute bottom-12 flex flex-col items-center gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
@@ -272,9 +276,7 @@ const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack, categoryId, subcat
                             )}
 
                             <div className="w-full">
-                                <h3 className={`${currentCard?.ans_image ? 'text-xl md:text-2xl' : 'text-2xl md:text-4xl'} font-medium leading-relaxed`}>
-                                    {currentCard?.answer_text ?? currentCard?.back ?? ""}
-                                </h3>
+                                <div dangerouslySetInnerHTML={{ __html: currentCard?.answer_text ?? currentCard?.back ?? "" }} />
                             </div>
                         </div>
 

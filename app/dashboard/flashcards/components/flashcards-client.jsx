@@ -7,7 +7,6 @@ import { Plus } from "lucide-react";
 import BrowseDecksTab from "./browse-decks-tab";
 import FavoritesTab from "./favorites-tab";
 import PerformanceTab from "./performance-tab";
-import { FLASHCARD_ICON } from "./dummy-data";
 
 function FlashCardsContent() {
   const searchParams = useSearchParams();
