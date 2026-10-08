@@ -15,10 +15,10 @@ export const useGetFlashcardCategory = () => {
   const flashcardData = Array.isArray(data?.data)
     ? data.data
     : Array.isArray(data?.data?.data)
-    ? data.data.data
-    : Array.isArray(data)
-    ? data
-    : [];
+      ? data.data.data
+      : Array.isArray(data)
+        ? data
+        : [];
 
   return {
     flashcardData,
@@ -43,12 +43,37 @@ export const useGetDeckDetails = (deckId) => {
 
   return {
     deckData,
+    flashcard: deckData,
+    data,
     isLoading,
     isError,
     isFetching,
     refetch,
   };
 };
+
+// sub category details
+export const useGetDectSubCategroyDetails = (decCatSubId) => {
+  const axiosInstance = axiosPrivateClient();
+  const {
+    data,
+    isLoading,
+    isError
+  }  = useQuery({
+    queryKey: ["deck-sub-category-details", decCatSubId],
+    queryFn: async () => flashcardsService.getDeckSubCategoriesDetails(axiosInstance, decCatSubId),
+    enabled: !!decCatSubId,
+    staleTime: 2 * 60 * 1000,
+    retry: false,
+  });
+
+  return {
+    data,
+    isLoading,
+    isError
+  }
+};
+
 
 export const useGetFavoriteDecks = () => {
   const axiosInstance = axiosPrivateClient();
@@ -63,10 +88,10 @@ export const useGetFavoriteDecks = () => {
   const favoriteDecks = Array.isArray(data?.data)
     ? data.data
     : Array.isArray(data?.data?.data)
-    ? data.data.data
-    : Array.isArray(data)
-    ? data
-    : [];
+      ? data.data.data
+      : Array.isArray(data)
+        ? data
+        : [];
 
   return {
     favoriteDecks,

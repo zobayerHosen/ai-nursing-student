@@ -2,10 +2,10 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, RotateCcw, ArrowLeft, Check, X, RefreshCcw, ImageIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw, ArrowLeft, RefreshCcw } from "lucide-react";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSubmitFlashcardAnswer, useGetDeckDetails } from "@/hooks/flashcards";
+import { useSubmitFlashcardAnswer } from "@/hooks/flashcards";
 import toast from "react-hot-toast";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
@@ -18,16 +18,9 @@ const formatImageUrl = (imgPath) => {
     return `${BASE_URL || ""}${imgPath.startsWith("/") ? "" : "/"}${imgPath}`;
 };
 
-const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack }) => {
-    const targetDeckId = propDeckId || (typeof topic === "object" ? topic?.id : topic);
-
-    // Fetch deck details when deck ID is available
-    const { deckData, isLoading: isDeckLoading } = useGetDeckDetails(
-        targetDeckId && (typeof targetDeckId === "number" || !isNaN(Number(targetDeckId)))
-            ? targetDeckId
-            : null
-    );
-
+const FlashcardPlayer = ({ topic, onBack }) => {
+    const topicDetails = Array.isArray(topic?.cards) ? topic.cards : [];
+    const [activeCards, setActiveCards] = useState(topicDetails);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
     const queryClient = useQueryClient();
@@ -35,16 +28,15 @@ const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack }) => {
     const [ratings, setRatings] = useState({});
     const [isFinished, setIsFinished] = useState(false);
 
-    const initialCards = deckData?.cards || topic?.cards || topic?.questions || topic?.flashcards || [];
-    const [activeCards, setActiveCards] = useState(initialCards);
-
     useEffect(() => {
-        if (deckData?.cards) {
-            setActiveCards(deckData.cards);
-        } else if (topic?.cards || topic?.questions || topic?.flashcards) {
-            setActiveCards(topic.cards || topic.questions || topic.flashcards);
+        if (Array.isArray(topic?.cards)) {
+            setActiveCards(topic.cards);
+            setCurrentIndex(0);
+            setIsFlipped(false);
+            setIsFinished(false);
+            setRatings({});
         }
-    }, [deckData, topic]);
+    }, [topic]);
 
     const cards = activeCards;
     const currentCard = cards[currentIndex];
@@ -76,7 +68,7 @@ const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack }) => {
     const handleRating = useCallback((rating) => {
         if (!currentCard) return;
 
-        const resolvedDeckId = Number(targetDeckId || deckData?.id || (typeof topic === "object" ? topic?.id : topic));
+        const resolvedDeckId = Number(topic?.id);
 
         // Build the answer submit payload based on API requirements
         const payload = {
@@ -103,10 +95,10 @@ const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack }) => {
         setRatings(prev => ({ ...prev, [currentCard.id]: rating }));
         handleNext();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentCard, targetDeckId, deckData, topic, submitAnswer, queryClient]);
+    }, [currentCard, topic, submitAnswer, queryClient]);
 
     const handleRepeatDifficult = () => {
-        const difficultCards = cards.filter(card => ratings[card.id] === 'hard');
+        const difficultCards = (topic?.cards || []).filter(card => ratings[card.id] === 'hard');
         if (difficultCards.length > 0) {
             setActiveCards(difficultCards);
             setCurrentIndex(0);
@@ -117,27 +109,18 @@ const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack }) => {
     };
 
     const handleRestart = () => {
-        setActiveCards(deckData?.cards || topic?.questions || topic?.cards || topic?.flashcards || []);
+        setActiveCards(topic?.cards || []);
         setCurrentIndex(0);
         setIsFlipped(false);
         setIsFinished(false);
         setRatings({});
     };
 
-    if (isDeckLoading && cards.length === 0) {
-        return (
-            <div className="flex flex-col items-center justify-center p-16 bg-white rounded-2xl border border-gray-100 shadow-sm min-h-75">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#1B4B66] mb-4"></div>
-                <p className="text-gray-500 font-medium">Loading deck cards...</p>
-            </div>
-        );
-    }
-
-    if (cards.length === 0) {
+    if (!cards || cards.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center p-10 bg-white rounded-2xl border border-gray-100 shadow-sm">
                 <p className="text-gray-500">No flashcards available for this topic yet.</p>
-                <button onClick={onBack} className="mt-4 text-primary font-medium flex items-center gap-2">
+                <button onClick={onBack} className="mt-4 text-primary font-medium flex items-center gap-2 cursor-pointer">
                     <ArrowLeft size={18} /> Back to Decks
                 </button>
             </div>
@@ -206,7 +189,7 @@ const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack }) => {
                     className="cursor-pointer flex items-center gap-2 text-gray-600 hover:text-primary transition-all rounded font-medium"
                 >
                     <ArrowLeft size={20} />
-                    <span className="hidden sm:inline">Back to {deckData?.name || topic?.name || topic?.title || "Decks"}</span>
+                    <span className="hidden sm:inline">Back to {topic?.name || topic?.title || "Decks"}</span>
                     <span className="sm:hidden">Back</span>
                 </button>
                 <div className="text-sm font-semibold bg-primary/10 text-primary px-4 py-1.5 rounded-full shadow-sm">
@@ -226,7 +209,7 @@ const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack }) => {
                     <div className="absolute inset-0 w-full h-full backface-hidden bg-white border-2 border-primary/10 rounded-[10px] shadow-[0_20px_50px_-20px_rgba(44,95,141,0.15)] flex flex-col items-center justify-center p-12 text-center overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-3 bg-primary/30"></div>
                         <span className="absolute top-8 left-8 text-[10px] font-black text-primary uppercase tracking-[0.2em]">Study Question</span>
-                        <div className="w-full max-w-[80%] h-full flex items-center justify-center overflow-y-auto custom-scrollbar pt-10 pb-10">
+                        <div className="w-full max-w-[80%] h-full flex items-center justify-center overflow-y-auto custom-scrollbar">
                             {currentCard?.image && (
                                 <div className="relative w-full aspect-video max-h-45 mb-6 overflow-hidden">
                                     <Image
@@ -238,14 +221,10 @@ const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack }) => {
                                     />
                                 </div>
                             )}
-
-                            {/* <h3 className={`${currentCard?.image ? 'text-xl md:text-2xl' : 'text-2xl md:text-4xl'} font-bold text-[#1E293B] leading-tight text-center w-full`}>
-                                {currentCard?.question_text ?? currentCard?.front ?? ""}
-                            </h3> */}
-
-
-                            <div dangerouslySetInnerHTML={{ __html: currentCard?.question_text ?? currentCard?.front ?? "" }} />
-
+                            <div
+                                className="text-base sm:text-lg font-semibold text-gray-800 leading-relaxed"
+                                dangerouslySetInnerHTML={{ __html: currentCard?.question_text ?? "" }}
+                            />
                         </div>
 
                         <div className="absolute bottom-12 flex flex-col items-center gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
@@ -254,7 +233,6 @@ const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack }) => {
                         </div>
                     </div>
 
-
                     {/* Back Side */}
                     <div
                         className="absolute inset-0 w-full h-full backface-hidden bg-white text-black rounded-[10px] shadow-[0_0_8px_0_rgba(0,0,0,0.10)] flex flex-col items-center justify-center p-8 text-center overflow-hidden"
@@ -262,7 +240,7 @@ const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack }) => {
                     >
                         <span className="absolute top-8 left-8 text-[10px] font-black text-primary uppercase tracking-[0.2em]">The Answer</span>
 
-                        <div className="w-full max-w-[80%] h-full flex items-center justify-center overflow-y-auto custom-scrollbar pt-10 pb-10">
+                        <div className="w-full max-w-[80%] h-full flex items-center justify-center overflow-y-auto custom-scrollbar">
                             {currentCard?.ans_image && (
                                 <div className="relative w-full aspect-video max-h-45 mb-6 overflow-hidden">
                                     <Image
@@ -274,12 +252,11 @@ const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack }) => {
                                     />
                                 </div>
                             )}
-
-                            <div className="w-full">
-                                <div dangerouslySetInnerHTML={{ __html: currentCard?.answer_text ?? currentCard?.back ?? "" }} />
-                            </div>
+                            <div
+                                className="w-full text-base sm:text-lg text-gray-800 leading-relaxed"
+                                dangerouslySetInnerHTML={{ __html: currentCard?.answer_text ?? "" }}
+                            />
                         </div>
-
                         <p className="absolute bottom-6 text-xs text-gray-500 font-medium tracking-wide">Click to flip back to question</p>
                     </div>
                 </motion.div>
@@ -354,8 +331,9 @@ const FlashcardPlayer = ({ topic, deckId: propDeckId, onBack }) => {
                         />
                     </div>
 
-                    {/* want to show the parcentage */}
-                    <div className="text-center text-gray-500 mt-2"> {Math.ceil(((currentIndex + 1) / cards?.length) * 100)}% </div>
+                    <div className="text-center text-gray-500 mt-2 font-medium text-sm">
+                        {Math.ceil(((currentIndex + 1) / cards?.length) * 100)}%
+                    </div>
                 </div>
             </div>
         </div>

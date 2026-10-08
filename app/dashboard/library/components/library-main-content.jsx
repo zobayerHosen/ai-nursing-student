@@ -129,7 +129,7 @@ export default function LibraryMainContent() {
           displayedNotes?.length > 0 ? (
             <>
               {/* Notes Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 mt-4">
                 {displayedNotes?.map((note, index) => (
                   <LibraryNoteCard
                     key={note?.content_id ? `${note.content_id}-${index}` : index}

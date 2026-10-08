@@ -1,11 +1,11 @@
-import TopicList from "./components/topic-list";
+import FlaschCardPlayerDetails from "./components/flashcard-player-details";
 
 export default async function CategoryPage({ params }) {
   const { topic: id } = await params;
 
   return (
     <>
-      <TopicList topicList={id} />
+      <FlaschCardPlayerDetails topicList={id} />
     </>
   );
 }

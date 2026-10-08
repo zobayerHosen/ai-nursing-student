@@ -7,6 +7,15 @@ export const flashcardsService = {
     const response = await axiosInstance.get(`/deck/${deckId}/`);
     return response?.data;
   },
+
+  
+
+  getDeckSubCategoriesDetails: async (axiosInstance, subCatId) => {
+    const response = await axiosInstance.get(`/subcategory/${subCatId}/`);
+    return response?.data;
+  },
+
+
   toggleFavoriteDeck: async (axiosInstance, deckId) => {
     const response = await axiosInstance.post(`/deck/${deckId}/favorite/`);
     return response?.data;
