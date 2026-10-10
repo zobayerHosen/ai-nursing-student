@@ -28,6 +28,36 @@ export const useGetFlashcardCategory = () => {
   };
 };
 
+// get all dec
+export const useGetAllDecks = (deckId) => {
+  const axiosInstance = axiosPrivateClient();
+
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
+    queryKey: ["all-decks", deckId],
+    queryFn: () => flashcardsService.getAllDecks(axiosInstance, deckId),
+    enabled: !!deckId,
+    staleTime: 2 * 60 * 1000,
+    retry: false,
+  });
+
+  const allDecks = Array.isArray(data?.data)
+    ? data.data
+    : Array.isArray(data?.data?.data)
+      ? data.data.data
+      : Array.isArray(data)
+        ? data
+        : [];
+
+  return {
+    allDecks,
+    data,
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
+  };
+};
+
 export const useGetDeckDetails = (deckId) => {
   const axiosInstance = axiosPrivateClient();
 
@@ -59,7 +89,7 @@ export const useGetDectSubCategroyDetails = (decCatSubId) => {
     data,
     isLoading,
     isError
-  }  = useQuery({
+  } = useQuery({
     queryKey: ["deck-sub-category-details", decCatSubId],
     queryFn: async () => flashcardsService.getDeckSubCategoriesDetails(axiosInstance, decCatSubId),
     enabled: !!decCatSubId,
@@ -68,7 +98,7 @@ export const useGetDectSubCategroyDetails = (decCatSubId) => {
   });
 
   return {
-    data,
+    subcategoryDetails: data?.data,
     isLoading,
     isError
   }

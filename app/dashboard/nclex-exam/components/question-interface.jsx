@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { usePauseExam, useResumeExam } from "@/hooks";
+import { useGetUser, usePauseExam, useResumeExam } from "@/hooks";
 import { PARTIAL_CREDIT_TYPES, LETTERS } from "./data";
 import { RationaleBlock, QuestionStats, Calculator } from "./sub-components";
 import toast from "react-hot-toast";
@@ -120,6 +120,7 @@ export default function QuestionInterface({
   initialFlagged = {},
   initialAnswers = {},
 }) {
+  const { user } = useGetUser();
   const router = useRouter();
   const sessionId = examMeta?.sessionId;
   const { pauseExam, isPending: isPausingExam } = usePauseExam();
@@ -727,19 +728,13 @@ export default function QuestionInterface({
     <div className="w-full flex-1 flex flex-col overflow-hidden bg-[#f4f6f9] relative">
       {/* Top status bar */}
       <div className="w-full bg-[#2C5F8D] px-4 h-11.5 flex items-center justify-between shrink-0 z-11 text-white gap-2">
-        <div className="w-full flex items-center gap-2.5  flex-[0_1_auto]">
+        <div className="w-full flex items-center gap-2.5">
           <div className="w-full flex items-center gap-1.5 ">
-            <span className="text-sm font-extrabold font-serif tracking-tight whitespace-nowrap">
-              STEM<span className="text-[#FE5E7E]">RN</span>
-            </span>
-            <span className="text-[11px] opacity-70 whitespace-nowrap hidden sm:inline">—</span>
-            <span className="text-[11px] font-semibold opacity-85 whitespace-nowrap overflow-hidden text-ellipsis hidden sm:inline">
-              Student
-            </span>
+            GENCLEX - <p className="text-gray-200 text-[14px]!">{ user?.full_name }</p>
           </div>
         </div>
 
-        <div className="flex flex-col items-center leading-tight flex-[1_1_auto] text-center min-w-0 px-2">
+        <div className="w-full flex flex-col items-center leading-tight text-center px-2">
           <div className="text-[11px] font-semibold opacity-95 whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
             {examMeta && examMeta.isFullExam ? title : mode === "test" ? "Timed Tutorial" : "Tutorial Mode"}
           </div>
@@ -748,7 +743,7 @@ export default function QuestionInterface({
           </div>
         </div>
 
-        <div className="flex flex-col items-end leading-tight flex-[0_1_auto] gap-0.5">
+        <div className="w-full flex flex-col items-end leading-tight flex-[0_1_auto] gap-0.5">
           {mode === "test" && timeLeft !== null && (
             <div
               className="flex items-center gap-1.5 text-[13px] font-semibold whitespace-nowrap"
@@ -1966,7 +1961,7 @@ export default function QuestionInterface({
 
       {/* Pause overlay */}
       {paused && mode === "test" && (
-        <div 
+        <div
           className="absolute top-0 inset-0 z-300 flex items-center justify-center backdrop-blur-md"
           style={{ backgroundColor: "rgba(15, 23, 42, 0.94)" }}
         >

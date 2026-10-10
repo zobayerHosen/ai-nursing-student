@@ -1,8 +1,17 @@
 export const flashcardsService = {
+
   getCategory: async (axiosInstance) => {
     const response = await axiosInstance.get("/category-content/");
     return response?.data;
   },
+
+
+  getAllDecks: async (axiosInstance,deckId) => {
+    const response = await axiosInstance.get(`/category/${deckId}/decks/`);
+    return response?.data;
+  },
+
+
   getDeckDetails: async (axiosInstance, deckId) => {
     const response = await axiosInstance.get(`/deck/${deckId}/`);
     return response?.data;

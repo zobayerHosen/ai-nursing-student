@@ -10,7 +10,6 @@ const FlaschCardPlayerDetails = ({ topicList: id }) => {
     const router = useRouter();
     const { deckData, isLoading, isError } = useGetDeckDetails(id);
     const deck = deckData?.data ?? deckData;
-    console.log("Deck details data:", deck?.cards);
 
     if (isLoading) {
         return (
@@ -49,5 +48,4 @@ const FlaschCardPlayerDetails = ({ topicList: id }) => {
         </div>
     );
 };
-
 export default FlaschCardPlayerDetails;
