@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import StudyNotesSubCategoriesClient from "./components/sub-category-details-client";
+import StudyNotesSubCategoriesClient from "../components/sub-category-details-client";
 
 export default async function StudyNotesCategorySystemsView({ params }) {
   const { subcatlist } = await params;

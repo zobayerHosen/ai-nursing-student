@@ -42,6 +42,8 @@ export default function TopicContentDetails() {
   const { topicDetailsData: currentNote, isLoading } =
     useGetCoreLearningContentDetails(!isNaN(contentId) ? contentId : null);
 
+  console.log("TOpic details", currentNote)
+
   const { saveNote, isPending: isSavePending } = useSaveNote();
   const { markComplete, isPending: isCompletePending } = useMarkComplete();
 
@@ -189,7 +191,16 @@ export default function TopicContentDetails() {
     );
   }
 
-  const categoryName = currentNote?.category_name || "Medical Surgical";
+  const categoryName =
+    currentNote?.category_name ||
+    currentNote?.category_title ||
+    currentNote?.category?.name ||
+    currentNote?.category?.title ||
+    currentNote?.related_topics?.[0]?.category_name ||
+    currentNote?.related_topics?.[0]?.category_title ||
+    currentNote?.subcategory_name ||
+    currentNote?.related_topics?.[0]?.subcategory_name ||
+    "";
   const noteTitle = currentNote?.content_name || "Study Note";
   const relatedTopics = currentNote?.related_topics || [];
   const video = currentNote?.video || {};
@@ -218,7 +229,7 @@ export default function TopicContentDetails() {
             className="text-[#1B4B66] group-hover:-translate-x-1 transition-transform shrink-0"
           />
           <span className="truncate">
-            {categoryName}/{noteTitle}
+            {categoryName ? `${categoryName} / ` : "Not Found"}{noteTitle}
           </span>
         </button>
 
@@ -230,8 +241,8 @@ export default function TopicContentDetails() {
             onClick={handleSaveClick}
             disabled={isSavePending}
             className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition flex items-center gap-2 cursor-pointer shadow-2xs ${isSaved
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
-                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+              ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
               }`}
           >
             {isSavePending ? (
@@ -253,8 +264,8 @@ export default function TopicContentDetails() {
             onClick={handleCompleteClick}
             disabled={isCompletePending}
             className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 cursor-pointer shadow-xs active:scale-95 ${isCompleted
-                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                : "bg-[#1B4B66] hover:bg-[#14394E] text-white"
+              ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+              : "bg-[#1B4B66] hover:bg-[#14394E] text-white"
               }`}
           >
             {isCompletePending ? (

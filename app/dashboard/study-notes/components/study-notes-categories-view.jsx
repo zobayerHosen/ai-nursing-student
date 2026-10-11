@@ -41,6 +41,12 @@ const ICON_PALETTE = [
 
 export default function StudyNotesCategoriesView() {
   const { coreLearningData, isLoading } = useCoreLearning();
+
+  console.log("Corelearning data", coreLearningData)
+
+
+
+
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("default");
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);

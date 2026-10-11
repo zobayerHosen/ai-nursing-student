@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -8,7 +8,7 @@ import { useLearningCategoryDetails, useSaveNote } from "@/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import SaveNoteModal from "@/components/save-note-modal";
 import SubcategoryAccordionItem from "./subcategory-accordion-item";
-import StudyNotesSidebarWidgets from "../../../components/study-notes-sidebar-widgets";
+import StudyNotesSidebarWidgets from "../../components/study-notes-sidebar-widgets";
 import CardSkeleton from "@/app/dashboard/components/card-skeleton";
 
 export default function StudyNotesSubCategoriesClient({ subcatlist }) {
@@ -17,12 +17,9 @@ export default function StudyNotesSubCategoriesClient({ subcatlist }) {
 
   // Fetch fresh category details
   const { learningCategoryDetailsData, isLoading } = useLearningCategoryDetails(subcatlist);
-  console.log(learningCategoryDetailsData);
-
   const subcategories = learningCategoryDetailsData?.subcategories || [];
   const directContents = learningCategoryDetailsData?.contents || [];
   const hasSubcategories = subcategories.length > 0;
-
   const popular_this_week = learningCategoryDetailsData?.popular_this_week || [];
 
   const allTopics = useMemo(() => {
@@ -31,16 +28,9 @@ export default function StudyNotesSubCategoriesClient({ subcatlist }) {
       : directContents;
   }, [hasSubcategories, subcategories, directContents]);
 
-  console.log("All topics", allTopics)
 
-  // Track expanded subcategories (default: expand all)
+  // Track expanded subcategories
   const [expandedSubcategoryIds, setExpandedSubcategoryIds] = useState(new Set());
-
-  useEffect(() => {
-    if (subcategories.length > 0) {
-      setExpandedSubcategoryIds(new Set(subcategories.map((s) => s.id)));
-    }
-  }, [subcategories]);
 
   const toggleSubcategory = useCallback((subId) => {
     setExpandedSubcategoryIds((prev) => {
