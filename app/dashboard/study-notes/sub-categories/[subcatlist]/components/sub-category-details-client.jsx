@@ -143,7 +143,7 @@ export default function StudyNotesSubCategoriesClient({ subcatlist }) {
           </div>
         ) : (
           hasSubcategories && (
-            <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               {subcategories?.map((sub) => (
                 <SubcategoryAccordionItem
                   key={sub.id}

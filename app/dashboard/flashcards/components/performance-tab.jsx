@@ -7,7 +7,6 @@ import {
   Crown,
   TrendingUp,
   Stethoscope,
-  Loader2,
   BarChart3,
 } from "lucide-react";
 import { useGetFlashcardProgress } from "@/hooks/flashcards";
@@ -20,16 +19,104 @@ const PALETTES = [
   { iconBg: "bg-rose-50", iconColor: "text-rose-600", progressColor: "bg-rose-600" },
 ];
 
+function PerformanceSkeleton() {
+  return (
+    <div className="w-full space-y-8 animate-[fadeIn_0.3s_ease]">
+      {/* ─── ROW 1 SKELETON: MASTERY & 4 STAT CARDS ─── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        {/* Left: Mastery Skeleton */}
+        <div className="lg:col-span-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6 flex flex-col justify-between animate-pulse">
+          <div>
+            <div className="h-6 w-44 bg-gray-200 rounded-md" />
+            <div className="h-3.5 w-36 bg-gray-100 rounded-md mt-1.5" />
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-6 my-auto pt-5 pb-2">
+            {/* Donut Circle Skeleton */}
+            <div className="relative w-36 h-36 sm:w-40 sm:h-40 shrink-0 rounded-full border-14 border-gray-100 flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center">
+                <div className="h-7 w-14 bg-gray-200 rounded-md" />
+                <div className="h-2.5 w-12 bg-gray-100 rounded-md mt-1.5" />
+              </div>
+            </div>
+
+            {/* Legend List Skeleton */}
+            <div className="flex-1 w-full space-y-3.5">
+              {[...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between text-xs py-1 border-b border-gray-50 last:border-0"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-gray-200 shrink-0" />
+                    <div className="space-y-1">
+                      <div className="h-3 w-16 bg-gray-200 rounded" />
+                      <div className="h-2.5 w-24 bg-gray-100 rounded" />
+                    </div>
+                  </div>
+                  <div className="h-3.5 w-12 bg-gray-200 rounded" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right: 4 Stat Cards Skeleton */}
+        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col justify-between animate-pulse"
+            >
+              <div className="w-10 h-10 rounded-xl bg-gray-100" />
+
+              <div className="mt-4 space-y-2">
+                <div className="h-3.5 w-24 bg-gray-200 rounded-md" />
+                <div className="h-8 w-20 bg-gray-200 rounded-md" />
+                <div className="h-3 w-32 bg-gray-100 rounded-md pt-1" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ─── ROW 2 SKELETON: TOPIC MASTERY GRID ─── */}
+      <div className="space-y-4">
+        <div className="h-7 w-36 bg-gray-200 rounded-md animate-pulse" />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-2xl border border-gray-100 shadow-2xs p-4 flex flex-col justify-between space-y-3.5 animate-pulse"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-gray-100 shrink-0" />
+                  <div className="h-4 w-28 bg-gray-200 rounded-md" />
+                </div>
+                <div className="h-5 w-20 bg-gray-100 rounded-full shrink-0" />
+              </div>
+
+              <div className="w-full h-1.5 bg-gray-100 rounded-full" />
+
+              <div className="flex items-center justify-between pt-0.5">
+                <div className="h-3 w-28 bg-gray-100 rounded-md" />
+                <div className="h-3 w-12 bg-gray-200 rounded-md" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PerformanceTab() {
   const { categories, overall, isLoading } = useGetFlashcardProgress();
 
   if (isLoading) {
-    return (
-      <div className="w-full min-h-72 flex flex-col items-center justify-center gap-3 py-16">
-        <Loader2 className="w-8 h-8 text-[#1B4B66] animate-spin" />
-        <p className="text-xs font-semibold text-gray-500">Loading performance stats...</p>
-      </div>
-    );
+    return <PerformanceSkeleton />;
   }
 
   // Calculate Overall Values from API

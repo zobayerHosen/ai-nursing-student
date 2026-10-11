@@ -7,7 +7,6 @@ import {
   Bookmark,
   AlertTriangle,
   Sparkles,
-  TrendingUp,
   MessageSquare,
   X,
   ChevronRight,
@@ -16,7 +15,6 @@ import {
 } from "lucide-react";
 import FlashcardPlayer from "../[topic]/components/flashcard-player";
 import { useGetFavoriteDecks, useToggleFavoriteDeck } from "@/hooks/flashcards";
-import { LEARNING_READINESS_STATS } from "./dummy-data";
 import toast from "react-hot-toast";
 
 export default function FavoritesTab({ onStudyTopic }) {
@@ -57,13 +55,7 @@ export default function FavoritesTab({ onStudyTopic }) {
         />
       </div>
     );
-  }
-
-  // Multi-segment Donut Chart Calculations for "How you're Learning"
-  const radius = 42;
-  const circumference = 2 * Math.PI * radius; // ~263.89
-  const segments = LEARNING_READINESS_STATS.segments;
-  let accumulated = 0;
+  };
 
   return (
     <div className="w-full animate-[fadeIn_0.3s_ease]">
@@ -76,8 +68,39 @@ export default function FavoritesTab({ onStudyTopic }) {
             </h2>
 
             {isLoading ? (
-              <div className="py-12 text-center text-sm text-gray-400">
-                Loading favorite decks...
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-xl border border-gray-100 p-3.5 sm:p-4 shadow-2xs flex gap-3.5 animate-pulse"
+                  >
+                    {/* Left Thumbnail Skeleton */}
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-gray-200 shrink-0" />
+
+                    {/* Right Content Skeleton */}
+                    <div className="flex-1 flex flex-col justify-between min-w-0 py-0.5 space-y-2">
+                      <div className="space-y-2">
+                        {/* Category & Bookmark placeholder */}
+                        <div className="flex items-center justify-between">
+                          <div className="h-3 w-20 bg-gray-200 rounded-md" />
+                          <div className="h-4 w-4 bg-gray-200 rounded" />
+                        </div>
+
+                        {/* Title placeholder */}
+                        <div className="h-4 w-3/4 bg-gray-200 rounded-md" />
+
+                        {/* Description placeholder */}
+                        <div className="h-3 w-1/2 bg-gray-100 rounded-md" />
+                      </div>
+
+                      {/* Bottom count & Study action placeholder */}
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-50">
+                        <div className="h-4 w-16 bg-gray-100 rounded-md" />
+                        <div className="h-4 w-12 bg-gray-200 rounded-md" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : favoriteDecks && favoriteDecks.length > 0 ? (
               <>
