@@ -14,6 +14,7 @@ import {
 import { useGetFlashcardCategory, useGetAllDecks } from "@/hooks/flashcards";
 import { getCategoryColor } from "@/app/dashboard/flashcards/components/dummy-data";
 import TopicCategoryList from "@/app/dashboard/flashcards/components/topic-category-list";
+import DeckSubcategoryCard from "./deck-subcategory-card";
 
 export default function DectListClient({ id }) {
   const router = useRouter();
@@ -75,23 +76,20 @@ export default function DectListClient({ id }) {
     <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-6 sm:py-8 space-y-6 animate-[fadeIn_0.3s_ease] relative">
       {/* MOBILE DRAWER SIDEBAR */}
       <div
-        className={`fixed inset-0 z-50 lg:hidden transition-all duration-300 ${
-          isMobileSidebarOpen
+        className={`fixed inset-0 z-50 lg:hidden transition-all duration-300 ${isMobileSidebarOpen
             ? "visible opacity-100"
             : "invisible opacity-0 pointer-events-none"
-        }`}
+          }`}
       >
         <div
-          className={`fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity duration-300 ${
-            isMobileSidebarOpen ? "opacity-100" : "opacity-0"
-          }`}
+          className={`fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity duration-300 ${isMobileSidebarOpen ? "opacity-100" : "opacity-0"
+            }`}
           onClick={() => setIsMobileSidebarOpen(false)}
         />
 
         <aside
-          className={`fixed inset-y-0 left-0 z-50 w-[85%] sm:w-80 max-w-sm bg-white shadow-2xl flex flex-col h-full transform transition-transform duration-300 ease-in-out ${
-            isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          className={`fixed inset-y-0 left-0 z-50 w-[85%] sm:w-80 max-w-sm bg-white shadow-2xl flex flex-col h-full transform transition-transform duration-300 ease-in-out ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
         >
           <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
             <div>
@@ -223,6 +221,11 @@ export default function DectListClient({ id }) {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               {allDecks?.map((deck) => {
+                if (deck?.deck_sub_category) {
+                  return <DeckSubcategoryCard key={deck.id} deck={deck} />;
+                }
+
+                // If deck_sub_category is false -> direct card navigation
                 return (
                   <Link
                     key={deck.id}

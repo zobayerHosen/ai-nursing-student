@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSubmitFlashcardAnswer } from "@/hooks/flashcards";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -18,7 +19,8 @@ const formatImageUrl = (imgPath) => {
     return `${BASE_URL || ""}${imgPath.startsWith("/") ? "" : "/"}${imgPath}`;
 };
 
-const FlashcardPlayer = ({ topic, onBack }) => {
+const FlashcardPlayer = ({ topic }) => {
+    const router = useRouter();
     const topicDetails = Array.isArray(topic?.cards) ? topic.cards : [];
     const [activeCards, setActiveCards] = useState(topicDetails);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -120,7 +122,7 @@ const FlashcardPlayer = ({ topic, onBack }) => {
         return (
             <div className="flex flex-col items-center justify-center p-10 bg-white rounded-2xl border border-gray-100 shadow-sm">
                 <p className="text-gray-500">No flashcards available for this topic yet.</p>
-                <button onClick={onBack} className="mt-4 text-primary font-medium flex items-center gap-2 cursor-pointer">
+                <button onClick={() => router.back()} className="mt-4 text-primary font-medium flex items-center gap-2 cursor-pointer">
                     <ArrowLeft size={18} /> Back to Decks
                 </button>
             </div>
@@ -185,7 +187,7 @@ const FlashcardPlayer = ({ topic, onBack }) => {
         <div className="w-full">
             <div className="flex items-center justify-between mb-8 px-2">
                 <button
-                    onClick={onBack}
+                    onClick={() => router.back()}
                     className="cursor-pointer flex items-center gap-2 text-gray-600 hover:text-primary transition-all rounded font-medium"
                 >
                     <ArrowLeft size={20} />

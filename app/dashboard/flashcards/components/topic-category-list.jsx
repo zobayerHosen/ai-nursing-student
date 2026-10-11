@@ -56,8 +56,8 @@ export default function TopicCategoryList({
                 : undefined,
             }}
             className={`w-full text-left p-1.5 sm:p-2 pr-3.5 sm:pr-4 rounded-full transition-all duration-200 flex items-center justify-between group cursor-pointer ${isSelected
-                ? "scale-[1.01]"
-                : "hover:brightness-96 hover:shadow-xs hover:scale-[1.005]"
+              ? "scale-[1.01]"
+              : "hover:brightness-96 hover:shadow-xs hover:scale-[1.005]"
               }`}
           >
             <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
