@@ -154,7 +154,7 @@ const FlashcardPlayer = ({ topic }) => {
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6 border-t border-gray-100">
                         <button
-                            onClick={onBack}
+                            onClick={() => router.back()}
                             className="cursor-pointer w-full sm:w-auto px-8 py-3.5 rounded-xl border-2 border-[#CBD5E1] text-[#64748B] font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
                         >
                             <ArrowLeft size={20} />

@@ -19,6 +19,7 @@ import {
   Layers,
 } from "lucide-react";
 import ConfigureModal from "../../nclex-exam/components/configure-modal";
+import ImageErrorHandle from "@/app/dashboard/components/image-error-handle";
 
 // Dynamic theme assigner for categories and topics
 const THEME_PRESETS = [
@@ -125,7 +126,7 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
 
   return (
     <div className="w-full bg-white rounded-xl sm:rounded-2xl border border-[#e2e8f0] p-4 sm:p-5 lg:p-6 shadow-xs">
-      {/* ─── HEADER ROW: TITLE & SEARCH ────────────────────────────── */}
+      {/* HEADER ROW: TITLE & SEARCH */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#f1f5f9]">
         <div>
           <h2 className="text-lg sm:text-xl font-extrabold text-[#0f172a] tracking-tight">
@@ -147,12 +148,14 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
             className="w-full pl-9 pr-4 py-1.5 text-xs sm:text-sm bg-white border border-[#e2e8f0] rounded-xl text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20 focus:border-[#1e3a5f] transition-all"
           />
           {searchQuery && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#94a3b8] hover:text-[#0f172a]"
+              className="absolute right-2 top-1/2 -translate-y-1/2"
             >
-              ✕
-            </button>
+              <X className="w-4 h-4" />
+            </Button>
           )}
         </div>
       </div>
@@ -213,7 +216,6 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
             // Only the selected category is expanded
             const isCatExpanded = expandedCategory === catName;
             const catTheme = getTheme(catName, catIdx);
-            const CatIcon = catTheme.icon;
 
             return (
               <div
@@ -230,15 +232,18 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
                 >
                   {/* Left: Category Icon, topic and question count */}
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div
-                      className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 border ${catTheme.bg} ${catTheme.border} ${catTheme.color}`}
-                    >
-                      <CatIcon className="w-5 h-5" />
-                    </div>
+                    <ImageErrorHandle
+                      src={cat?.icon}
+                      alt={catName}
+                      containerClassName={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 border ${catTheme.bg} ${catTheme.border} ${catTheme.color} overflow-hidden`}
+                      imageClassName="w-5 h-5 sm:w-6 sm:h-6 object-contain"
+                      width={44}
+                      height={44}
+                    />
 
                     <div className="min-w-0 flex-1">
                       <h3 className="text-sm sm:text-base font-bold text-[#0f172a] truncate">
-                        {catName}
+                        {catName ?? "Not Found"}
                       </h3>
                       <p className="text-[11px] text-[#94a3b8] mt-0.5 font-medium">
                         {cat?.total_topic ?? "0"} topics · {cat?.total_question ?? "0"} questions
@@ -274,7 +279,6 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
                       {cat.topics && cat.topics.length > 0 ? (
                         cat?.topics?.map((topic, topIdx) => {
                           const topicTheme = getTheme(topic.topic_name, topIdx);
-                          const TopicIcon = topicTheme.icon;
                           const subtopics = topic.subtopic || [];
                           const isSubOpen = !!openSubtopics[topic.id];
 
@@ -289,7 +293,14 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
                                   <div
                                     className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${topicTheme.bg} ${topicTheme.border} ${topicTheme.color}`}
                                   >
-                                    <TopicIcon className="w-4.5 h-4.5" />
+                                    <ImageErrorHandle
+                                      src={topic?.icon}
+                                      alt={catName}
+                                      containerClassName={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${catTheme.bg} ${catTheme.border} ${catTheme.color} overflow-hidden`}
+                                      imageClassName="w-5 h-5 sm:w-6 sm:h-6 object-contain"
+                                      width={44}
+                                      height={44}
+                                    />
                                   </div>
 
                                   <div className="min-w-0 flex-1">
@@ -297,7 +308,7 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
                                       {topic.topic_name ?? "N/F"}
                                     </h4>
                                     <p className="text-[11px] text-[#94a3b8] mt-0.5 font-medium">
-                                      {topic?.total_subtopic ?? "0"} subtopics · {0} questions
+                                      {topic?.total_subtopic ?? "0"} subtopics · {topic?.total_question ?? "0"} questions
                                     </p>
                                   </div>
                                 </div>
