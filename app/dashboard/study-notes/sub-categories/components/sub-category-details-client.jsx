@@ -29,16 +29,21 @@ export default function StudyNotesSubCategoriesClient({ subcatlist }) {
   }, [hasSubcategories, subcategories, directContents]);
 
 
-  // Track expanded subcategories
-  const [expandedSubcategoryIds, setExpandedSubcategoryIds] = useState(new Set());
+  // Track expanded subcategory (only one expanded at a time)
+  const [expandedSubcategoryId, setExpandedSubcategoryId] = useState(null);
 
   const toggleSubcategory = useCallback((subId) => {
-    setExpandedSubcategoryIds((prev) => {
-      const next = new Set(prev);
-      next.has(subId) ? next.delete(subId) : next.add(subId);
-      return next;
-    });
+    setExpandedSubcategoryId((prev) => (prev === subId ? null : subId));
   }, []);
+
+  const leftColumnSubcategories = useMemo(
+    () => subcategories.filter((_, i) => i % 2 === 0),
+    [subcategories]
+  );
+  const rightColumnSubcategories = useMemo(
+    () => subcategories.filter((_, i) => i % 2 === 1),
+    [subcategories]
+  );
 
   // Bookmark state & handlers
   const { saveNote } = useSaveNote();
@@ -83,6 +88,29 @@ export default function StudyNotesSubCategoriesClient({ subcatlist }) {
       router.push(`/dashboard/study-notes/${topic.id}`);
     },
     [router]
+  );
+
+  const renderAccordionItem = useCallback(
+    (sub) => (
+      <SubcategoryAccordionItem
+        key={sub.id}
+        subcategory={sub}
+        isExpanded={expandedSubcategoryId === sub.id}
+        onToggle={toggleSubcategory}
+        savedNoteIds={savedNoteIds}
+        onBookmark={handleBookmarkClick}
+        onNoteClick={handleNoteClick}
+        categoryTitle={learningCategoryDetailsData?.title}
+      />
+    ),
+    [
+      expandedSubcategoryId,
+      toggleSubcategory,
+      savedNoteIds,
+      handleBookmarkClick,
+      handleNoteClick,
+      learningCategoryDetailsData?.title,
+    ]
   );
 
   return (
@@ -133,20 +161,22 @@ export default function StudyNotesSubCategoriesClient({ subcatlist }) {
           </div>
         ) : (
           hasSubcategories && (
-            <div className="grid grid-cols-2 gap-4">
-              {subcategories?.map((sub) => (
-                <SubcategoryAccordionItem
-                  key={sub.id}
-                  subcategory={sub}
-                  isExpanded={expandedSubcategoryIds.has(sub.id)}
-                  onToggle={toggleSubcategory}
-                  savedNoteIds={savedNoteIds}
-                  onBookmark={handleBookmarkClick}
-                  onNoteClick={handleNoteClick}
-                  categoryTitle={learningCategoryDetailsData?.title}
-                />
-              ))}
-            </div>
+            <>
+              {/* 2-Column masonry layout: items stack tightly in each column so expanding one does not create empty voids */}
+              <div className="hidden md:grid md:grid-cols-2 gap-4 items-start">
+                <div className="flex flex-col gap-4">
+                  {leftColumnSubcategories.map(renderAccordionItem)}
+                </div>
+                <div className="flex flex-col gap-4">
+                  {rightColumnSubcategories.map(renderAccordionItem)}
+                </div>
+              </div>
+
+              {/* Mobile: 1-column layout */}
+              <div className="flex flex-col gap-4 md:hidden">
+                {subcategories.map(renderAccordionItem)}
+              </div>
+            </>
           )
         )}
 
