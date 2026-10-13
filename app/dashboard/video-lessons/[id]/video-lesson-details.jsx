@@ -167,7 +167,6 @@ export default function VideoLessonDetails({ videoId }) {
   const queryClient = useQueryClient();
   const { videoData, isLoading, isError } = useGetVideoDetails(videoId);
   const { addVideoToFavorite, isPending } = useAddVideoToFavorite();
-  console.log("Video data", videoData);
   const { videoProgress } = usePostVideoProgress();
 
   // Extract raw details object safely

@@ -10,7 +10,6 @@ import { useGetUser } from "@/hooks";
 const DashboardShell = ({ children }) => {
     const { user } = useGetUser()
     const router = useRouter();
-    console.log("🚀 User Data ------->", user);
     const [collapsed, setCollapsed] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 

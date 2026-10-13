@@ -62,12 +62,16 @@ export default function CategoriesView() {
   const { addVideoToFavorite, isPending, pendingId } = useAddVideoToFavorite();
   const stats = browseVideoCategoriesData?.stats ?? {};
   const categories = browseVideoCategoriesData?.categories ?? [];
-  const popularThisWeek = browseVideoCategoriesData?.popular_this_week ?? [];
-  console.log("Categories", popularThisWeek)
+  console.log("Category list", categories);
 
+
+  const popularThisWeek = browseVideoCategoriesData?.popular_this_week ?? [];
   const [searchCategoryQuery, setSearchCategoryQuery] = useState("");
   const [isLumiOpen, setIsLumiOpen] = useState(true);
 
+  const filteredCategories = categories?.filter((category) =>
+    category?.title?.toLowerCase().includes(searchCategoryQuery.toLowerCase().trim())
+  );
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -134,13 +138,13 @@ export default function CategoriesView() {
                   </div>
                 </div>
               ))
-            ) : categories?.length === 0 ? (
+            ) : filteredCategories?.length === 0 ? (
               <div className="col-span-full flex flex-col items-center justify-center h-48">
                 <Video className="w-12 h-12 text-gray-400 mb-4" />
                 <p className="text-sm text-gray-500">No categories found</p>
               </div>
             ) : (
-              categories?.map((category) => (
+              filteredCategories?.map((category) => (
                 <Link
                   key={category.id}
                   href={`/dashboard/video-lessons/category/${category.id}?from=categories`}
@@ -220,9 +224,8 @@ export default function CategoriesView() {
                       disabled={isThisPending}
                       title={isFav ? "Remove from favorites" : "Add to favorites"}
                       aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
-                      className={`p-1.5 rounded-lg text-gray-400 hover:text-[#1e3a5f] hover:bg-gray-50 transition-all cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed ${
-                        isFav ? "text-[#e14564] hover:text-[#e14564]" : ""
-                      }`}
+                      className={`p-1.5 rounded-lg text-gray-400 hover:text-[#1e3a5f] hover:bg-gray-50 transition-all cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed ${isFav ? "text-[#e14564] hover:text-[#e14564]" : ""
+                        }`}
                     >
                       {isThisPending ? (
                         <Loader2 className="w-4 h-4 text-[#1e3a5f] animate-spin" />
