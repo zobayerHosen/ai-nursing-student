@@ -49,3 +49,10 @@ export const deleteAllQuizzes = async (axiosInstance) => {
   const response = await axiosInstance.delete(`/nclex/clear/`);
   return response.data;
 };
+
+// 9. rename quiz list name
+export const renameQuizListName = async (axiosInstance, id, payload) => {
+  const response = await axiosInstance.put(`/nclex/${id}/rename/`, payload);
+  return response.data;
+};
+

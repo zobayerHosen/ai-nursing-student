@@ -14,55 +14,22 @@ import EmptyFlashcards from "./empty-flashcards";
 import NotesFlashcardPlayer, { NotesFlashcardPlayerSkeleton } from "./notes-flashcard-player";
 
 export default function NotesToFlashcardsClient() {
-  const [selectedCardCount, setSelectedCardCount] = useState(10);
-  const [selectedProgram, setSelectedProgram] = useState("LPN");
-  const [selectedCardType, setSelectedCardType] = useState("qa");
-  const [useOnlyCourseMaterials, setUseOnlyCourseMaterials] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [contentSource, setContentSource] = useState("");
-  const [sidebarTab, setSidebarTab] = useState("tool");
-
-  // Holds the session id returned by the generate API
-  const [activeSessionId, setActiveSessionId] = useState(null);
-  // Holds the session id the user picked from the History tab
-  const [viewingHistoryId, setViewingHistoryId] = useState(null);
+  const [session, setSession] = useState(null);
 
   const { generateFlashcards, isPending } = useGenerateFlashCard();
-  const { flashcardsList } = useGetFlashCardsHistoryList();
+  const { flashcardsList = [] } = useGetFlashCardsHistoryList();
 
-  // Fetch session data for the currently active/history session
-  const resolvedId = activeSessionId ?? viewingHistoryId;
+  const resolvedId = session?.id ?? null;
+  const isHistory = Boolean(session?.isHistory);
+
   const { sessionData, isLoading: isLoadingSession } =
     useGetAllGeneratedFlashCards(resolvedId);
 
-  // Generate
-  const handleGenerate = async () => {
-    const hasFile = !!selectedFile;
-    const hasContent = contentSource.trim().length > 0;
-
-    if (!hasFile && !hasContent) {
-      toast.error("Please upload a file or enter content source");
-      return;
-    }
-
-    if (!selectedCardCount || selectedCardCount < 1 || selectedCardCount > 30) {
-      toast.error("Card amount must be between 1 and 30");
-      return;
-    }
-
-    const formData = new FormData();
-    if (selectedFile) formData.append("file", selectedFile, selectedFile.name);
-    if (hasContent) formData.append("content_source", contentSource);
-    formData.append("card_count", String(selectedCardCount));
-    if (selectedProgram) formData.append("program", selectedProgram);
-    if (selectedCardType) formData.append("card_type", selectedCardType);
-    formData.append("use_only_course_materials", String(useOnlyCourseMaterials));
-
+  const handleGenerate = async (formData) => {
     try {
       const response = await generateFlashcards(formData);
       const newId = response?.data?.id ?? null;
-      setActiveSessionId(newId);
-      setViewingHistoryId(null);
+      setSession({ id: newId, isHistory: false });
       toast.success(response?.message ?? "Flashcards generated successfully");
     } catch (error) {
       toast.error(
@@ -71,17 +38,8 @@ export default function NotesToFlashcardsClient() {
     }
   };
 
-  // Reset
-  const handleReset = () => {
-    setActiveSessionId(null);
-    setViewingHistoryId(null);
-  };
-
-  // History select
-  const handleSelectHistory = (id) => {
-    setViewingHistoryId(id);
-    setActiveSessionId(null);
-  };
+  const handleReset = () => setSession(null);
+  const handleSelectHistory = (id) => setSession(id ? { id, isHistory: true } : null);
 
   const isPlayerVisible = Boolean(resolvedId);
   const showSkeleton = isPlayerVisible && (isPending || isLoadingSession);
@@ -89,25 +47,11 @@ export default function NotesToFlashcardsClient() {
   return (
     <section className="flex min-h-[calc(100vh-82px)] flex-col bg-[#F8F9FA] text-[#333E49] lg:flex-row">
       <FlashcardsSidebar
-        selectedCardCount={selectedCardCount}
-        setSelectedCardCount={setSelectedCardCount}
-        selectedProgram={selectedProgram}
-        setSelectedProgram={setSelectedProgram}
-        selectedCardType={selectedCardType}
-        setSelectedCardType={setSelectedCardType}
-        useOnlyCourseMaterials={useOnlyCourseMaterials}
-        setUseOnlyCourseMaterials={setUseOnlyCourseMaterials}
-        selectedFile={selectedFile}
-        setSelectedFile={setSelectedFile}
-        contentSource={contentSource}
-        setContentSource={setContentSource}
         onGenerate={handleGenerate}
         isGenerating={isPending}
-        activeTab={sidebarTab}
-        onTabChange={setSidebarTab}
         flashcardsList={flashcardsList}
         onSelectHistory={handleSelectHistory}
-        selectedHistoryId={viewingHistoryId}
+        selectedHistoryId={isHistory ? resolvedId : null}
       />
 
       {/* ── Right panel */}
@@ -144,7 +88,7 @@ export default function NotesToFlashcardsClient() {
             <NotesFlashcardPlayer
               key={resolvedId}
               sessionData={sessionData}
-              isHistory={Boolean(viewingHistoryId)}
+              isHistory={isHistory}
               onReset={handleReset}
             />
           ) : (

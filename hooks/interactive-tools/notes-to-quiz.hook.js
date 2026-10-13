@@ -9,6 +9,7 @@ import {
   getAllQuizzes,
   getQuizById,
   getQuizScore,
+  renameQuizListName,
   restartQuiz,
   submitQuestionAnswer,
 } from "@/services/interactive-tool";
@@ -243,6 +244,35 @@ export const useDeleteAllQuizzes = () => {
 
   return {
     deleteAllQuizItems,
+    isPending,
+    isError,
+    error,
+  };
+};
+
+// 9. rename quiz list name hook
+export const useRenameQuizListName = () => {
+  const axiosInstance = axiosPrivateClient();
+  const queryClient = useQueryClient();
+
+  const {
+    mutateAsync: renameQuizList,
+    isPending,
+    isError,
+    error,
+  } = useMutation({
+    mutationKey: ["notes-to-quiz-rename-list"],
+    mutationFn: ({ id, payload }) => renameQuizListName(axiosInstance, id, payload),
+    onSuccess: (data, variables) => {
+      if (variables?.id) {
+        queryClient.invalidateQueries({ queryKey: ["notes-to-quiz", variables.id] });
+      }
+      queryClient.invalidateQueries({ queryKey: ["notes-to-quizzes"] });
+    },
+  });
+
+  return {
+    renameQuizList,
     isPending,
     isError,
     error,

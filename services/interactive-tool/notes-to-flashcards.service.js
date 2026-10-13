@@ -48,3 +48,8 @@ export const deleteAllHistoryList = async (axiosInstance) => {
   const response = await axiosInstance.delete(`/flashcards/clear/`);
   return response.data;
 }
+
+export const renameFlashcardListName = async (axiosInstance, id, payload) => {
+  const response = await axiosInstance.put(`/flashcards/${id}/rename/`, payload);
+  return response.data;
+}

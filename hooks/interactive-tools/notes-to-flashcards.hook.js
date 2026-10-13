@@ -9,6 +9,7 @@ import {
   getFlashCardById,
   getFlashCardHistoryList,
   markAsKnowItOrStillLearning,
+  renameFlashcardListName,
   sessionScore,
 } from "@/services/interactive-tool";
 import toast from "react-hot-toast";
@@ -216,6 +217,35 @@ export const useDeleteAllHistoryList = () => {
 
   return {
     deleteAllHistory,
+    isPending,
+    isError,
+    error,
+  };
+};
+
+//  rename flashcard list name api
+export const useRenameFlashcardListName = () => {
+  const axiosInstance = axiosPrivateClient();
+  const queryClient = useQueryClient();
+
+  const {
+    mutateAsync: renameFlashcardList,
+    isPending,
+    isError,
+    error,
+  } = useMutation({
+    mutationKey: ["notes-to-flashcards-rename-list"],
+    mutationFn: ({ id, payload }) => renameFlashcardListName(axiosInstance, id, payload),
+    onSuccess: (data, variables) => {
+      if (variables?.id) {
+        queryClient.invalidateQueries({ queryKey: ["notes-to-flashcard-session", variables.id] });
+      }
+      queryClient.invalidateQueries({ queryKey: ["notes-to-flashcards"] });
+    },
+  });
+
+  return {
+    renameFlashcardList,
     isPending,
     isError,
     error,
