@@ -32,7 +32,7 @@ export default function ExitLockModal({ isOpen, onClose, onConfirm }) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           onClick={onClose}
-          className="fixed inset-0 z-100 bg-[#0f172a]/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
+          className="fixed inset-0 z-120 bg-[#0f172a]/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 12 }}

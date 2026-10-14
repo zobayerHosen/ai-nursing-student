@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
@@ -191,17 +191,8 @@ export default function TopicContentDetails() {
     );
   }
 
-  const categoryName =
-    currentNote?.category_name ||
-    currentNote?.category_title ||
-    currentNote?.category?.name ||
-    currentNote?.category?.title ||
-    currentNote?.related_topics?.[0]?.category_name ||
-    currentNote?.related_topics?.[0]?.category_title ||
-    currentNote?.subcategory_name ||
-    currentNote?.related_topics?.[0]?.subcategory_name ||
-    "";
-  const noteTitle = currentNote?.content_name || "Study Note";
+  const categoryName = currentNote?.category_name || "Not Found";
+  const noteTitle = currentNote?.content_name || "Not Found.";
   const relatedTopics = currentNote?.related_topics || [];
   const video = currentNote?.video || {};
 
@@ -212,7 +203,6 @@ export default function TopicContentDetails() {
       router.push("/dashboard/study-notes");
     }
   };
-  console.log("Current note", currentNote)
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -229,7 +219,7 @@ export default function TopicContentDetails() {
             className="text-[#1B4B66] group-hover:-translate-x-1 transition-transform shrink-0"
           />
           <span className="truncate">
-            {categoryName ? `${categoryName} / ` : "Not Found"}{noteTitle}
+            {categoryName} / {noteTitle}
           </span>
         </button>
 
@@ -338,7 +328,7 @@ export default function TopicContentDetails() {
                 {categoryName}
               </span>
               <h4 className="text-xs sm:text-sm font-bold text-[#1B4B66] leading-tight truncate">
-                {noteTitle}
+                {/* {noteTitle} */}
               </h4>
               <p className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed">
                 {video?.description ?? "N/A"}

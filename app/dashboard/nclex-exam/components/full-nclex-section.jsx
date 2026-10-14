@@ -177,7 +177,7 @@ export default function FullNCLEXSection({
 
                         {
                           exam?.status === "completed" ? (
-                           <></>
+                            <></>
                           ) : (
                             exam?.tag && (
                               <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#fffbeb] text-[#b45309] border border-[#fde68a]">
@@ -211,7 +211,7 @@ export default function FullNCLEXSection({
                     {isCompleted ? (
                       <div className="flex items-center gap-3">
                         {/* completed badge and report see button */}
-                        <div className="flex items-center gap-1.5">
+                        {/* <div className="flex items-center gap-1.5">
                           {exam.session_id ? (
                             <Link
                               href={`/dashboard/nclex-exam/report/${exam.session_id}`}
@@ -227,7 +227,16 @@ export default function FullNCLEXSection({
                               <span>Report</span>
                             </button>
                           )}
-                        </div>
+                        </div> */}
+
+                        {/* <Link
+                          href={`/dashboard/nclex-exam/report/${exam.session_id}`}
+                          className="bg-white hover:bg-[#f8fafc] text-[#1E3A5F] border border-gray-300 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer"
+                        >
+                          <span>Report</span>
+                        </Link> */}
+
+                        <p className="text-[12px] text-gray-400 border border-gray-200 rounded-sm py-1 px-5 ">This exam is locked now</p>
 
                         <div className="text-right">
                           <span className="text-xl font-semibold text-black leading-none">
