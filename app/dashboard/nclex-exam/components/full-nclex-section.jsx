@@ -236,7 +236,8 @@ export default function FullNCLEXSection({
                           <span>Report</span>
                         </Link> */}
 
-                        <p className="text-[12px] text-gray-400 border border-gray-200 rounded-sm py-1 px-5 ">This exam is locked now</p>
+                        <p className="text-[12px] text-gray-400 border border-gray-200 rounded-sm py-1 px-5">This exam is locked now</p>
+
 
                         <div className="text-right">
                           <span className="text-xl font-semibold text-black leading-none">

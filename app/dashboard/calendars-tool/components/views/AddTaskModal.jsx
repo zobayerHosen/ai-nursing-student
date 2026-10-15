@@ -50,9 +50,11 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
     setPoints(val === "exam" ? "100" : "10");
   };
 
+  const isFormValid = Boolean(title.trim() && date && category);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title.trim() || !date) return;
+    if (!isFormValid || isCreating) return;
 
     let pointsNum = parseFloat(points);
     if (isNaN(pointsNum) || pointsNum <= 0) {
@@ -101,7 +103,7 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-500 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={onClose}
         >
           <motion.div
@@ -136,7 +138,7 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. SBAR Case Study Draft"
               required
-              className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
+              className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent"
             />
           </div>
 
@@ -147,7 +149,7 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
               <select
                 value={courseCode}
                 onChange={(e) => setCourseCode(e.target.value)}
-                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
+                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent"
               >
                 <option value="">No Course / Personal</option>
                 {courses.map((c) => (
@@ -163,7 +165,7 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
                 value={category}
                 onChange={(e) => handleTypeChange(e.target.value)}
                 required
-                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
+                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent"
               >
                 {TASK_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>
@@ -183,10 +185,10 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
-                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
+                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent"
               />
             </div>
-            <div>
+            {/* <div>
               <label className="text-xs font-bold text-[#334155] block mb-1">Points Possible</label>
               <input
                 type="number"
@@ -197,7 +199,7 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
                 placeholder="e.g. 50"
                 className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
               />
-            </div>
+            </div> */}
           </div>
 
           {/* Start/End Time row */}
@@ -209,7 +211,7 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 placeholder="e.g. 09:00 AM"
-                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
+                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent"
               />
             </div>
             <div>
@@ -219,7 +221,7 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 placeholder="e.g. 10:15 AM"
-                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
+                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent"
               />
             </div>
           </div>
@@ -232,7 +234,7 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="e.g. SCI 204 or Online"
-              className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
+              className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent"
             />
           </div>
 
@@ -244,15 +246,19 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
               placeholder="Notes or submission instructions..."
-              className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent resize-none"
+              className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent resize-none"
             />
           </div>
 
           {/* Submit */}
           <button
             type="submit"
-            disabled={isCreating}
-            className="cursor-pointer w-full bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-xl py-2.5 transition-all disabled:opacity-50"
+            disabled={isCreating || !isFormValid}
+            className={`w-full bg-primary text-white text-sm font-bold rounded-xl py-2.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+              !isFormValid || isCreating
+                ? "cursor-not-allowed opacity-50"
+                : "hover:bg-primary/90 cursor-pointer"
+            }`}
           >
             {isCreating ? "Saving..." : "Save Task"}
           </button>

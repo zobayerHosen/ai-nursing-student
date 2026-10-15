@@ -145,3 +145,26 @@ export const useStudyNotesProgress = () => {
     error,
   };
 };
+
+
+// study notes subcategory list show  with id
+export const useStudyNotesSubCategoryListWithId = (id, options = {}) => {
+  const axiosInstance = axiosPrivateClient();
+
+  const { data, isLoading, isError, isFetching, error } = useQuery({
+    queryKey: ["study-notes-subcategory-list-with-id", id],
+    queryFn: () => coreLearningService.getStudyNotesSubCategoryListWithId(axiosInstance, id),
+    staleTime: 2 * 60 * 1000,
+    retry: false,
+    enabled: Boolean(id) && (options?.enabled !== undefined ? Boolean(options.enabled) : true),
+    ...options,
+  });
+
+  return {
+    studyNotesSubCategoryListData: data?.data?.data || data?.data || data,
+    isLoading,
+    isError,
+    isFetching,
+    error,
+  };
+};

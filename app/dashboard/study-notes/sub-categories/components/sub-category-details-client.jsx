@@ -17,17 +17,11 @@ export default function StudyNotesSubCategoriesClient({ subcatlist }) {
 
   // Fetch fresh category details
   const { learningCategoryDetailsData, isLoading } = useLearningCategoryDetails(subcatlist);
+  console.log("Learning category", learningCategoryDetailsData);
+
   const subcategories = learningCategoryDetailsData?.subcategories || [];
-  const directContents = learningCategoryDetailsData?.contents || [];
-  const hasSubcategories = subcategories.length > 0;
+
   const popular_this_week = learningCategoryDetailsData?.popular_this_week || [];
-
-  const allTopics = useMemo(() => {
-    return hasSubcategories
-      ? subcategories.flatMap((sub) => sub.contents || [])
-      : directContents;
-  }, [hasSubcategories, subcategories, directContents]);
-
 
   // Track expanded subcategory (only one expanded at a time)
   const [expandedSubcategoryId, setExpandedSubcategoryId] = useState(null);
@@ -136,13 +130,13 @@ export default function StudyNotesSubCategoriesClient({ subcatlist }) {
           </button>
 
           <span className="text-xs font-semibold text-[#1B4B66] bg-blue-50/80 px-3 py-1.5 rounded-full border border-blue-100 shrink-0">
-            {allTopics?.length ?? "0"} Topics
+            {learningCategoryDetailsData?.total_topic ?? "0"} Topics
           </span>
         </div>
         {/* Content: Subcategories view */}
         {isLoading ? (
           <CardSkeleton count={8} />
-        ) : allTopics.length === 0 ? (
+        ) : !learningCategoryDetailsData ? (
           <div className="bg-white rounded-2xl border border-gray-200/80 p-12 text-center shadow-xs flex flex-col items-center justify-center">
             <div className="w-14 h-14 rounded-2xl bg-blue-50 text-[#1B4B66] flex items-center justify-center mb-3">
               <BookOpen size={28} />
@@ -160,7 +154,7 @@ export default function StudyNotesSubCategoriesClient({ subcatlist }) {
             </button>
           </div>
         ) : (
-          hasSubcategories && (
+          subcategories.length > 0 && (
             <>
               {/* 2-Column masonry layout: items stack tightly in each column so expanding one does not create empty voids */}
               <div className="hidden md:grid md:grid-cols-2 gap-4 items-start">

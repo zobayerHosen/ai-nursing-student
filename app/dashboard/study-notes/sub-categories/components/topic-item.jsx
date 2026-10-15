@@ -12,7 +12,7 @@ export default function TopicItem({ topic, subtitle, isSaved, onBookmark, onClic
     >
       <div className="flex items-center gap-3 min-w-0">
         <ImageErrorHandle
-          src={topic?.content_cover}
+          src={topic?.content_cover || topic?.cover || topic?.thumbnail}
           alt={topic?.content_name || topic?.title || topic?.name}
           containerClassName="w-10 h-10 shrink-0 flex items-center justify-center overflow-hidden"
           imageClassName="w-8 h-8 object-contain"

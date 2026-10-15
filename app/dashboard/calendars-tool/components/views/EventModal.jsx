@@ -138,7 +138,7 @@ export default function EventModal({ event, onClose, coursesData = [] }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-110 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={onClose}
         >
           <motion.div
@@ -188,13 +188,13 @@ export default function EventModal({ event, onClose, coursesData = [] }) {
                 </p>
               )}
             </div>
-            <div className="bg-[#F8FAFC] border border-[#F1F5F9] rounded-xl p-3.5 flex flex-col gap-1">
+            {/* <div className="bg-[#F8FAFC] border border-[#F1F5F9] rounded-xl p-3.5 flex flex-col gap-1">
               <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider">Points</p>
               <p className="text-sm font-bold text-[#1E293B]">{pts} pts</p>
               <p className="text-xs text-[#64748B]">
                 {isGraded ? event.grade_earned : 0} earned = {weightVal}
               </p>
-            </div>
+            </div> */}
           </div>
 
           {/* Instructor Card */}
@@ -224,7 +224,7 @@ export default function EventModal({ event, onClose, coursesData = [] }) {
           )}
 
           {/* Grade input */}
-          <div>
+          {/* <div>
             <label className="text-xs font-semibold text-[#475569] block mb-1.5">Enter Grade</label>
             <div className="flex gap-2 items-center">
               <input
@@ -245,7 +245,7 @@ export default function EventModal({ event, onClose, coursesData = [] }) {
                 {isSavingGrade ? "..." : "Save"}
               </button>
             </div>
-          </div>
+          </div> */}
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-1">

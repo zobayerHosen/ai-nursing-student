@@ -13,10 +13,6 @@ export const coreLearningService = {
         const response = await axiosInstance.get(`/learning/category/${id}/`);
         return response?.data;
     },
-
-
-
-
     saveNote: async (axiosInstance, payload) => {
         const response = await axiosInstance.post(`/save-note/`, payload);
         return response?.data;
@@ -34,4 +30,11 @@ export const coreLearningService = {
         const response = await axiosInstance.get(`/study-notes/progress/`);
         return response?.data?.data;
     },
+
+    // study notes subcategory list show  with id
+    getStudyNotesSubCategoryListWithId: async (axiosInstance, id) => {
+        const response = await axiosInstance.get(`/learning/subcategory/${id}/`);
+        return response?.data;
+    },
+
 };
