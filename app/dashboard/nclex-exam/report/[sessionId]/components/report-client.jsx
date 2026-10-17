@@ -12,13 +12,6 @@ import ExitLockModal from "./exit-lock-modal";
 export default function ReportClient() {
   const params = useParams();
   const sessionId = params?.sessionId;
-  const [isExitModalOpen, setIsExitModalOpen] = useState(false);
-  const router = useRouter();
-
-  const handleExitConfirm = () => {
-    setIsExitModalOpen(false);
-    router.push("/dashboard/nclex-exam");
-  };
 
   const { reviewData, isLoading, isError, refetch } = useGetExamReview(sessionId);
 
@@ -207,36 +200,9 @@ export default function ReportClient() {
           </div>
         }
       </div>
-
-      {/* exit button */}
-      <div className="w-full flex items-center justify-center mt-7">
-        <button
-          type="button"
-          onClick={() => setIsExitModalOpen(true)}
-          className="cursor-pointer text-black bg-red-300 font-medium text-xs sm:text-sm py-2 px-8 rounded-lg transition-all active:scale-[0.98] flex items-center gap-2 mt-3"
-        >
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#000000"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="3" y="11" width="18" height="11" rx="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-          <span>Exit &amp; Lock</span>
-        </button>
-      </div>
-
       {/* Exit & Lock confirmation modal */}
       <ExitLockModal
-        isOpen={isExitModalOpen}
-        onClose={() => setIsExitModalOpen(false)}
-        onConfirm={handleExitConfirm}
+        sessionId={sessionId}
       />
     </div>
   );

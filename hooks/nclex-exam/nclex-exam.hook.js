@@ -1,6 +1,8 @@
 import axiosPrivateClient from "@/lib/axios.private.client";
 import { nclexExamService } from "@/services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export const useGetExamList = () => {
     const axiosInstance = axiosPrivateClient();
@@ -246,5 +248,41 @@ export const useNclexPerformance = () => {
         isError,
         error,
         refetch,
+    };
+};
+
+
+
+// Repost close hook
+export const useCloseReport = () => {
+    const axiosInstance = axiosPrivateClient();
+    const queryClient = useQueryClient();
+    const router = useRouter();
+
+    const {
+        mutateAsync: closeReport,
+        isPending,
+        isError,
+        error,
+    } = useMutation({
+        mutationFn: async (payload) => {
+            const response = await nclexExamService.closeReport(axiosInstance, payload);
+            return response?.data;
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ["nclex-exam-review"] });
+            toast.success(data?.message || "Report closed successfully");
+            router.push(`/dashboard/nclex-exam`);
+        },
+        onError: (error) => {
+            toast.error(error?.response?.data?.message || "Failed to close report");
+        },
+    });
+
+    return {
+        closeReport,
+        isPending,
+        isError,
+        error,
     };
 };

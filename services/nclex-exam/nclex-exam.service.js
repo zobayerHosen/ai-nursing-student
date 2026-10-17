@@ -43,4 +43,11 @@ export const nclexExamService = {
         const response = await axiosInstance.get(`/nclex/exams/performance/`);
         return response?.data;
     },
+
+
+    // Report close api
+    closeReport: async (axiosInstance, payload) => {
+        const response = await axiosInstance.post(`/nclex/exams/report-exit/`, payload);
+        return response?.data;
+    },
 };

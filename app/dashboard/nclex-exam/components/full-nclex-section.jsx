@@ -15,7 +15,6 @@ const fmtRemaining = (sec) => {
 export default function FullNCLEXSection({
   onStartExam,
   onResumeExam,
-  onReviewExam,
   isStarting = false,
   activeStartingExamId = null,
 }) {
@@ -210,34 +209,18 @@ export default function FullNCLEXSection({
                   <div className="flex items-center justify-end gap-3 sm:gap-4 lg:gap-6 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#f1f5f9]">
                     {isCompleted ? (
                       <div className="flex items-center gap-3">
-                        {/* completed badge and report see button */}
-                        {/* <div className="flex items-center gap-1.5">
-                          {exam.session_id ? (
-                            <Link
-                              href={`/dashboard/nclex-exam/report/${exam.session_id}`}
-                              className="bg-white hover:bg-[#f8fafc] text-[#1E3A5F] border border-gray-300 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer"
-                            >
-                              <span>Report</span>
-                            </Link>
-                          ) : (
-                            <button
-                              onClick={() => onReviewExam && onReviewExam(exam)}
-                              className="bg-white hover:bg-[#f8fafc] text-[#1E3A5F] border border-gray-300 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer"
-                            >
-                              <span>Report</span>
-                            </button>
-                          )}
-                        </div> */}
-
-                        {/* <Link
-                          href={`/dashboard/nclex-exam/report/${exam.session_id}`}
-                          className="bg-white hover:bg-[#f8fafc] text-[#1E3A5F] border border-gray-300 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer"
-                        >
-                          <span>Report</span>
-                        </Link> */}
-
-                        <p className="text-[12px] text-gray-400 border border-gray-200 rounded-sm py-1 px-5">This exam is locked now</p>
-
+                        {exam?.is_reviewed ? (
+                          <p className="text-[12px] text-gray-400 border border-gray-200 rounded-sm py-1 px-5">
+                            This exam is locked now
+                          </p>
+                        ) : (
+                          <Link
+                            href={`/dashboard/nclex-exam/report/${exam.session_id}`}
+                            className="bg-white hover:bg-[#f8fafc] text-[#1E3A5F] border border-gray-300 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer"
+                          >
+                            <span>Report</span>
+                          </Link>
+                        )}
 
                         <div className="text-right">
                           <span className="text-xl font-semibold text-black leading-none">
