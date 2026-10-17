@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -10,6 +10,7 @@ import {
   X,
   GraduationCap,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { useGetFlashcardCategory, useGetAllDecks } from "@/hooks/flashcards";
 import { getCategoryColor } from "@/app/dashboard/flashcards/components/dummy-data";
@@ -22,6 +23,7 @@ export default function DectListClient({ id }) {
 
   const [selectedCategoryId, setSelectedCategoryId] = useState(id || null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const loadMoreRef = useRef(null);
 
   // Map API categories with background colors from dummy data
   const categoriesList = useMemo(() => {
@@ -60,12 +62,43 @@ export default function DectListClient({ id }) {
     );
   }, [categoriesList, selectedCategoryId]);
 
-  // Fetch decks for active category
+  // Fetch decks for active category with infinite scroll pagination
   const {
     allDecks = [],
     isLoading: isDecksLoading,
     isError: isDecksError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    totalCount,
   } = useGetAllDecks(activeCategory?.id);
+
+  // Infinite scroll intersection observer
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      {
+        root: null,
+        rootMargin: "250px",
+        threshold: 0.1,
+      }
+    );
+
+    const currentEl = loadMoreRef.current;
+    observer.observe(currentEl);
+
+    return () => {
+      if (currentEl) {
+        observer.unobserve(currentEl);
+      }
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleSelectCategory = (catId) => {
     setSelectedCategoryId(catId);
@@ -173,9 +206,16 @@ export default function DectListClient({ id }) {
 
           {/* Category Header */}
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1E293B] tracking-tight">
-              {activeCategory?.name || "Fundamentals Of Nursing"}
-            </h1>
+            <div className="flex items-center justify-between gap-3">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1E293B] tracking-tight">
+                {activeCategory?.name || "Fundamentals Of Nursing"}
+              </h1>
+              {totalCount > 0 && (
+                <span className="text-xs sm:text-sm font-semibold text-[#1B4B66] bg-[#EDF5F9] px-2.5 py-1 rounded-lg shrink-0">
+                  {totalCount} {totalCount === 1 ? "Deck" : "Decks"}
+                </span>
+              )}
+            </div>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">
               Select a topic to start practicing with flashcards
             </p>
@@ -184,7 +224,7 @@ export default function DectListClient({ id }) {
           {/* Decks Grid */}
           {isDecksLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-              {[...Array(4)].map((_, i) => (
+              {[...Array(10)].map((_, i) => (
                 <div
                   key={i}
                   className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4 animate-pulse shadow-2xs"
@@ -219,60 +259,105 @@ export default function DectListClient({ id }) {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-              {allDecks?.map((deck) => {
-                if (deck?.deck_sub_category) {
-                  return <DeckSubcategoryCard key={deck.id} deck={deck} />;
-                }
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                {allDecks?.map((deck) => {
+                  if (deck?.deck_sub_category) {
+                    return <DeckSubcategoryCard key={deck.id} deck={deck} />;
+                  }
 
-                // If deck_sub_category is false -> direct card navigation
-                return (
-                  <Link
-                    key={deck.id}
-                    href={`/dashboard/flashcards/${deck.id}`}
-                    className="bg-white rounded-2xl border border-gray-100/90 hover:border-gray-200 shadow-2xs hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between relative overflow-hidden group hover:-translate-y-0.5 cursor-pointer"
-                  >
-                    {/* Top right subtle decorative accent */}
-                    <div className="absolute top-0 right-0 w-12 h-12 bg-[#F8FAFC] rounded-bl-3xl border-b border-l border-gray-100/60 pointer-events-none" />
+                  // If deck_sub_category is false -> direct card navigation
+                  return (
+                    <Link
+                      key={deck.id}
+                      href={`/dashboard/flashcards/${deck.id}`}
+                      className="bg-white rounded-2xl border border-gray-100/90 hover:border-gray-200 shadow-2xs hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between relative overflow-hidden group hover:-translate-y-0.5 cursor-pointer"
+                    >
+                      {/* Top right subtle decorative accent */}
+                      <div className="absolute top-0 right-0 w-12 h-12 bg-[#F8FAFC] rounded-bl-3xl border-b border-l border-gray-100/60 pointer-events-none" />
 
-                    <div className="space-y-4">
-                      {/* Top row: Icon + Title */}
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 text-gray-700">
-                          {deck.icon ? (
-                            <Image
-                              src={deck.icon}
-                              alt={deck.name}
-                              width={18}
-                              height={18}
-                              unoptimized
-                              className="w-4 h-4 object-contain"
-                            />
-                          ) : (
-                            <BookOpen size={16} strokeWidth={2} />
-                          )}
+                      <div className="space-y-4">
+                        {/* Top row: Icon + Title */}
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 text-gray-700">
+                            {deck.icon ? (
+                              <Image
+                                src={deck.icon}
+                                alt={deck.name}
+                                width={18}
+                                height={18}
+                                unoptimized
+                                className="w-4 h-4 object-contain"
+                              />
+                            ) : (
+                              <BookOpen size={16} strokeWidth={2} />
+                            )}
+                          </div>
+
+                          <h3 className="text-base font-bold text-[#1E293B] group-hover:text-[#1B4B66] transition-colors line-clamp-1 pr-6">
+                            {deck.name}
+                          </h3>
                         </div>
+                      </div>
 
-                        <h3 className="text-base font-bold text-[#1E293B] group-hover:text-[#1B4B66] transition-colors line-clamp-1 pr-6">
-                          {deck.name}
-                        </h3>
+                      {/* Bottom row */}
+                      <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-50">
+                        <span className="text-xs font-bold text-gray-500 tracking-wider uppercase">
+                          {deck?.card_count ?? "0"} Cards
+                        </span>
+
+                        <div className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-[#1B4B66] group-hover:translate-x-0.5 transition-transform">
+                          <span>Start</span>
+                          <ChevronRight size={15} />
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+
+                {/* Skeletons while fetching next page */}
+                {isFetchingNextPage &&
+                  [...Array(2)].map((_, i) => (
+                    <div
+                      key={`next-page-skeleton-${i}`}
+                      className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4 animate-pulse shadow-2xs"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-gray-200" />
+                        <div className="h-4 bg-gray-200 rounded-md w-36" />
+                      </div>
+                      <div className="pt-4 border-t border-gray-50 flex items-center justify-between">
+                        <div className="h-3 bg-gray-100 rounded-md w-16" />
+                        <div className="h-3 bg-gray-100 rounded-md w-12" />
                       </div>
                     </div>
+                  ))}
+              </div>
 
-                    {/* Bottom row */}
-                    <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-50">
-                      <span className="text-xs font-bold text-gray-500 tracking-wider uppercase">
-                        {deck?.card_count ?? "0"} Cards
-                      </span>
-
-                      <div className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-[#1B4B66] group-hover:translate-x-0.5 transition-transform">
-                        <span>Start</span>
-                        <ChevronRight size={15} />
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+              {/* Infinite scroll sentinel & Loading indicator */}
+              <div
+                ref={loadMoreRef}
+                className="py-4 flex flex-col items-center justify-center min-h-12"
+              >
+                {isFetchingNextPage ? (
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-gray-200 shadow-2xs text-xs font-semibold text-[#1B4B66]">
+                    <Loader2 size={16} className="animate-spin text-[#1B4B66]" />
+                    <span>Loading more decks...</span>
+                  </div>
+                ) : hasNextPage ? (
+                  <button
+                    type="button"
+                    onClick={() => fetchNextPage()}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#EDF5F9] hover:bg-[#D5EBF5] text-[#1B4B66] text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                  >
+                    Load More
+                  </button>
+                ) : allDecks.length > 8 ? (
+                  <p className="text-xs text-gray-400 font-medium">
+                    You've reached the end of the decks
+                  </p>
+                ) : null}
+              </div>
             </div>
           )}
         </div>

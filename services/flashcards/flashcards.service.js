@@ -6,8 +6,9 @@ export const flashcardsService = {
   },
 
 
-  getAllDecks: async (axiosInstance,deckId) => {
-    const response = await axiosInstance.get(`/category/${deckId}/decks/`);
+  getAllDecks: async (axiosInstance, deckId, params = {}) => {
+    const config = typeof params === "number" ? { params: { page: params } } : { params };
+    const response = await axiosInstance.get(`/category/${deckId}/decks/`, config);
     return response?.data;
   },
 

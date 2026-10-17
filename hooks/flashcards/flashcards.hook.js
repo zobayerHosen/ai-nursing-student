@@ -1,6 +1,12 @@
+import { useMemo } from "react";
 import axiosPrivateClient from "@/lib/axios.private.client";
 import { flashcardsService } from "@/services/flashcards";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 
 export const useGetFlashcardCategory = () => {
   const axiosInstance = axiosPrivateClient();
@@ -28,33 +34,71 @@ export const useGetFlashcardCategory = () => {
   };
 };
 
-// get all dec
-export const useGetAllDecks = (deckId) => {
+// get all decks with infinite scroll pagination (default 10 per page)
+export const useGetAllDecks = (deckId, options = {}) => {
   const axiosInstance = axiosPrivateClient();
+  const { pageSize = 10, enabled = true } =
+    typeof options === "number" ? { pageSize: options } : options;
 
-  const { data, isLoading, isError, isFetching, refetch } = useQuery({
-    queryKey: ["all-decks", deckId],
-    queryFn: () => flashcardsService.getAllDecks(axiosInstance, deckId),
-    enabled: !!deckId,
+  const query = useInfiniteQuery({
+    queryKey: ["all-decks", deckId, pageSize],
+    queryFn: ({ pageParam = 1 }) =>
+      flashcardsService.getAllDecks(axiosInstance, deckId, {
+        page: pageParam,
+        page_size: pageSize,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const payload = lastPage?.data?.data || lastPage?.data || lastPage;
+      if (!payload) return undefined;
+
+      const currentPage = Number(payload.current_page);
+      const totalPages = Number(payload.total_pages);
+
+      if (currentPage && totalPages) {
+        return currentPage < totalPages ? currentPage + 1 : undefined;
+      }
+      return payload.next ? (currentPage || 1) + 1 : undefined;
+    },
+    enabled: Boolean(deckId && enabled),
     staleTime: 2 * 60 * 1000,
     retry: false,
   });
 
-  const allDecks = Array.isArray(data?.data)
-    ? data.data
-    : Array.isArray(data?.data?.data)
-      ? data.data.data
-      : Array.isArray(data)
-        ? data
-        : [];
+  const allDecks = useMemo(() => {
+    const pages = query.data?.pages;
+    if (!pages?.length) return [];
+
+    const seen = new Set();
+    return pages
+      .flatMap((page) => {
+        const payload = page?.data?.data || page?.data || page;
+        return Array.isArray(payload?.results)
+          ? payload.results
+          : Array.isArray(payload)
+            ? payload
+            : [];
+      })
+      .filter((deck) => deck?.id != null && !seen.has(deck.id) && seen.add(deck.id));
+  }, [query.data?.pages]);
+
+  const firstPagePayload =
+    query.data?.pages?.[0]?.data?.data ||
+    query.data?.pages?.[0]?.data ||
+    query.data?.pages?.[0];
+  const totalCount = firstPagePayload?.count ?? allDecks.length;
 
   return {
+    ...query,
     allDecks,
-    data,
-    isLoading,
-    isError,
-    isFetching,
-    refetch,
+    totalCount,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    isFetching: query.isFetching,
+    fetchNextPage: query.fetchNextPage,
+    hasNextPage: query.hasNextPage,
+    isFetchingNextPage: query.isFetchingNextPage,
+    refetch: query.refetch,
   };
 };
 
