@@ -1,36 +1,6 @@
 import Link from "next/link";
 import { Bookmark, FileText } from "lucide-react";
 
-// Category tag color generator / mappings
-const getCategoryBadgeClass = (category = "") => {
-  const cat = (category || "").toLowerCase();
-  if (cat.includes("cardio")) return "bg-red-50 text-red-600";
-  if (cat.includes("pharm")) return "bg-pink-50 text-pink-600";
-  if (cat.includes("med") || cat.includes("surg")) return "bg-rose-50 text-rose-600";
-  if (cat.includes("ecg")) return "bg-orange-50 text-orange-600";
-  if (cat.includes("ob") || cat.includes("mat")) return "bg-amber-50 text-amber-700";
-  if (cat.includes("psych")) return "bg-purple-50 text-purple-600";
-  if (cat.includes("prep") || cat.includes("nclex")) return "bg-blue-50 text-blue-600";
-  return "bg-rose-50 text-rose-600";
-};
-
-// Formatted date helper
-const formatNoteDate = (note) => {
-  const rawDate = note?.created_at || note?.saved_at || note?.updated_at || note?.date;
-  if (!rawDate) return "Saved recently";
-  try {
-    const d = new Date(rawDate);
-    if (isNaN(d.getTime())) return "Saved recently";
-    return `Saved ${d.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })}`;
-  } catch {
-    return "Saved recently";
-  }
-};
-
 export default function LibraryNoteCard({ note }) {
   const noteId = note?.content_id;
 
@@ -61,9 +31,7 @@ export default function LibraryNoteCard({ note }) {
             {/* Category Badge & Bookmark Icon */}
             <div className="flex items-center justify-between gap-1">
               <span
-                className={`text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full truncate ${getCategoryBadgeClass(
-                  note?.folderName
-                )}`}
+                className={`text-[10px] font-bold tracking-wider uppercase rounded-full truncate text-gray-400`}
               >
                 {note?.folderName ?? "N/F"}
               </span>
@@ -74,13 +42,16 @@ export default function LibraryNoteCard({ note }) {
             <h3 className="text-sm sm:text-base font-bold text-[#1B4B66] group-hover:text-primary transition-colors line-clamp-1 mt-1.5">
               {note?.content_name ?? "N/F"}
             </h3>
+            {/* saved date */}
+            <span className="text-[11px] text-gray-400">
+              Saved: {note?.added || "N/F"}
+            </span>
           </div>
-        </div>
+        </div>  
       </div>
 
       {/* Bottom Date */}
-      <div className="text-[11px] text-gray-400 mt-3.5 pt-2.5 border-t border-gray-100 flex items-center justify-between">
-        <span>{formatNoteDate(note)}</span>
+      <div className="text-[11px] text-gray-400 mt-3.5 pt-2.5 border-t border-gray-100 flex items-center justify-end">
         <span className="text-primary text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
           View &rarr;
         </span>
