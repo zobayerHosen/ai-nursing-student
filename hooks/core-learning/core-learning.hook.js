@@ -1,6 +1,7 @@
+import { useMemo } from "react";
 import axiosPrivateClient from "@/lib/axios.private.client";
 import { coreLearningService } from "@/services/core-learning";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
 
 export const useCoreLearning = () => {
   const axiosInstance = axiosPrivateClient();
@@ -147,24 +148,53 @@ export const useStudyNotesProgress = () => {
 };
 
 
-// study notes subcategory list show  with id
+// study notes subcategory list show with id (infinite pagination)
 export const useStudyNotesSubCategoryListWithId = (id, options = {}) => {
   const axiosInstance = axiosPrivateClient();
+  const { enabled = true, pageSize = 10 } = options;
 
-  const { data, isLoading, isError, isFetching, error } = useQuery({
+  const query = useInfiniteQuery({
     queryKey: ["study-notes-subcategory-list-with-id", id],
-    queryFn: () => coreLearningService.getStudyNotesSubCategoryListWithId(axiosInstance, id),
+    queryFn: ({ pageParam = 1 }) =>
+      coreLearningService.getStudyNotesSubCategoryListWithId(axiosInstance, id, {
+        page: pageParam,
+        page_size: pageSize,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const payload = lastPage?.data?.data || lastPage?.data || lastPage;
+      if (!payload) return undefined;
+      if (payload.current_page && payload.total_pages) {
+        return payload.current_page < payload.total_pages ? payload.current_page + 1 : undefined;
+      }
+      return payload.next ? (Number(payload.current_page) || 1) + 1 : undefined;
+    },
     staleTime: 2 * 60 * 1000,
     retry: false,
-    enabled: Boolean(id) && (options?.enabled !== undefined ? Boolean(options.enabled) : true),
-    ...options,
+    enabled: Boolean(id && enabled),
   });
 
+  const { contents, studyNotesSubCategoryListData } = useMemo(() => {
+    const pages = query.data?.pages;
+    if (!pages?.length) {
+      return { contents: [], studyNotesSubCategoryListData: null };
+    }
+
+    const firstPage = pages[0]?.data?.data || pages[0]?.data || pages[0];
+    const seen = new Set();
+    const contents = pages
+      .flatMap((page) => (page?.data?.data || page?.data || page)?.contents || [])
+      .filter((item) => item?.id != null && !seen.has(item.id) && seen.add(item.id));
+
+    return {
+      contents,
+      studyNotesSubCategoryListData: firstPage ? { ...firstPage, contents } : null,
+    };
+  }, [query.data?.pages]);
+
   return {
-    studyNotesSubCategoryListData: data?.data?.data || data?.data || data,
-    isLoading,
-    isError,
-    isFetching,
-    error,
+    ...query,
+    contents,
+    studyNotesSubCategoryListData,
   };
 };

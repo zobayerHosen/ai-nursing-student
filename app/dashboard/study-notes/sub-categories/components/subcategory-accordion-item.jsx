@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { ChevronDown } from "lucide-react";
+import { useRef, useEffect } from "react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import TopicGrid from "./topic-grid";
 import ImageErrorHandle from "@/app/dashboard/components/image-error-handle";
 import { useStudyNotesSubCategoryListWithId } from "@/hooks";
@@ -49,13 +49,59 @@ export default function SubcategoryAccordionItem({
   categoryTitle,
 }) {
   const {
+    contents,
     studyNotesSubCategoryListData,
     isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
   } = useStudyNotesSubCategoryListWithId(subcategory?.id, {
     enabled: Boolean(isExpanded && subcategory?.id),
+    pageSize: 10,
   });
 
-  const subContents = studyNotesSubCategoryListData?.contents;
+  const subContents = contents || studyNotesSubCategoryListData?.contents || [];
+  const totalTopicsCount =
+    studyNotesSubCategoryListData?.total_content_count ??
+    studyNotesSubCategoryListData?.count ??
+    subcategory?.total_content_count ??
+    0;
+
+  const scrollContainerRef = useRef(null);
+  const sentinelRef = useRef(null);
+
+  // Trigger next page when scrolling the container near the bottom
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop - clientHeight < 120) {
+      if (hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    }
+  };
+
+  // IntersectionObserver to auto-fetch next page as user scrolls near bottom
+  useEffect(() => {
+    if (!isExpanded || !hasNextPage || isFetchingNextPage) return;
+
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      {
+        root: null,
+        rootMargin: "150px",
+      }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [isExpanded, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] overflow-hidden transition-all">
@@ -79,10 +125,7 @@ export default function SubcategoryAccordionItem({
               {subcategory?.name || "Subcategory"}
             </h3>
             <p className="text-xs text-gray-400 font-medium mt-0.5">
-              {subcategory?.total_content_count ?? 0} {subcategory?.total_content_count === 1 ? "Topic" : "Topics"}
-              {/* <span className="text-emerald-600 font-semibold ml-2">
-                • {0} Completed
-              </span> */}
+              {totalTopicsCount} {totalTopicsCount === 1 ? "Topic" : "Topics"}
             </p>
           </div>
         </div>
@@ -92,27 +135,46 @@ export default function SubcategoryAccordionItem({
             {isExpanded ? "Collapse" : "Expand"}
           </span>
           <div
-            className={`p-1 rounded-lg text-gray-400 transition-transform duration-200 ${isExpanded ? "rotate-180 text-[#1B4B66]" : ""
-              }`}
+            className={`p-1 rounded-lg text-gray-400 transition-transform duration-200 ${
+              isExpanded ? "rotate-180 text-[#1B4B66]" : ""
+            }`}
           >
             <ChevronDown size={18} />
           </div>
         </div>
       </button>
 
-      {/* Subcategory Topics */}
+      {/* Subcategory Topics with Infinite Scroll */}
       {isExpanded && (
-        <div className="px-4 pb-5 sm:px-5 sm:pb-6 pt-1 border-t border-gray-100 bg-gray-50/30">
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="max-h-125 overflow-y-auto px-4 pb-5 sm:px-5 sm:pb-6 pt-1 border-t border-gray-100 bg-gray-50/30 overscroll-contain"
+        >
           {isLoading ? (
             <SubcategoryTopicsSkeleton />
           ) : (
-            <TopicGrid
-              topics={subContents || []}
-              subtitle={subcategory?.name || categoryTitle}
-              savedNoteIds={savedNoteIds}
-              onBookmark={onBookmark}
-              onNoteClick={onNoteClick}
-            />
+            <>
+              <TopicGrid
+                topics={subContents}
+                subtitle={subcategory?.name || categoryTitle}
+                savedNoteIds={savedNoteIds}
+                onBookmark={onBookmark}
+                onNoteClick={onNoteClick}
+              />
+
+              {/* Bottom Sentinel & Infinite Scroll Loading Spinner */}
+              <div ref={sentinelRef} className="py-2.5 flex items-center justify-center">
+                {isFetchingNextPage && (
+                  <div className="flex items-center gap-2 py-2 text-[#1B4B66]">
+                    <Loader2 size={16} className="animate-spin text-[#1B4B66]" />
+                    <span className="text-xs font-semibold text-gray-500">
+                      Loading more topics...
+                    </span>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       )}

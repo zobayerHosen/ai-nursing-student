@@ -24,7 +24,7 @@ export default function TopicGrid({
           key={topic.id}
           topic={topic}
           subtitle={subtitle}
-          isSaved={savedNoteIds.has(topic.id) || Boolean(topic.is_saved)}
+          isSaved={savedNoteIds?.has ? savedNoteIds.has(topic.id) : Boolean(topic?.is_saved)}
           onBookmark={(e) => onBookmark(topic, e)}
           onClick={() => onNoteClick(topic)}
         />

@@ -31,9 +31,9 @@ export const coreLearningService = {
         return response?.data?.data;
     },
 
-    // study notes subcategory list show  with id
-    getStudyNotesSubCategoryListWithId: async (axiosInstance, id) => {
-        const response = await axiosInstance.get(`/learning/subcategory/${id}/`);
+    // study notes subcategory list show with id
+    getStudyNotesSubCategoryListWithId: async (axiosInstance, id, params = {}) => {
+        const response = await axiosInstance.get(`/learning/subcategory/${id}/`, { params });
         return response?.data;
     },
 
