@@ -8,11 +8,7 @@ import {
   ArrowLeft,
   Bookmark,
   CheckCircle2,
-  Play,
   FileText,
-  Layers,
-  HelpCircle,
-  Bot,
   X,
   MessageSquare,
   Check,
@@ -27,6 +23,9 @@ import {
 } from "@/hooks";
 import SaveNoteModal from "@/components/save-note-modal";
 import { getSecureUrl } from "@/utils";
+import RelatedTopicsCard from "./components/related-topics-card";
+import StudyToolsCard from "./components/study-tools-card";
+import LessonVideoCard from "./components/lesson-video-card";
 
 
 export default function TopicContentDetails() {
@@ -35,7 +34,6 @@ export default function TopicContentDetails() {
   const queryClient = useQueryClient();
 
   const [isIframeLoading, setIsIframeLoading] = useState(true);
-  const [showLumiBanner, setShowLumiBanner] = useState(true);
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
   // Fetch real note details from API
@@ -195,6 +193,7 @@ export default function TopicContentDetails() {
   const noteTitle = currentNote?.content_name || "Not Found.";
   const relatedTopics = currentNote?.related_topics || [];
   const video = currentNote?.video || {};
+  console.log("Video", video)
 
   const handleBackNavigation = () => {
     if (window.history.length > 1) {
@@ -309,203 +308,62 @@ export default function TopicContentDetails() {
         {/* Right Column: Sidebar (Watch Lesson, Related Topics, Study Tools, Lumi) */}
         <div className="xl:col-span-4 2xl:col-span-3 w-full space-y-5">
           {/* 1. Watch Lesson Card */}
-          <div className="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
-            <h3 className="font-bold text-[#1B4B66] text-base mb-3">Lesson Video</h3>
-
-            {/* Video preview thumbnail */}
-            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-900 flex items-center justify-center group cursor-pointer shadow-xs border border-gray-200">
-              <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-black/20" />
-
-              {/* Play Button Overlay */}
-              <div className="w-11 h-11 rounded-full bg-white/90 text-[#1B4B66] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform z-10">
-                <Play size={18} className="fill-[#1B4B66] ml-0.5" />
-              </div>
-            </div>
-
-            {/* Lesson Info */}
-            <div className="mt-3.5 space-y-1">
-              <span className="text-[10px] font-bold text-[#1B4B66] tracking-wider uppercase">
-                {categoryName}
-              </span>
-              <h4 className="text-xs sm:text-sm font-bold text-[#1B4B66] leading-tight truncate">
-                {/* {noteTitle} */}
-              </h4>
-              <p className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed">
-                {video?.description ?? "N/A"}
-              </p>
-
-              {/* Lesson Progress Bar */}
-              <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mt-3">
-                <div className="h-full bg-[#FF6B8A] rounded-full w-[65%]" />
-              </div>
-
-              <div className="flex items-center justify-between text-[11px] font-semibold text-gray-400 pt-1">
-                <span>4:20</span>
-                <span>8:00</span>
-              </div>
-
-              {/* Action Buttons: Resume & Bookmark */}
-              <div className="pt-3 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => toast.success("Resuming lesson video")}
-                  className="flex-1 py-2 px-3 rounded-xl bg-[#1B4B66] hover:bg-[#14394E] text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
-                >
-                  <Play size={13} className="fill-white" />
-                  <span>Resume</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleSaveClick}
-                  className="p-2 rounded-xl border border-gray-200 hover:border-gray-300 text-gray-500 hover:text-[#1B4B66] transition cursor-pointer"
-                  title="Bookmark lesson"
-                >
-                  <Bookmark size={15} className={isSaved ? "fill-[#1B4B66] text-[#1B4B66]" : ""} />
-                </button>
-              </div>
-            </div>
-          </div>
+          <LessonVideoCard
+            video={video}
+            categoryName={categoryName}
+            noteTitle={noteTitle}
+            onBookmarkNote={handleSaveClick}
+            isNoteSaved={isSaved}
+          />
 
           {/* 2. Related Topics Card */}
-          <div className="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
-            <h3 className="font-bold text-[#1B4B66] text-base mb-3">Related Topics</h3>
-
-            <div className="space-y-3">
-              {relatedTopics.length === 0 && (
-                <p className="text-xs text-gray-400 py-3 text-center">
-                  No related topics found.
-                </p>
-              )}
-
-              {relatedTopics?.map((topic) => {
-                const isTopicSaved =
-                  savedRelatedIds.has(topic.id) || Boolean(topic.is_saved);
-
-                return (
-                  <div
-                    key={topic.id}
-                    onClick={() => router.push(`/dashboard/study-notes/${topic.id}`)}
-                    className="flex items-center justify-between p-2.5 rounded-xl border border-gray-200 hover:border-gray-200 hover:bg-gray-50/70 transition cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-lg bg-blue-50 text-[#1B4B66] flex items-center justify-center shrink-0">
-                        <FileText size={16} />
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="text-xs sm:text-[13px] font-bold text-[#1B4B66] group-hover:text-blue-700 transition-colors truncate">
-                          {topic.title}
-                        </h4>
-                        <p className="text-[11px] text-gray-400 font-medium truncate">
-                          {topic.category_name}
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={(e) => handleRelatedBookmarkClick(topic, e)}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-[#1B4B66] hover:bg-gray-100 transition cursor-pointer shrink-0 ml-2"
-                      title={isTopicSaved ? "Remove bookmark" : "Bookmark topic"}
-                    >
-                      <Bookmark
-                        size={16}
-                        className={
-                          isTopicSaved
-                            ? "fill-[#1B4B66] text-[#1B4B66]"
-                            : "text-gray-400"
-                        }
-                      />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <RelatedTopicsCard
+            relatedTopics={relatedTopics}
+            savedRelatedIds={savedRelatedIds}
+            onBookmarkClick={handleRelatedBookmarkClick}
+          />
 
           {/* 3. Study Tools Card */}
-          <div className="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
-            <h3 className="font-bold text-[#1B4B66] text-base mb-3">Study Tools</h3>
+          <StudyToolsCard />
 
-            <div className="grid grid-cols-3 gap-2">
-              <Link
-                href="/dashboard/notes-to-flashcards"
-                className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-[#EBF5FB] hover:bg-[#DDF0FA] transition text-center cursor-pointer border border-[#D0E6F5]/50"
-              >
-                <div className="w-7 h-7 rounded-lg bg-[#326798]/10 text-[#1B4B66] flex items-center justify-center mb-1">
-                  <Layers size={16} />
-                </div>
-                <span className="text-[10px] font-bold text-[#1B4B66] leading-tight">
-                  Create Flashcards
-                </span>
-              </Link>
+          {/* 4. Need a Simpler Explanation? Card */}
+          <div className="bg-white rounded-2xl border border-gray-200/90 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] relative flex items-center gap-3">
+            <button
+              type="button"
+              className="absolute top-2.5 right-2.5 text-gray-400 hover:text-gray-600 p-1 rounded-md transition cursor-pointer"
+              aria-label="Dismiss"
+            >
+              <X size={14} />
+            </button>
 
-              <Link
-                href="/dashboard/notes-to-quize"
-                className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-[#EDF2FE] hover:bg-[#E2EAFF] transition text-center cursor-pointer border border-[#D5E1FC]/50"
-              >
-                <div className="w-7 h-7 rounded-lg bg-blue-600/10 text-blue-700 flex items-center justify-center mb-1">
-                  <HelpCircle size={16} />
-                </div>
-                <span className="text-[10px] font-bold text-[#1B4B66] leading-tight">
-                  Practice Questions
-                </span>
-              </Link>
+            <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 relative flex items-center justify-center">
+              <Image
+                src="/images/ai-tutor-avatar.png"
+                alt="CARA AI Tutor"
+                width={56}
+                height={56}
+                className="object-contain"
+              />
+            </div>
+
+            <div className="flex-1 min-w-0 pr-4">
+              <h4 className="text-xs sm:text-[13px] font-bold text-[#1B4B66] leading-tight">
+                Need a Simpler Explanation?
+              </h4>
+              <p className="text-[10px] sm:text-[11px] text-gray-500 mt-0.5 leading-tight">
+                Ask CARA about any flashcard
+              </p>
 
               <Link
                 href="/dashboard/my-tutor"
-                className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-[#F4EEFD] hover:bg-[#EADBFA] transition text-center cursor-pointer border border-[#E4D4FA]/50"
+                className="mt-2 inline-flex items-center gap-1 px-3 py-1.5 bg-[#1B4B66] hover:bg-[#14394E] text-white text-[11px] font-semibold rounded-full shadow-2xs transition cursor-pointer"
               >
-                <div className="w-7 h-7 rounded-lg bg-purple-600/10 text-purple-700 flex items-center justify-center mb-1">
-                  <Bot size={16} />
-                </div>
-                <span className="text-[10px] font-bold text-purple-900 leading-tight">
-                  Ask CARA
-                </span>
+                <MessageSquare size={11} />
+                <span>Ask CARA</span>
               </Link>
             </div>
           </div>
 
-          {/* 4. Need a Simpler Explanation? Card */}
-          {showLumiBanner && (
-            <div className="bg-white rounded-2xl border border-gray-200/90 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] relative flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setShowLumiBanner(false)}
-                className="absolute top-2.5 right-2.5 text-gray-400 hover:text-gray-600 p-1 rounded-md transition cursor-pointer"
-                aria-label="Dismiss"
-              >
-                <X size={14} />
-              </button>
-
-              <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 relative flex items-center justify-center">
-                <Image
-                  src="/images/ai-tutor-avatar.png"
-                  alt="CARA AI Tutor"
-                  width={56}
-                  height={56}
-                  className="object-contain"
-                />
-              </div>
-
-              <div className="flex-1 min-w-0 pr-4">
-                <h4 className="text-xs sm:text-[13px] font-bold text-[#1B4B66] leading-tight">
-                  Need a Simpler Explanation?
-                </h4>
-                <p className="text-[10px] sm:text-[11px] text-gray-500 mt-0.5 leading-tight">
-                  Ask CARA about any flashcard
-                </p>
-
-                <Link
-                  href="/dashboard/my-tutor"
-                  className="mt-2 inline-flex items-center gap-1 px-3 py-1.5 bg-[#1B4B66] hover:bg-[#14394E] text-white text-[11px] font-semibold rounded-full shadow-2xs transition cursor-pointer"
-                >
-                  <MessageSquare size={11} />
-                  <span>Ask CARA</span>
-                </Link>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 

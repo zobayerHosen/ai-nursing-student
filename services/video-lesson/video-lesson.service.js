@@ -45,8 +45,7 @@ export const videoLessonService = {
     return response?.data;
   },
 
-
-
+  
   updateVideoProgress: async (axiosInstance, id, payload) => {
     const response = await axiosInstance.post(`/video/progress/${id}/`, payload);
     return response?.data;
