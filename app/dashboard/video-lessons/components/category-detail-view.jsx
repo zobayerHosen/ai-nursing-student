@@ -1,3 +1,3 @@
 "use client";
 
-export { default, CategoryDetailContent } from "../category/[categoryId]/category-detail-content";
+export { default, CategoryDetailContent } from "../category/component/category-detail-content";

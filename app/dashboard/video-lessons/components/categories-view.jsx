@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
   Search,
-  ChevronRight,
   CheckCircle2,
   Video,
   Flame,
@@ -15,63 +14,29 @@ import {
   Sparkles,
   Loader2,
 } from "lucide-react";
-import dummayImage from "@/public/med_dumm.png";
 import { useAddVideoToFavorite, useGetBrowseVideoCategories } from "@/hooks";
+import CategoryCard from "./category-card";
 
-function CategoryLogo({ logo, title }) {
-  const BASEURL = process.env.NEXT_PUBLIC_BASE_URL || "";
-
-  const resolveLogoUrl = (url) => {
-    if (!url || typeof url !== "string") return null;
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return url;
-    }
-    const cleanBase = BASEURL.replace(/\/+$/, "");
-    const cleanPath = url.startsWith("/") ? url : `/${url}`;
-    return cleanBase ? `${cleanBase}${cleanPath}` : url;
-  };
-
-  const initialSrc = resolveLogoUrl(logo) || dummayImage;
-  const [src, setSrc] = useState(initialSrc);
-  const [hasError, setHasError] = useState(!logo);
-
-  useEffect(() => {
-    const resolved = resolveLogoUrl(logo);
-    setSrc(resolved || dummayImage);
-    setHasError(!resolved);
-  }, [logo]);
-
-  return (
-    <Image
-      src={hasError || !src ? dummayImage : src}
-      alt={title || "Category logo"}
-      width={44}
-      height={44}
-      unoptimized={typeof src === "string" && src.startsWith("http")}
-      className="w-6 h-full object-contain"
-      onError={() => {
-        setHasError(true);
-        setSrc(dummayImage);
-      }}
-    />
-  );
-}
+export { default as CategoryCard } from "./category-card";
 
 export default function CategoriesView() {
   const { browseVideoCategoriesData, isLoading, isError } = useGetBrowseVideoCategories();
   const { addVideoToFavorite, isPending, pendingId } = useAddVideoToFavorite();
   const stats = browseVideoCategoriesData?.stats ?? {};
   const categories = browseVideoCategoriesData?.categories ?? [];
-  console.log("Category list", categories);
-
 
   const popularThisWeek = browseVideoCategoriesData?.popular_this_week ?? [];
   const [searchCategoryQuery, setSearchCategoryQuery] = useState("");
   const [isLumiOpen, setIsLumiOpen] = useState(true);
 
-  const filteredCategories = categories?.filter((category) =>
-    category?.title?.toLowerCase().includes(searchCategoryQuery.toLowerCase().trim())
-  );
+  const filteredCategories = useMemo(() => {
+    if (!searchCategoryQuery.trim()) return categories;
+    const query = searchCategoryQuery.toLowerCase().trim();
+    return categories.filter((category) => {
+      const name = (category?.name ?? category?.title ?? "").toLowerCase();
+      return name.includes(query);
+    });
+  }, [categories, searchCategoryQuery]);
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -145,36 +110,13 @@ export default function CategoriesView() {
               </div>
             ) : (
               filteredCategories?.map((category) => (
-                <Link
-                  key={category.id}
-                  href={`/dashboard/video-lessons/category/${category.id}?from=categories`}
-                  className="bg-white rounded-2xl border border-[#eef2f6] hover:border-[#cbd5e1] p-4 flex items-start gap-3.5 transition-all shadow-2xs hover:shadow-md cursor-pointer group"
-                >
-                  <div
-                    className={`w-11 h-11 rounded-xl border border-gray-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform overflow-hidden`}
-                  >
-                    <CategoryLogo logo={category?.logo} title={category?.title} />
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <h4 className="font-bold text-sm text-[#0f172a] group-hover:text-[#1e3a5f] transition-colors truncate">
-                      {category.title}
-                    </h4>
-                    <p className="text-xs text-[#64748b] mt-0.5">
-                      {category?.total_lessons ?? 0} Lessons • {category?.completed_lessons ?? 0} Completed
-                    </p>
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-info mt-2 group-hover:translate-x-0.5 transition-transform">
-                      <span>View Lessons</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </Link>
+                <CategoryCard key={category.id} category={category} />
               ))
             )}
           </div>
         </div>
 
-        {/* Right Column: Popular This Week & Ask Lumi */}
+        {/* Right Column: Popular This Week & Ask CARA */}
         <div className="lg:col-span-4 xl:col-span-3.5 flex flex-col gap-5">
           {/* Popular This Week Card */}
           <div className="bg-white rounded-2xl border border-[#e5e9f0] p-5 shadow-xs">
@@ -241,7 +183,7 @@ export default function CategoriesView() {
             </div>
           </div>
 
-          {/* Need a Simpler Explanation? (Ask Lumi) Card */}
+          {/* Need a Simpler Explanation? (Ask CARA) Card */}
           {isLumiOpen && (
             <div className="bg-white rounded-2xl border border-[#e5e9f0] p-5 shadow-xs relative">
               <button
@@ -255,7 +197,7 @@ export default function CategoriesView() {
                 <div className="w-10 h-10 rounded-full overflow-hidden bg-blue-50 relative shrink-0 border border-blue-100">
                   <Image
                     src="/images/ai-tutor-avatar.png"
-                    alt="Lumi AI Tutor"
+                    alt="CARA AI Tutor"
                     fill
                     className="object-cover"
                   />
@@ -281,6 +223,6 @@ export default function CategoriesView() {
           )}
         </div>
       </div>
-    </div>
+    </div >
   );
 }

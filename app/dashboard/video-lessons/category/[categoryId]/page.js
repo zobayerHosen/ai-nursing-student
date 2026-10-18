@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import CategoryDetailContent from "./category-detail-content";
+import CategoryDetailContent from "../component/category-detail-content";
 
 export default async function CategoryDetailPage({ params }) {
     const resolvedParams = await params;

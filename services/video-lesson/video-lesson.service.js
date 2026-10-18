@@ -12,6 +12,18 @@ export const videoLessonService = {
     return response?.data;
   },
 
+  // Video Sub categories list
+  getVideoSubCategoryList: async (axiosInstance, subId) => {
+    const response = await axiosInstance.get(`/category/${subId}/subcategories/`);
+    return response?.data;
+  },
+
+  // video sub category single list
+  getSingleSubCategory: async (axiosInstance, id) => {
+    const response = await axiosInstance.get(`/subcategory/${id}/videos/`);
+    return response?.data;
+  },
+
 
   getSingleBrowseCategoriesVideos: async (axiosInstance, id, params = {}) => {
     const response = await axiosInstance.get(`/module/${id}/videos/`, { params });
@@ -45,7 +57,7 @@ export const videoLessonService = {
     return response?.data;
   },
 
-  
+
   updateVideoProgress: async (axiosInstance, id, payload) => {
     const response = await axiosInstance.post(`/video/progress/${id}/`, payload);
     return response?.data;

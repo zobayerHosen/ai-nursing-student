@@ -41,6 +41,61 @@ export const useGetBrowseVideoCategories = () => {
 };
 
 
+// Video Sub Categories list hook
+export const useGetVideoSubCategoryList = (id) => {
+  const axiosInstance = axiosPrivateClient();
+
+  const {
+    data,
+    isLoading,
+    isError,
+    isFetching,
+  } = useQuery({
+    queryKey: ["video-sub-category-list", id],
+    queryFn: () => videoLessonService.getVideoSubCategoryList(axiosInstance, id),
+    staleTime: 2 * 60 * 1000,
+    retry: false,
+    enabled: !!id,
+  });
+
+  return {
+    videoSubCategoryListData: data?.data,
+    isLoading,
+    isError,
+    isFetching,
+  };
+};
+
+
+
+// video sub category single
+export const singleSubCategoryVideosData = (id) => {
+  const axiosInstance = axiosPrivateClient();
+
+  const {
+    data,
+    isLoading,
+    isError,
+    isFetching,
+  } = useQuery({
+    queryKey: ["video-sub-category-single-videos", id],
+    queryFn: () => videoLessonService.getSingleSubCategory(axiosInstance, id),
+    staleTime: 2 * 60 * 1000,
+    retry: false,
+    enabled: !!id,
+  });
+
+  return {
+    data: data?.data,
+    singleSubCategoryVideosData: data?.data,
+    isLoading,
+    isError,
+    isFetching,
+  };
+};
+
+
+
 export const useGetSingleBrowseCategoriesVideos = (id) => {
   const axiosInstance = axiosPrivateClient();
 
