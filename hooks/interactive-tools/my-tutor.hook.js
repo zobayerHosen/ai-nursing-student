@@ -160,7 +160,6 @@ export const useTutorChat = ({
     manualCloseRef.current = false;
     setConnectionStatus("connecting");
     const url = getChatWebSocketUrl();
-    console.log("[useTutorChat] Connecting to WebSocket:", url);
 
     const ws = new WebSocket(url);
     wsRef.current = ws;
@@ -179,7 +178,6 @@ export const useTutorChat = ({
 
       ws.onopen = () => {
         opened = true;
-        console.log("[useTutorChat] WebSocket connected");
         reconnectAttemptsRef.current = 0;
         setConnectionStatus("connected");
         settle(true);
@@ -234,7 +232,6 @@ export const useTutorChat = ({
 
           switch (payload.type) {
             case "chat_start":
-              console.log("[useTutorChat] >> chat_start — AI started replying");
               streamingRef.current = "";
               setIsStreaming(true);
               setStreamingText("");
@@ -249,10 +246,6 @@ export const useTutorChat = ({
 
             case "chat_done": {
               const finalText = streamingRef.current;
-              console.log(
-                "[useTutorChat] >> chat_done — final text length:",
-                finalText.length
-              );
               setIsStreaming(false);
               streamingRef.current = "";
               if (onChatComplete) {
@@ -263,10 +256,6 @@ export const useTutorChat = ({
 
             case "chat_history": {
               const history = payload.messages || payload.history || [];
-              console.log(
-                "[useTutorChat] >> chat_history — messages:",
-                history.length
-              );
               if (onChatHistory) {
                 onChatHistory(history);
               }
@@ -284,11 +273,6 @@ export const useTutorChat = ({
               break;
 
             default:
-              console.log(
-                "[useTutorChat] Unknown message type:",
-                payload.type,
-                payload
-              );
               break;
           }
 

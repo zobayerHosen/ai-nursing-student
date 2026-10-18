@@ -39,9 +39,6 @@ export default function TopicContentDetails() {
   // Fetch real note details from API
   const { topicDetailsData: currentNote, isLoading } =
     useGetCoreLearningContentDetails(!isNaN(contentId) ? contentId : null);
-
-  console.log("TOpic details", currentNote)
-
   const { saveNote, isPending: isSavePending } = useSaveNote();
   const { markComplete, isPending: isCompletePending } = useMarkComplete();
 
@@ -193,7 +190,6 @@ export default function TopicContentDetails() {
   const noteTitle = currentNote?.content_name || "Not Found.";
   const relatedTopics = currentNote?.related_topics || [];
   const video = currentNote?.video || {};
-  console.log("Video", video)
 
   const handleBackNavigation = () => {
     if (window.history.length > 1) {

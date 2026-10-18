@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 
 const PaymentBillingHistory = () => {
     const { paymentHistory, isLoading } = useGetPaymentHistory();
-    console.log("Payment history:-", paymentHistory);
     const [sortAsc, setSortAsc] = useState(true);
     const [selectedInvoices, setSelectedInvoices] = useState([]);
 

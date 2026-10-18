@@ -24,8 +24,6 @@ const GoogleLogins = () => {
 
             const responseData = response?.data || response;
 
-            console.log("Success token", responseData);
-
             setToken(
                 responseData?.tokens?.access || responseData?.token,
                 responseData?.expires_in,

@@ -86,11 +86,7 @@ const CalendarsToolsShell = () => {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
   const { coursesData, isCoursesLoading } = useCalendarCourses();
-  console.log("Course data", coursesData);
-
   const { eventsData, isEventsLoading } = useCalendarEvents(courseFilter);
-  console.log("Event data", eventsData);
-
   const { gradesSummary, isGradesLoading } = useGradesSummary();
   const { clearAllData, isClearing } = useClearAllData();
 

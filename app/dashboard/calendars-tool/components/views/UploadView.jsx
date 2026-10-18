@@ -23,7 +23,6 @@ const STEPS = [
 
 export default function UploadView({ onComplete }) {
   const { syllabiData, isSyllabiLoading } = useCalendarSyllabi();
-  console.log("Syllabi data", syllabiData)
 
   const { uploadSyllabus, isUploading } = useUploadSyllabus();
   const { deleteSyllabus, isDeletingSyllabus } = useDeleteSyllabus();

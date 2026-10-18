@@ -1,4 +1,4 @@
-import VideoLessonDetails from "./video-lesson-details";
+import VideoLessonDetails from "./component/video-lesson-details";
 
 export default async function VideoLessonDetailsPage({ params }) {
   const { id } = await params;

@@ -12,9 +12,7 @@ import ExitLockModal from "./exit-lock-modal";
 export default function ReportClient() {
   const params = useParams();
   const sessionId = params?.sessionId;
-
   const { reviewData, isLoading, isError, refetch } = useGetExamReview(sessionId);
-
   const [activeFilter, setActiveFilter] = useState("all"); // "all" | "correct" | "incorrect" | "skipped"
 
   const examInfo = reviewData;
@@ -48,8 +46,6 @@ export default function ReportClient() {
       return true;
     });
   }, [questions, activeFilter]);
-
-  console.log("Review data", reviewData);
 
   // Loading skeleton
   if (isLoading) {

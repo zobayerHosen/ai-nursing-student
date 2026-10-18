@@ -28,7 +28,6 @@ const GoogleOneTap = () => {
 
     useGoogleOneTapLogin({
         onSuccess: (credentialResponse) => {
-            console.log("One tap login:--->", credentialResponse);
             sociallogin(
                 {
                     id_token: credentialResponse.credential,
@@ -55,7 +54,6 @@ const GoogleOneTap = () => {
             );
         },
         onError: (error) => {
-            console.log("One Tap Login Failed", error);
         },
         disabled: Boolean(isAuthenticated),
     });

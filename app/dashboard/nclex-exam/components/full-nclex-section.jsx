@@ -19,7 +19,6 @@ export default function FullNCLEXSection({
   activeStartingExamId = null,
 }) {
   const { examsCategoryList, isLoading, isError, refetch } = useGetExamList();
-  console.log("NCLEX examsCategoryList", examsCategoryList);
 
   return (
     <div className="w-full">
@@ -105,10 +104,6 @@ export default function FullNCLEXSection({
               const isCompleted = exam.status === "completed" || exam.can_review;
               const canResume = !isCompleted && (exam.can_resume || exam.status === "in_progress");
               const isAvailable = !isCompleted && !canResume && (exam.can_start || exam.is_unlocked);
-
-              console.log("Exam session id", exam?.session_id)
-              console.log("ONly id", exam.id)
-
               const remainingFormatted = fmtRemaining(exam.remaining_seconds);
 
               return (

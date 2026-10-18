@@ -17,10 +17,7 @@ export default function StudyNotesSubCategoriesClient({ subcatlist }) {
 
   // Fetch fresh category details
   const { learningCategoryDetailsData, isLoading } = useLearningCategoryDetails(subcatlist);
-  console.log("Learning category", learningCategoryDetailsData);
-
   const subcategories = learningCategoryDetailsData?.subcategories || [];
-
   const popular_this_week = learningCategoryDetailsData?.popular_this_week || [];
 
   // Track expanded subcategory (only one expanded at a time)
