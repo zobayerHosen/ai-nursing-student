@@ -1,22 +1,50 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCloseReport } from "@/hooks";
 
-export default function ExitLockModal({ sessionId }) {
-  const [isOpen, setIsOpen] = useState(false);
+export default function ExitLockModal({
+  sessionId,
+  isOpen: externalIsOpen,
+  onClose: externalOnClose,
+  onOpen: externalOnOpen,
+  targetUrl = null,
+  onExitStart,
+  onExitSuccess,
+  onExitError,
+  showTriggerButton = true,
+}) {
+  const router = useRouter();
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
   const { closeReport, isPending } = useCloseReport();
 
-  const onClose = () => {
-    if (!isPending) setIsOpen(false);
+  const isControlled = externalIsOpen !== undefined;
+  const isOpen = isControlled ? externalIsOpen : internalIsOpen;
+
+  const handleOpen = () => {
+    if (externalOnOpen) {
+      externalOnOpen();
+    } else {
+      setInternalIsOpen(true);
+    }
+  };
+
+  const handleClose = () => {
+    if (isPending) return;
+    if (externalOnClose) {
+      externalOnClose();
+    } else {
+      setInternalIsOpen(false);
+    }
   };
 
   // Close on Escape key press and prevent background scrolling while modal is open
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape" && isOpen && !isPending) {
-        onClose();
+        handleClose();
       }
     };
     if (isOpen) {
@@ -34,39 +62,57 @@ export default function ExitLockModal({ sessionId }) {
   const handleExitConfirm = async () => {
     if (!sessionId) return;
     try {
+      if (onExitStart) {
+        onExitStart();
+      }
       await closeReport({
         session_id: Number(sessionId) || sessionId,
       });
-      setIsOpen(false);
+      if (onExitSuccess) {
+        onExitSuccess();
+      }
+      if (targetUrl && targetUrl !== "/dashboard/nclex-exam") {
+        if (targetUrl.startsWith("http://") || targetUrl.startsWith("https://")) {
+          window.location.href = targetUrl;
+        } else {
+          router.push(targetUrl);
+        }
+      }
+      handleClose();
     } catch {
+      if (onExitError) {
+        onExitError();
+      }
       // error toast handled in useCloseReport onError
     }
   };
 
   return (
     <>
-      <div className="w-full flex items-center justify-center mt-7">
-        <button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          className="cursor-pointer text-black bg-red-300 hover:bg-red-400 font-medium text-xs sm:text-sm py-2 px-8 rounded-lg transition-all active:scale-[0.98] flex items-center gap-2 mt-3"
-        >
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#000000"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+      {showTriggerButton && (
+        <div className="w-full flex items-center justify-center mt-7">
+          <button
+            type="button"
+            onClick={handleOpen}
+            className="cursor-pointer text-black bg-red-300 hover:bg-red-400 font-medium text-xs sm:text-sm py-2 px-8 rounded-lg transition-all active:scale-[0.98] flex items-center gap-2 mt-3"
           >
-            <rect x="3" y="11" width="18" height="11" rx="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-          <span>Exit &amp; Lock</span>
-        </button>
-      </div>
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#000000"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="3" y="11" width="18" height="11" rx="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            <span>Exit &amp; Lock</span>
+          </button>
+        </div>
+      )}
 
       <AnimatePresence>
         {isOpen && (
@@ -75,7 +121,7 @@ export default function ExitLockModal({ sessionId }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            onClick={onClose}
+            onClick={handleClose}
             className="fixed inset-0 z-120 bg-[#0f172a]/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
           >
             <motion.div
@@ -158,7 +204,7 @@ export default function ExitLockModal({ sessionId }) {
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={handleClose}
                   disabled={isPending}
                   className="px-4.5 py-2.5 bg-white border border-[#e2e8f0] hover:bg-[#f8fafc] disabled:opacity-50 disabled:cursor-not-allowed text-[#334155] text-xs sm:text-[13.5px] font-semibold rounded-xl transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
                 >

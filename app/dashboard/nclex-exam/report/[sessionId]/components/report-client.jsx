@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useGetExamReview } from "@/hooks";
 import ReportHero from "./report-hero";
@@ -14,6 +14,106 @@ export default function ReportClient() {
   const sessionId = params?.sessionId;
   const { reviewData, isLoading, isError, refetch } = useGetExamReview(sessionId);
   const [activeFilter, setActiveFilter] = useState("all"); // "all" | "correct" | "incorrect" | "skipped"
+
+  const [isExitModalOpen, setIsExitModalOpen] = useState(false);
+  const [pendingTargetUrl, setPendingTargetUrl] = useState(null);
+  const isExitingRef = useRef(false);
+
+  const handleCloseModal = useCallback(() => {
+    setIsExitModalOpen(false);
+    setPendingTargetUrl(null);
+  }, []);
+
+  const handleOpenExitModal = useCallback((target = "/dashboard/nclex-exam") => {
+    setPendingTargetUrl(target);
+    setIsExitModalOpen(true);
+  }, []);
+
+  const isReportReady = Boolean(sessionId && !isLoading && !isError && reviewData);
+
+  // Intercept navigation away from the report review page
+  useEffect(() => {
+    if (!isReportReady) return;
+
+    // Push a single guard state to browser history to catch back/forward navigation
+    window.history.pushState({ stemrnReportGuard: true }, "", window.location.href);
+
+    const handlePopState = () => {
+      if (isExitingRef.current) return;
+      // Re-push state so user remains on current report review
+      window.history.pushState({ stemrnReportGuard: true }, "", window.location.href);
+      handleOpenExitModal("/dashboard/nclex-exam");
+    };
+
+    const handleAnchorClick = (e) => {
+      // Ignore if already exiting, default prevented, or non-primary mouse click
+      if (isExitingRef.current || e.defaultPrevented || e.button !== 0) return;
+
+      const anchor = e.target.closest("a");
+      if (!anchor) return;
+
+      const href = anchor.getAttribute("href");
+      if (
+        !href ||
+        href.startsWith("#") ||
+        href.startsWith("javascript:") ||
+        href.startsWith("mailto:") ||
+        href.startsWith("tel:")
+      ) {
+        return;
+      }
+
+      // Ignore new tab/window openings and downloads
+      if (
+        anchor.target === "_blank" ||
+        anchor.hasAttribute("download") ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.shiftKey ||
+        e.altKey
+      ) {
+        return;
+      }
+
+      const loc = window.location;
+      // Skip if staying on the same exact pathname & search
+      if (
+        anchor.origin === loc.origin &&
+        anchor.pathname === loc.pathname &&
+        anchor.search === loc.search
+      ) {
+        return;
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      const destination =
+        anchor.origin === loc.origin
+          ? `${anchor.pathname}${anchor.search}${anchor.hash}`
+          : anchor.href;
+
+      handleOpenExitModal(destination);
+    };
+
+    const handleBeforeUnload = (e) => {
+      if (isExitingRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+      return "";
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    document.addEventListener("click", handleAnchorClick, true);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      document.removeEventListener("click", handleAnchorClick, true);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isReportReady, handleOpenExitModal]);
 
   const examInfo = reviewData;
   const result = reviewData?.result;
@@ -113,26 +213,27 @@ export default function ReportClient() {
         </div>
       </div>
     );
-  }
+  };
 
   return (
     <div className="w-full min-h-screen bg-[#f8fafc] pb-16">
-      {/* ─── STICKY TOP NAV ────────────────────────────────────── */}
+      {/* STICKY TOP NAV */}
       <div className="w-full bg-white border-b border-[#e2e8f0] px-4 sm:px-6 lg:px-8 py-3.5 sticky top-0 z-20 shadow-xs">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
-          <Link
-            href="/dashboard/nclex-exam"
-            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#64748b] hover:text-[#1E3A5F] transition-colors"
+          <button
+            type="button"
+            onClick={() => handleOpenExitModal("/dashboard/nclex-exam")}
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#64748b] hover:text-[#1E3A5F] transition-colors cursor-pointer"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="m15 18-6-6 6-6" />
             </svg>
             <span>Back to Simulation Exams</span>
-          </Link>
+          </button>
         </div>
       </div>
 
-      {/* ─── MAIN CONTENT CONTAINER ────────────────────────────── */}
+      {/* MAIN CONTENT CONTAINER */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
         {/* Top Hero Card */}
         <ReportHero
@@ -199,7 +300,20 @@ export default function ReportClient() {
       {/* Exit & Lock confirmation modal */}
       <ExitLockModal
         sessionId={sessionId}
+        isOpen={isExitModalOpen}
+        onClose={handleCloseModal}
+        onOpen={() => handleOpenExitModal("/dashboard/nclex-exam")}
+        targetUrl={pendingTargetUrl}
+        onExitStart={() => {
+          isExitingRef.current = true;
+        }}
+        onExitError={() => {
+          isExitingRef.current = false;
+        }}
+        onExitSuccess={() => {
+          isExitingRef.current = true;
+        }}
       />
     </div>
   );
-}
+};

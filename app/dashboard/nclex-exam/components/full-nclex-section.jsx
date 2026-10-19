@@ -209,7 +209,7 @@ export default function FullNCLEXSection({
                       <div className="flex items-center gap-3">
                         {exam?.is_reviewed ? (
                           <p className="text-[12px] text-gray-400 border border-gray-200 rounded-sm py-1 px-5">
-                            This exam is locked now
+                            This exam is completed and locked.
                           </p>
                         ) : (
                           <Link
