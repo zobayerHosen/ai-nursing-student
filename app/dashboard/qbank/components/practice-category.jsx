@@ -147,16 +147,6 @@ export default function PracticeByCategorySection({ onStartExam, category, isLoa
             placeholder="Search category, topic, or subtopic..."
             className="w-full pl-9 pr-4 py-1.5 text-xs sm:text-sm bg-white border border-[#e2e8f0] rounded-xl text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20 focus:border-[#1e3a5f] transition-all"
           />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSearchQuery("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          )}
         </div>
       </div>
 

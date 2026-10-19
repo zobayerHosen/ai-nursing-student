@@ -141,12 +141,12 @@ export function Calculator() {
               key={`${ri}-${ci}`}
               onClick={() => press(btn)}
               className={`py-3.5 border-none cursor-pointer text-sm transition-all duration-100 font-mono ${btn === "="
-                  ? "bg-[#2C5F8D] text-white font-bold"
-                  : isOp(btn)
-                    ? "bg-[#dbeafe] text-[#2C5F8D] font-bold"
-                    : isFn(btn)
-                      ? "bg-[#f1f5f9] text-[#5a6474]"
-                      : "bg-white text-[#1a2332]"
+                ? "bg-[#2C5F8D] text-white font-bold"
+                : isOp(btn)
+                  ? "bg-[#dbeafe] text-[#2C5F8D] font-bold"
+                  : isFn(btn)
+                    ? "bg-[#f1f5f9] text-[#5a6474]"
+                    : "bg-white text-[#1a2332]"
                 }`}
               style={{ fontSize: btn === "=" ? 18 : 14 }}
             >
@@ -303,11 +303,20 @@ export function RationaleBlock({ question, userAnswer, isQBank, backendFeedback 
   );
 }
 // QUESTION STATS
-export function QuestionStats({ question }) {
+export function QuestionStats({ question, backendFeedback }) {
   const q = question;
-  const diffLabel = q.difficulty.toUpperCase();
+  const diffLabel = q.difficulty ? q.difficulty.toUpperCase() : "INTERMEDIATE";
   const diffColor =
     q.difficulty === "beginner" ? "#16a34a" : q.difficulty === "advanced" ? "#FE5E7E" : "#d97706";
+
+  const rawPeerPct = q?.avg_solve_percent || "0";
+
+  const hasPeerPct = rawPeerPct !== undefined && rawPeerPct !== null;
+  const peerPct = hasPeerPct
+    ? typeof rawPeerPct === "string"
+      ? parseFloat(rawPeerPct.replace("%", "").trim())
+      : Number(rawPeerPct)
+    : null;
 
   return (
     <div className="border border-[#e5e7eb] rounded-xl bg-white p-5.5 mt-5 animate-[fadeUp_0.25s_ease]">
@@ -327,12 +336,12 @@ export function QuestionStats({ question }) {
               {diffLabel}
             </span>
           </div>
-          {typeof q.peerCorrectPct === "number" && (
+          {peerPct !== null && !isNaN(peerPct) && (
             <div className="flex items-center gap-2.5 text-[13px] text-[#475569] mb-3.5">
               <div className="w-6.5 h-6.5 rounded-lg bg-[#ecfdf5] text-[#16a34a] flex items-center justify-center shrink-0 text-sm">
                 🏃
               </div>
-              <span className="font-bold text-[#0f172a]">{q.peerCorrectPct}%</span>
+              <span className="font-bold text-[#1E293B]">{Math.round(peerPct)}%</span>
               <span className="text-[#64748b]">of peers got it right</span>
             </div>
           )}
