@@ -12,7 +12,13 @@ const baseRemotePatterns = [
   },
   {
     protocol: "https",
-    hostname: "source.unsplash.com",
+    hostname: "api.genclex.com",
+    port: "",
+    pathname: "/**",
+  },
+  {
+    protocol: "http",
+    hostname: "api.genclex.com",
     port: "",
     pathname: "/**",
   },
@@ -25,12 +31,6 @@ const baseRemotePatterns = [
   {
     protocol: "https",
     hostname: "media-cldnry.s-nbcnews.com",
-    port: "",
-    pathname: "/**",
-  },
-  {
-    protocol: "https",
-    hostname: "media.giphy.com",
     port: "",
     pathname: "/**",
   },
