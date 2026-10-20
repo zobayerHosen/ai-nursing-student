@@ -30,6 +30,8 @@ export const flashcardsService = {
     const response = await axiosInstance.post(`/deck/${deckId}/favorite/`);
     return response?.data;
   },
+
+  
   getFavoriteDecks: async (axiosInstance) => {
     const response = await axiosInstance.get("/favorite-decks/");
     return response?.data;

@@ -159,13 +159,15 @@ export const useGetFavoriteDecks = () => {
     retry: false,
   });
 
-  const favoriteDecks = Array.isArray(data?.data)
-    ? data.data
-    : Array.isArray(data?.data?.data)
-      ? data.data.data
-      : Array.isArray(data)
-        ? data
-        : [];
+  const favoriteDecks = useMemo(() => {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.results)) return data.results;
+    if (Array.isArray(data?.data)) return data.data;
+    if (Array.isArray(data?.data?.results)) return data.data.results;
+    if (Array.isArray(data?.data?.data)) return data.data.data;
+    return [];
+  }, [data]);
 
   return {
     favoriteDecks,
@@ -192,6 +194,7 @@ export const useToggleFavoriteDeck = () => {
       queryClient.invalidateQueries({ queryKey: ["favorite-decks"] });
       queryClient.invalidateQueries({ queryKey: ["flashcard-get"] });
       queryClient.invalidateQueries({ queryKey: ["deck-details"] });
+      queryClient.invalidateQueries({ queryKey: ["all-decks"] });
     },
   });
 

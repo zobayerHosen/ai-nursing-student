@@ -11,15 +11,26 @@ import {
   GraduationCap,
   ChevronRight,
   Loader2,
+  Bookmark,
 } from "lucide-react";
-import { useGetFlashcardCategory, useGetAllDecks } from "@/hooks/flashcards";
+import {
+  useGetFlashcardCategory,
+  useGetAllDecks,
+  useToggleFavoriteDeck,
+  useGetFavoriteDecks,
+} from "@/hooks/flashcards";
 import { getCategoryColor } from "@/app/dashboard/flashcards/components/dummy-data";
 import TopicCategoryList from "@/app/dashboard/flashcards/components/topic-category-list";
 import DeckSubcategoryCard from "./deck-subcategory-card";
+import toast from "react-hot-toast";
 
 export default function DectListClient({ id }) {
   const router = useRouter();
   const { flashcardData, isLoading: isCategoriesLoading } = useGetFlashcardCategory();
+  const { toggleFavorite, isPending } = useToggleFavoriteDeck();
+  const { favoriteDecks = [] } = useGetFavoriteDecks();
+
+  const [favoriteDeckMap, setFavoriteDeckMap] = useState({});
 
   const [selectedCategoryId, setSelectedCategoryId] = useState(id || null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -105,13 +116,59 @@ export default function DectListClient({ id }) {
     router.push(`/dashboard/flashcards/all-dec-list/${catId}`);
   };
 
+  const isFav = (deckId) => {
+    if (favoriteDeckMap[deckId] !== undefined) {
+      return favoriteDeckMap[deckId];
+    }
+    const deck = allDecks.find((d) => d.id === deckId);
+    if (deck && (deck.is_favorite !== undefined || deck.is_favorited !== undefined)) {
+      return Boolean(deck.is_favorite ?? deck.is_favorited);
+    }
+    if (Array.isArray(favoriteDecks) && favoriteDecks.length > 0) {
+      return favoriteDecks.some((fav) => fav.id === deckId || fav.deck_id === deckId);
+    }
+    return false;
+  };
+
+  const handleToggleFavorite = async (item, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!item?.id) return;
+
+    const currentlyFav = isFav(item.id);
+    const nextState = !currentlyFav;
+
+    setFavoriteDeckMap((prev) => ({
+      ...prev,
+      [item.id]: nextState,
+    }));
+
+    try {
+      const res = await toggleFavorite(item.id);
+      toast.success(
+        res?.message ||
+          (nextState ? "Added to favorites" : "Removed from favorites")
+      );
+    } catch (err) {
+      setFavoriteDeckMap((prev) => ({
+        ...prev,
+        [item.id]: currentlyFav,
+      }));
+      toast.error(
+        err?.response?.data?.message || "Failed to update favorite status"
+      );
+    }
+  };
+
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-6 sm:py-8 space-y-6 animate-[fadeIn_0.3s_ease] relative">
       {/* MOBILE DRAWER SIDEBAR */}
       <div
         className={`fixed inset-0 z-50 lg:hidden transition-all duration-300 ${isMobileSidebarOpen
-            ? "visible opacity-100"
-            : "invisible opacity-0 pointer-events-none"
+          ? "visible opacity-100"
+          : "invisible opacity-0 pointer-events-none"
           }`}
       >
         <div
@@ -263,45 +320,78 @@ export default function DectListClient({ id }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                 {allDecks?.map((deck) => {
                   if (deck?.deck_sub_category) {
-                    return <DeckSubcategoryCard key={deck.id} deck={deck} />;
+                    return (
+                      <DeckSubcategoryCard
+                        key={deck.id}
+                        deck={deck}
+                        onToggleFavorite={handleToggleFavorite}
+                        isFav={isFav}
+                      />
+                    );
                   }
+
+                  const isDeckFav = isFav(deck.id);
 
                   // If deck_sub_category is false -> direct card navigation
                   return (
-                    <Link
+                    <div
                       key={deck.id}
-                      href={`/dashboard/flashcards/${deck.id}`}
-                      className="bg-white rounded-2xl border border-gray-100/90 hover:border-gray-200 shadow-2xs hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between relative overflow-hidden group hover:-translate-y-0.5 cursor-pointer"
+                      className="bg-white rounded-2xl border border-gray-100/90 hover:border-gray-200 shadow-2xs hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between relative overflow-hidden group hover:-translate-y-0.5"
                     >
                       {/* Top right subtle decorative accent */}
                       <div className="absolute top-0 right-0 w-12 h-12 bg-[#F8FAFC] rounded-bl-3xl border-b border-l border-gray-100/60 pointer-events-none" />
 
                       <div className="space-y-4">
-                        {/* Top row: Icon + Title */}
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 text-gray-700">
-                            {deck.icon ? (
-                              <Image
-                                src={deck.icon}
-                                alt={deck.name}
-                                width={18}
-                                height={18}
-                                unoptimized
-                                className="w-4 h-4 object-contain"
-                              />
-                            ) : (
-                              <BookOpen size={16} strokeWidth={2} />
-                            )}
-                          </div>
+                        {/* Top row: Icon + Title + Favorite Button */}
+                        <div className="flex items-start justify-between gap-2">
+                          <Link
+                            href={`/dashboard/flashcards/${deck.id}`}
+                            className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 text-gray-700">
+                              {deck.icon ? (
+                                <Image
+                                  src={deck.icon}
+                                  alt={deck.name}
+                                  width={18}
+                                  height={18}
+                                  unoptimized
+                                  className="w-4 h-4 object-contain"
+                                />
+                              ) : (
+                                <BookOpen size={16} strokeWidth={2} />
+                              )}
+                            </div>
 
-                          <h3 className="text-base font-bold text-[#1E293B] group-hover:text-[#1B4B66] transition-colors line-clamp-1 pr-6">
-                            {deck.name}
-                          </h3>
+                            <h3 className="text-base font-bold text-[#1E293B] group-hover:text-[#1B4B66] transition-colors line-clamp-1 pr-2">
+                              {deck.name}
+                            </h3>
+                          </Link>
+
+                          <button
+                            type="button"
+                            onClick={(e) => handleToggleFavorite(deck, e)}
+                            className="p-1 rounded-lg hover:bg-gray-100 text-[#1B4B66] transition-all cursor-pointer shrink-0 z-10"
+                            title={isDeckFav ? "Remove from favorites" : "Add to favorites"}
+                            aria-label={isDeckFav ? "Remove from favorites" : "Add to favorites"}
+                          >
+                            <Bookmark
+                              size={18}
+                              className={
+                                isDeckFav
+                                  ? "fill-[#1B4B66] text-[#1B4B66]"
+                                  : "text-gray-300 hover:text-[#1B4B66]"
+                              }
+                            />
+                          </button>
                         </div>
                       </div>
 
                       {/* Bottom row */}
-                      <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-50">
+                      <Link
+                        href={`/dashboard/flashcards/${deck.id}`}
+                        className="flex items-center justify-between pt-4 mt-4 border-t border-gray-50 cursor-pointer"
+                      >
                         <span className="text-xs font-bold text-gray-500 tracking-wider uppercase">
                           {deck?.card_count ?? "0"} Cards
                         </span>
@@ -310,8 +400,8 @@ export default function DectListClient({ id }) {
                           <span>Start</span>
                           <ChevronRight size={15} />
                         </div>
-                      </div>
-                    </Link>
+                      </Link>
+                    </div>
                   );
                 })}
 
