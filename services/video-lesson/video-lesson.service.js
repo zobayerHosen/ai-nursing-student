@@ -19,8 +19,8 @@ export const videoLessonService = {
   },
 
   // video sub category single list
-  getSingleSubCategory: async (axiosInstance, id) => {
-    const response = await axiosInstance.get(`/subcategory/${id}/videos/`);
+  getSingleSubCategory: async (axiosInstance, id, params = {}) => {
+    const response = await axiosInstance.get(`/subcategory/${id}/videos/`, { params });
     return response?.data;
   },
 

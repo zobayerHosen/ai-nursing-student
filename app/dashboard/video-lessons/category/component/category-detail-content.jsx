@@ -5,9 +5,8 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ChevronDown, Video, AlertCircle } from "lucide-react";
 import {
-  singleSubCategoryVideosData,
   useAddVideoToFavorite,
-  useGetSingleBrowseCategoriesVideos,
+  useGetCategoryOrSubcategoryVideos,
 } from "@/hooks";
 import VideoCardSkeleton from "./video-card-skeleton";
 import CategoryVideoCard from "./category-video-card";
@@ -33,9 +32,9 @@ export default function CategoryDetailContent({
   // Determine whether this page represents a subcategory
   const isSubcategory = Boolean(
     propHasSubcategory ||
-      type === "subcategory" ||
-      hasSubcategoryParam === "true" ||
-      hasSubcategoryParam === "1"
+    type === "subcategory" ||
+    hasSubcategoryParam === "true" ||
+    hasSubcategoryParam === "1"
   );
 
   const categoryId =
@@ -45,33 +44,26 @@ export default function CategoryDetailContent({
     routeParams?.categoryId ||
     propParams?.categoryId;
 
-  // Single subcategory videos API (active only when isSubcategory is true)
-  const {
-    data: subCategoryData,
-    isLoading: subLoading,
-    isError: subError,
-  } = singleSubCategoryVideosData(isSubcategory ? categoryId : null);
-
-  // Browse category videos API with infinite pagination (active only when isSubcategory is false)
+  // Category or Subcategory videos API with infinite pagination
   const {
     data: infiniteData,
-    singleBrowseCategoriesVideosData,
-    isLoading: browseLoading,
-    isError: browseError,
+    firstPageData,
+    isLoading,
+    isError,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useGetSingleBrowseCategoriesVideos(isSubcategory ? null : categoryId);
-
-  const isLoading = isSubcategory ? subLoading : browseLoading;
-  const isError = isSubcategory ? subError : browseError;
+  } = useGetCategoryOrSubcategoryVideos({
+    id: categoryId,
+    isSubcategory,
+  });
 
   const { addVideoToFavorite, isPending, pendingId } = useAddVideoToFavorite();
   const loadMoreRef = useRef(null);
 
-  // Infinite scroll observer for paginated browse categories
+  // Infinite scroll observer for both categories and subcategories
   useEffect(() => {
-    if (isSubcategory || !hasNextPage || isFetchingNextPage || !loadMoreRef.current) return;
+    if (!hasNextPage || isFetchingNextPage || !loadMoreRef.current) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -83,7 +75,7 @@ export default function CategoryDetailContent({
     const el = loadMoreRef.current;
     observer.observe(el);
     return () => observer.disconnect();
-  }, [isSubcategory, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleBack = () => {
     if (from === "categories" || from === "all-categories") {
@@ -101,18 +93,13 @@ export default function CategoryDetailContent({
   const [sortBy, setSortBy] = useState("popular");
 
   // Active payload resolution
-  const categoryPayload =
+  const payload =
     infiniteData?.pages?.[0]?.data ||
     infiniteData?.pages?.[0] ||
-    singleBrowseCategoriesVideosData;
-  const payload = isSubcategory
-    ? subCategoryData?.data || subCategoryData
-    : categoryPayload?.data || categoryPayload;
+    firstPageData;
 
-  // Video list resolution & deduplication
+  // Video list resolution & deduplication across pages
   const results = useMemo(() => {
-    if (isSubcategory) return payload?.results || [];
-
     const pages = infiniteData?.pages;
     if (!pages?.length) return payload?.results || [];
 
@@ -125,7 +112,7 @@ export default function CategoryDetailContent({
         seen.add(id);
         return true;
       });
-  }, [isSubcategory, infiniteData, payload]);
+  }, [infiniteData, payload]);
 
   // Headers and progress counts
   const categoryTitle = isSubcategory
@@ -202,11 +189,10 @@ export default function CategoryDetailContent({
                 key={tab.id}
                 type="button"
                 onClick={() => setCategoryFilter(tab.id)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
-                  categoryFilter === tab.id
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${categoryFilter === tab.id
                     ? "bg-[#0f172a] text-white"
                     : "bg-white border border-gray-200 text-[#64748b] hover:text-[#0f172a]"
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
@@ -289,14 +275,13 @@ export default function CategoryDetailContent({
                 );
               })}
 
-              {!isSubcategory &&
-                isFetchingNextPage &&
+              {isFetchingNextPage &&
                 Array.from({ length: 5 }).map((_, index) => (
                   <VideoCardSkeleton key={`pagination-skeleton-${index}`} />
                 ))}
             </div>
 
-            {!isSubcategory && <div ref={loadMoreRef} className="h-6 w-full" />}
+            <div ref={loadMoreRef} className="h-6 w-full" />
           </>
         )}
       </div>

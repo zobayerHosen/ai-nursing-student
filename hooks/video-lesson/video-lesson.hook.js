@@ -68,36 +68,14 @@ export const useGetVideoSubCategoryList = (id) => {
 
 
 
-// video sub category single
-export const singleSubCategoryVideosData = (id) => {
+// Reusable hook for fetching paginated category or subcategory videos
+export const useGetCategoryOrSubcategoryVideos = ({ id, isSubcategory = false, enabled = true } = {}) => {
   const axiosInstance = axiosPrivateClient();
 
-  const {
-    data,
-    isLoading,
-    isError,
-    isFetching,
-  } = useQuery({
-    queryKey: ["video-sub-category-single-videos", id],
-    queryFn: () => videoLessonService.getSingleSubCategory(axiosInstance, id),
-    staleTime: 2 * 60 * 1000,
-    retry: false,
-    enabled: !!id,
-  });
-
-  return {
-    data: data?.data,
-    singleSubCategoryVideosData: data?.data,
-    isLoading,
-    isError,
-    isFetching,
-  };
-};
-
-
-
-export const useGetSingleBrowseCategoriesVideos = (id) => {
-  const axiosInstance = axiosPrivateClient();
+  const queryKey = [
+    isSubcategory ? "video-sub-category-single-videos" : "browse-single-categories-videos",
+    id,
+  ];
 
   const {
     data,
@@ -107,36 +85,76 @@ export const useGetSingleBrowseCategoriesVideos = (id) => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   } = useInfiniteQuery({
-    queryKey: ["browse-single-categories-videos", id],
-    queryFn: ({ pageParam = 1 }) =>
-      videoLessonService.getSingleBrowseCategoriesVideos(axiosInstance, id, { page: pageParam }),
+    queryKey,
+    queryFn: ({ pageParam = 1 }) => {
+      const params = { page: pageParam };
+      return isSubcategory
+        ? videoLessonService.getSingleSubCategory(axiosInstance, id, params)
+        : videoLessonService.getSingleBrowseCategoriesVideos(axiosInstance, id, params);
+    },
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       const payload = lastPage?.data || lastPage;
+      if (!payload) return undefined;
+
       if (payload?.has_next) {
-        if (payload?.next_page) return payload.next_page;
-        if (payload?.current_page && payload?.total_pages && payload.current_page < payload.total_pages) {
-          return payload.current_page + 1;
+        if (payload?.next_page) return Number(payload.next_page);
+        if (payload?.current_page && payload?.total_pages && Number(payload.current_page) < Number(payload.total_pages)) {
+          return Number(payload.current_page) + 1;
         }
       }
+
+      const currentPage = Number(payload.current_page);
+      const totalPages = Number(payload.total_pages);
+      if (currentPage && totalPages) {
+        return currentPage < totalPages ? currentPage + 1 : undefined;
+      }
+
+      if (payload.next) {
+        try {
+          const url = new URL(payload.next, "http://localhost");
+          const page = url.searchParams.get("page");
+          if (page) return Number(page);
+        } catch {
+          // Fallback if URL parsing fails
+        }
+        return (currentPage || 1) + 1;
+      }
+
       return undefined;
     },
     staleTime: 2 * 60 * 1000,
     retry: false,
-    enabled: !!id,
+    enabled: Boolean(id && enabled),
   });
+
+  const firstPagePayload = data?.pages?.[0]?.data || data?.pages?.[0];
 
   return {
     data,
-    singleBrowseCategoriesVideosData: data?.pages?.[0]?.data || data?.pages?.[0],
+    firstPageData: firstPagePayload,
+    singleSubCategoryVideosData: firstPagePayload,
+    singleBrowseCategoriesVideosData: firstPagePayload,
     isLoading,
     isError,
     isFetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   };
+};
+
+// video sub category single with pagination
+export const singleSubCategoryVideosData = (id) => {
+  return useGetCategoryOrSubcategoryVideos({ id, isSubcategory: true });
+};
+
+// browse category single videos with pagination
+export const useGetSingleBrowseCategoriesVideos = (id) => {
+  return useGetCategoryOrSubcategoryVideos({ id, isSubcategory: false });
 };
 
 export const useGetVideoDetails = (id) => {
