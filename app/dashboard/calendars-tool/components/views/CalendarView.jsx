@@ -88,21 +88,44 @@ function toRBCEvent(evt) {
 function EventTile({ event, coursesData }) {
   const courseColor = getCourseColor(event.course, coursesData || []);
   const colors = getTypeColors(event.type);
+
+  // Format the start_time for display (e.g. "06:00 PM" → "6:00 PM")
+  let timeLabel = "";
+  if (event.start_time) {
+    const tp = event.start_time.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+    if (tp) {
+      const h = parseInt(tp[1]);
+      const min = tp[2];
+      const ampm = tp[3] ? tp[3].toUpperCase() : "";
+      timeLabel = `${h}:${min}${ampm ? " " + ampm : ""}`;
+    } else {
+      timeLabel = event.start_time;
+    }
+  }
+
   return (
     <div
-      className={`text-[10px] font-semibold truncate px-1 py-0.5 rounded leading-tight ${event.completed ? "line-through opacity-70" : ""}`}
+      className={`text-[10px] font-semibold truncate px-1 py-0.5 rounded leading-tight flex items-center gap-0.5 ${event.completed ? "line-through opacity-70" : ""}`}
       style={{ color: courseColor, background: colors.bg }}
     >
-      {event.title}
+      {timeLabel && (
+        <span
+          className="text-[9px] font-bold shrink-0 px-1 py-px rounded"
+          style={{ background: "rgba(0,0,0,0.12)", letterSpacing: "-0.01em" }}
+        >
+          {timeLabel}
+        </span>
+      )}
+      <span className="truncate">{event.title}</span>
     </div>
   );
 }
+
 
 export default function CalendarView({
   onUploadMore,
   coursesData = [],
   eventsData = [],
-  gradesSummary,
   courseFilter,
   onCourseFilterChange,
 }) {
@@ -112,12 +135,48 @@ export default function CalendarView({
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [addTaskOpen, setAddTaskOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [typeFilter, setTypeFilter] = useState("all");
 
-  // Convert API events to RBC events
-  const rbcEvents = useMemo(
-    () => eventsData.map(toRBCEvent),
-    [eventsData]
-  );
+  const handleTypeFilterChange = (val) => {
+    setTypeFilter(val);
+    if (val !== "all" && eventsData.length > 0) {
+      const valNorm = val.toLowerCase().replace(/[-_\s]+/g, " ");
+      const match = eventsData.find((e) => {
+        const catNorm = (e.category || "").toLowerCase().replace(/[-_\s]+/g, " ");
+        if (valNorm === "exam" || valNorm === "midterm" || valNorm === "final") {
+          return catNorm.includes("exam") || catNorm.includes("midterm") || catNorm.includes("final");
+        }
+        if (valNorm === "lecture" || valNorm === "class") {
+          return catNorm.includes("lecture") || catNorm.includes("class");
+        }
+        return catNorm === valNorm || catNorm.includes(valNorm) || valNorm.includes(catNorm);
+      });
+      if (match?.date) {
+        const parts = match.date.split("-");
+        if (parts.length === 3) {
+          setDate(new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)));
+        }
+      }
+    }
+  };
+
+  // Convert API events to RBC events, applying type filter
+  const rbcEvents = useMemo(() => {
+    const filtered = typeFilter === "all"
+      ? eventsData
+      : eventsData.filter((e) => {
+          const catNorm = (e.category || "").toLowerCase().replace(/[-_\s]+/g, " ");
+          const valNorm = typeFilter.toLowerCase().replace(/[-_\s]+/g, " ");
+          if (valNorm === "exam" || valNorm === "midterm" || valNorm === "final") {
+            return catNorm.includes("exam") || catNorm.includes("midterm") || catNorm.includes("final");
+          }
+          if (valNorm === "lecture" || valNorm === "class") {
+            return catNorm.includes("lecture") || catNorm.includes("class");
+          }
+          return catNorm === valNorm || catNorm.includes(valNorm) || valNorm.includes(catNorm);
+        });
+    return filtered.map(toRBCEvent);
+  }, [eventsData, typeFilter]);
 
   const handleSelectEvent = useCallback(
     (event) => setSelectedEvent(event),
@@ -220,6 +279,35 @@ export default function CalendarView({
               ))}
             </select>
 
+            {/* Type / Category filter */}
+            <select
+              value={typeFilter}
+              onChange={(e) => handleTypeFilterChange(e.target.value)}
+              className="border border-[#E4E7EC] rounded-lg px-2 py-1.5 text-xs font-semibold text-[#334155] bg-white focus:outline-none cursor-pointer"
+            >
+              <option value="all">All Types</option>
+              <option value="assignment">Assignments</option>
+              <option value="quiz">Quizzes</option>
+              <option value="exam">Midterms / Finals</option>
+              <option value="lecture">Lectures / Classes</option>
+              <option value="clinical">Clinicals</option>
+              <option value="skills-lab">Skills Lab</option>
+              <option value="simulation">Simulations</option>
+              <option value="study-session">Study Sessions</option>
+              <option value="study-group">Study Groups</option>
+              <option value="nclex-practice">NCLEX Practice</option>
+              <option value="reading">Readings</option>
+              <option value="project">Projects</option>
+              <option value="presentation">Presentations</option>
+              <option value="check-off">Skills Check-off</option>
+              <option value="deadline">Deadlines</option>
+              <option value="work-shift">Work Shifts</option>
+              <option value="appointment">Appointments</option>
+              <option value="vacation">Vacations</option>
+              <option value="holiday">Holidays</option>
+              <option value="other">Personal / Other</option>
+            </select>
+
             {/* Add Task button */}
             <button
               onClick={() => setAddTaskOpen(true)}
@@ -276,7 +364,7 @@ export default function CalendarView({
       {/* Tab content */}
       {tab === "tasks" && (
         <TasksView
-          eventsData={eventsData}
+          eventsData={eventsData.filter((e) => e.source === "manual")}
           coursesData={coursesData}
           onAddTask={() => setAddTaskOpen(true)}
         />

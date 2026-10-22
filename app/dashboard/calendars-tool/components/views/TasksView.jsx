@@ -35,8 +35,10 @@ function getTypeColors(category) {
 export default function TasksView({ eventsData = [], coursesData = [], onAddTask }) {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const { toggleComplete } = useToggleEventComplete();
-  const { saveGrade } = useSaveEventGrade();
   const { deleteEvent } = useDeleteEvent();
+
+  // Only show manually added tasks — PDF-extracted events appear on the Calendar tab only
+  const manualTasks = eventsData.filter((e) => e.source === "manual");
 
   const handleToggle = async (eventId, completed) => {
     try {
@@ -55,14 +57,14 @@ export default function TasksView({ eventsData = [], coursesData = [], onAddTask
     }
   };
 
-  if (eventsData.length === 0) {
+  if (manualTasks.length === 0) {
     return (
       <div className="bg-white border border-[#E4E7EC] rounded-2xl overflow-hidden shadow-sm">
         <div className="flex flex-col items-center justify-center py-16 gap-2">
-          <p className="text-3xl">📋</p>
-          <p className="text-sm font-bold text-[#1D2939]">No tasks available</p>
+          <p className="text-3xl">📝</p>
+          <p className="text-sm font-bold text-[#1D2939]">No manual tasks yet</p>
           <p className="text-xs text-[#667085] text-center max-w-sm">
-            Upload a syllabus or click &quot;+ Add Task&quot; to create your academic schedule.
+            Tasks here are created manually by you. Events extracted from your syllabus appear on the Calendar tab.
           </p>
           {onAddTask && (
             <button
@@ -77,7 +79,7 @@ export default function TasksView({ eventsData = [], coursesData = [], onAddTask
     );
   }
 
-  const sorted = [...eventsData].sort((a, b) => {
+  const sorted = [...manualTasks].sort((a, b) => {
     if (b.created_at && a.created_at && b.created_at !== a.created_at) {
       return new Date(b.created_at) - new Date(a.created_at);
     }
@@ -107,8 +109,8 @@ export default function TasksView({ eventsData = [], coursesData = [], onAddTask
       </div>
 
       {/* Table header */}
-      <div className="grid grid-cols-[1.8fr_0.8fr_0.7fr_0.7fr_1fr_auto] gap-2 px-5 py-3 border-b border-[#F2F4F7] bg-[#F9FAFB]">
-        {["ASSIGNMENT", "COURSE", "DUE", "POINTS", "GRADE", ""].map((h, i) => (
+      <div className="grid grid-cols-[1.8fr_0.8fr_0.7fr_0.7fr_auto] gap-2 px-5 py-3 border-b border-[#F2F4F7] bg-[#F9FAFB]">
+        {["ASSIGNMENT", "COURSE", "DUE", "POINTS", ""].map((h, i) => (
           <p key={i} className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider">
             {h}
           </p>
@@ -121,33 +123,20 @@ export default function TasksView({ eventsData = [], coursesData = [], onAddTask
           const isDone = !!evt.completed;
           const colors = getTypeColors(evt.category);
           const courseColor = getCourseColor(evt.course_code, coursesData);
-          const isGraded = evt.grade_earned !== null && evt.grade_earned !== undefined;
-          const scoreDisplay = isGraded ? `${evt.grade_earned}/${evt.points || 0}` : `–/${evt.points || 0}`;
-          const scorePct =
-            isGraded && evt.points > 0
-              ? Math.round((evt.grade_earned / evt.points) * 100)
-              : null;
-          const pctColor =
-            scorePct === null
-              ? "#9CA3AF"
-              : scorePct >= 80
-                ? "#10B981"
-                : scorePct >= 70
-                  ? "#F59E0B"
-                  : "#EF4444";
 
           return (
             <div
               key={evt.id}
-              className={`grid grid-cols-[1.8fr_0.8fr_0.7fr_0.7fr_1fr_auto] gap-2 items-center px-5 py-3 hover:bg-[#F9FAFB] transition-all ${isDone ? "opacity-60" : ""
-                }`}
+              className={`grid grid-cols-[1.8fr_0.8fr_0.7fr_0.7fr_auto] gap-2 items-center px-5 py-3 hover:bg-[#F9FAFB] transition-all ${
+                isDone ? "opacity-60" : ""
+              }`}
             >
               {/* Assignment */}
               <div className="flex flex-col gap-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleToggle(evt.id, !isDone)}
-                    className="shrink-0 text-[#D0D5DD] hover:text-[#10B981] transition-colors"
+                    className="shrink-0 text-[#D0D5DD] hover:text-[#10B981] transition-colors cursor-pointer"
                   >
                     {isDone ? (
                       <CheckCircle2 size={16} className="text-[#10B981]" />
@@ -156,8 +145,11 @@ export default function TasksView({ eventsData = [], coursesData = [], onAddTask
                     )}
                   </button>
                   <p
-                    className={`text-xs font-semibold text-[#1D2939] truncate ${isDone ? "line-through text-[#9CA3AF]" : ""
-                      }`}
+                    onClick={() => setSelectedEvent(evt)}
+                    className={`text-xs font-semibold text-[#1D2939] truncate cursor-pointer hover:text-primary transition-colors ${
+                      isDone ? "line-through text-[#9CA3AF]" : ""
+                    }`}
+                    title={evt.title}
                   >
                     {evt.title}
                   </p>
@@ -210,41 +202,24 @@ export default function TasksView({ eventsData = [], coursesData = [], onAddTask
               {/* Points */}
               <p className="text-xs font-semibold text-[#374151]">{evt.points || 0} pts</p>
 
-              {/* Grade */}
-              <div className="flex items-center gap-1.5">
-                <span
-                  className="text-xs font-bold"
-                  style={{ color: scorePct !== null ? pctColor : "#D0D5DD" }}
-                >
-                  {scoreDisplay}
-                  {scorePct !== null && ` = ${scorePct}%`}
-                </span>
-
-              </div>
-
-              {/* edit grade button  */}
+              {/* Actions */}
               <div className="flex items-center gap-1">
-                {/* edit grade button  */}
                 <button
                   onClick={() => setSelectedEvent(evt)}
                   className="cursor-pointer text-[#D0D5DD] hover:text-[#3B82F6] transition-colors p-1"
-                  title="Edit Grade"
+                  title="View Details"
                 >
                   <Pencil size={13} />
                 </button>
-
-                {/* Actions */}
-                <div className="flex items-center gap-1">
-                  {evt.source === "manual" && (
-                    <button
-                      onClick={() => handleDelete(evt.id)}
-                      className="cursor-pointer text-[#D0D5DD] hover:text-[#EF4444] transition-colors"
-                      title="Delete Task"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  )}
-                </div>
+                {evt.source === "manual" && (
+                  <button
+                    onClick={() => handleDelete(evt.id)}
+                    className="cursor-pointer text-[#D0D5DD] hover:text-[#EF4444] transition-colors"
+                    title="Delete Task"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                )}
               </div>
             </div>
           );

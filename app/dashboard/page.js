@@ -9,7 +9,7 @@ const DashboardPage = () => {
     <div className="w-full max-w-full min-w-0 flex flex-col gap-5 sm:gap-6 p-4 sm:p-6 overflow-x-hidden">
       <AskAtlas />
       <TracYourProgress />
-      <OtherClasses />
+      {/* <OtherClasses /> */}
       <SuccessTools />
       <BodySystemReview />
     </div>

@@ -5,6 +5,11 @@ export const calendarPlannerService = {
         return response.data;
     },
 
+    fetchCourse: async (axiosInstance, courseId) => {
+        const response = await axiosInstance.get(`/courses/${courseId}`);
+        return response.data;
+    },
+
     // ── Calendar Events ──
     fetchEvents: async (axiosInstance, courseFilter) => {
         const params = courseFilter && courseFilter !== 'all' ? { course: courseFilter } : {};

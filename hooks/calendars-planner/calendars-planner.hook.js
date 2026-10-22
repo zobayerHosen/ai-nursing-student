@@ -37,6 +37,23 @@ export const useCalendarCourses = () => {
     };
 };
 
+// ─── Single Course ───
+export const useCalendarCourse = (courseId) => {
+    const axiosInstance = axiosPrivateClient();
+    const { data, isLoading, isError, error } = useQuery({
+        queryKey: ["calendar-course", courseId],
+        queryFn: () => calendarPlannerService.fetchCourse(axiosInstance, courseId),
+        enabled: !!courseId,
+    });
+    return {
+        courseData: data?.data?.course ?? data?.course ?? null,
+        isCourseLoading: isLoading,
+        isCourseError: isError,
+        courseError: error,
+    };
+};
+
+
 // ─── Events ───
 export const useCalendarEvents = (courseFilter) => {
     const axiosInstance = axiosPrivateClient();

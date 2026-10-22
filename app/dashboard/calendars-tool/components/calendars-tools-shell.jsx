@@ -2,10 +2,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  GraduationCap,
-  CheckCircle2,
-  Clock,
-  BookOpen,
   CalendarDays,
   Upload,
   RotateCcw,
@@ -23,55 +19,142 @@ import {
   useClearAllData,
 } from "@/hooks/calendars-planner";
 
-const STAT_ICONS = [
-  <GraduationCap size={22} key="g" />,
-  <CheckCircle2 size={22} key="c" />,
-  <Clock size={22} key="cl" />,
-  <BookOpen size={22} key="b" />,
-];
+function formatDateYMD(d) {
+  if (!d) return "";
+  const dateObj = d instanceof Date ? d : new Date(d);
+  if (isNaN(dateObj.getTime())) return "";
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 
-const STAT_COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#8B5CF6"];
+function StatsBar({ coursesData = [], eventsData = [] }) {
+  const safeEvents = Array.isArray(eventsData) ? eventsData : [];
+  const safeCourses = Array.isArray(coursesData) ? coursesData : [];
 
-function StatsBar({ coursesData, eventsData }) {
-  // Completed
-  const completedCount = eventsData.filter((e) => e.completed).length;
+  // Total Tasks (Only manual user-added tasks from calender (2).html lines 3905-3912)
+  const manualTasks = safeEvents.filter((e) => e.source === "manual");
+  const totalTasks = manualTasks.length;
+  const totalTasksNote =
+    totalTasks === 1 ? "1 manual task" : `${totalTasks} manual tasks`;
 
-  // Upcoming (due in next 7 days)
-  const upcomingCount = eventsData.filter((e) => {
-    const dl = e.days_left;
-    if (dl === "Past") return false;
+  // Overdue tasks (Uncompleted manual tasks with past due date from calender (2).html lines 3914-3932)
+  const todayStr = formatDateYMD(new Date());
+  const overdueTasks = manualTasks.filter(
+    (e) => !e.completed && ((e.days_left === "Past") || (e.date && e.date < todayStr))
+  );
+  const overdueCount = overdueTasks.length;
+  const isOverdue = overdueCount > 0;
+  const overdueNote =
+    overdueCount === 0
+      ? "all caught up"
+      : overdueCount === 1
+      ? "1 task past due"
+      : `${overdueCount} tasks past due`;
+
+  // Upcoming deadlines (due in next 7 days from calender (2).html lines 3934-3940)
+  const upcomingCount = safeEvents.filter((e) => {
+    if (e.completed) return false;
+    if (e.days_left === "Past") return false;
     if (
-      dl === "Today" || dl === "1d" || dl === "2d" || dl === "3d" ||
-      dl === "4d" || dl === "5d" || dl === "6d" || dl === "7d"
-    ) return true;
+      e.days_left === "Today" ||
+      e.days_left === "1d" ||
+      e.days_left === "2d" ||
+      e.days_left === "3d" ||
+      e.days_left === "4d" ||
+      e.days_left === "5d" ||
+      e.days_left === "6d" ||
+      e.days_left === "7d"
+    ) {
+      return true;
+    }
+    if (!e.days_left && e.date) {
+      const diffDays = Math.ceil(
+        (new Date(e.date) - new Date()) / (1000 * 60 * 60 * 24)
+      );
+      return diffDays >= 0 && diffDays <= 7;
+    }
     return false;
   }).length;
 
-  const stats = [
-    { value: `${completedCount}/${eventsData.length}`, label: "Completed", sub: "assignments" },
-    { value: String(upcomingCount), label: "Upcoming", sub: "due this week" },
-    { value: String(coursesData.length), label: "Courses", sub: "this semester" },
+  // Courses count (from calender (2).html lines 3942-3943)
+  const coursesCount = safeCourses.length;
+
+  const statCards = [
+    {
+      id: "total-tasks",
+      icon: "📋",
+      iconBg: "bg-[#E0F2FE]",
+      value: totalTasks,
+      valueColor: "text-[#0F172A]",
+      label: "Total Tasks",
+      sub: totalTasksNote,
+      subColor: "text-[#64748B]",
+      title: "Manual user-added tasks",
+    },
+    {
+      id: "overdue-tasks",
+      icon: "⚠️",
+      iconBg: "bg-[#FEE2E2]",
+      value: overdueCount,
+      valueColor: isOverdue ? "text-[#EF4444]" : "text-[#0F172A]",
+      label: "Overdue Tasks",
+      sub: overdueNote,
+      subColor: isOverdue ? "text-[#EF4444]" : "text-[#10B981]",
+      title: isOverdue ? "Tasks past due requiring attention" : "All tasks caught up",
+    },
+    {
+      id: "upcoming",
+      icon: "⏰",
+      iconBg: "bg-[#FEF3C7]",
+      value: upcomingCount,
+      valueColor: "text-[#0F172A]",
+      label: "Upcoming",
+      sub: "due this week",
+      subColor: "text-[#64748B]",
+      title: "Deadlines due within the next 7 days",
+    },
+    {
+      id: "courses",
+      icon: "📖",
+      iconBg: "bg-[#F3E8FF]",
+      value: coursesCount,
+      valueColor: "text-[#0F172A]",
+      label: "Courses",
+      sub: "this semester",
+      subColor: "text-[#64748B]",
+      title: "Enrolled courses this semester",
+    },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      {stats.map((s, i) => (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {statCards.map((card) => (
         <div
-          key={i}
-          className="bg-white border border-[#E4E7EC] rounded-2xl px-5 py-4 shadow-sm flex items-center gap-3 hover:shadow-md transition-all"
+          key={card.id}
+          title={card.title}
+          className="bg-white border border-[#E2E8F0] rounded-2xl p-4 sm:px-5 sm:py-4 flex items-center gap-3.5 shadow-xs hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300 transition-all duration-200 cursor-pointer select-none active:scale-[0.99] group"
         >
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-            style={{ backgroundColor: STAT_COLORS[i] + "1A", color: STAT_COLORS[i] }}
+            className={`w-11 h-11 rounded-full ${card.iconBg} flex items-center justify-center text-lg shrink-0 shadow-2xs group-hover:scale-105 transition-transform duration-200`}
           >
-            {STAT_ICONS[i]}
+            {card.icon}
           </div>
-          <div>
-            <p className="text-xl font-extrabold leading-none" style={{ color: STAT_COLORS[i] }}>
-              {s.value}
-            </p>
-            <p className="text-xs text-[#667085] mt-0.5 font-medium">{s.label}</p>
-            {s.sub && <p className="text-[10px] text-[#9CA3AF]">{s.sub}</p>}
+          <div className="flex flex-col min-w-0">
+            <div
+              className={`text-[1.35rem] font-extrabold leading-tight tracking-tight ${card.valueColor}`}
+            >
+              {card.value}
+            </div>
+            <div className="text-[0.78rem] text-[#64748B] font-medium leading-tight mt-0.5">
+              {card.label}
+            </div>
+            <div
+              className={`text-[0.7rem] font-semibold leading-tight mt-0.5 ${card.subColor}`}
+            >
+              {card.sub}
+            </div>
           </div>
         </div>
       ))}
