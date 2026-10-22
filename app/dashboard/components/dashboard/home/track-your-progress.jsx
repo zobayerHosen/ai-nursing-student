@@ -15,6 +15,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { useGetDashboardHomeData } from "@/hooks";
+import { useCalendarCourses, useCalendarEvents } from "@/hooks/calendars-planner";
 
 // Reusable SVG Donut Component with responsive viewBox
 const ProgressDonut = ({
@@ -404,22 +405,219 @@ const transformProgressCards = (apiCards) => {
   });
 };
 
+function formatDateYMD(d) {
+  if (!d) return "";
+  const dateObj = d instanceof Date ? d : new Date(d);
+  if (isNaN(dateObj.getTime())) return "";
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+const COURSE_COLORS = [
+  "#8B5CF6",
+  "#3B82F6",
+  "#10B981",
+  "#F59E0B",
+  "#EF4444",
+  "#0EA5E9",
+  "#EC4899",
+  "#14B8A6",
+];
+
+function getCourseColor(courseCode, coursesList) {
+  const cleanCode = (courseCode || "").trim().toUpperCase();
+  if (cleanCode.includes("612")) return "#8B5CF6";
+  if (cleanCode.includes("MEDSURG") || cleanCode.includes("2015")) return "#3B82F6";
+
+  if (!coursesList || coursesList.length === 0) return "#3B82F6";
+  const idx = coursesList.findIndex(
+    (c) =>
+      c.code &&
+      c.code.trim().toUpperCase() === cleanCode
+  );
+  return COURSE_COLORS[idx >= 0 ? idx % COURSE_COLORS.length : 0];
+}
+
+function getTaskBadge(task) {
+  const dl = (task.days_left || "").toLowerCase().trim();
+  const todayStr = formatDateYMD(new Date());
+  const isPast =
+    dl === "past" ||
+    dl === "overdue" ||
+    dl.includes("past") ||
+    (task.date && task.date < todayStr);
+
+  if (isPast) {
+    return {
+      label: "Past Due",
+      className: "border border-[#FECACA] text-[#DC2626] bg-[#FEE2E2]/60",
+    };
+  }
+  if (dl === "today") {
+    return {
+      label: "Today",
+      className: "border border-[#FDE68A] text-[#D97706] bg-[#FEF3C7]/40",
+    };
+  }
+  return {
+    label: task.days_left || "Due Soon",
+    className: "border border-[#BFDBFE] text-[#2563EB] bg-[#EFF6FF]/60",
+  };
+}
+
 export default function TracYourProgress() {
   const { dashboardData, isLoading } = useGetDashboardHomeData();
+  const { coursesData } = useCalendarCourses();
+  const { eventsData } = useCalendarEvents();
 
   const trackYourProgressData = dashboardData?.track_your_progress;
   const cards = React.useMemo(() => {
     return transformProgressCards(trackYourProgressData);
   }, [trackYourProgressData]);
 
-
   const upcomingTaskList = dashboardData?.upcoming_tasks?.tasks || [];
 
+  // Unified courses list (from calendars-tool or dashboardData fallback)
+  const coursesList = React.useMemo(() => {
+    if (coursesData && coursesData.length > 0) {
+      return coursesData;
+    }
+    const summaryCards = dashboardData?.summary_cards;
+    const classesInfo = summaryCards?.classes;
+    const uniqueCodes = [
+      ...new Set(upcomingTaskList.map((t) => t.course_code).filter(Boolean)),
+    ];
+    if (uniqueCodes.length > 0) {
+      return uniqueCodes.map((code) => ({
+        code: code.startsWith("NUR") ? code : `NUR ${code}`,
+        name: "Active Nursing Course",
+        term: "Current Semester",
+        status: "In Progress",
+      }));
+    }
+    if (classesInfo?.count) {
+      return [
+        {
+          code: "NUR 201",
+          name: "Adult Health Nursing I",
+          term: "Current Semester",
+          status: "In Progress",
+        },
+      ];
+    }
+    return [];
+  }, [coursesData, dashboardData, upcomingTaskList]);
+
+  // Filter and prioritize active tasks (coming data first, past due last)
+  const activeTaskList = React.useMemo(() => {
+    let list = [];
+    if (eventsData && eventsData.length > 0) {
+      list = eventsData.filter((e) => !e.completed);
+    } else {
+      list = upcomingTaskList.map((t) => ({
+        ...t,
+        course: t.course_code || t.course,
+        type: t.category || t.type || "assignment",
+      }));
+    }
+
+    const todayStr = formatDateYMD(new Date());
+
+    // Filter for tasks that are Due This Week or Past Due
+    const dueThisWeekOrPast = list.filter((task) => {
+      const dl = (task.days_left || "").toLowerCase().trim();
+      const isPast =
+        dl === "past" ||
+        dl === "overdue" ||
+        dl.includes("past") ||
+        (task.date && task.date < todayStr);
+
+      if (isPast) return true;
+
+      if (
+        dl === "today" ||
+        dl === "1d" ||
+        dl === "2d" ||
+        dl === "3d" ||
+        dl === "4d" ||
+        dl === "5d" ||
+        dl === "6d" ||
+        dl === "7d" ||
+        dl.includes("day")
+      ) {
+        return true;
+      }
+
+      if (task.date) {
+        const diffDays = Math.ceil(
+          (new Date(task.date) - new Date()) / (1000 * 60 * 60 * 24)
+        );
+        return diffDays >= 0 && diffDays <= 7;
+      }
+
+      return false;
+    });
+
+    const result = dueThisWeekOrPast.length > 0 ? dueThisWeekOrPast : list;
+
+    // Helper to extract days count for upcoming tasks
+    const getDaysLeftNumber = (task) => {
+      const dl = (task.days_left || "").toLowerCase().trim();
+      if (dl === "today") return 0;
+      const match = dl.match(/(\d+)/);
+      if (match) return parseInt(match[1], 10);
+      if (task.date) {
+        const diff = Math.ceil(
+          (new Date(task.date) - new Date()) / (1000 * 60 * 60 * 24)
+        );
+        return diff >= 0 ? diff : 999;
+      }
+      return 999;
+    };
+
+    // Sort order: Coming data shows first, past due shows last
+    return result.sort((a, b) => {
+      const aDl = (a.days_left || "").toLowerCase().trim();
+      const bDl = (b.days_left || "").toLowerCase().trim();
+
+      const aPast =
+        aDl === "past" ||
+        aDl === "overdue" ||
+        aDl.includes("past") ||
+        (a.date && a.date < todayStr);
+      const bPast =
+        bDl === "past" ||
+        bDl === "overdue" ||
+        bDl.includes("past") ||
+        (b.date && b.date < todayStr);
+
+      // Coming data shows first, past due shows last
+      if (!aPast && bPast) return -1;
+      if (aPast && !bPast) return 1;
+
+      // Both are upcoming: sort by days left soonest to latest (Today -> 1d -> 2d -> 3d -> ...)
+      if (!aPast && !bPast) {
+        const aNum = getDaysLeftNumber(a);
+        const bNum = getDaysLeftNumber(b);
+        if (aNum !== bNum) return aNum - bNum;
+        if (a.date && b.date) return a.date.localeCompare(b.date);
+      }
+
+      // Both are past due: sort by date (most recently past due first)
+      if (aPast && bPast) {
+        if (a.date && b.date) return b.date.localeCompare(a.date);
+      }
+
+      return 0;
+    });
+  }, [eventsData, upcomingTaskList]);
 
   return (
     <section className="w-full max-w-full min-w-0 flex flex-col xl:flex-row items-stretch gap-4 sm:gap-5 overflow-hidden">
       {/* Left Card: Track Your Progress with Slider */}
-      <div className="flex-1 min-w-0 max-w-full bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs p-4 xs:p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden">
+      <div className="flex-1 min-w-0 max-w-full bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs p-4 xs:p-5 sm:p-6 flex flex-col justify-start relative overflow-hidden">
         {/* Section Heading */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm sm:text-base font-bold text-slate-800 tracking-tight">
@@ -503,14 +701,14 @@ export default function TracYourProgress() {
         </div>
       </div>
 
-      {/* Right Card: Upcoming Tasks */}
-      <div className="w-full xl:w-[32%] xl:min-w-70 2xl:min-w-[320px] bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs p-4 xs:p-5 sm:p-6 flex flex-col justify-between shrink-0">
+      {/* Right Card: Active Tasks */}
+      <div className="w-full xl:w-[32%] xl:min-w-70 2xl:min-w-[320px] bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs p-4 xs:p-5 sm:p-6 flex flex-col shrink-0">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Calendar className="w-4.5 h-4.5 text-[#1E3A8A]" />
             <h3 className="text-sm sm:text-base font-bold text-[#1E3A8A] tracking-tight">
-              Upcoming Tasks
+              Active Tasks
             </h3>
           </div>
           <Link
@@ -522,36 +720,49 @@ export default function TracYourProgress() {
           </Link>
         </div>
 
-        {/* Tasks List */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:flex xl:flex-col flex-1 justify-center">
-          {upcomingTaskList?.map((task) => (
-            <div
-              key={task.id}
-              className="flex items-center justify-between gap-2 p-1.5 rounded-xl hover:bg-slate-50/70 transition-colors"
-            >
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <span
-                  className="w-2 h-2 rounded-full shrink-0"
-                  style={{ backgroundColor: task.color }}
-                />
-                <div className="min-w-0">
-                  <h4 className="text-xs sm:text-[13px] font-bold text-slate-800 leading-tight truncate">
-                    {task.title ?? "N/F"}
-                  </h4>
-                  <p className="text-[10px] font-medium text-slate-500 mt-0.5 truncate">
-                    NUR {task.course_code ?? "00"} • {task?.points ?? "00"}
-                  </p>
-                </div>
-              </div>
-
-              <span
-                className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
-                style={{ backgroundColor: task.color }}
-              >
-                {task.days_left ?? ""}
-              </span>
+        {/* Marked Area: Active Tasks List (Only show the data without opening modal) */}
+        <div className="flex flex-col gap-2 flex-1 overflow-y-auto max-h-[380px] sm:max-h-[420px] pr-1">
+          {activeTaskList.length === 0 ? (
+            <div className="py-12 text-center text-slate-400">
+              <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+              <p className="text-xs font-semibold text-slate-600">All caught up!</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">No tasks due this week or past due</p>
             </div>
-          ))}
+          ) : (
+            activeTaskList.map((task) => {
+              const courseCode = task.course_code || task.course || "General";
+              const courseColor = getCourseColor(courseCode, coursesList);
+              const badge = getTaskBadge(task);
+
+              return (
+                <div
+                  key={task.id}
+                  className="group flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-2xl bg-white border border-[#E2E8F0]/70 hover:border-slate-300 transition-all shadow-2xs"
+                >
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: courseColor }}
+                    />
+                    <div className="min-w-0">
+                      <h4 className="text-xs sm:text-[13px] font-bold text-[#0F172A] leading-tight truncate">
+                        {task.title ?? "Untitled Task"}
+                      </h4>
+                      <p className="text-[11px] font-medium text-[#64748B] mt-0.5 truncate">
+                        {courseCode}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${badge.className}`}
+                  >
+                    {badge.label}
+                  </span>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </section>

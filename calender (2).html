@@ -1,0 +1,4649 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        const DJANGO_ACCESS_TOKEN = "{{ user_access_token|default:'' }}";
+        const DJANGO_IS_AUTH = {{ is_authenticated|yesno:"true,false" }};
+        (function () {
+            /* ── helpers ── */
+            function getCookie(name) {
+                const match = document.cookie.match('(^|;\\s*)' + name + '=([^;]*)');
+                return match ? decodeURIComponent(match[2]) : null;
+            }
+            function getToken() { return localStorage.getItem('ac_access_token') || DJANGO_ACCESS_TOKEN || ''; }
+            function setToken(t) { localStorage.setItem('ac_access_token', t); }
+            function clearToken() { localStorage.removeItem('ac_access_token'); }
+
+            if (DJANGO_ACCESS_TOKEN) {
+                setToken(DJANGO_ACCESS_TOKEN);
+            }
+
+            /* ── response‑wrapper unwrap ── */
+            function isWrappedEnvelope(obj) {
+                return obj && typeof obj === 'object' && !Array.isArray(obj)
+                    && 'success' in obj && 'status' in obj && 'data' in obj;
+            }   
+            async function unwrapResponse(response) {
+                const ct = response.headers.get('content-type') || '';
+                if (!ct.includes('application/json')) return response;
+                let parsed;
+                try { parsed = await response.clone().json(); } catch (e) { return response; }
+                if (!isWrappedEnvelope(parsed)) return response;
+                const inner = (parsed.data && typeof parsed.data === 'object' && !Array.isArray(parsed.data))
+                    ? parsed.data : {};
+                const flat = Object.assign({}, inner, { success: parsed.success, message: parsed.message });
+                return new Response(JSON.stringify(flat), {
+                    status: response.status, statusText: response.statusText, headers: response.headers,
+                });
+            }
+
+            /* ── patched fetch: CSRF + Bearer + unwrap ── */
+            const originalFetch = window.fetch;
+            window.fetch = function (input, init) {
+                init = init || {};
+                const method = (init.method || 'GET').toUpperCase();
+                const headers = Object.assign({}, init.headers);
+                /* CSRF for unsafe methods */
+                if (!['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
+                    const csrf = getCookie('csrftoken');
+                    if (csrf) headers['X-CSRFToken'] = csrf;
+                }
+                /* JWT Bearer token */
+                const token = getToken();
+                if (token) headers['Authorization'] = 'Bearer ' + token;
+                init.headers = headers;
+                init.credentials = init.credentials || 'same-origin';
+                return originalFetch(input, init).then(unwrapResponse);
+            };
+
+            document.addEventListener('DOMContentLoaded', function () {
+                if (DJANGO_ACCESS_TOKEN) {
+                    setToken(DJANGO_ACCESS_TOKEN);
+                }
+            });
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Calendars Tool - Dynamic Document-Driven Academic Calendar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f8fafc;
+            --card-bg: #ffffff;
+            --border-light: #e2e8f0;
+            --primary-blue: #2563eb;
+            --primary-dark: #1d4ed8;
+            --blue-soft: #eff6ff;
+            --blue-icon-bg: #dbeafe;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --red-pdf: #ef4444;
+            --red-soft: #fef2f2;
+            --status-pending-bg: #f1f5f9;
+            --status-pending-text: #475569;
+            --status-success-bg: #dcfce7;
+            --status-success-text: #166534;
+            --radius-xl: 16px;
+            --radius-lg: 12px;
+            --radius-md: 8px;
+            --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+            /* Category Colors */
+            --cat-blue-bg: #e0f2fe;
+            --cat-blue-text: #0284c7;
+            --cat-yellow-bg: #fef3c7;
+            --cat-yellow-text: #d97706;
+            --cat-red-bg: #fee2e2;
+            --cat-red-text: #dc2626;
+            --cat-green-bg: #dcfce7;
+            --cat-green-text: #166534;
+            --cat-purple-bg: #f3e8ff;
+            --cat-purple-text: #7e22ce;
+            --cat-slate-bg: #f1f5f9;
+            --cat-slate-text: #475569;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            padding: 1.5rem 2rem;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .main-wrapper {
+            max-width: 1320px;
+            margin: 0 auto;
+        }
+
+        /* Top Header Title Card */
+        .header-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 1.1rem 1.5rem;
+            margin-bottom: 1.25rem;
+            box-shadow: var(--shadow-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn-header-link {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+            background: var(--blue-soft);
+            border: 1px solid var(--blue-icon-bg);
+            padding: 0.4rem 0.85rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-header-link:hover {
+            background: #dbeafe;
+        }
+
+        /* Primary Page Sections */
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        /* IMPORTER PAGE */
+        .calendars-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 992px) {
+            .calendars-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .tool-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            padding: 1.75rem;
+            box-shadow: var(--shadow-card);
+        }
+
+        .tool-card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .header-icon-box {
+            width: 44px;
+            height: 44px;
+            background-color: var(--blue-soft);
+            border: 1px solid var(--blue-icon-bg);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+            flex-shrink: 0;
+        }
+
+        .header-text h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.2rem;
+        }
+
+        .header-text p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .upload-dropzone {
+            border: 2px dashed #93c5fd;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 1.75rem;
+            position: relative;
+        }
+
+        .upload-dropzone:hover,
+        .upload-dropzone.dragover {
+            border-color: var(--primary-blue);
+            background: var(--blue-soft);
+        }
+
+        .upload-icon-container {
+            width: 56px;
+            height: 56px;
+            background-color: #e0f2fe;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem auto;
+            color: var(--primary-blue);
+        }
+
+        .upload-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.35rem;
+        }
+
+        .upload-subtitle {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 1.25rem;
+        }
+
+        .btn-upload {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #2563eb;
+            color: white;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 0.6rem 1.4rem;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-upload:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* Processing Progress Bar */
+        .processing-box {
+            display: none;
+            background: #ffffff;
+            border: 1.5px solid #93c5fd;
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .processing-box.active {
+            display: block;
+        }
+
+        .processing-status {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .progress-bar-track {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.65rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 30%;
+            background: #2563eb;
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        .processing-steps {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .uploaded-section-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.85rem;
+        }
+
+        .syllabi-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .empty-syllabi-msg {
+            font-size: 0.83rem;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 1.5rem;
+            border: 1px dashed var(--border-light);
+            border-radius: var(--radius-lg);
+            background: #f8fafc;
+        }
+
+        .syllabus-item-card {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 0.9rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+            transition: border-color 0.2s;
+        }
+
+        .item-left {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .pdf-icon-box {
+            width: 38px;
+            height: 38px;
+            background-color: var(--red-soft);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--red-pdf);
+            flex-shrink: 0;
+            font-size: 1.2rem;
+        }
+
+        .file-info h4 {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.15rem;
+        }
+
+        .file-info p {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .item-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .badge-pending {
+            background-color: var(--status-pending-bg);
+            color: var(--status-pending-text);
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.25rem 0.65rem;
+            border-radius: 12px;
+        }
+
+        .badge-extracted {
+            background-color: var(--status-success-bg);
+            color: var(--status-success-text);
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.25rem 0.65rem;
+            border-radius: 12px;
+        }
+
+        .btn-remove {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 0.2rem;
+            border-radius: 4px;
+        }
+
+        .btn-remove:hover {
+            color: var(--red-pdf);
+        }
+
+        .sidebar-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .sidebar-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-card);
+        }
+
+        .sidebar-card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 1.25rem;
+        }
+
+        .sparkle-icon {
+            color: #f59e0b;
+        }
+
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.85rem;
+        }
+
+        .feature-icon-box {
+            width: 34px;
+            height: 34px;
+            background: var(--blue-soft);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+            flex-shrink: 0;
+            font-size: 0.95rem;
+        }
+
+        .feature-text h5 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.15rem;
+        }
+
+        .feature-text p {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+
+        .steps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .step-number {
+            width: 22px;
+            height: 22px;
+            background-color: #1d4ed8;
+            color: white;
+            font-size: 0.72rem;
+            font-weight: 700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        .step-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .btn-action-outline {
+            width: 100%;
+            background-color: white;
+            border: 1.5px solid #2563eb;
+            color: #2563eb;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.65rem 1rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .btn-action-outline:hover {
+            background-color: var(--blue-soft);
+        }
+
+        .tip-banner {
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: var(--radius-lg);
+            padding: 0.9rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-size: 0.83rem;
+            color: #0369a1;
+        }
+
+        /* PLANNER & CALENDAR DASHBOARD */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        @media (max-width: 900px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 1.1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .icon-blue {
+            background: #e0f2fe;
+            color: #0284c7;
+        }
+
+        .icon-green {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .icon-red {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .icon-yellow {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .icon-purple {
+            background: #f3e8ff;
+            color: #7e22ce;
+        }
+
+        .stat-value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+
+        .stat-label {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .stat-sub {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .stat-sub.positive {
+            color: #10b981;
+        }
+
+        .calendar-controls {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .controls-left,
+        .controls-center,
+        .controls-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-tab {
+            background: none;
+            border: none;
+            padding: 0.5rem 0.9rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+        }
+
+        .btn-tab:hover {
+            background: #f1f5f9;
+            color: var(--text-dark);
+        }
+
+        .btn-tab.active {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        .date-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #0f172a;
+        }
+
+        .btn-arrow {
+            background: none;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            padding: 0.2rem 0.6rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-arrow:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-today {
+            background: #f1f5f9;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            padding: 0.25rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+        }
+
+        .btn-today:hover {
+            background: #e2e8f0;
+        }
+
+        .course-filter-select {
+            font-family: var(--font-family);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #334155;
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            padding: 0.35rem 0.6rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn-group {
+            display: flex;
+            background: #f1f5f9;
+            padding: 2px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-view {
+            border: none;
+            background: none;
+            padding: 0.35rem 0.8rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-view.active {
+            background: white;
+            color: var(--text-dark);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-add-task {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: #2563eb;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: none;
+            padding: 0.42rem 0.85rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-add-task:hover {
+            background: var(--primary-dark);
+        }
+
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .calendar-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            padding: 0;
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+            min-height: 650px;
+        }
+
+        .main-tab-content {
+            display: none;
+        }
+
+        .main-tab-content.active {
+            display: block;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* VIEW 1: DYNAMIC MONTH GRID */
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .day-name-cell {
+            padding: 0.75rem 0.25rem;
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
+            background: #ffffff;
+            min-width: 0;
+        }
+
+        .day-cell {
+            min-height: 105px;
+            padding: 0.45rem 0.35rem;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            background: #ffffff;
+            transition: background 0.15s;
+            min-width: 0;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .day-cell:nth-child(7n) {
+            border-right: none;
+        }
+
+        .day-cell.other-month {
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: default;
+        }
+
+        .day-cell.selected-day {
+            background: #eff6ff;
+        }
+
+        .day-cell:hover:not(.other-month) {
+            background: #f8fafc;
+        }
+
+        .day-number {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 0.35rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .day-number.current-day {
+            background: #2563eb;
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+        }
+
+        .event-pill {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.18rem 0.35rem;
+            border-radius: 4px;
+            margin-bottom: 0.25rem;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            transition: transform 0.1s;
+            width: 100%;
+            display: block;
+        }
+
+        .event-pill:hover {
+            transform: scale(1.01);
+            filter: brightness(0.95);
+        }
+
+        .event-pill.completed {
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .pill-time {
+            font-size: 0.62rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-right: 0.28rem;
+            padding: 0.05rem 0.25rem;
+            border-radius: 3px;
+            background: rgba(0, 0, 0, 0.12);
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+        }
+
+        .pill-blue {
+            background: var(--cat-blue-bg);
+            color: var(--cat-blue-text);
+        }
+
+        .pill-yellow {
+            background: var(--cat-yellow-bg);
+            color: var(--cat-yellow-text);
+        }
+
+        .pill-red {
+            background: var(--cat-red-bg);
+            color: var(--cat-red-text);
+        }
+
+        .pill-green {
+            background: var(--cat-green-bg);
+            color: var(--cat-green-text);
+        }
+
+        .pill-purple {
+            background: var(--cat-purple-bg);
+            color: var(--cat-purple-text);
+        }
+
+        .pill-slate {
+            background: var(--cat-slate-bg);
+            color: var(--cat-slate-text);
+        }
+
+        /* VIEW 2: WEEK VIEW TABLE */
+        .week-table-wrapper {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        .week-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        .week-table th {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 0.65rem 0.5rem;
+            border: 1px solid var(--border-light);
+            background: #ffffff;
+            text-align: center;
+        }
+
+        .week-table td {
+            height: 50px;
+            border: 1px solid var(--border-light);
+            padding: 0.25rem;
+            vertical-align: top;
+            background: white;
+            min-width: 80px;
+        }
+
+        .time-col {
+            width: 68px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: center;
+            vertical-align: middle !important;
+            background: #f8fafc !important;
+        }
+
+        .day-num-circle {
+            display: inline-flex;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #2563eb;
+            color: white;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 0.2rem;
+        }
+
+        /* VIEW 3: DAY VIEW */
+        .day-view-container {
+            padding: 1.5rem;
+        }
+
+        .day-view-header {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 0.75rem;
+        }
+
+        .day-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .day-event-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1.1rem;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            background: white;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .day-event-card:hover {
+            border-color: #93c5fd;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .day-event-time {
+            width: 75px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #2563eb;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .day-event-info {
+            flex: 1;
+        }
+
+        .day-event-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .day-event-title.completed {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .day-event-course {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        /* TAB 2: TASKS VIEW */
+        .tasks-view-container {
+            padding: 1.5rem;
+        }
+
+        .tasks-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+        }
+
+        .tasks-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .tasks-table th {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            padding: 0.75rem 1rem;
+            border-bottom: 1.5px solid var(--border-light);
+            background: #f8fafc;
+        }
+
+        .tasks-table td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: middle;
+            font-size: 0.85rem;
+        }
+
+        .tasks-table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .task-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #2563eb;
+            cursor: pointer;
+        }
+
+        .task-name-col {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .task-title-text {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .task-title-text.completed {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .task-row-completed {
+            background-color: #f8fafc !important;
+            opacity: 0.58;
+            transition: opacity 0.2s ease, background-color 0.2s ease;
+        }
+
+        .task-row-completed:hover {
+            opacity: 0.88;
+            background-color: #f1f5f9 !important;
+        }
+
+        .task-row-completed td {
+            color: #64748b !important;
+        }
+
+        .task-row-completed .cat-tag-pill {
+            filter: grayscale(85%);
+            opacity: 0.75;
+        }
+
+        .task-archive-divider-row td {
+            padding: 0.75rem 1rem !important;
+            background: #f8fafc !important;
+            border-top: 1px dashed #cbd5e1 !important;
+            border-bottom: 1px dashed #cbd5e1 !important;
+        }
+
+        .task-archive-divider {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .task-archive-divider .archive-badge {
+            background: #e2e8f0;
+            color: #334155;
+            padding: 0.15rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .grade-pencil-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: all 0.15s;
+        }
+
+        .grade-pencil-btn:hover {
+            color: #2563eb;
+            background: var(--blue-soft);
+        }
+
+        .grade-cell-content {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 700;
+        }
+
+        /* TAB 3: GRADES VIEW */
+        .grades-view-container {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .cgpa-summary-card {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            border-radius: var(--radius-xl);
+            padding: 1.75rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-card);
+        }
+
+        .cgpa-left h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.9;
+            margin-bottom: 0.3rem;
+        }
+
+        .cgpa-left .cgpa-score {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .cgpa-left .cgpa-sub {
+            font-size: 0.82rem;
+            opacity: 0.85;
+            margin-top: 0.4rem;
+        }
+
+        .cgpa-right {
+            text-align: right;
+        }
+
+        .cgpa-stat-pill {
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(8px);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .course-grade-card {
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-subtle);
+            margin-bottom: 1.25rem;
+        }
+
+        .course-grade-header {
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .course-grade-title h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .course-grade-title p {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .course-grade-badge {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #1e3a8a;
+            background: var(--blue-soft);
+            border: 1px solid var(--blue-icon-bg);
+            padding: 0.3rem 0.85rem;
+            border-radius: 8px;
+        }
+
+        .grade-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .grade-item-row:last-child {
+            border-bottom: none;
+        }
+
+        .grade-input-inline {
+            width: 65px;
+            padding: 0.25rem 0.4rem;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .grade-input-inline:focus {
+            border-color: #2563eb;
+            outline: none;
+        }
+
+        /* EMPTY STATES */
+        .empty-state-box {
+            padding: 3.5rem 1.5rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-state-icon {
+            font-size: 2.8rem;
+            margin-bottom: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .empty-state-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.3rem;
+        }
+
+        .empty-state-sub {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            max-width: 380px;
+            margin-bottom: 1.25rem;
+        }
+
+        /* SIDEBAR STACK */
+        .course-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.65rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .course-item:last-child {
+            border-bottom: none;
+        }
+
+        .course-left {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dot-blue {
+            background: #0284c7;
+        }
+
+        .dot-purple {
+            background: #7e22ce;
+        }
+
+        .dot-green {
+            background: #166534;
+        }
+
+        .dot-yellow {
+            background: #d97706;
+        }
+
+        .dot-red {
+            background: #dc2626;
+        }
+
+        .course-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .course-info {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .grade-badge {
+            background: #f1f5f9;
+            padding: 0.15rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .deadline-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.65rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .deadline-item:last-child {
+            border-bottom: none;
+        }
+
+        .deadline-title {
+            font-size: 0.83rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .deadline-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .badge-urgency {
+            padding: 0.2rem 0.55rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .urgency-today {
+            background: #fee2e2;
+            color: #dc2626;
+            font-weight: 800;
+        }
+
+        .urgency-1d {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .urgency-4d {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .urgency-9d {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .quick-add-card {
+            background: #ffffff;
+            border-radius: var(--radius-xl);
+            padding: 1.25rem 1.2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+            margin-bottom: 1.25rem;
+        }
+
+        .quick-add-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #1e3a5f;
+            margin-bottom: 0.85rem;
+            padding-bottom: 0.35rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .quick-add-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+        }
+
+        .quick-add-link {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: #2563eb;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-block;
+            line-height: 1.25;
+        }
+
+        .quick-add-link:hover {
+            color: #1d4ed8;
+            transform: translateX(3px);
+            text-decoration: underline;
+        }
+
+        .add-course-card {
+            text-align: center;
+            padding: 1.25rem;
+        }
+
+        .btn-outline-upload {
+            width: 100%;
+            border: 1.5px solid #2563eb;
+            color: #2563eb;
+            background: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.6rem 1rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            margin-top: 0.75rem;
+            transition: background 0.2s;
+        }
+
+        .btn-outline-upload:hover {
+            background: var(--blue-soft);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.75rem;
+            max-width: 500px;
+            width: 92%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+            position: relative;
+            animation: modalPop 0.25s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes modalPop {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .cat-tag-pill {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            background: #e0f2fe;
+            color: #0284c7;
+            text-transform: lowercase;
+            margin-bottom: 0.5rem;
+        }
+
+        /* PICTURE-STYLE MODAL DETAILS (WITHOUT REMINDER) */
+        .picture-modal-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 1.6rem 1.65rem;
+            max-width: 480px;
+            width: 94%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
+        }
+
+        .p-modal-header {
+            margin-bottom: 1.15rem;
+            position: relative;
+            padding-right: 1.75rem;
+        }
+
+        .p-modal-breadcrumb {
+            font-size: 0.73rem;
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 0.45rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .p-modal-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            line-height: 1.35;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .p-modal-title-icon {
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        .p-modal-subtitle {
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .p-card-field {
+            margin-bottom: 0.8rem;
+        }
+
+        .p-card-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 0.3rem;
+            display: block;
+        }
+
+        .p-card-val {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 0.65rem 0.85rem;
+            font-size: 0.84rem;
+            color: #1e293b;
+            line-height: 1.45;
+            white-space: pre-line;
+            word-break: break-word;
+        }
+
+        .p-card-val-plain {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 0.65rem 0.85rem;
+            font-size: 0.84rem;
+            font-weight: 500;
+            color: #1e293b;
+            margin-bottom: 0.8rem;
+        }
+
+        .p-check-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            padding: 0.45rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .p-check-row:last-child {
+            border-bottom: none;
+        }
+
+        .p-check-input {
+            margin-top: 0.2rem;
+            accent-color: #1e3a5f;
+            cursor: pointer;
+            width: 15px;
+            height: 15px;
+        }
+
+        .p-check-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .p-check-sub {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.15rem;
+        }
+
+        .p-card-note {
+            font-size: 0.72rem;
+            color: #64748b;
+            line-height: 1.4;
+            margin: 1.1rem 0 0.85rem 0;
+        }
+
+        .p-btn-action {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            background: #1e3a5f;
+            color: #ffffff;
+            font-size: 0.88rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            text-align: center;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .p-btn-action:hover {
+            background: #152840;
+        }
+
+        .p-btn-action.completed {
+            background: #059669;
+        }
+
+        .p-btn-action.completed:hover {
+            background: #047857;
+        }
+
+        .p-btn-delete {
+            width: 100%;
+            margin-top: 0.55rem;
+            padding: 0.45rem;
+            background: transparent;
+            border: 1px dashed #cbd5e1;
+            color: #ef4444;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .p-btn-delete:hover {
+            background: #fef2f2;
+            border-color: #fca5a5;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.2rem;
+        }
+
+        .modal-sub {
+            font-size: 0.85rem;
+            color: #0284c7;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 0.85rem;
+        }
+
+        .modal-box-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .modal-box-val {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .modal-box-sub {
+            font-size: 0.75rem;
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .instructor-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 0.9rem 1rem;
+            margin-bottom: 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .instructor-box:hover {
+            border-color: #cbd5e1;
+            background: #f1f5f9;
+        }
+
+        .instructor-title {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.35rem;
+        }
+
+        .instructor-name-row {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .instructor-icon {
+            font-size: 1rem;
+        }
+
+        .instructor-name {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .instructor-meta-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            padding-top: 0.45rem;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .instructor-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.82rem;
+            color: #475569;
+        }
+
+        .meta-icon {
+            font-size: 0.85rem;
+        }
+
+        .meta-label {
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .meta-val {
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .instructor-email-link {
+            font-size: 0.82rem;
+            color: #2563eb;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .instructor-email-link:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+
+        .grade-input-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .grade-input {
+            width: 85px;
+            padding: 0.5rem;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .btn-save-grade {
+            background: #1d4ed8;
+            color: white;
+            font-weight: 700;
+            border: none;
+            padding: 0.55rem 1.25rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+        }
+
+        .btn-toggle-done {
+            width: 100%;
+            background: #f1f5f9;
+            border: none;
+            padding: 0.65rem;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #334155;
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-delete-task {
+            width: 100%;
+            background: #fee2e2;
+            border: none;
+            padding: 0.55rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #dc2626;
+            cursor: pointer;
+        }
+
+        /* Form Controls for Add Task */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 0.35rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.55rem 0.75rem;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            font-family: var(--font-family);
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: var(--primary-blue);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .btn-submit-task {
+            width: 100%;
+            background: #2563eb;
+            color: white;
+            font-weight: 700;
+            padding: 0.7rem;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-submit-task:hover {
+            background: var(--primary-dark);
+        }
+
+        /* ========================================================
+           PICTURE 1: MY COURSES SECTION & ROWS
+           ======================================================== */
+        .my-courses-card-inner {
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-card);
+        }
+
+        .my-courses-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.75rem;
+            border-bottom: 1.5px solid #f1f5f9;
+            margin-bottom: 0.5rem;
+        }
+
+        .my-courses-heading {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+            letter-spacing: -0.2px;
+        }
+
+        .my-courses-counter {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .my-courses-rows {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mc-course-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 1rem 0.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            transition: background-color 0.15s ease;
+        }
+
+        .mc-course-row:hover {
+            background-color: #f8fafc;
+        }
+
+        .mc-course-row:last-child {
+            border-bottom: none;
+        }
+
+        .mc-badge-icon {
+            width: 58px;
+            height: 58px;
+            min-width: 58px;
+            border-radius: 12px;
+            background: #1e3a5f;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+            line-height: 1.15;
+            text-align: center;
+            box-shadow: 0 3px 8px rgba(30, 58, 95, 0.25);
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        .mc-course-content {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            flex-grow: 1;
+        }
+
+        .mc-course-code {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.25;
+        }
+
+        .mc-more-info {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            width: fit-content;
+            transition: color 0.15s ease;
+        }
+
+        .mc-more-info:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+
+        .mc-pills-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-top: 4px;
+        }
+
+        .mc-pill {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 12px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            letter-spacing: 0.2px;
+            line-height: 1.2;
+        }
+
+        .mc-pill-term {
+            background: #f3e8ff;
+            color: #7e22ce;
+        }
+
+        .mc-pill-credits {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .mc-pill-status {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        /* ========================================================
+           PICTURE 2: COURSE DETAILS MODAL
+           ======================================================== */
+        .course-details-card {
+            max-width: 440px !important;
+            width: 94% !important;
+            background: #ffffff !important;
+            border-radius: 18px !important;
+            padding: 0 !important;
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important;
+            overflow: hidden !important;
+            max-height: 90vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .course-details-header {
+            padding: 1.5rem 1.5rem 1.25rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid #f1f5f9;
+            background: #ffffff;
+        }
+
+        .course-details-code {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .course-details-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .course-details-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .cd-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem 1.25rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .cd-info-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .cd-info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .cd-info-icon {
+            flex-shrink: 0;
+            margin-top: 2px;
+            color: #2563eb;
+        }
+
+        .cd-info-label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+
+        .cd-info-val {
+            font-size: 0.8rem;
+            color: #64748b;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .cd-link {
+            color: #2563eb !important;
+            text-decoration: none;
+        }
+
+        .cd-link:hover {
+            text-decoration: underline;
+        }
+
+        .cd-section {
+            margin-bottom: 1.25rem;
+        }
+
+        .cd-section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .cd-includes-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cd-include-item {
+            border-bottom: 1px solid #f1f5f9;
+            padding: 0.55rem 0;
+            font-size: 0.88rem;
+            color: #334155;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cd-include-item:last-child {
+            border-bottom: none;
+        }
+
+        .cd-include-icon {
+            flex-shrink: 0;
+            color: #2563eb;
+        }
+
+        .cd-section-text {
+            font-size: 0.82rem;
+            color: #64748b;
+            line-height: 1.55;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main-wrapper">
+
+        <!-- Top App Bar Header -->
+        <div class="header-card">
+            <div class="header-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                Calendars Tool
+            </div>
+            <div class="header-actions">
+                <button class="btn-header-link" onclick="switchPageSection('importer')">⬆️ Upload Syllabus</button>
+                <button class="btn-header-link" onclick="switchPageSection('planner')">📅 View Calendar</button>
+                <button class="btn-header-link" id="nav-btn-courses" onclick="switchPageSection('courses')">📚 My Courses</button>
+                <button class="btn-header-link" onclick="confirmResetAllData()"
+                    style="color:#dc2626; background:#fef2f2; border-color:#fecaca;"
+                    title="Wipe all data to clean empty state">🗑️ Reset Data</button>
+            </div>
+        </div>
+
+        <!-- PAGE 1: SYLLABUS IMPORTER -->
+        <div id="page-importer" class="page-section">
+            <div class="calendars-grid">
+                <div class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="header-icon-box">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </div>
+                        <div class="header-text">
+                            <h2>Add Your Syllabus</h2>
+                            <p>Upload your syllabuses to let AI extract and organize all your course information</p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Drag & Drop Area -->
+                    <div class="upload-dropzone" id="dropzone" onclick="triggerFileInput()"
+                        ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
+                        ondrop="handleFileDrop(event)">
+                        <input type="file" id="file-input" style="display: none;" multiple
+                            accept=".pdf,.doc,.docx,.ppt,.pptx,.txt" onchange="handleFileSelect(event)">
+                        <div class="upload-icon-container">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <div class="upload-title" id="dropzone-status">Drag & drop your syllabus files here</div>
+                        <div class="upload-subtitle">or click to browse • PDF, Word, PowerPoint, text files up to 25 MB
+                        </div>
+                        <button type="button" class="btn-upload">Upload Files</button>
+                    </div>
+
+                    <!-- Progress / Processing State Box -->
+                    <div class="processing-box" id="processing-box">
+                        <div class="processing-status" id="processing-status-text">
+                            <span>⚙️</span> Processing syllabus...
+                        </div>
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                        </div>
+                        <div class="processing-steps">
+                            <span id="step-parsing">1. Parsing document</span>
+                            <span id="step-extracting">2. Extracting dates</span>
+                            <span id="step-saving">3. Updating calendar</span>
+                        </div>
+                    </div>
+
+                    <!-- UPLOADED SYLLABI SECTION (EMPTY ON FIRST LOAD UNTIL USER UPLOADS) -->
+                    <div class="uploaded-section-title" id="uploaded-count-title">Uploaded Syllabi (0)</div>
+                    <div class="syllabi-list" id="syllabi-container">
+                        <div class="empty-syllabi-msg">No syllabi uploaded yet. Drag & drop files above to start.</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-stack">
+                    <div class="sidebar-card">
+                        <div class="sidebar-card-title"><span class="sparkle-icon">✨</span> AI-Powered Extraction</div>
+                        <div class="feature-list">
+                            <div class="feature-item">
+                                <div class="feature-icon-box">📋</div>
+                                <div class="feature-text">
+                                    <h5>Course Info</h5>
+                                    <p>Instructor, email, office hours, room & meeting times</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon-box">📅</div>
+                                <div class="feature-text">
+                                    <h5>All Deadlines</h5>
+                                    <p>Every exam, quiz, assignment & lab date pulled from your syllabus</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon-box">📘</div>
+                                <div class="feature-text">
+                                    <h5>Course Details</h5>
+                                    <p>Course code, instructor, room, and syllabus info organized</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon-box">🎯</div>
+                                <div class="feature-text">
+                                    <h5>Smart Alerts</h5>
+                                    <p>Color-coded urgency so you never miss a deadline</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <div class="sidebar-card-title">What happens next?</div>
+                        <div class="steps-list">
+                            <div class="step-item">
+                                <div class="step-number">1</div>
+                                <div class="step-desc">AI reads your syllabuses and extracts course info</div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">2</div>
+                                <div class="step-desc">Course details are saved and organized automatically</div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">3</div>
+                                <div class="step-desc">Add and customize your assignments, readings, and exams</div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">4</div>
+                                <div class="step-desc">Stay on schedule across all your courses</div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-action-outline" onclick="switchPageSection('planner')">Skip &
+                            Go to Planner</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tip-banner">
+                <span class="tip-icon">✨</span>
+                <div><strong>Tip:</strong> For best results, upload the full syllabus. AI works best with complete
+                    course information including grading breakdowns, due dates, and instructor details.</div>
+            </div>
+        </div>
+
+        <!-- PAGE 2: COURSE PLANNER & DYNAMIC MASTER CALENDAR DASHBOARD -->
+        <div id="page-planner" class="page-section active">
+
+            <!-- Top 4 Stats Metric Cards (DYNAMIC) -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue">📋</div>
+                    <div>
+                        <div class="stat-value" id="stat-total-tasks">0</div>
+                        <div class="stat-label">Total Tasks</div>
+                        <div class="stat-sub" id="stat-total-tasks-note" style="color:var(--text-muted);">all tasks</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-red">⚠️</div>
+                    <div>
+                        <div class="stat-value" id="stat-overdue">0</div>
+                        <div class="stat-label">Overdue Tasks</div>
+                        <div class="stat-sub" id="stat-overdue-note" style="color:var(--text-muted);">needs attention</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-yellow">⏰</div>
+                    <div>
+                        <div class="stat-value" id="stat-upcoming">0</div>
+                        <div class="stat-label">Upcoming</div>
+                        <div class="stat-sub" style="color:var(--text-muted);">due this week</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-purple">📖</div>
+                    <div>
+                        <div class="stat-value" id="stat-courses">0</div>
+                        <div class="stat-label">Courses</div>
+                        <div class="stat-sub" style="color:var(--text-muted);">this semester</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub-Header Controls: Calendar, Tasks tabs + Month navigation + Filter + Add Task -->
+            <div class="calendar-controls">
+                <div class="controls-left">
+                    <button class="btn-tab active" id="tab-btn-calendar" onclick="switchMainTab('calendar')">📅
+                        Calendar</button>
+                    <button class="btn-tab" id="tab-btn-tasks" onclick="switchMainTab('tasks')">✔️ Tasks</button>
+                    <button class="btn-tab" id="tab-btn-courses" onclick="switchMainTab('courses')">📚 Courses</button>
+                </div>
+
+                <div class="controls-center" id="calendar-date-controls">
+                    <div class="date-nav">
+                        <button class="btn-arrow" onclick="prevPeriod()" title="Previous">‹</button>
+                        <span id="month-year-header">September 2026</span>
+                        <button class="btn-arrow" onclick="nextPeriod()" title="Next">›</button>
+                        <button class="btn-today" onclick="goToToday()">Today</button>
+                    </div>
+                </div>
+
+                <div class="controls-right">
+                    <!-- Dynamic Course Filter -->
+                    <select class="course-filter-select" id="course-filter"
+                        onchange="handleCourseFilterChange(this.value)">
+                        <option value="all">All Courses</option>
+                    </select>
+
+                    <!-- Dynamic Category / Type Filter -->
+                    <select class="course-filter-select" id="category-filter"
+                        onchange="handleCategoryFilterChange(this.value)">
+                        <option value="all">All Types</option>
+                        <option value="assignment">Assignments</option>
+                        <option value="quiz">Quizzes</option>
+                        <option value="exam">Midterms / Finals</option>
+                        <option value="lecture">Lectures / Classes</option>
+                        <option value="clinical">Clinicals</option>
+                        <option value="skills-lab">Skills Lab</option>
+                        <option value="simulation">Simulations</option>
+                        <option value="study-session">Study Sessions</option>
+                        <option value="study-group">Study Groups</option>
+                        <option value="nclex-practice">NCLEX Practice</option>
+                        <option value="reading">Readings</option>
+                        <option value="project">Projects</option>
+                        <option value="presentation">Presentations</option>
+                        <option value="check-off">Skills Check-off</option>
+                        <option value="deadline">Deadlines</option>
+                        <option value="work-shift">Work Shifts</option>
+                        <option value="appointment">Appointments</option>
+                        <option value="vacation">Vacations</option>
+                        <option value="holiday">Holidays</option>
+                        <option value="other">Personal / Other</option>
+                    </select>
+
+                    <!-- Add Task Action -->
+                    <button class="btn-add-task" onclick="openAddTaskModal()">
+                        <span>+</span> Add Task
+                    </button>
+
+                    <!-- Month / Week / Day View Toggle -->
+                    <div class="btn-group" id="view-toggle-group">
+                        <button class="btn-view active" id="btn-view-month"
+                            onclick="switchCalendarView('month')">Month</button>
+                        <button class="btn-view" id="btn-view-week" onclick="switchCalendarView('week')">Week</button>
+                        <button class="btn-view" id="btn-view-day" onclick="switchCalendarView('day')">Day</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workspace Grid -->
+            <div class="workspace-grid">
+
+                <div class="calendar-card">
+
+                    <!-- TAB CONTENT 1: CALENDAR (Month, Week, Day Views) -->
+                    <div id="tab-content-calendar" class="main-tab-content active">
+
+                        <!-- VIEW 1: MONTH VIEW -->
+                        <div id="view-month" class="view-section active">
+                            <div class="month-grid" id="month-grid-cells">
+                                <!-- Dynamically generated cells -->
+                            </div>
+                        </div>
+
+                        <!-- VIEW 2: WEEK VIEW -->
+                        <div id="view-week" class="view-section">
+                            <div class="week-table-wrapper" id="week-table-container">
+                                <!-- Dynamically generated week grid -->
+                            </div>
+                        </div>
+
+                        <!-- VIEW 3: DAY VIEW (Renamed from Agenda) -->
+                        <div id="view-day" class="view-section">
+                            <div class="day-view-container" id="day-view-container">
+                                <!-- Dynamically generated day schedule -->
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- TAB CONTENT 2: TASKS TABLE VIEW -->
+                    <div id="tab-content-tasks" class="main-tab-content">
+                        <div class="tasks-view-container">
+                            <div class="tasks-toolbar">
+                                <div>
+                                    <h3 style="font-size:1.1rem; font-weight:800; color:#0f172a;">My Tasks</h3>
+                                    <p style="font-size:0.78rem; color:var(--text-muted); margin-top:0.15rem;">Tasks added manually by you</p>
+                                </div>
+                                <button class="btn-add-task" onclick="openAddTaskModal()">+ Add Task</button>
+                            </div>
+                            <div id="tasks-table-wrapper">
+                                <!-- Dynamic tasks table -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB CONTENT 3: COURSES VIEW (PICTURE 1) -->
+                    <div id="tab-content-courses" class="main-tab-content">
+                        <div class="courses-tab-wrapper" style="padding: 1.25rem;">
+                            <div class="my-courses-card-inner">
+                                <div class="my-courses-card-header">
+                                    <h3 class="my-courses-heading">My Courses</h3>
+                                    <span class="my-courses-counter" id="courses-tab-count">0 courses</span>
+                                </div>
+                                <div id="courses-tab-list" class="my-courses-rows">
+                                    <!-- Dynamic course items matching Picture 1 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar Stack -->
+                <div class="sidebar-stack">
+                    <!-- My Courses Card (PICTURE 1) -->
+                    <div class="sidebar-card my-courses-sidebar-card">
+                        <div class="my-courses-card-header">
+                            <div class="my-courses-heading" style="font-size:1.05rem;">My Courses</div>
+                            <div class="my-courses-counter" id="sidebar-courses-count">0 courses</div>
+                        </div>
+                        <div id="sidebar-courses-list" class="my-courses-rows">
+                            <!-- Populated dynamically or empty state -->
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Deadlines Card -->
+                    <div class="sidebar-card">
+                        <div class="sidebar-card-title">⏰ Upcoming Deadlines</div>
+                        <div id="sidebar-deadlines-list">
+                            <!-- Populated dynamically or empty state -->
+                        </div>
+                    </div>
+
+                    <!-- Quick-add task types Card (MATCHING USER SCREENSHOT) -->
+                    <div class="sidebar-card quick-add-card">
+                        <div class="quick-add-title">Quick-add task types</div>
+                        <div class="quick-add-list">
+                            <a class="quick-add-link" onclick="quickAddTask('assignment')">Assignment</a>
+                            <a class="quick-add-link" onclick="quickAddTask('quiz')">Quiz</a>
+                            <a class="quick-add-link" onclick="quickAddTask('exam')">Midterm Exam / Final</a>
+                            <a class="quick-add-link" onclick="quickAddTask('lecture')">Lecture</a>
+                            <a class="quick-add-link" onclick="quickAddTask('clinical')">Clinical</a>
+                            <a class="quick-add-link" onclick="quickAddTask('skills-lab')">Skills Lab</a>
+                            <a class="quick-add-link" onclick="quickAddTask('simulation')">Simulation</a>
+                            <a class="quick-add-link" onclick="quickAddTask('study-session')">Study Session</a>
+                            <a class="quick-add-link" onclick="quickAddTask('study-group')">Study Group</a>
+                            <a class="quick-add-link" onclick="quickAddTask('nclex-practice')">NCLEX Practice</a>
+                            <a class="quick-add-link" onclick="quickAddTask('reading')">Reading</a>
+                            <a class="quick-add-link" onclick="quickAddTask('project')">Project</a>
+                            <a class="quick-add-link" onclick="quickAddTask('presentation')">Presentation</a>
+                            <a class="quick-add-link" onclick="quickAddTask('check-off')">Skills Check-off</a>
+                            <a class="quick-add-link" onclick="quickAddTask('deadline')">Deadline</a>
+                            <a class="quick-add-link" onclick="quickAddTask('work-shift')">Work Shift</a>
+                            <a class="quick-add-link" onclick="quickAddTask('appointment')">Appointment</a>
+                            <a class="quick-add-link" onclick="quickAddTask('vacation')">Vacation</a>
+                            <a class="quick-add-link" onclick="quickAddTask('holiday')">Holiday</a>
+                            <a class="quick-add-link" onclick="quickAddTask('other')">Personal / Other</a>
+                        </div>
+                    </div>
+
+                    <!-- Add Course Upload Action Card -->
+                    <div class="sidebar-card add-course-card">
+                        <div style="font-size:1.8rem; margin-bottom:0.3rem;">☁️</div>
+                        <div class="sidebar-card-title" style="justify-content:center; margin-bottom:0.2rem;">Add Course
+                        </div>
+                        <div class="sidebar-sub" style="font-size:0.78rem; color:var(--text-muted);">Upload another
+                            syllabus to add a new course.</div>
+                        <button class="btn-outline-upload" onclick="switchPageSection('importer')">
+                            ⬆️ Upload Syllabus
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL 1: EVENT DETAIL MODAL (PICTURE-PROVIDED TYPE INFO WITHOUT REMINDER) -->
+    <div class="modal-overlay" id="event-modal">
+        <div class="modal-card picture-modal-card" id="event-modal-content">
+            <!-- Dynamic picture-type content injected by openEventModal -->
+        </div>
+    </div>
+
+    <!-- MODAL 2: ADD TASK / EVENT MODAL -->
+    <div class="modal-overlay" id="add-task-modal">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeModal('add-task-modal')">✕</button>
+            <div class="modal-title" style="margin-bottom: 0.3rem;">+ Add Academic Task</div>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom: 1.25rem;">Create a custom assignment,
+                quiz, exam, study session, or personal academic event.</p>
+
+            <form id="add-task-form" onsubmit="handleCreateTaskSubmit(event)">
+                <div class="form-group">
+                    <label class="form-label">Task Title *</label>
+                    <input type="text" class="form-input" id="task-input-title" placeholder="e.g. SBAR Case Study Draft"
+                        required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Course</label>
+                        <select class="form-select" id="task-input-course" onchange="handleTaskCourseChange(this.value)">
+                            <option value="">No Course / Personal</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Type *</label>
+                        <select class="form-select" id="task-input-type" required>
+                            <option value="assignment">Assignment</option>
+                            <option value="quiz">Quiz</option>
+                            <option value="exam">Midterm Exam / Final</option>
+                            <option value="lecture">Lecture</option>
+                            <option value="clinical">Clinical</option>
+                            <option value="skills-lab">Skills Lab</option>
+                            <option value="simulation">Simulation</option>
+                            <option value="study-session">Study Session</option>
+                            <option value="study-group">Study Group</option>
+                            <option value="nclex-practice">NCLEX Practice</option>
+                            <option value="reading">Reading</option>
+                            <option value="project">Project</option>
+                            <option value="presentation">Presentation</option>
+                            <option value="check-off">Skills Check-off</option>
+                            <option value="deadline">Deadline</option>
+                            <option value="work-shift">Work Shift</option>
+                            <option value="appointment">Appointment</option>
+                            <option value="vacation">Vacation</option>
+                            <option value="holiday">Holiday</option>
+                            <option value="other">Personal / Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Instructor Name (optional)</label>
+                        <input type="text" class="form-input" id="task-input-instructor" placeholder="e.g. Dr. Sarah Smith">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Instructor Email (optional)</label>
+                        <input type="email" class="form-input" id="task-input-email" placeholder="e.g. sarah.smith@university.edu">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Location / Class (optional)</label>
+                        <input type="text" class="form-input" id="task-input-location" placeholder="e.g. SCI 204 or Online">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Office Room (optional)</label>
+                        <input type="text" class="form-input" id="task-input-office-room" placeholder="e.g. Room 409">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Date *</label>
+                    <input type="date" class="form-input" id="task-input-date" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Start Time (optional)</label>
+                        <input type="text" class="form-input" id="task-input-start" placeholder="e.g. 09:00 AM">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Time (optional)</label>
+                        <input type="text" class="form-input" id="task-input-end" placeholder="e.g. 10:15 AM">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description (optional)</label>
+                    <textarea class="form-textarea" id="task-input-desc" rows="2"
+                        placeholder="Notes or submission instructions..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit-task" id="btn-submit-task">Save Task</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: COURSE DETAILS MODAL (PICTURE 2) -->
+    <div class="modal-overlay" id="course-details-modal">
+        <div class="modal-card course-details-card">
+            <div class="course-details-header">
+                <div>
+                    <h2 class="course-details-code" id="cdm-code">BIO 101</h2>
+                    <div class="course-details-name" id="cdm-name">Intro to Biology</div>
+                </div>
+                <button class="modal-close" onclick="closeModal('course-details-modal')">✕</button>
+            </div>
+            
+            <div class="course-details-body">
+                <!-- 2-Column Schedule & Instructor Grid -->
+                <div class="cd-info-grid">
+                    <div class="cd-info-col">
+                        <div class="cd-info-item">
+                            <div class="cd-info-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            </div>
+                            <div>
+                                <div class="cd-info-label">Instructor</div>
+                                <div class="cd-info-val" id="cdm-instructor">Dr. Sarah Johnson</div>
+                            </div>
+                        </div>
+                        
+                        <div class="cd-info-item">
+                            <div class="cd-info-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            </div>
+                            <div>
+                                <div class="cd-info-label">Email</div>
+                                <a class="cd-info-val cd-link" id="cdm-email" href="mailto:sarah.johnson@university.edu">sarah.johnson@university.edu</a>
+                            </div>
+                        </div>
+                        
+                        <div class="cd-info-item">
+                            <div class="cd-info-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            </div>
+                            <div>
+                                <div class="cd-info-label">Office</div>
+                                <div class="cd-info-val" id="cdm-office">Science Building, Room 304</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cd-info-col">
+                        <div class="cd-info-item">
+                            <div class="cd-info-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            </div>
+                            <div>
+                                <div class="cd-info-label">Office Hours</div>
+                                <div class="cd-info-val" id="cdm-office-hours">Mon 2:00 PM – 4:00 PM<br>Wed 10:00 AM – 12:00 PM</div>
+                            </div>
+                        </div>
+
+                        <div class="cd-info-item">
+                            <div class="cd-info-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            </div>
+                            <div>
+                                <div class="cd-info-label">Class Meetings</div>
+                                <div class="cd-info-val" id="cdm-meetings">Mon 2:00 PM – 4:00 PM<br>Wed 10:00 AM – 12:00 PM</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- This course includes section -->
+                <div class="cd-section">
+                    <h3 class="cd-section-title">This course includes</h3>
+                    <div class="cd-includes-list" id="cdm-includes-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Course Description section -->
+                <div class="cd-section">
+                    <h3 class="cd-section-title">Course Description</h3>
+                    <p class="cd-section-text" id="cdm-description">An introduction to the study of living organisms and their interactions with the environment.</p>
+                </div>
+
+                <!-- Course Policies section -->
+                <div class="cd-section">
+                    <h3 class="cd-section-title">Course Policies</h3>
+                    <p class="cd-section-text" id="cdm-policies">An introduction to the study of living organisms and their interactions with the environment.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Application Logic -->
+    <script>
+        const API_BASE = (window.location.origin && window.location.origin !== 'null' && !window.location.origin.startsWith('file:'))
+            ? window.location.origin
+            : 'http://127.0.0.1:8000';
+
+        // Application State
+        let activeEventId = null;
+        let eventsData = [];
+        let coursesData = [];
+        let uploadedFiles = [];
+
+        // Navigation and Date State
+        let currentDate = new Date();
+        let displayYear = currentDate.getFullYear();
+        let displayMonth = currentDate.getMonth(); // 0-indexed (0=Jan, 11=Dec)
+        let selectedDateStr = formatDateYMD(currentDate);
+
+        // Active Views
+        let currentMainTab = 'calendar'; // 'calendar', 'tasks'
+        let currentCalendarView = 'month'; // 'month', 'week', 'day'
+        let selectedCourseFilter = 'all';
+        let selectedCategoryFilter = 'all';
+
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Set default date input for Add Task to today
+            document.getElementById('task-input-date').value = selectedDateStr;
+
+            // Load persistent data from Backend / Database
+            await refreshAllData();
+        });
+
+        let hasManuallyNavigated = false;
+
+        async function refreshAllData() {
+            await Promise.all([
+                fetchCourses(),
+                fetchEvents(),
+                fetchSyllabi()
+            ]);
+
+            // Auto-focus calendar on the academic semester of the uploaded courses
+            if (eventsData.length > 0 && !hasManuallyNavigated) {
+                const currentMonthEvents = eventsData.filter(e => {
+                    if (!e.date) return false;
+                    const p = e.date.split('-');
+                    return parseInt(p[0]) === displayYear && parseInt(p[1]) === (displayMonth + 1);
+                });
+                if (currentMonthEvents.length === 0) {
+                    const todayStr = formatDateYMD(new Date());
+                    // 1. Prefer events in current year that are today or upcoming
+                    const futureThisYear = eventsData.filter(e => e.date && e.date >= todayStr && e.date.startsWith(String(displayYear)));
+                    // 2. Or any event in current year
+                    const anyThisYear = eventsData.filter(e => e.date && e.date.startsWith(String(displayYear)));
+                    // 3. Or upcoming event in any future year
+                    const anyFuture = eventsData.filter(e => e.date && e.date >= todayStr);
+                    // 4. Or the latest event (most recent course)
+                    const targetEvt = futureThisYear[0] || anyThisYear[0] || anyFuture[0] || eventsData[eventsData.length - 1];
+                    if (targetEvt && targetEvt.date) {
+                        const p = targetEvt.date.split('-');
+                        displayYear = parseInt(p[0]);
+                        displayMonth = parseInt(p[1]) - 1;
+                        selectedDateStr = targetEvt.date;
+                    }
+                }
+            }
+
+            renderAllViews();
+        }
+
+        // ==========================================
+        // API FETCH FUNCTIONS
+        // ==========================================
+
+        async function fetchCourses() {
+            try {
+                const res = await fetch(`${API_BASE}/api/courses`);
+                if (res.ok) {
+                    const data = await res.json();
+                    coursesData = data.courses || [];
+                    populateCourseDropdowns();
+                }
+            } catch (err) {
+                console.error("Error fetching courses:", err);
+            }
+        }
+
+        async function fetchEvents() {
+            try {
+                let url = `${API_BASE}/api/calendar/events`;
+                const params = [];
+                if (selectedCourseFilter && selectedCourseFilter !== 'all') {
+                    params.push(`course=${encodeURIComponent(selectedCourseFilter)}`);
+                }
+                if (selectedCategoryFilter && selectedCategoryFilter !== 'all') {
+                    params.push(`category=${encodeURIComponent(selectedCategoryFilter)}`);
+                }
+                if (params.length > 0) {
+                    url += `?${params.join('&')}`;
+                }
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    eventsData = data.events || [];
+                }
+            } catch (err) {
+                console.error("Error fetching events:", err);
+            }
+        }
+
+        async function fetchSyllabi() {
+            try {
+                const res = await fetch(`${API_BASE}/api/syllabus/syllabi`);
+                if (res.ok) {
+                    const data = await res.json();
+                    uploadedFiles = data.syllabi || [];
+                    renderSyllabiList();
+                }
+            } catch (err) {
+                console.error("Error fetching syllabi:", err);
+            }
+        }
+
+        // ==========================================
+        // NAVIGATION & VIEW SWITCHERS
+        // ==========================================
+
+        function switchPageSection(sectionName) {
+            if (sectionName === 'courses') {
+                document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+                document.getElementById('page-planner').classList.add('active');
+                switchMainTab('courses');
+                return;
+            }
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            if (sectionName === 'importer') {
+                document.getElementById('page-importer').classList.add('active');
+            } else {
+                document.getElementById('page-planner').classList.add('active');
+                renderAllViews();
+            }
+        }
+
+        function switchMainTab(tabName) {
+            currentMainTab = tabName;
+            document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.main-tab-content').forEach(c => c.classList.remove('active'));
+
+            const tabBtn = document.getElementById(`tab-btn-${tabName}`);
+            const tabContent = document.getElementById(`tab-content-${tabName}`);
+            if (tabBtn) tabBtn.classList.add('active');
+            if (tabContent) tabContent.classList.add('active');
+
+            // Show/hide view toggles based on active main tab
+            const toggleGroup = document.getElementById('view-toggle-group');
+            const dateControls = document.getElementById('calendar-date-controls');
+            if (tabName === 'calendar') {
+                if (toggleGroup) toggleGroup.style.display = 'flex';
+                if (dateControls) dateControls.style.display = 'flex';
+                renderActiveCalendarView();
+            } else if (tabName === 'tasks') {
+                if (toggleGroup) toggleGroup.style.display = 'none';
+                if (dateControls) dateControls.style.display = 'none';
+                renderTasksTableView();
+            } else if (tabName === 'courses') {
+                if (toggleGroup) toggleGroup.style.display = 'none';
+                if (dateControls) dateControls.style.display = 'none';
+                renderCoursesTabView();
+            }
+        }
+
+        function switchCalendarView(viewType) {
+            currentCalendarView = viewType;
+            document.querySelectorAll('.btn-view').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#tab-content-calendar .view-section').forEach(s => s.classList.remove('active'));
+
+            const targetBtn = document.getElementById(`btn-view-${viewType}`);
+            const targetView = document.getElementById(`view-${viewType}`);
+            if (targetBtn) targetBtn.classList.add('active');
+            if (targetView) targetView.classList.add('active');
+
+            renderActiveCalendarView();
+        }
+
+        function prevPeriod() {
+            hasManuallyNavigated = true;
+            if (currentCalendarView === 'month') {
+                displayMonth--;
+                if (displayMonth < 0) { displayMonth = 11; displayYear--; }
+            } else if (currentCalendarView === 'week') {
+                let d = parseYMD(selectedDateStr);
+                d.setDate(d.getDate() - 7);
+                selectedDateStr = formatDateYMD(d);
+                displayYear = d.getFullYear();
+                displayMonth = d.getMonth();
+            } else if (currentCalendarView === 'day') {
+                let d = parseYMD(selectedDateStr);
+                d.setDate(d.getDate() - 1);
+                selectedDateStr = formatDateYMD(d);
+                displayYear = d.getFullYear();
+                displayMonth = d.getMonth();
+            }
+            renderActiveCalendarView();
+        }
+
+        function nextPeriod() {
+            hasManuallyNavigated = true;
+            if (currentCalendarView === 'month') {
+                displayMonth++;
+                if (displayMonth > 11) { displayMonth = 0; displayYear++; }
+            } else if (currentCalendarView === 'week') {
+                let d = parseYMD(selectedDateStr);
+                d.setDate(d.getDate() + 7);
+                selectedDateStr = formatDateYMD(d);
+                displayYear = d.getFullYear();
+                displayMonth = d.getMonth();
+            } else if (currentCalendarView === 'day') {
+                let d = parseYMD(selectedDateStr);
+                d.setDate(d.getDate() + 1);
+                selectedDateStr = formatDateYMD(d);
+                displayYear = d.getFullYear();
+                displayMonth = d.getMonth();
+            }
+            renderActiveCalendarView();
+        }
+
+        function goToToday() {
+            hasManuallyNavigated = true;
+            const today = new Date();
+            displayYear = today.getFullYear();
+            displayMonth = today.getMonth();
+            selectedDateStr = formatDateYMD(today);
+            renderActiveCalendarView();
+        }
+
+        async function handleCourseFilterChange(courseCode) {
+            selectedCourseFilter = courseCode;
+            await fetchEvents();
+            if (courseCode !== 'all') {
+                const courseEvents = eventsData.filter(e => e.course_code === courseCode);
+                if (courseEvents.length > 0 && courseEvents[0].date) {
+                    const p = courseEvents[0].date.split('-');
+                    displayYear = parseInt(p[0]);
+                    displayMonth = parseInt(p[1]) - 1;
+                    selectedDateStr = courseEvents[0].date;
+                }
+            }
+            renderAllViews();
+        }
+
+        async function handleCategoryFilterChange(categoryVal) {
+            selectedCategoryFilter = categoryVal;
+            await fetchEvents();
+            if (categoryVal !== 'all' && eventsData.length > 0) {
+                const catEvents = eventsData.filter(e => {
+                    const c = (e.category || '').toLowerCase();
+                    return c.includes(categoryVal.toLowerCase());
+                });
+                if (catEvents.length > 0 && catEvents[0].date) {
+                    const p = catEvents[0].date.split('-');
+                    displayYear = parseInt(p[0]);
+                    displayMonth = parseInt(p[1]) - 1;
+                    selectedDateStr = catEvents[0].date;
+                }
+            }
+            renderAllViews();
+        }
+
+        function populateCourseDropdowns() {
+            // Course Filter in sub-header
+            const filterSelect = document.getElementById('course-filter');
+            if (filterSelect) {
+                const currentVal = filterSelect.value;
+                filterSelect.innerHTML = `<option value="all">All Courses</option>` +
+                    coursesData.map(c => `<option value="${c.code}">${c.code} - ${c.name}</option>`).join('');
+                filterSelect.value = currentVal || 'all';
+            }
+
+            // Category Filter in sub-header
+            const catFilterSelect = document.getElementById('category-filter');
+            if (catFilterSelect) {
+                catFilterSelect.value = selectedCategoryFilter || 'all';
+            }
+
+            // Course selection in Add Task modal
+            const taskCourseSelect = document.getElementById('task-input-course');
+            if (taskCourseSelect) {
+                taskCourseSelect.innerHTML = `<option value="">No Course / Personal</option>` +
+                    coursesData.map(c => `<option value="${c.code}">${c.code} - ${c.name}</option>`).join('');
+            }
+        }
+
+        // ==========================================
+        // RENDERING FUNCTIONS
+        // ==========================================
+
+        function renderAllViews() {
+            renderStatsMetrics();
+            renderCoursesView();
+            renderSidebarDeadlines();
+            renderActiveCalendarView();
+            if (currentMainTab === 'tasks') renderTasksTableView();
+            if (currentMainTab === 'courses') renderCoursesTabView();
+        }
+
+        function renderActiveCalendarView() {
+            if (currentCalendarView === 'month') {
+                renderDynamicMonthGrid();
+            } else if (currentCalendarView === 'week') {
+                renderDynamicWeekView();
+            } else if (currentCalendarView === 'day') {
+                renderDynamicDayView();
+            }
+        }
+
+        function getPillClass(category) {
+            switch ((category || '').toLowerCase()) {
+                case 'lab':
+                case 'clinical':
+                case 'skills-lab':
+                case 'skills lab':
+                case 'simulation':
+                case 'check-off':
+                case 'skills check-off':
+                    return 'pill-blue';
+                case 'reading':
+                case 'discussion':
+                case 'study-session':
+                case 'study session':
+                case 'study-group':
+                case 'study group':
+                    return 'pill-yellow';
+                case 'quiz':
+                case 'nclex-practice':
+                case 'nclex practice':
+                    return 'pill-purple';
+                case 'exam':
+                case 'midterm':
+                case 'final':
+                    return 'pill-red';
+                case 'assignment':
+                case 'project':
+                case 'presentation':
+                case 'paper':
+                case 'deadline':
+                    return 'pill-green';
+                case 'class':
+                case 'lecture':
+                    return 'pill-blue';
+                case 'work-shift':
+                case 'work shift':
+                case 'appointment':
+                case 'vacation':
+                case 'holiday':
+                    return 'pill-slate';
+                default:
+                    return 'pill-slate';
+            }
+        }
+
+        /* 1. REAL DYNAMIC MONTH GRID */
+        function renderDynamicMonthGrid() {
+            document.getElementById('month-year-header').innerText = `${monthNames[displayMonth]} ${displayYear}`;
+            const gridContainer = document.getElementById('month-grid-cells');
+            if (!gridContainer) return;
+
+            const firstDayIndex = new Date(displayYear, displayMonth, 1).getDay();
+            const totalDays = new Date(displayYear, displayMonth + 1, 0).getDate();
+
+            const today = new Date();
+            const isCurrentMonthReal = (today.getFullYear() === displayYear && today.getMonth() === displayMonth);
+            const todayDateNum = today.getDate();
+
+            let html = `
+                <div class="day-name-cell">Sun</div>
+                <div class="day-name-cell">Mon</div>
+                <div class="day-name-cell">Tue</div>
+                <div class="day-name-cell">Wed</div>
+                <div class="day-name-cell">Thu</div>
+                <div class="day-name-cell">Fri</div>
+                <div class="day-name-cell">Sat</div>
+            `;
+
+            for (let p = firstDayIndex; p > 0; p--) {
+                html += `<div class="day-cell other-month"></div>`;
+            }
+
+            for (let day = 1; day <= totalDays; day++) {
+                const cellDateStr = `${displayYear}-${String(displayMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isTodayCell = isCurrentMonthReal && (day === todayDateNum);
+                const isSelected = (cellDateStr === selectedDateStr);
+
+                html += `
+                    <div class="day-cell ${isSelected ? 'selected-day' : ''}" onclick="selectCalendarDate('${cellDateStr}')">
+                        <div class="day-number ${isTodayCell ? 'current-day' : ''}">${day}</div>
+                        <div id="day-container-${day}"></div>
+                    </div>
+                `;
+            }
+
+            const totalCells = firstDayIndex + totalDays;
+            const remainingCells = (7 - (totalCells % 7)) % 7;
+            for (let n = 0; n < remainingCells; n++) {
+                html += `<div class="day-cell other-month"></div>`;
+            }
+
+            gridContainer.innerHTML = html;
+
+            // Empty state check
+            if (eventsData.length === 0 && coursesData.length === 0) {
+                gridContainer.innerHTML = `
+                    <div class="empty-state-box" style="grid-column: 1 / -1;">
+                        <div class="empty-state-icon">📅</div>
+                        <div class="empty-state-title">No course data available</div>
+                        <div class="empty-state-sub">Upload a course syllabus or click "+ Add Task" to populate your calendar with schedules and deadlines.</div>
+                        <button class="btn-upload" onclick="switchPageSection('importer')">Upload Syllabus</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Populate events for visible month
+            eventsData.forEach(evt => {
+                if (!evt.date) return;
+                const parts = evt.date.split('-');
+                if (parts.length === 3) {
+                    const evtYear = parseInt(parts[0]);
+                    const evtMonth = parseInt(parts[1]);
+                    const dayNum = parseInt(parts[2]);
+
+                    if (evtYear === displayYear && evtMonth === (displayMonth + 1)) {
+                        const cellEl = document.getElementById(`day-container-${dayNum}`);
+                        if (cellEl) {
+                            const pillClass = getPillClass(evt.category);
+                            const completedClass = evt.completed ? 'completed' : '';
+                            const timeBadge = evt.start_time ? `<span class="pill-time">${escapeHtml(evt.start_time)}</span>` : '';
+                            const tooltip = `${escapeHtml(evt.title)} • ${escapeHtml(evt.course_code || '')}${evt.start_time ? ' (' + escapeHtml(evt.start_time) + ')' : ''}`;
+                            const pillHtml = `<div class="event-pill ${pillClass} ${completedClass}" onclick="event.stopPropagation(); openEventModal('${evt.id}')" title="${tooltip}">${timeBadge}${escapeHtml(evt.title)}</div>`;
+                            cellEl.insertAdjacentHTML('beforeend', pillHtml);
+                        }
+                    }
+                }
+            });
+        }
+
+        function selectCalendarDate(dateStr) {
+            selectedDateStr = dateStr;
+            const parts = dateStr.split('-');
+            displayYear = parseInt(parts[0]);
+            displayMonth = parseInt(parts[1]) - 1;
+            renderActiveCalendarView();
+        }
+
+        function getEventStartHour(timeStr) {
+            if (!timeStr) return null;
+            const str = String(timeStr).trim().toUpperCase();
+            const m = str.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/);
+            if (!m) return null;
+            let h = parseInt(m[1], 10);
+            const isPM = m[3] === 'PM';
+            const isAM = m[3] === 'AM';
+            if (isPM && h < 12) h += 12;
+            if (isAM && h === 12) h = 0;
+            return h;
+        }
+
+        /* 2. REAL DYNAMIC WEEK VIEW */
+        function renderDynamicWeekView() {
+            const container = document.getElementById('week-table-container');
+            if (!container) return;
+
+            // Find the Sunday of the week containing selectedDateStr
+            const currDate = parseYMD(selectedDateStr);
+            const dayOfWeek = currDate.getDay(); // 0 = Sun
+            const sunday = new Date(currDate);
+            sunday.setDate(currDate.getDate() - dayOfWeek);
+
+            const today = new Date();
+            const dayAbbrs = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            const weekDays = [];
+            let weekDaysHeaderHtml = '';
+
+            for (let i = 0; i < 7; i++) {
+                const dayDate = new Date(sunday);
+                dayDate.setDate(sunday.getDate() + i);
+                const dateStr = formatDateYMD(dayDate);
+                const dNum = dayDate.getDate();
+                const isToday = (today.toDateString() === dayDate.toDateString());
+                weekDays.push({ dateStr, dNum, isToday });
+
+                weekDaysHeaderHtml += `
+                    <th>
+                        ${dayAbbrs[i]}<br>
+                        ${isToday ? `<span class="day-num-circle">${dNum}</span>` : `<strong>${dNum}</strong>`}
+                    </th>
+                `;
+            }
+
+            const startMonthName = monthNames[sunday.getMonth()];
+            const endSunday = new Date(sunday);
+            endSunday.setDate(sunday.getDate() + 6);
+            const endMonthName = monthNames[endSunday.getMonth()];
+            const headerLabel = (startMonthName === endMonthName)
+                ? `${startMonthName} ${sunday.getDate()} - ${endSunday.getDate()}, ${sunday.getFullYear()}`
+                : `${startMonthName} ${sunday.getDate()} - ${endMonthName} ${endSunday.getDate()}, ${sunday.getFullYear()}`;
+            document.getElementById('month-year-header').innerText = headerLabel;
+
+            const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+
+            let rowsHtml = '';
+            hours.forEach(hr => {
+                const timeLabel = hr === 12 ? '12 PM' : (hr > 12 ? `${hr - 12} PM` : `${hr} AM`);
+                let colsHtml = '';
+
+                weekDays.forEach(wd => {
+                    // Match events on this date and hour
+                    const matching = eventsData.filter(e => {
+                        if (e.date !== wd.dateStr) return false;
+                        const eventHour = getEventStartHour(e.start_time);
+                        if (eventHour === null) return hr === 9; // default slot
+                        if (eventHour < 8 && hr === 8) return true;
+                        if (eventHour > 19 && hr === 19) return true;
+                        return eventHour === hr;
+                    });
+
+                    const pillsHtml = matching.map(e => {
+                        const timeBadge = e.start_time ? `<span class="pill-time">${escapeHtml(e.start_time)}</span>` : '';
+                        const tooltip = `${escapeHtml(e.title)}${e.start_time ? ' (' + escapeHtml(e.start_time) + ')' : ''}`;
+                        return `
+                            <div class="event-pill ${getPillClass(e.category)} ${e.completed ? 'completed' : ''}" onclick="openEventModal('${e.id}')" title="${tooltip}">
+                                ${timeBadge}${escapeHtml(e.title)}
+                            </div>
+                        `;
+                    }).join('');
+
+                    colsHtml += `<td>${pillsHtml}</td>`;
+                });
+
+                rowsHtml += `
+                    <tr>
+                        <td class="time-col">${timeLabel}</td>
+                        ${colsHtml}
+                    </tr>
+                `;
+            });
+
+            container.innerHTML = `
+                <table class="week-table">
+                    <thead>
+                        <tr>
+                            <th class="time-col">Time</th>
+                            ${weekDaysHeaderHtml}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        /* 3. REAL DYNAMIC DAY VIEW */
+        function renderDynamicDayView() {
+            const container = document.getElementById('day-view-container');
+            if (!container) return;
+
+            const curr = parseYMD(selectedDateStr);
+            const dayName = dayNames[curr.getDay()];
+            const monthName = monthNames[curr.getMonth()];
+            const titleFormatted = `${dayName}, ${monthName} ${curr.getDate()}, ${curr.getFullYear()}`;
+            document.getElementById('month-year-header').innerText = titleFormatted;
+
+            const dayEvents = eventsData.filter(e => e.date === selectedDateStr);
+
+            if (dayEvents.length === 0) {
+                // Find upcoming tasks in the next 7-14 days to show on day view
+                const upcomingNear = eventsData.filter(e => e.date && e.date >= selectedDateStr).slice(0, 5);
+                const upcomingHtml = upcomingNear.length > 0 ? `
+                    <div style="margin-top:1.5rem; text-align:left;">
+                        <h4 style="font-size:0.9rem; font-weight:700; color:var(--text-main); margin-bottom:0.75rem;">Upcoming Next in Your Schedule:</h4>
+                        <div class="day-timeline">
+                            ${upcomingNear.map(evt => {
+                                const timeSuffix = evt.start_time ? ` • ${escapeHtml(evt.start_time)}` : '';
+                                return `
+                                    <div class="day-event-card" onclick="openEventModal('${evt.id}')" style="opacity:0.95;">
+                                        <div class="day-event-time">${escapeHtml(evt.date)}${timeSuffix}</div>
+                                        <div class="day-event-info">
+                                            <div class="day-event-title">${escapeHtml(evt.title)}</div>
+                                            <div class="day-event-course">
+                                                ${evt.course_code ? `<strong>${escapeHtml(evt.course_code)}</strong> • ` : ''}
+                                                ${escapeHtml(evt.location || evt.category)}
+                                            </div>
+                                        </div>
+                                        <span class="cat-tag-pill">${escapeHtml(evt.category)}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                ` : '';
+
+                container.innerHTML = `
+                    <div class="day-view-header">
+                        <div>${titleFormatted}</div>
+                        <button class="btn-add-task" onclick="openAddTaskModal()">+ Add Event</button>
+                    </div>
+                    <div class="empty-state-box">
+                        <div class="empty-state-icon">☕</div>
+                        <div class="empty-state-title">No events scheduled for this day.</div>
+                        <div class="empty-state-sub">Enjoy your free time or add a study session or assignment using "+ Add Event".</div>
+                    </div>
+                    ${upcomingHtml}
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="day-view-header">
+                    <div>${titleFormatted} (${dayEvents.length} events)</div>
+                    <button class="btn-add-task" onclick="openAddTaskModal()">+ Add Event</button>
+                </div>
+                <div class="day-timeline">
+                    ${dayEvents.map(evt => {
+                        const timeDisplay = evt.start_time
+                            ? (evt.end_time ? `${escapeHtml(evt.start_time)} – ${escapeHtml(evt.end_time)}` : escapeHtml(evt.start_time))
+                            : 'All Day';
+                        return `
+                            <div class="day-event-card" onclick="openEventModal('${evt.id}')">
+                                <div class="day-event-time">${timeDisplay}</div>
+                                <div class="day-event-info">
+                                    <div class="day-event-title ${evt.completed ? 'completed' : ''}">
+                                        ${escapeHtml(evt.title)}
+                                        ${evt.completed ? ' <span style="color:#16a34a;">✔️</span>' : ''}
+                                    </div>
+                                    <div class="day-event-course">
+                                        ${evt.course_code ? `<strong>${escapeHtml(evt.course_code)}</strong> • ` : ''}
+                                        ${escapeHtml(evt.location || evt.category)}
+                                    </div>
+                                </div>
+                                <span class="cat-tag-pill">${escapeHtml(evt.category)}</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        /* 4. REAL DYNAMIC TASKS TABLE VIEW */
+        function renderTasksTableView() {
+            const wrapper = document.getElementById('tasks-table-wrapper');
+            if (!wrapper) return;
+
+            // ON THE TASK TAB: ONLY USER CAN ADD TASKS, NOT AUTOMATICALLY EXTRACTED FROM DOCUMENT
+            const manualTasks = eventsData.filter(e => e.source === 'manual');
+
+            if (manualTasks.length === 0) {
+                const filterNote = (selectedCourseFilter !== 'all' || selectedCategoryFilter !== 'all')
+                    ? ` matching the current filter`
+                    : ``;
+                wrapper.innerHTML = `
+                    <div class="empty-state-box">
+                        <div class="empty-state-icon">📝</div>
+                        <div class="empty-state-title">No manual tasks${filterNote}</div>
+                        <div class="empty-state-sub">Tasks on this tab are created manually by you and are not automatically extracted from documents. Click "+ Add Task" to create your first task.</div>
+                        <button class="btn-upload" onclick="openAddTaskModal()">+ Add Task</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // SEPARATE ACTIVE VS COMPLETED (ARCHIVED) TASKS
+            // Active tasks at top (sorted by due date / time)
+            // Completed tasks at bottom as an archive (grayed out)
+            const activeTasks = manualTasks.filter(e => !e.completed);
+            const completedTasks = manualTasks.filter(e => e.completed);
+
+            activeTasks.sort((a, b) => {
+                const da = a.date || '';
+                const db = b.date || '';
+                if (da !== db) return da.localeCompare(db);
+                return (a.start_time || '').localeCompare(b.start_time || '');
+            });
+
+            completedTasks.sort((a, b) => {
+                const da = a.date || '';
+                const db = b.date || '';
+                if (da !== db) return da.localeCompare(db);
+                return (a.start_time || '').localeCompare(b.start_time || '');
+            });
+
+            let rowsHtml = '';
+
+            // 1. Render Active Tasks (Top of list)
+            activeTasks.forEach(evt => {
+                const timeDisplay = evt.start_time ? (evt.end_time ? `${escapeHtml(evt.start_time)} - ${escapeHtml(evt.end_time)}` : escapeHtml(evt.start_time)) : 'All Day';
+                const statusBadge = `<span style="color:#f59e0b;font-weight:700;font-size:0.8rem;">Pending</span>`;
+                rowsHtml += `
+                    <tr class="task-row">
+                        <td>
+                            <input type="checkbox" class="task-checkbox" onchange="toggleTaskComplete('${evt.id}', this.checked)">
+                        </td>
+                        <td>
+                            <div class="task-name-col">
+                                <span class="cat-tag-pill" style="margin-bottom:0;">${escapeHtml(evt.category)}</span>
+                                <span class="task-title-text">${escapeHtml(evt.title)}</span>
+                            </div>
+                        </td>
+                        <td><strong>${escapeHtml(evt.course_code || 'Personal')}</strong></td>
+                        <td>${escapeHtml(evt.date || '')}</td>
+                        <td>${timeDisplay}</td>
+                        <td>${statusBadge}</td>
+                        <td style="text-align:right;">
+                            <button class="btn-remove" onclick="openEventModal('${evt.id}')" title="View Details">🔍</button>
+                            <button class="btn-remove" onclick="deleteTaskDirect('${evt.id}')" title="Delete Task">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            // 2. Render Completed & Archived Tasks (Bottom of list, grayed out)
+            if (completedTasks.length > 0) {
+                if (activeTasks.length > 0) {
+                    rowsHtml += `
+                        <tr class="task-archive-divider-row">
+                            <td colspan="7">
+                                <div class="task-archive-divider">
+                                    <span class="archive-icon">📦</span>
+                                    <span class="archive-title">Completed & Archived</span>
+                                    <span class="archive-badge">${completedTasks.length}</span>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+                completedTasks.forEach(evt => {
+                    const timeDisplay = evt.start_time ? (evt.end_time ? `${escapeHtml(evt.start_time)} - ${escapeHtml(evt.end_time)}` : escapeHtml(evt.start_time)) : 'All Day';
+                    const statusBadge = `<span style="color:#10b981;font-weight:700;font-size:0.8rem;">✓ Done</span>`;
+                    rowsHtml += `
+                        <tr class="task-row task-row-completed">
+                            <td>
+                                <input type="checkbox" class="task-checkbox" checked onchange="toggleTaskComplete('${evt.id}', this.checked)">
+                            </td>
+                            <td>
+                                <div class="task-name-col">
+                                    <span class="cat-tag-pill" style="margin-bottom:0;">${escapeHtml(evt.category)}</span>
+                                    <span class="task-title-text completed">${escapeHtml(evt.title)}</span>
+                                </div>
+                            </td>
+                            <td><strong>${escapeHtml(evt.course_code || 'Personal')}</strong></td>
+                            <td>${escapeHtml(evt.date || '')}</td>
+                            <td>${timeDisplay}</td>
+                            <td>${statusBadge}</td>
+                            <td style="text-align:right;">
+                                <button class="btn-remove" onclick="openEventModal('${evt.id}')" title="View Details">🔍</button>
+                                <button class="btn-remove" onclick="deleteTaskDirect('${evt.id}')" title="Delete Task">🗑️</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            wrapper.innerHTML = `
+                <table class="tasks-table">
+                    <thead>
+                        <tr>
+                            <th style="width:40px;"></th>
+                            <th>Task / Assignment Name</th>
+                            <th>Course</th>
+                            <th>Due Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        /* ========================================================
+           PICTURE 1 & 2: COURSES VIEW & COURSE DETAILS MODAL
+           ======================================================== */
+        function formatBadgeCode(code) {
+            if (!code) return `<div>CRS</div><div>101</div>`;
+            const clean = code.trim();
+            const parts = clean.split(/\s+/);
+            if (parts.length >= 2) {
+                return `<div>${escapeHtml(parts[0])}</div><div>${escapeHtml(parts.slice(1).join(' '))}</div>`;
+            }
+            const match = clean.match(/^([A-Za-z]+)(\d+.*)$/);
+            if (match) {
+                return `<div>${escapeHtml(match[1])}</div><div>${escapeHtml(match[2])}</div>`;
+            }
+            return `<div>${escapeHtml(clean)}</div>`;
+        }
+
+        function renderCourseItemHtml(c) {
+            const code = (c.code || '').trim() || 'Course';
+            const semester = c.semester || 'Spring 2026';
+            const credits = c.credits ? `${c.credits} Credits` : '3 Credits';
+            const statusText = 'In Progress';
+
+            return `
+                <div class="mc-course-row" onclick="openCourseDetailsModal('${escapeHtml(c.id)}')">
+                    <div class="mc-badge-icon">
+                        ${formatBadgeCode(code)}
+                    </div>
+                    <div class="mc-course-content">
+                        <div class="mc-course-title-line">
+                            <span class="mc-course-code">${escapeHtml(code)}</span>
+                        </div>
+                        <div class="mc-more-info" onclick="event.stopPropagation(); openCourseDetailsModal('${escapeHtml(c.id)}')">
+                            More Info
+                        </div>
+                        <div class="mc-pills-row">
+                            <span class="mc-pill mc-pill-term">${escapeHtml(semester)}</span>
+                            <span class="mc-pill mc-pill-credits">${escapeHtml(credits)}</span>
+                            <span class="mc-pill mc-pill-status">${escapeHtml(statusText)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCoursesView() {
+            const countText = `${coursesData.length} course${coursesData.length === 1 ? '' : 's'}`;
+
+            // 1. Sidebar courses list (Picture 1 style)
+            const sidebarList = document.getElementById('sidebar-courses-list');
+            const sidebarCount = document.getElementById('sidebar-courses-count');
+            if (sidebarCount) sidebarCount.innerText = countText;
+            if (sidebarList) {
+                if (coursesData.length === 0) {
+                    sidebarList.innerHTML = `
+                        <div style="font-size:0.82rem; color:var(--text-muted); padding:1rem 0; text-align:center;">
+                            No courses extracted yet.<br>
+                            <span style="font-size:0.75rem;">Upload a syllabus to extract courses.</span>
+                        </div>
+                    `;
+                } else {
+                    sidebarList.innerHTML = coursesData.map(c => renderCourseItemHtml(c)).join('');
+                }
+            }
+
+            // 2. Main Tab courses list (Picture 1 style)
+            const tabList = document.getElementById('courses-tab-list');
+            const tabCount = document.getElementById('courses-tab-count');
+            if (tabCount) tabCount.innerText = countText;
+            if (tabList) {
+                if (coursesData.length === 0) {
+                    tabList.innerHTML = `
+                        <div class="empty-state-box" style="padding: 2.5rem 1rem;">
+                            <div class="empty-state-icon">📚</div>
+                            <div class="empty-state-title">No courses extracted yet</div>
+                            <div class="empty-state-sub">Upload a syllabus document or add a custom course to populate your courses view.</div>
+                            <button class="btn-upload" onclick="switchPageSection('importer')">⬆️ Upload Syllabus</button>
+                        </div>
+                    `;
+                } else {
+                    tabList.innerHTML = coursesData.map(c => renderCourseItemHtml(c)).join('');
+                }
+            }
+        }
+
+        function renderSidebarCourses() {
+            renderCoursesView();
+        }
+
+        function renderCoursesTabView() {
+            renderCoursesView();
+        }
+
+        async function openCourseDetailsModal(courseId) {
+            let course = (coursesData || []).find(c => c.id === courseId || c.code === courseId);
+
+            // Fetch remote course details if possible
+            try {
+                const res = await fetch(`${API_BASE}/api/courses/${courseId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.course) course = data.course;
+                }
+            } catch (e) {
+                console.warn("Could not fetch fresh course details, using cached:", e);
+            }
+
+            if (!course) return;
+
+            document.getElementById('cdm-code').innerText = course.code || 'Course';
+            document.getElementById('cdm-name').innerText = course.name || `${course.code} Course`;
+
+            // Instructor
+            document.getElementById('cdm-instructor').innerText = course.instructor || 'Dr. Sarah Johnson';
+
+            // Email
+            const emailEl = document.getElementById('cdm-email');
+            const emailVal = course.email || (course.code ? `${course.code.toLowerCase().replace(/[^a-z0-9]/g, '')}@university.edu` : 'sarah.johnson@university.edu');
+            emailEl.innerText = emailVal;
+            emailEl.href = `mailto:${emailVal}`;
+
+            // Office
+            document.getElementById('cdm-office').innerText = course.room || 'Science Building, Room 304';
+
+            // Office Hours & Class Meetings
+            const oh = course.office_hours || 'Mon 2:00 PM – 4:00 PM\nWed 10:00 AM – 12:00 PM';
+            document.getElementById('cdm-office-hours').innerHTML = escapeHtml(oh).replace(/\n/g, '<br>');
+
+            const cm = course.class_meetings || 'Mon 2:00 PM – 4:00 PM\nWed 10:00 AM – 12:00 PM';
+            document.getElementById('cdm-meetings').innerHTML = escapeHtml(cm).replace(/\n/g, '<br>');
+
+            // "This course includes"
+            const includesContainer = document.getElementById('cdm-includes-list');
+            let items = [];
+            if (Array.isArray(course.course_includes) && course.course_includes.length > 0) {
+                items = course.course_includes;
+            } else {
+                items = ['4 Exams', '2 Papers', '8 Quizes', '12 Reading Assignments', '1 Final'];
+            }
+
+            includesContainer.innerHTML = items.map(item => `
+                <div class="cd-include-item">
+                    <svg class="cd-include-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span>${escapeHtml(item)}</span>
+                </div>
+            `).join('');
+
+            // Course Description
+            const defaultDesc = 'An introduction to the study of living organisms and their interactions with the environment.';
+            document.getElementById('cdm-description').innerText = course.description || defaultDesc;
+
+            // Course Policies
+            const defaultPolicies = 'An introduction to the study of living organisms and their interactions with the environment.';
+            document.getElementById('cdm-policies').innerText = course.policies || defaultPolicies;
+
+            openModal('course-details-modal');
+        }
+
+        function renderSidebarDeadlines() {
+            const container = document.getElementById('sidebar-deadlines-list');
+            if (!container) return;
+
+            // Only upcoming deadlines (days_left != 'Past')
+            const upcoming = eventsData.filter(e => e.days_left !== 'Past' && e.category !== 'class').slice(0, 6);
+
+            if (upcoming.length === 0) {
+                container.innerHTML = `
+                    <div style="font-size:0.8rem; color:var(--text-muted); padding:0.75rem 0;">
+                        No upcoming deadlines.
+                    </div>
+                `;
+                return;
+            }
+
+            const getUrgencyClass = (u) => {
+                if (u === 'Today') return 'urgency-today';
+                if (u === '1d' || u === '2d') return 'urgency-1d';
+                if (u === '3d' || u === '4d' || u === '5d' || u === '6d') return 'urgency-4d';
+                return 'urgency-9d';
+            };
+
+            container.innerHTML = upcoming.map(d => `
+                <div class="deadline-item" onclick="openEventModal('${d.id}')" style="cursor:pointer;">
+                    <div>
+                        <div class="deadline-title">${escapeHtml(d.title)}</div>
+                        <div class="deadline-meta">• ${escapeHtml(d.course_code || 'Personal')}</div>
+                    </div>
+                    <span class="badge-urgency ${getUrgencyClass(d.days_left)}">${d.days_left || '1d'}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderStatsMetrics() {
+            // Total Tasks (Only manual user-added tasks)
+            const manualTasks = eventsData.filter(e => e.source === 'manual');
+            const totalTasksEl = document.getElementById('stat-total-tasks');
+            const totalTasksNoteEl = document.getElementById('stat-total-tasks-note');
+            if (totalTasksEl) totalTasksEl.innerText = manualTasks.length;
+            if (totalTasksNoteEl) {
+                totalTasksNoteEl.innerText = manualTasks.length === 1 ? '1 manual task' : `${manualTasks.length} manual tasks`;
+            }
+
+            // Overdue tasks (Uncompleted manual tasks with past due date)
+            const todayStr = formatDateYMD(new Date());
+            const overdueTasks = manualTasks.filter(e => !e.completed && e.date && e.date < todayStr);
+            const overdueCount = overdueTasks.length;
+            const overdueEl = document.getElementById('stat-overdue');
+            const overdueNoteEl = document.getElementById('stat-overdue-note');
+            if (overdueEl) {
+                overdueEl.innerText = overdueCount;
+                overdueEl.style.color = overdueCount > 0 ? '#ef4444' : '#0f172a';
+            }
+            if (overdueNoteEl) {
+                if (overdueCount === 0) {
+                    overdueNoteEl.innerText = 'all caught up';
+                    overdueNoteEl.style.color = '#10b981';
+                } else {
+                    overdueNoteEl.innerText = overdueCount === 1 ? '1 task past due' : `${overdueCount} tasks past due`;
+                    overdueNoteEl.style.color = '#ef4444';
+                }
+            }
+
+            // Upcoming deadlines (due in next 7 days)
+            const upcomingCount = eventsData.filter(e => {
+                if (e.days_left === 'Past') return false;
+                if (e.days_left === 'Today' || e.days_left === '1d' || e.days_left === '2d' || e.days_left === '3d' || e.days_left === '4d' || e.days_left === '5d' || e.days_left === '6d' || e.days_left === '7d') return true;
+                return false;
+            }).length;
+            document.getElementById('stat-upcoming').innerText = upcomingCount;
+
+            // Courses count
+            document.getElementById('stat-courses').innerText = coursesData.length;
+        }
+
+        // ==========================================
+        // EVENT MODAL & TASK ACTIONS
+        // ==========================================
+
+        function formatFullDateTime(dateStr, timeStr, defaultTime) {
+            if (!dateStr) return 'Date not specified';
+            const parts = String(dateStr).split('-');
+            if (parts.length !== 3) return dateStr;
+            const y = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            const d = parseInt(parts[2], 10);
+            const dt = new Date(y, m, d);
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const dayName = dayNames[dt.getDay()];
+            const monthName = monthNames[dt.getMonth()];
+            const t = (timeStr || defaultTime || '').trim();
+            if (t) {
+                return `${dayName}, ${monthName} ${d}, ${y} · ${t} CDT`;
+            }
+            return `${dayName}, ${monthName} ${d}, ${y}`;
+        }
+
+        function formatShiftDateTime(dateStr, startTime, endTime) {
+            if (!dateStr) return 'Shift date not specified';
+            const parts = String(dateStr).split('-');
+            if (parts.length !== 3) return dateStr;
+            const y = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            const d = parseInt(parts[2], 10);
+            const dt = new Date(y, m, d);
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const dayName = dayNames[dt.getDay()];
+            const monthName = monthNames[dt.getMonth()];
+            const start = (startTime || '7:00 AM').trim();
+            const end = (endTime || '3:00 PM').trim();
+            return `${dayName}, ${monthName} ${d}, ${y}\n${start}–${end} CDT · America/Chicago`;
+        }
+
+        function openEventModal(eventId) {
+            activeEventId = eventId;
+            const evt = eventsData.find(e => e.id === eventId);
+            if (!evt) return;
+
+            const modalContent = document.getElementById('event-modal-content');
+            if (!modalContent) return;
+
+            // Match course
+            const course = (coursesData || []).find(c =>
+                (evt.course_id && c.id === evt.course_id) ||
+                (evt.course_code && c.code && c.code.trim().toUpperCase() === evt.course_code.trim().toUpperCase())
+            );
+
+            let cCode = (evt.course_code || course?.code || '').trim();
+            if (cCode.toUpperCase() === 'UNKNOWN' || cCode.toUpperCase() === 'N/A') cCode = '';
+            let cName = (evt.course_name || course?.name || '').trim();
+            if (cName.toUpperCase() === 'UNKNOWN' || cName.toUpperCase() === 'UNKNOWN COURSE') cName = '';
+
+            let instructor = (evt.instructor || course?.instructor || '').trim();
+            if (instructor.toUpperCase() === 'UNKNOWN' || instructor.toUpperCase() === 'N/A') instructor = '';
+
+            let officeRoom = (evt.office_room || evt.location || course?.room || '').trim();
+            if (officeRoom.toUpperCase() === 'UNKNOWN' || officeRoom.toUpperCase() === 'N/A') officeRoom = '';
+
+            let email = (evt.email || course?.email || '').trim();
+            if (email.toUpperCase() === 'UNKNOWN' || email.toUpperCase() === 'N/A') email = '';
+
+            const cat = (evt.category || '').toLowerCase().trim();
+            const isCompleted = !!evt.completed;
+            const completeBtnText = isCompleted ? '↩️ Mark Incomplete' : 'Mark complete';
+            const attendBtnText = isCompleted ? '↩️ Mark Unattended' : 'Mark attended';
+            const actionBtnClass = `p-btn-action ${isCompleted ? 'completed' : ''}`;
+
+            let html = `<button class="modal-close" onclick="closeModal('event-modal')">✕</button>`;
+
+            if (cat === 'quiz' || cat === 'nclex-practice' || cat === 'nclex practice') {
+                const subTitle = `QUIZ · ${escapeHtml(cCode || 'NU 612')}${cName ? ' Section 03' : ''}`;
+                const opensStr = formatFullDateTime(evt.date, evt.start_time, '8:00 AM');
+                const closesStr = formatFullDateTime(evt.date, evt.end_time, '9:00 PM');
+                const latestStartStr = formatFullDateTime(evt.date, evt.start_time, '8:40 PM');
+                const sourceStr = `Syllabus · ${escapeHtml(instructor || 'Attempt rules p. 5')}`;
+
+                html += `
+                    <div class="p-modal-header">
+                        <div class="p-modal-breadcrumb">Planner / Desktop · ${cat.includes('nclex') ? 'NCLEX Practice details' : 'Quiz details'}</div>
+                        <div class="p-modal-title"><span class="p-modal-title-icon">📅</span> ${escapeHtml(evt.title)}</div>
+                        <div class="p-modal-subtitle">${subTitle}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Opens</span>
+                        <div class="p-card-val">${escapeHtml(opensStr)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Closes</span>
+                        <div class="p-card-val">${escapeHtml(closesStr)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Attempt rules</span>
+                        <div class="p-card-val">One attempt · 20 minutes</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Latest start for full attempt</span>
+                        <div class="p-card-val">${escapeHtml(latestStartStr)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Source & instructor</span>
+                        <div class="p-card-val">${sourceStr}</div>
+                    </div>
+
+                    <div class="p-card-note">
+                        Completion tracks your progress; it does not submit work to your school. You can undo it.
+                    </div>
+
+                    <button class="${actionBtnClass}" onclick="toggleCompleteFromModal()">${completeBtnText}</button>
+                    <button class="p-btn-delete" onclick="deleteCurrentEvent()">🗑️ Delete task</button>
+                `;
+            } else if (cat === 'discussion' || cat === 'reading' || cat === 'study-session' || cat === 'study session' || cat === 'study-group' || cat === 'study group') {
+                const subTitle = `${(cat.includes('study') ? 'STUDY' : 'DISCUSSION')} · ${escapeHtml(cCode || 'NU 612')}`;
+                const initialPostDate = formatFullDateTime(evt.date, evt.start_time, 'Exact date & time needs confirmation from syllabus');
+                const peerRepliesDate = 'Separate date & time needs confirmation from syllabus';
+                const instructions = evt.description || 'Initial-post and reply instructions stay separate.';
+                const subLoc = evt.location || 'Course discussion board';
+                const sourceNotes = 'Review the original syllabus before confirming dates.';
+
+                html += `
+                    <div class="p-modal-header">
+                        <div class="p-modal-breadcrumb">Planner / Desktop · ${cat.includes('study') ? 'Study session details' : 'Discussion details'}</div>
+                        <div class="p-modal-title"><span class="p-modal-title-icon">📅</span> ${escapeHtml(evt.title)}</div>
+                        <div class="p-modal-subtitle">${subTitle}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Linked deadlines · Sample layout</span>
+                        <div class="p-card-val" style="padding:0.4rem 0.85rem;">
+                            <div class="p-check-row">
+                                <input type="checkbox" class="p-check-input" id="p-chk-initial" ${isCompleted ? 'checked' : ''} onchange="toggleCompleteFromModal()">
+                                <div>
+                                    <div class="p-check-label">Initial post</div>
+                                    <div class="p-check-sub">${escapeHtml(initialPostDate)}</div>
+                                </div>
+                            </div>
+                            <div class="p-check-row">
+                                <input type="checkbox" class="p-check-input" id="p-chk-replies" ${isCompleted ? 'checked' : ''} onchange="toggleCompleteFromModal()">
+                                <div>
+                                    <div class="p-check-label">Peer replies</div>
+                                    <div class="p-check-sub">${escapeHtml(peerRepliesDate)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Instructions</span>
+                        <div class="p-card-val">${escapeHtml(instructions)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Submission location</span>
+                        <div class="p-card-val">${escapeHtml(subLoc)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Source excerpt</span>
+                        <div class="p-card-val">${escapeHtml(sourceNotes)}</div>
+                    </div>
+
+                    <button class="${actionBtnClass}" style="margin-top:0.75rem;" onclick="toggleCompleteFromModal()">${isCompleted ? '↩️ Mark Incomplete' : 'Save completion states'}</button>
+                    <button class="p-btn-delete" onclick="deleteCurrentEvent()">🗑️ Delete task</button>
+                `;
+            } else if (cat === 'clinical' || cat === 'lab' || cat === 'skills-lab' || cat === 'skills lab' || cat === 'simulation' || cat === 'check-off' || cat === 'skills check-off' || cat === 'work-shift' || cat === 'work shift') {
+                const subTitle = `${(cat.includes('work') ? 'SHIFT' : (cat.includes('sim') ? 'SIMULATION' : (cat.includes('skills') ? 'SKILLS' : 'CLINICAL')))} · ${escapeHtml(cCode || 'NUR 301')} · Sample rotation`;
+                const courseTitle = `${escapeHtml(cName || 'Adult Health Nursing')} · Required`;
+                const shiftStr = formatShiftDateTime(evt.date, evt.start_time, evt.end_time);
+                const arrivalStr = 'Arrive by 6:45 AM · Main lobby, first floor';
+                const siteStr = `${escapeHtml(evt.location || officeRoom || 'Example Medical Center · Medical-Surgical Unit, 3rd floor')}\nAddress and parking directions from the clinical schedule`;
+                const preceptorStr = instructor ? `${escapeHtml(instructor)}${email ? ' · ' + escapeHtml(email) : ''}` : 'View assigned instructor, preceptor, and contact details from the course schedule';
+                const prepStr = 'Review assigned patient-care preparation.\nBring student ID, required uniform, and clinical equipment.\nFollow the site\'s clearance and onboarding requirements.';
+                const schedStr = 'Clinical schedule · Source page and excerpt\nConfirm location or shift details if missing.';
+
+                html += `
+                    <div class="p-modal-header">
+                        <div class="p-modal-breadcrumb">Planner / Desktop · Clinical rotation</div>
+                        <div class="p-modal-title"><span class="p-modal-title-icon">📅</span> ${escapeHtml(evt.title)}</div>
+                        <div class="p-modal-subtitle">${subTitle}</div>
+                    </div>
+
+                    <div class="p-card-val-plain">${courseTitle}</div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">SHIFT</span>
+                        <div class="p-card-val">${escapeHtml(shiftStr)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Arrival & meeting point</span>
+                        <div class="p-card-val">${escapeHtml(arrivalStr)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Clinical site & unit</span>
+                        <div class="p-card-val">${escapeHtml(siteStr)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Instructor / preceptor</span>
+                        <div class="p-card-val">${escapeHtml(preceptorStr)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Preparation & requirements</span>
+                        <div class="p-card-val">${escapeHtml(prepStr)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Source & schedule changes</span>
+                        <div class="p-card-val">${escapeHtml(schedStr)}</div>
+                    </div>
+
+                    <button class="${actionBtnClass}" style="margin-top:0.75rem;" onclick="toggleCompleteFromModal()">${attendBtnText}</button>
+                    <button class="p-btn-delete" onclick="deleteCurrentEvent()">🗑️ Delete task</button>
+                `;
+            } else if (cat === 'exam' || cat === 'midterm' || cat === 'final') {
+                const subTitle = `EXAM · ${escapeHtml(cCode || 'NU 612')}${cName ? ' Section 03' : ''}`;
+                const opensStr = formatFullDateTime(evt.date, evt.start_time, '09:00 AM');
+                const closesStr = formatFullDateTime(evt.date, evt.end_time, '11:00 AM');
+                const latestStartStr = formatFullDateTime(evt.date, evt.start_time, '09:00 AM');
+                const rulesStr = 'In-person proctored exam · Time limit: 120 minutes · One attempt';
+                const siteStr = escapeHtml(evt.location || officeRoom || 'Main Campus Testing Center / Room 204');
+                const proctorStr = instructor ? `Exam Proctor: ${escapeHtml(instructor)}${email ? ' · ' + escapeHtml(email) : ''}` : 'View assigned proctor details from syllabus';
+                const instructStr = evt.description || 'Bring photo ID, approved calculator, and No. 2 pencils. No electronic devices permitted.';
+
+                html += `
+                    <div class="p-modal-header">
+                        <div class="p-modal-breadcrumb">Planner / Desktop · Exam details</div>
+                        <div class="p-modal-title"><span class="p-modal-title-icon">📅</span> ${escapeHtml(evt.title)}</div>
+                        <div class="p-modal-subtitle">${subTitle}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Opens</span>
+                        <div class="p-card-val">${escapeHtml(opensStr)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Closes</span>
+                        <div class="p-card-val">${escapeHtml(closesStr)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Attempt rules</span>
+                        <div class="p-card-val">${rulesStr}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Latest start for full attempt</span>
+                        <div class="p-card-val">${escapeHtml(latestStartStr)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Examination site & room</span>
+                        <div class="p-card-val">${siteStr}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Instructor / proctor</span>
+                        <div class="p-card-val">${proctorStr}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Instructions & coverage</span>
+                        <div class="p-card-val">${escapeHtml(instructStr)}</div>
+                    </div>
+
+                    <div class="p-card-note">
+                        Completion tracks your progress; it does not submit work to your school. You can undo it.
+                    </div>
+
+                    <button class="${actionBtnClass}" onclick="toggleCompleteFromModal()">${completeBtnText}</button>
+                    <button class="p-btn-delete" onclick="deleteCurrentEvent()">🗑️ Delete task</button>
+                `;
+            } else if (cat === 'class' || cat === 'lecture') {
+                const subTitle = `CLASS · ${escapeHtml(cCode || 'NU 612')}${cName ? ' Section 03' : ''}`;
+                const schedStr = formatShiftDateTime(evt.date, evt.start_time, evt.end_time);
+                const roomStr = escapeHtml(evt.location || officeRoom || 'Main Campus Classroom / Online');
+                const profStr = instructor ? `${escapeHtml(instructor)}${email ? ' · ' + escapeHtml(email) : ''}` : 'Course Faculty';
+                const notesStr = evt.description || 'Review assigned reading materials and lecture slides prior to meeting.';
+
+                html += `
+                    <div class="p-modal-header">
+                        <div class="p-modal-breadcrumb">Planner / Desktop · Class session</div>
+                        <div class="p-modal-title"><span class="p-modal-title-icon">📅</span> ${escapeHtml(evt.title)}</div>
+                        <div class="p-modal-subtitle">${subTitle}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Class Meeting Schedule</span>
+                        <div class="p-card-val">${escapeHtml(schedStr)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Room & location</span>
+                        <div class="p-card-val">${roomStr}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Instructor</span>
+                        <div class="p-card-val">${profStr}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Topic & notes</span>
+                        <div class="p-card-val">${escapeHtml(notesStr)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Source & schedule changes</span>
+                        <div class="p-card-val">Class schedule · Source syllabus</div>
+                    </div>
+
+                    <button class="${actionBtnClass}" style="margin-top:0.75rem;" onclick="toggleCompleteFromModal()">${attendBtnText}</button>
+                    <button class="p-btn-delete" onclick="deleteCurrentEvent()">🗑️ Delete task</button>
+                `;
+            } else {
+                // Default: Assignment details
+                const subTitle = `ASSIGNMENT · ${escapeHtml(cCode || 'NU 612')}${cName ? ' Section 03' : ''}`;
+                const dueStr = formatFullDateTime(evt.date, evt.end_time || evt.start_time, '12:00 PM');
+                const deliverable = evt.description || 'Keep the assignment instructions, file format, and word count from the source syllabus.';
+                const subLoc = evt.location || 'Confirm the assignment submission path in HarborLearn.';
+                const sourceInst = `View original syllabus and source excerpt · ${escapeHtml(instructor || 'Course Faculty')}${email ? ' (' + escapeHtml(email) + ')' : ''}`;
+
+                html += `
+                    <div class="p-modal-header">
+                        <div class="p-modal-breadcrumb">Planner / Desktop · Assignment details</div>
+                        <div class="p-modal-title"><span class="p-modal-title-icon">📅</span> ${escapeHtml(evt.title)}</div>
+                        <div class="p-modal-subtitle">${subTitle}</div>
+                    </div>
+
+                    <div class="p-card-val-plain">Coursework deadline</div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Due</span>
+                        <div class="p-card-val">${escapeHtml(dueStr)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Instructions & deliverable</span>
+                        <div class="p-card-val">${escapeHtml(deliverable)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Submission location</span>
+                        <div class="p-card-val">${escapeHtml(subLoc)}</div>
+                    </div>
+
+                    <div class="p-card-field">
+                        <span class="p-card-label">Source & instructor</span>
+                        <div class="p-card-val">${sourceInst}</div>
+                    </div>
+
+                    <div class="p-card-note">
+                        Completion tracks your progress; it does not submit work to your school. You can undo it.
+                    </div>
+
+                    <button class="${actionBtnClass}" onclick="toggleCompleteFromModal()">${completeBtnText}</button>
+                    <button class="p-btn-delete" onclick="deleteCurrentEvent()">🗑️ Delete task</button>
+                `;
+            }
+
+            modalContent.innerHTML = html;
+            openModal('event-modal');
+        }
+
+        async function toggleCompleteFromModal() {
+            if (!activeEventId) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/calendar/events/${activeEventId}/toggle-complete`, { method: 'PATCH' });
+                if (res.ok) {
+                    await refreshAllData();
+                    closeModal('event-modal');
+                }
+            } catch (err) {
+                console.error("Error toggling completion:", err);
+            }
+        }
+
+        async function deleteCurrentEvent() {
+            if (!activeEventId) return;
+            if (!confirm("Are you sure you want to delete this task?")) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/calendar/events/${activeEventId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    closeModal('event-modal');
+                    await refreshAllData();
+                }
+            } catch (err) {
+                console.error("Error deleting event:", err);
+            }
+        }
+
+        async function toggleTaskComplete(eventId, isCompleted) {
+            try {
+                await fetch(`${API_BASE}/api/calendar/events/${eventId}/toggle-complete`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ completed: isCompleted })
+                });
+                await refreshAllData();
+            } catch (err) {
+                console.error("Error toggling task complete:", err);
+            }
+        }
+
+        async function deleteTaskDirect(eventId) {
+            if (!confirm("Delete this task?")) return;
+            try {
+                await fetch(`${API_BASE}/api/calendar/events/${eventId}`, { method: 'DELETE' });
+                await refreshAllData();
+            } catch (err) {
+                console.error("Error deleting task:", err);
+            }
+        }
+
+        // ==========================================
+        // ADD TASK / EVENT MODAL & SUBMIT
+        // ==========================================
+
+        function openAddTaskModal() {
+            const form = document.getElementById('add-task-form');
+            if (form) form.reset();
+            document.getElementById('task-input-date').value = selectedDateStr || formatDateYMD(new Date());
+            openModal('add-task-modal');
+        }
+
+        function quickAddTask(typeValue) {
+            openAddTaskModal();
+            const typeSelect = document.getElementById('task-input-type');
+            if (typeSelect && typeValue) {
+                typeSelect.value = typeValue;
+            }
+            const titleInput = document.getElementById('task-input-title');
+            if (titleInput) {
+                titleInput.focus();
+            }
+        }
+
+        function handleTaskCourseChange(courseCode) {
+            if (!courseCode) return;
+            const course = (coursesData || []).find(c => c.code === courseCode);
+            if (course) {
+                if (course.instructor) document.getElementById('task-input-instructor').value = course.instructor;
+                if (course.email) document.getElementById('task-input-email').value = course.email;
+                if (course.room) document.getElementById('task-input-office-room').value = course.room;
+            }
+        }
+
+        async function handleCreateTaskSubmit(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('btn-submit-task');
+            const origText = submitBtn ? submitBtn.innerText : "Save Task";
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Saving...";
+            }
+
+            const title = document.getElementById('task-input-title').value.trim();
+            const courseCode = document.getElementById('task-input-course').value;
+            const category = document.getElementById('task-input-type').value;
+            const dateVal = document.getElementById('task-input-date').value;
+            const startVal = document.getElementById('task-input-start').value.trim();
+            const endVal = document.getElementById('task-input-end').value.trim();
+            const locEl = document.getElementById('task-input-location');
+            const locVal = locEl ? locEl.value.trim() : '';
+            const instructorVal = document.getElementById('task-input-instructor').value.trim();
+            const emailVal = document.getElementById('task-input-email').value.trim();
+            const officeRoomVal = document.getElementById('task-input-office-room').value.trim();
+            const descVal = document.getElementById('task-input-desc').value.trim();
+
+            if (!title || !dateVal) {
+                alert("Please provide at least a title and date.");
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = origText;
+                }
+                return;
+            }
+
+            const payload = {
+                title: title,
+                date: dateVal,
+                course_code: courseCode,
+                category: category,
+                start_time: startVal,
+                end_time: endVal,
+                location: locVal,
+                instructor: instructorVal,
+                email: emailVal,
+                office_room: officeRoomVal,
+                description: descVal,
+                source: "manual"
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/api/calendar/events`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    closeModal('add-task-modal');
+                    const form = document.getElementById('add-task-form');
+                    if (form) form.reset();
+                    await refreshAllData();
+                    if (data.is_duplicate_warning) {
+                        alert("Note: An event with this title, course, and date already exists. The task was recorded.");
+                    } else {
+                        alert("Task created successfully!");
+                    }
+                } else {
+                    const errData = await res.json().catch(() => ({}));
+                    const errDetail = errData.detail || errData.message || (typeof errData === 'string' ? errData : JSON.stringify(errData));
+                    alert("Failed to save task: " + (errDetail || res.statusText || "Please try again."));
+                }
+            } catch (err) {
+                console.error("Error creating task:", err);
+                alert("Network error: Could not connect to server.");
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = origText;
+                }
+            }
+        }
+
+        // ==========================================
+        // SYLLABUS IMPORTER DRAG & DROP
+        // ==========================================
+
+        function triggerFileInput() { document.getElementById('file-input').click(); }
+        function handleDragOver(e) { e.preventDefault(); document.getElementById('dropzone').classList.add('dragover'); }
+        function handleDragLeave(e) { e.preventDefault(); document.getElementById('dropzone').classList.remove('dragover'); }
+        function handleFileDrop(e) {
+            e.preventDefault(); document.getElementById('dropzone').classList.remove('dragover');
+            if (e.dataTransfer.files.length) uploadSelectedFiles(e.dataTransfer.files);
+        }
+        function handleFileSelect(e) { if (e.target.files.length) uploadSelectedFiles(e.target.files); }
+
+        async function uploadSelectedFiles(fileList) {
+            for (let file of fileList) {
+                await uploadSingleSyllabus(file);
+            }
+        }
+
+        async function uploadSingleSyllabus(file) {
+            const pBox = document.getElementById('processing-box');
+            const pStatus = document.getElementById('processing-status-text');
+            const pFill = document.getElementById('progress-bar-fill');
+            pBox.classList.add('active');
+
+            pStatus.innerHTML = `<span>⚙️</span> Processing ${escapeHtml(file.name)}...`;
+            pFill.style.width = '30%';
+
+            try {
+                setTimeout(() => {
+                    pStatus.innerHTML = `<span>📖</span> Extracting course info & schedule...`;
+                    pFill.style.width = '65%';
+                }, 400);
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const res = await fetch(`${API_BASE}/api/syllabus/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    pFill.style.width = '100%';
+                    pStatus.innerHTML = `<span>✔️</span> ${data.course.code} added! ${data.new_events_count} events placed on calendar.`;
+
+                    await refreshAllData();
+
+                    setTimeout(() => {
+                        pBox.classList.remove('active');
+                        pFill.style.width = '0%';
+                        switchPageSection('planner');
+                    }, 900);
+                } else {
+                    const errData = await res.json();
+                    pStatus.innerHTML = `<span>❌</span> Unable to identify course information from this document.`;
+                    setTimeout(() => { pBox.classList.remove('active'); }, 3000);
+                }
+            } catch (err) {
+                pStatus.innerHTML = `<span>❌</span> Error uploading document.`;
+                setTimeout(() => { pBox.classList.remove('active'); }, 3000);
+            }
+        }
+
+        function renderSyllabiList() {
+            const container = document.getElementById('syllabi-container');
+            const titleEl = document.getElementById('uploaded-count-title');
+            if (!container) return;
+
+            titleEl.innerText = `Uploaded Syllabi (${uploadedFiles.length})`;
+
+            if (uploadedFiles.length === 0) {
+                container.innerHTML = `<div class="empty-syllabi-msg">No syllabi uploaded yet. Drag & drop files above to start.</div>`;
+                return;
+            }
+
+            container.innerHTML = uploadedFiles.map(s => `
+                <div class="syllabus-item-card" id="${s.id}">
+                    <div class="item-left">
+                        <div class="pdf-icon-box">📄</div>
+                        <div class="file-info">
+                            <h4>${escapeHtml(s.filename)}</h4>
+                            <p>${escapeHtml(s.course_code)} • ${escapeHtml(s.course_name || '')} • ${s.extracted_events_count || 0} events</p>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <span class="badge-extracted">Extracted</span>
+                        <button type="button" class="btn-remove" onclick="removeSyllabusDirect('${s.id}')" title="Delete Syllabus">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function removeSyllabusDirect(syllabusId) {
+            try {
+                await fetch(`${API_BASE}/api/syllabus/${syllabusId}`, { method: 'DELETE' });
+                await refreshAllData();
+            } catch (err) {
+                console.error("Error deleting syllabus:", err);
+            }
+        }
+
+        async function confirmResetAllData() {
+            if (!confirm("Are you sure you want to clear all courses, syllabi, and events? This will return the calendar to a clean empty state.")) {
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/api/data/clear`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (res.ok) {
+                    hasManuallyNavigated = false;
+                    selectedCourseFilter = 'all';
+                    const filterEl = document.getElementById('course-filter');
+                    if (filterEl) filterEl.value = 'all';
+                    switchMainTab('calendar');
+                    await refreshAllData();
+                    alert("All calendar data, courses, and tasks have been reset successfully.");
+                } else {
+                    const errData = await res.json().catch(() => ({}));
+                    const errDetail = errData.detail || errData.message || (typeof errData === 'string' ? errData : JSON.stringify(errData));
+                    alert("Failed to reset data: " + (errDetail || res.statusText || "Please try again."));
+                }
+            } catch (err) {
+                console.error("Error clearing data:", err);
+                alert("Network error: Could not clear data.");
+            }
+        }
+
+        // ==========================================
+        // MODAL HELPERS & UTILITIES
+        // ==========================================
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function formatDateYMD(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        function parseYMD(str) {
+            if (!str) return new Date();
+            const parts = str.split('-');
+            return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+
+</html>

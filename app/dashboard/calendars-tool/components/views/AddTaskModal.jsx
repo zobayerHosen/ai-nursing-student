@@ -8,15 +8,23 @@ const TASK_TYPES = [
   { value: "assignment", label: "Assignment" },
   { value: "quiz", label: "Quiz" },
   { value: "exam", label: "Midterm Exam / Final" },
-  { value: "lab", label: "Lab / Clinical" },
+  { value: "lecture", label: "Lecture" },
+  { value: "clinical", label: "Clinical" },
+  { value: "skills-lab", label: "Skills Lab" },
+  { value: "simulation", label: "Simulation" },
+  { value: "study-session", label: "Study Session" },
+  { value: "study-group", label: "Study Group" },
+  { value: "nclex-practice", label: "NCLEX Practice" },
   { value: "reading", label: "Reading" },
   { value: "project", label: "Project" },
   { value: "presentation", label: "Presentation" },
-  { value: "class", label: "Class / Lecture" },
-  { value: "check-off", label: "Check-off" },
+  { value: "check-off", label: "Skills Check-off" },
   { value: "deadline", label: "Deadline" },
+  { value: "work-shift", label: "Work Shift" },
+  { value: "appointment", label: "Appointment" },
+  { value: "vacation", label: "Vacation" },
   { value: "holiday", label: "Holiday" },
-  { value: "other", label: "Other" },
+  { value: "other", label: "Personal / Other" },
 ];
 
 function formatDateYMD(d) {
@@ -32,11 +40,14 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
   const [title, setTitle] = useState("");
   const [courseCode, setCourseCode] = useState("");
   const [category, setCategory] = useState("assignment");
+  const [instructor, setInstructor] = useState("");
+  const [email, setEmail] = useState("");
+  const [location, setLocation] = useState("");
+  const [officeRoom, setOfficeRoom] = useState("");
   const [date, setDate] = useState(selectedDate || formatDateYMD(new Date()));
   const [points, setPoints] = useState("10");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
 
   useEffect(() => {
@@ -44,6 +55,16 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
       setDate(selectedDate);
     }
   }, [isOpen, selectedDate]);
+
+  const handleCourseChange = (selectedCode) => {
+    setCourseCode(selectedCode);
+    const matched = courses.find((c) => c.code === selectedCode);
+    if (matched) {
+      if (matched.instructor && !instructor) setInstructor(matched.instructor);
+      if (matched.email && !email) setEmail(matched.email);
+      if (matched.room && !officeRoom) setOfficeRoom(matched.room);
+    }
+  };
 
   const handleTypeChange = (val) => {
     setCategory(val);
@@ -67,9 +88,12 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
       course_code: courseCode,
       category,
       points: pointsNum,
+      instructor: instructor.trim(),
+      email: email.trim(),
+      location: location.trim(),
+      office_room: officeRoom.trim(),
       start_time: startTime.trim(),
       end_time: endTime.trim(),
-      location: location.trim(),
       description: description.trim(),
       source: "manual",
     };
@@ -83,10 +107,13 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
       setTitle("");
       setCourseCode("");
       setCategory("assignment");
+      setInstructor("");
+      setEmail("");
+      setLocation("");
+      setOfficeRoom("");
       setPoints("10");
       setStartTime("");
       setEndTime("");
-      setLocation("");
       setDescription("");
       onClose();
     } catch (err) {
@@ -112,157 +139,199 @@ export default function AddTaskModal({ isOpen, onClose, courses = [], selectedDa
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-        {/* Header */}
-        <div className="px-5 pt-5 pb-3 flex items-start justify-between gap-3">
-          <div>
-            <h3 className="text-lg font-bold text-[#1D2939]">+ Add Academic Task</h3>
-            <p className="text-xs text-[#667085] mt-1">
-              Create a custom assignment, quiz, exam, study session, or personal academic event.
-            </p>
-          </div>
-          <button onClick={onClose} className="text-[#9CA3AF] hover:text-[#374151] transition-colors shrink-0">
-            <X size={18} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="px-5 pb-5 flex flex-col gap-3">
-          {/* Title */}
-          <div>
-            <label className="text-xs font-bold text-[#334155] block mb-1">Task Title *</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. SBAR Case Study Draft"
-              required
-              className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent"
-            />
-          </div>
-
-          {/* Course + Type row */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-bold text-[#334155] block mb-1">Course</label>
-              <select
-                value={courseCode}
-                onChange={(e) => setCourseCode(e.target.value)}
-                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent"
+            {/* Header */}
+            <div className="px-6 pt-6 pb-4 flex items-start justify-between gap-3 border-b border-[#F1F5F9]">
+              <div>
+                <h3 className="text-lg font-bold text-[#0F172A]">+ Add Academic Task</h3>
+                <p className="text-xs text-[#64748B] mt-1 leading-relaxed">
+                  Create a custom assignment, quiz, exam, study session, or personal academic event.
+                </p>
+              </div>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-[#94A3B8] hover:text-[#334155] hover:bg-[#F1F5F9] transition-all cursor-pointer shrink-0"
+                title="Close"
               >
-                <option value="">No Course / Personal</option>
-                {courses.map((c) => (
-                  <option key={c.code || c.id} value={c.code}>
-                    {c.code} - {c.name}
-                  </option>
-                ))}
-              </select>
+                <X size={18} />
+              </button>
             </div>
-            <div>
-              <label className="text-xs font-bold text-[#334155] block mb-1">Type *</label>
-              <select
-                value={category}
-                onChange={(e) => handleTypeChange(e.target.value)}
-                required
-                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent"
+
+            <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
+              {/* Task Title * */}
+              <div>
+                <label className="text-xs font-semibold text-[#1E293B] block mb-1.5">
+                  Task Title *
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g. SBAR Case Study Draft"
+                  required
+                  className="w-full border border-[#E2E8F0] rounded-lg px-3.5 py-2.5 text-xs text-[#1E293B] placeholder:text-[#94A3B8] bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                />
+              </div>
+
+              {/* Course + Type * row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-[#1E293B] block mb-1.5">Course</label>
+                  <select
+                    value={courseCode}
+                    onChange={(e) => handleCourseChange(e.target.value)}
+                    className="w-full border border-[#E2E8F0] rounded-lg px-3 py-2.5 text-xs text-[#1E293B] bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+                  >
+                    <option value="">No Course / Personal</option>
+                    {courses.map((c) => (
+                      <option key={c.code || c.id} value={c.code}>
+                        {c.code} {c.name ? `- ${c.name}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-[#1E293B] block mb-1.5">Type *</label>
+                  <select
+                    value={category}
+                    onChange={(e) => handleTypeChange(e.target.value)}
+                    required
+                    className="w-full border border-[#E2E8F0] rounded-lg px-3 py-2.5 text-xs text-[#1E293B] bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+                  >
+                    {TASK_TYPES.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Instructor Name (optional) + Instructor Email (optional) row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-[#1E293B] block mb-1.5">
+                    Instructor Name (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={instructor}
+                    onChange={(e) => setInstructor(e.target.value)}
+                    placeholder="e.g. Dr. Sarah Smith"
+                    className="w-full border border-[#E2E8F0] rounded-lg px-3.5 py-2.5 text-xs text-[#1E293B] placeholder:text-[#94A3B8] bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-[#1E293B] block mb-1.5">
+                    Instructor Email (optional)
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="e.g. sarah.smith@university.edu"
+                    className="w-full border border-[#E2E8F0] rounded-lg px-3.5 py-2.5 text-xs text-[#1E293B] placeholder:text-[#94A3B8] bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Location / Class (optional) + Office Room (optional) row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-[#1E293B] block mb-1.5">
+                    Location / Class (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="e.g. SCI 204 or Online"
+                    className="w-full border border-[#E2E8F0] rounded-lg px-3.5 py-2.5 text-xs text-[#1E293B] placeholder:text-[#94A3B8] bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-[#1E293B] block mb-1.5">
+                    Office Room (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={officeRoom}
+                    onChange={(e) => setOfficeRoom(e.target.value)}
+                    placeholder="e.g. Room 409"
+                    className="w-full border border-[#E2E8F0] rounded-lg px-3.5 py-2.5 text-xs text-[#1E293B] placeholder:text-[#94A3B8] bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Date * */}
+              <div>
+                <label className="text-xs font-semibold text-[#1E293B] block mb-1.5">Date *</label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                  className="w-full border border-[#E2E8F0] rounded-lg px-3.5 py-2.5 text-xs text-[#1E293B] bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+                />
+              </div>
+
+              {/* Start Time (optional) + End Time (optional) row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-[#1E293B] block mb-1.5">
+                    Start Time (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    placeholder="e.g. 09:00 AM"
+                    className="w-full border border-[#E2E8F0] rounded-lg px-3.5 py-2.5 text-xs text-[#1E293B] placeholder:text-[#94A3B8] bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-[#1E293B] block mb-1.5">
+                    End Time (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    placeholder="e.g. 10:15 AM"
+                    className="w-full border border-[#E2E8F0] rounded-lg px-3.5 py-2.5 text-xs text-[#1E293B] placeholder:text-[#94A3B8] bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Description (optional) */}
+              <div>
+                <label className="text-xs font-semibold text-[#1E293B] block mb-1.5">
+                  Description (optional)
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  placeholder="Notes or submission instructions..."
+                  className="w-full border border-[#E2E8F0] rounded-lg px-3.5 py-2.5 text-xs text-[#1E293B] placeholder:text-[#94A3B8] bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+                />
+              </div>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={isCreating || !isFormValid}
+                className={`w-full bg-[#2563EB] text-white text-sm font-semibold rounded-xl py-3 shadow-sm transition-all ${
+                  !isFormValid || isCreating
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-[#1D4ED8] cursor-pointer"
+                }`}
               >
-                {TASK_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Date + Points row */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-bold text-[#334155] block mb-1">Date *</label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent"
-              />
-            </div>
-            {/* <div>
-              <label className="text-xs font-bold text-[#334155] block mb-1">Points Possible</label>
-              <input
-                type="number"
-                step="1"
-                min="0"
-                value={points}
-                onChange={(e) => setPoints(e.target.value)}
-                placeholder="e.g. 50"
-                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
-              />
-            </div> */}
-          </div>
-
-          {/* Start/End Time row */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-bold text-[#334155] block mb-1">Start Time (optional)</label>
-              <input
-                type="text"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                placeholder="e.g. 09:00 AM"
-                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-[#334155] block mb-1">End Time (optional)</label>
-              <input
-                type="text"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                placeholder="e.g. 10:15 AM"
-                className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          {/* Location */}
-          <div>
-            <label className="text-xs font-bold text-[#334155] block mb-1">Location / Room (optional)</label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. SCI 204 or Online"
-              className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent"
-            />
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="text-xs font-bold text-[#334155] block mb-1">Description (optional)</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={2}
-              placeholder="Notes or submission instructions..."
-              className="w-full border border-[#D0D5DD] rounded-lg px-3 py-2 bg-[#F8FAFC] text-xs leading-5 text-[#53606D] focus:outline-none focus:ring focus:ring-primary focus:border-transparent resize-none"
-            />
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={isCreating || !isFormValid}
-            className={`w-full bg-primary text-white text-sm font-bold rounded-xl py-2.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-              !isFormValid || isCreating
-                ? "cursor-not-allowed opacity-50"
-                : "hover:bg-primary/90 cursor-pointer"
-            }`}
-          >
-            {isCreating ? "Saving..." : "Save Task"}
-          </button>
-        </form>
+                {isCreating ? "Saving..." : "Save Task"}
+              </button>
+            </form>
           </motion.div>
         </motion.div>
       )}
